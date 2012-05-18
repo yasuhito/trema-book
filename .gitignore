@@ -1,0 +1,6 @@
+Gemfile.lock
+*.dvi
+*.html
+*.log
+*.pdf
+*.tex
