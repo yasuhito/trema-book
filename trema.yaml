@@ -8,10 +8,10 @@
 bookname: trema
 
 # 書名
-booktitle: OpenFlow プログラミング入門
+booktitle: OpenFlow 実践入門
 
 # 著者
-aut: 高宮 安仁
+aut: 高宮 安仁, 鈴木 一哉
 # 以下はオプション
 # prt: 出版社
 # asn: Associated name
