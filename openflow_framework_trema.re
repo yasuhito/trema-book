@@ -9,8 +9,8 @@
 ら説明しますので、ネットワークの専門家はもちろん普通のプログラマもすん
 なり理解できるはずです。
 
-まずは、OpenFlow プログラミングのためのフレームワーク「Trema (トレマ)」
-を紹介しましょう。
+まずは、OpenFlow プログラミングのためのフレームワーク Trema (トレマ) を
+紹介しましょう。
 
 == Trema とは
 
@@ -22,12 +22,12 @@ GPLv2 ライセンスのフリーソフトウェアとして公開されてい�
 
 Trema の情報は次のサイトから入手できます。
 
- * Trema ホームページ: @<tt>{http://trema.github.com/trema/}
- * GitHub のページ: @<tt>{https://github.com/trema/}
- * メーリングリスト: @<tt>{https://groups.google.com/group/trema-dev}
- * Twitter アカウント: @<tt>{@trema_news}
+ * Trema ホームページ: @<href>{http://trema.github.com/trema/}
+ * GitHub のページ: @<href>{http://github.com/trema/}
+ * メーリングリスト: @<href>{http://groups.google.com/group/trema-dev}
+ * Twitter アカウント: @<href>{http://twitter.com/trema_news}
 
-===[column] 友太郎の質問: Trema の由来は？
+===[column] 友太郎の質問: Trema の由来ってなに？
 
 #@warn(友太郎のアイコン)
 #@warn(あとで書く)
