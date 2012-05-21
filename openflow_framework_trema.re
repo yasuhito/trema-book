@@ -144,9 +144,9 @@ OpenFlow メッセージの到着など各種イベントに対応するハン�
 
 //listnum[ハンドラ定義][起動時に呼ばれるハンドラを定義する]{
   class HelloController < Controller
- @<ami>{   def start}
- @<ami>{     puts "Hello, Trema!"}
- @<ami>{   end}
+    @<ami>{def start}
+      @<ami>{puts "Hello, Trema!"}
+    @<ami>{end}
   end
 //}  
   
