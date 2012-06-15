@@ -1,10 +1,16 @@
 require "rake/clean"
 
 CLEAN << "trema.pdf"
+CLEAN << "trema.epub"
 
 
 task :pdf do
   sh "review-pdfmaker trema.yaml"
+end
+
+
+task :epub do
+  sh "review-epubmaker trema.yaml"
 end
 
 

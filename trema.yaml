@@ -54,10 +54,10 @@ toclevel: 3
 secnolevel: 2
 
 # EPUBのバージョン(現時点では2または3。デフォルトは2)
-epubversion: 2
+epubversion: 3
 
 # HTMLのバージョン(現時点では4または5。デフォルトは4。epubversionを3にした場合は自動で5に設定される)
-htmlversion: 4
+htmlversion: 5
 
 # EPUB標準の目次以外に目次を作成するか
 # mytoc: nil
