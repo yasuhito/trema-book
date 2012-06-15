@@ -33,7 +33,7 @@ OpenFlow プロトコル的に何が起こっているかを図1に示します�
 というflow_modを打ちます。また，packet_inを起こした最初のパケットをほか
 のすべてのホスト（host2 とhost3）に明示的にpacket_outで届けます。
 
-#@warn(図 1)
+//image[repeater_hub][ホスト 3 台をつなげたリピータハブの動作]
 
 == 最初のテスト
 
