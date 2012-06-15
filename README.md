@@ -1,20 +1,30 @@
+# これは何？
+
+10 月中旬に技術評論社から刊行予定の「OpenFlow 実践入門」の原稿データです。以下の手順で自分で PDF や epub を作って読むことができます。
+ただし生成できるデータは「素人仕事」なので、プロが組版したきれいな本が欲しい人はぜひ本屋さんで買ってください。
+
+
 # セットアップ
 
-Ubuntu を使う場合。
+以下は Ubuntu の手順です。Mac でも同様の手順でできます。
 
- * review (組版ソフト) をインストール: https://github.com/kmuto/review
+ * Ruby 環境と rake をインストール
+ * review (組版ソフト) の最新版をインストール: https://github.com/kmuto/review
  * texlive をインストール: sudo apt-get install texlive-full
  * ptexlive をインストール: このページ http://www1.pm.tokushima-u.ac.jp/~kohda/tex/ptexlive.html から ptexlive-base と ptexlive-extra を dpkg -i でインストール 
 
-あとは rake が必要です。
+
+# PDF や epub を作る
+
+ファイルの生成はすべて rake コマンド一発でできます。
+
+ * "rake pdf" で trema.pdf ができます。
+ * "rake epub" で trema.epub ができます。
 
 
-# PDF を作る
+# 執筆に協力いただける方への情報
 
- * rake pdf で trema.pdf ができる。
- * rake clean で消える。
+あなたも謝辞に名前を載せませんか!
 
-
-# 書き方
-
-文法はここにあります https://github.com/kmuto/review/blob/master/doc/format.rdoc
+ * まちがいやコメントがありましたら、チケットを切ってください: https://github.com/yasuhito/trema-book/issues
+ * マークアップの文法はこちら: https://github.com/kmuto/review/blob/master/doc/format.rdoc
