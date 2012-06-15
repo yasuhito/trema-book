@@ -9,80 +9,86 @@
 それに，変更しようとすると動かなくなってしまいます。「ナーシャ，カムバッ
 ク！」でも彼はもう戻ってきません……。
 
-こうした悲劇を防ぐ方法の1つがソフトウェアテストです。OpenFlowコントロー
+こうした悲劇を防ぐ方法の1つがソフトウェアテストです。OpenFlow コントロー
 ラのように動作シーケンスが複雑なソフトウェアが壊れていないことを確認す
 るためには，ソフトウェアにより自動化されたテストが有効です。それに，き
 ちんとしたテスト一式があればプログラム本体の理解もしやすく，修正も簡単
 です。
 
-TremaはOpenFlowコントローラをテストするためのテストツールが充実してい
-ます。今回はこれを使って，簡単なコントローラ（リピータハブ）をテスト
+Trema は OpenFlow コントローラをテストするためのテストツールが充実して
+います。今回はこれを使って，簡単なコントローラ（リピータハブ）をテスト
 ファースト形式で実装していきます。
 
 ではさっそく実際の例を見ていきましょう。
 
 == お題: リピータハブをテスト駆動で作る
 
-まずは，リピータハブがどのように動作するかを説明しましょう。ホスト3台
+まずは，リピータハブがどのように動作するかを説明しましょう。ホスト 3 台
 のネットワークを考えてください。あるホストからパケットを送信すると，リ
-ピータハブは入ってきたパケットを複製してほかのすべてのホストにばらまきます。
+ピータハブは入ってきたパケットを複製してほかのすべてのホストにばらまき
+ます。
 
-OpenFlow プロトコル的に何が起こっているかを図1に示します。host1がパケッ
-トを送信すると，スイッチからコントローラにpacket_inが起こります。ここで
-コントローラは「今後は同様のパケットをほかの全ポートへばらまけ（FLOOD）」
-というflow_modを打ちます。また，packet_inを起こした最初のパケットをほか
-のすべてのホスト（host2 とhost3）に明示的にpacket_outで届けます。
+OpenFlow プロトコル的に何が起こっているかを@<img>{repeater_hub} に示し
+ます。host1 がパケットを送信すると，スイッチからコントローラに
+packet_in が起こります。ここでコントローラは「今後は同様のパケットをほ
+かの全ポートへばらまけ（FLOOD）」という flow_mod を打ちます。また，
+packet_in を起こした最初のパケットをほかのすべてのホスト（host2 と
+host3）に明示的に packet_out で届けます。
 
 //image[repeater_hub][ホスト 3 台をつなげたリピータハブの動作]
 
 == 最初のテスト
 
-ではさっそく，リピータハブのテストコードを書いていきましょう。Tremaのテ
-ストフレームワークはRubyのユニットテストツールRSpecと統合されています。
-まだインストールしていない人は，「geminstall rspec」でインストールして
-ください。また，TremaのAPIについては，こちらを参照してください。
+ではさっそく，リピータハブのテストコードを書いていきましょう。Trema の
+テストフレームワークは Ruby のユニットテストツール
+@<href>{http://rspec.info/, RSpec} と統合されています。まだインストール
+していない人は，@<tt>{gem install rspec} でインストールしてください。ま
+た，Trema の API は
+@<href>{http://rubydoc.info/github/trema/trema/master/frames/,こちら}で
+参照できます。
 
-#@warn(RSpec へのリンク)
-#@warn(Trema API へのリンク)
+テストコードの最初のバージョンは@<list>{repeater_hub_test_template}のと
+おりです。最初の行は，テストに必要な Trema のライブラリを読み込みます。
+@<tt>{describe} で始まる @<tt>{do...end} ブロックはテストの本体で，
+RepeaterHub コントローラのふるまいをここに記述（describe）する，という
+意味です。
 
-テストコードの最初のバージョンは@<list>{repeater_hub_test_template}の
-とおりです。最初の行は，テストに必要なTremaのライブラリを読み込みます。
-describeで始まる do…end ブロックはテストの本体で，RepeaterHubコントローラ
-のふるまいをここに記述（describe）する，という意味です。
-
-//list[repeater_hub_test_template][リピータハブのテストのひな型 (@<tt>{spec/repeater-hub_spec.rb}]{
+//list[repeater_hub_test_template][リピータハブのテストのひな型 (@<tt>{spec/repeater-hub_spec.rb})]{
 require File.join(File.dirname(__FILE__), "spec_helper")
 
 describe RepeaterHub do
 end
 //}
 
-RepeaterHubを定義していないのでエラーになることはわかりきっていますが，
-テストを実行してみましょう。次のコマンドを実行すると，Tremaを起動したう
-えでspec/repeater-hub_spec.rb（リスト1）のテストを実行します。
+まだ @<tt>{RepeaterHub} クラスを定義していないのでエラーになることはわ
+かりきっていますが，テストを実行してみましょう。次のコマンドを実行する
+と，Trema を起動したうえで
+@<tt>{spec/repeater-hub_spec.rb}(@<list>{repeater_hub_test_template})の
+テストを実行します。
 
 //cmd{
 $ rspec -fs -c ./spec/repeater-hub_spec.rb
-.../spec/repeater-hub_spec.rb:3: uninitialized constant
- RepeaterHub (Name Error)
+.../spec/repeater-hub_spec.rb:3: uninitialized constant RepeaterHub (Name Error)
 //}
 
-予想どおり，定数RepeaterHubが未定義というエラーで失敗しました。エラーを
-修正するために，RepeaterHubクラスの定義を追加してみましょう（リスト2）。
+予想どおり，@<tt>{RepeaterHub} クラスが未定義というエラーで失敗しました。
+エラーを修正するために，@<tt>{RepeaterHub} クラスの定義を追加してみましょ
+う（@<list>{add_repeater_hub_class}）。
 
-//list[repeater_hub_fix_1][空のRepeaterHubクラスを追加してNameErrorを修正]{
+//list[add_repeater_hub_class][空の @<tt>{RepeaterHub} クラスを追加して NameError を修正]{
 require File.join(File.dirname(__FILE__), "spec_helper")
 
-class RepeaterHub < Controller # ← 空のクラスを追加
+class RepeaterHub < Controller # 空のクラスを追加
 end
 
 describe RepeaterHub do
 end
 //}
 
-本来，コントローラクラスは独立した.rbファイルに書きますが，今回は簡便さ
-を優先し，テストコード上に直接書いているので注意してください。それでは
-実行してみましょう。今度はパスするはずです。
+本来，コントローラクラスは独立した @<tt>{.rb} ファイルに書きますが，今
+回は簡便さを優先し，テストコード上に直接書いているので注意してください。
+
+それでは実行してみましょう。今度はパスするはずです。
 
 //cmd{
 $ rspec -fs -c spec/repeater-hub_spec.rb
@@ -102,11 +108,12 @@ Finished in 0.00003 seconds 0 examples, 0 failures
 では，リピータハブの動作をテストコードにしていきましょう。どんなテスト
 シナリオが思いつくでしょうか？ とりあえず，こんなのはどうでしょう。
 
-「ホスト3台（host1，host2，host3）がスイッチにつながっているとき，宛先
-をhost2としたパケットをhost1が送ると，host2とhost3がパケットを受け取
-る。」
+@<strong>{シナリオ 1:}「ホスト3台（host1，host2，host3）がスイッチにつ
+ながっているとき，宛先を host2 としたパケットを host1が 送ると，host2
+と host3 がパケットを受け取る。」
 
-テストコードはリスト3のようにitブロックの中に記述します。
+テストコードは@<list>{first_test_scenario}のように @<tt>{it} ブロックの
+中に記述します。
 
 //list[first_test_scenario][テストシナリオの定義]{
 describe RepeaterHub do
@@ -121,22 +128,22 @@ Given（前提条件），When（○○したとき），Then（こうなる）�
 とうまく整理できます。
 
  * 【Given】ホスト3つ（host1，host2，host3）がスイッチにつながっているとき，
- * 【When】host1がhost2にパケットを送ると，
- * 【Then】host2とhost3がパケットを受け取る
+ * 【When】host1 が host2 にパケットを送ると，
+ * 【Then】host2 と host3 がパケットを受け取る
 
-では，Given，When，Thenの順にテストコードを書いていきます。
+では，Given，When，Then の順にテストコードを書いていきます。
 
 === Given: ネットワークの構成
 
 シナリオの前提条件（Given）として，テストを実行するホスト3台のネットワー
-ク構成（図1）をリスト4 のように定義します。
+ク構成 (@<img>{repeater_hub}) を@<list>{tdd_given} のように定義します。
 
 //list[tdd_given][テストシナリオを実行するネットワーク構成の定義（Given）]{
 describe RepeaterHub do
   it "は，入ってきたパケットを他のすべてのポートに転送する" do
-    network { # ← ホスト3台，スイッチ1台のネットワーク
+    network { # ホスト3台，スイッチ1台のネットワーク
       vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" } # ← 自分宛ではないパケットも受け取る
+      vhost("host1") { promisc "on" } # 自分宛ではないパケットも受け取る
       vhost("host2") { promisc "on" }
       vhost("host3") { promisc "on" }
       link "switch", "host1"
@@ -147,21 +154,22 @@ describe RepeaterHub do
 end
 //}
 
-これはネットワーク設定とまったく同じ文法ですね！ ここで，それぞれの仮
-想ホストがpromiscオプション（自分宛でないパケットを受け取る）を"on"にし
-ていることに注意してください。リピータハブではパケットがすべてのポート
-にばらまかれるので，こうすることでどこからのパケットでも受信できるよう
-にしておきます。
+これはネットワーク設定とまったく同じ文法ですね！ ここで，それぞれの仮想
+ホストが @<tt>{promisc} オプション（自分宛でないパケットを受け取る）を
+@<tt>{"on"} にしていることに注意してください。リピータハブではパケット
+がすべてのポートにばらまかれるので，こうすることでどこからのパケットで
+も受信できるようにしておきます。
 
 === When: パケットの送信
 
-Whenは「○○したとき」というきっかけになる動作を記述します。ここでは，
-Givenで定義されたホストhost1からhost2にパケットを送ります。パケットを送
-るコマンドは，trema send_packetsでした。テストコード中でもこれに似た
-APIを使うことができます（リスト5）。
+When は「○○したとき」というきっかけになる動作を記述します。ここでは，
+Given で定義されたホスト host1 から host2 にパケットを送ります。パケッ
+トを送るコマンドは，@<tt>{trema send_packets} でした。もちろん、テスト
+コード中でもこれに似た API を使うことができます（@<list>{tdd_when}）。
 
-run(RepeaterHub)は，Givenで定義されたネットワークの上でRepeaterHubコン
-トローラを動かし，続くブロックを実行するという意味です。
+@<tt>{run(RepeaterHub)} は，Given で定義されたネットワークの上で
+@<tt>{RepeaterHub} コントローラを動かし，続くブロックを実行するという意
+味です。
 
 //list[tdd_when][テストパケットを送信（When）]{
 describe RepeaterHub do
@@ -177,9 +185,9 @@ end
 
 === Then: 受信したパケットの数
 
-Thenには「最終的にこうなるはず」というテストを書きます。ここでは，
-「host2とhost3にパケットが1つずつ届くはず」を書けばよいですね（リスト
-6）。
+Then には「最終的にこうなるはず」というテストを書きます。ここでは，
+「host2 と host3 にパケットが1つずつ届くはず」を書けばよいですね
+（@<list>{tdd_then}）。
 
 //list[tdd_then][受信パケット数のテスト（Then）]{
 describe RepeaterHub do
@@ -196,30 +204,29 @@ describe RepeaterHub do
 end
 //}
 
-vhost("ホスト名")は仮想ホストにアクセスするためのメソッドで，仮想ホスト
-の受信パケットなどさまざまなデータを見ることができます。ここでは，受信
-したパケットの数，つまり受信パケットカウンタstats(:rx)が1ということをテ
-ストしています。
+@<tt>{vhost("ホスト名")} は仮想ホストにアクセスするためのメソッドで，仮
+想ホストの受信パケットなどさまざまなデータを見ることができます。ここで
+は，受信したパケットの数，つまり受信パケットカウンタ @<tt>{stats(:rx)}
+が 1 ということをテストしています。
 
 === テストの実行
 
 ではさっそく実行してみましょう。
 
 //cmd{
-Failure/Error: vhost("host2").stats(:rx).should
- have( 1 ).packets
+Failure/Error: vhost("host2").stats(:rx).should have( 1 ).packets
 expected 1 packets, got 0
 //}
 
-失敗しました。「host2はパケットを1つ受信するはずが，0 個だった」という
-エラーです。RepeaterHubの中身をまだ実装していないので当たり前ですね。す
-ぐにはなおせそうにないので，ひとまずこのテストは保留（pending）とし，あ
-とで復活することにしましょう（リスト7）。
+失敗しました。「host2 はパケットを 1 つ受信するはずが，0 個だった」とい
+うエラーです。@<tt>{RepeaterHub} クラスの中身をまだ実装していないので当
+たり前ですね。すぐにはなおせそうにないので，ひとまずこのテストは保留
+（pending）とし，あとで復活することにしましょう（@<list>{tdd_pending}）。
 
 //list[tdd_pending][すぐに修正できないテストを保留（pending）にする]{
 describe RepeaterHub do
   it "は，入ってきたパケットを他のすべてのポートに転送する" do
-    pending "あとで実装する" ← この行を追加する
+    pending "あとで実装する" # この行を追加する
     network {
       # （省略）
 //}
@@ -233,21 +240,23 @@ Pending：
 //}
 
 ここでの失敗の原因は，いきなりすべてを実装しようとしたことでした。以降
-では，リピータハブの動作を図1の①と②の2段階に分け，1つずつテストファース
-トで実装していくことにしましょう。
+では，リピータハブの動作を@<img>{repeater_hub} の 1 と 2 の 2 段階に分
+け，1 つずつテストファーストで実装していくことにしましょう。
 
 == フローエントリのテスト
 
-まずは，スイッチにフローエントリができることをテストしてみましょう（図
-1の①）。テストシナリオは次のようになります。
+まずは，スイッチにフローエントリができることをテストしてみましょう
+（@<img>{repeater_hub} の 1）。
 
- * 【Given】ホスト3つ（host1，host2，host3）がスイッチにつながっているとき，
- * 【When】host1 がhost2 にパケットを送ると，
+テストシナリオ 2 は次のようになります。
+
+ * 【Given】ホスト 3 つ（host1，host2，host3）がスイッチにつながっているとき，
+ * 【When】host1 が host2 にパケットを送ると，
  * 【Then】パケットをばらまくフローエントリをスイッチに追加する
 
-では，これをテストコードにしてみましょう。GivenとWhenは最初のテストシナ
-リオと同じで，Thenだけが異なります。パケットをばらまく処理はFLOODですの
-でリスト8のようになります。
+では，これをテストコードにしてみましょう。Given と When は最初のテスト
+シナリオと同じで，Then だけが異なります。パケットをばらまく処理は
+FLOOD ですので@<list>{test_flow_entry} のようになります。
 
 //list[test_flow_entry][フローエントリのテスト]{
 it "は，パケットをばらまくフローエントリをスイッチに追加する" do
@@ -261,9 +270,9 @@ it "は，パケットをばらまくフローエントリをスイッチに追�
 end
 //}
 
-ネットワーク構成のコード（network {…… }の部分）をコピペしてしまっていま
-すが，あとできれいにするので気にしないでください。エラーになることを見
-越しつつ，さっそく実行すると，次のエラーになります。
+ネットワーク構成のコード（@<tt>{network {...\}} の部分）をコピペしてし
+まっていますが，あとできれいにするので気にしないでください。エラーにな
+ることを見越しつつ，さっそく実行すると，次のエラーになります。
 
 //cmd{
 Failure/Error: vswitch("switch").should have(1).flows
@@ -271,10 +280,10 @@ expected 1 flows, got 0
 //}
 
 「スイッチにフローエントリが1つあるはずがなかった」というエラーです。で
-は，flow_modを打ち込むコードをRepeaterHubクラスに追加して，もう一度テス
-トしてみましょう（リスト9）。
+は，flow_mod を打ち込むコードを @<tt>{RepeaterHub} クラスに追加して，も
+う一度テストしてみましょう（@<list>{tdd_sending_flow_mod}）。
 
-//list[tdd_sending_flow_mod][flow_modをスイッチに打ち込む]{
+//list[tdd_sending_flow_mod][flow_mod をスイッチに打ち込む]{
 class RepeaterHub < Controller
   def packet_in dpid, message
     send_flow_mod_add dpid
@@ -283,20 +292,18 @@ end
 //}
 
 //cmd{
-Failure/Error: vswitch("switch").flows.first.actions.
-should == "FLOOD"
+Failure/Error: vswitch("switch").flows.first.actions.should == "FLOOD"
   expected: "FLOOD"
     got: "drop" (using ==)
 //}
 
-別のエラーになりました。「アクションが"FLOOD"でなく"drop"だった」と怒ら
-れています。たしかに，さきほどのflow_modにはアクションを設定していなかっ
-たので，デフォルトのアクションであるdrop（パケットを破棄する）になって
-しまっています。flow_modにパケットをばらまくアクションを定義してみましょ
-う（リスト10）。
+別のエラーになりました。「アクションが "FLOOD" でなく "drop" だった」と
+怒られています。たしかに，さきほどの flow_mod にはアクションを設定して
+いなかったので，デフォルトのアクションである drop（パケットを破棄する）
+になってしまっています。flow_mod にパケットをばらまくアクションを定義し
+てみましょう（@<list>{tdd_adding_action_to_flow_mod}）。
 
-//list[tdd_adding_action_to_flow_mod][flow_modにアクションを追加]{
-リスト10　flow_modにアクションを追加
+//list[tdd_adding_action_to_flow_mod][flow_mod にアクションを追加]{
 class RepeaterHub < Controller
   def packet_in dpid, message
     send_flow_mod_add(
@@ -307,10 +314,10 @@ class RepeaterHub < Controller
 end
 //}
 
-今度はテストが通りました！ それでは，もう少しThenを詳細化し，フローの特
-徴を細かくテストしてみましょう（リスト11）。
+今度はテストが通りました！ それでは，もう少し Then を詳細化し，フローの
+特徴を細かくテストしてみましょう（@<list>{tdd_test_src_dst}）。
 
-//list[tdd_test_src_dst][フローのsrcとdstのテストを追加]{
+//list[tdd_test_src_dst][フローの src と dst のテストを追加]{
 describe RepeaterHub do
   it "は，入ってきたパケットを他のすべてのポートに転送する" do
     network {
@@ -333,8 +340,8 @@ describe RepeaterHub do
 end
 //}
 
-ここではホストにIPアドレスを振り，フローのsrcとdstがこのアドレスに正し
-く設定されているかをチェックしています。実行してみましょう。
+ここではホストに IP アドレスを振り，フローの src と dst がこのアドレス
+に正しく設定されているかをチェックしています。実行してみましょう。
 
 //cmd{
 Failure/Error: flow.nw_src.should == "192.168.0.1"
@@ -342,12 +349,12 @@ Failure/Error: flow.nw_src.should == "192.168.0.1"
     got: nil (using ==)
 //}
 
-失敗しました。フローの srcには，パケット送信元であるhost1 のIP アドレス
-192.168.0.1がセットされるべきですが，何もセットされていません。では，
-flow_mod で:match を指定して，この値がセットされるようにします（リスト
-12）。
+失敗しました。フローの src には，パケット送信元である host1 の IP アド
+レス 192.168.0.1 がセットされるべきですが，何もセットされていません。で
+は，flow_mod で @<tt>{:match} を指定して，この値がセットされるようにし
+ます（@<list>{tdd_set_match_to_flow_mod}）。
 
-//list[tdd_set_match_to_flow_mod][flow_modメッセージに:matchをセット]{
+//list[tdd_set_match_to_flow_mod][flow_mod メッセージに @<tt>{:match} をセット]{
 class RepeaterHub < Controller
   def packet_in dpid, message
     send_flow_mod_add(
@@ -360,21 +367,21 @@ end
 //}
 
 テストにパスしました！ これで，フローエントリが正しくスイッチに書き込ま
-れていることまで（図1の①）をテストできました。
+れていることまで（@<img>{repeater_hub} の 1）をテストできました。
 
 === テストコードのリファクタリング
 
 テストが通ったので，最後にコードの重複部分をまとめておきましょう。同じ
-network{ ……}が重複しているので，aroundブロックを使って1箇所にまとめます
-（リスト13）。
+@<tt>{network{...\}} が重複しているので，RSpec の @<tt>{around} ブロッ
+クを使って 1 箇所にまとめます（@<list>{tdd_refactoring}）。
 
-//list[tdd_refactoring][共通部分をaroundブロックに移すことでコードの重複をなくす]{
+//list[tdd_refactoring][共通部分を @<tt>{around} ブロックに移すことでコードの重複をなくす]{
 describe RepeaterHub do
   around do | example |
     network {
       （省略）
     }.run(RepeaterHub) {
-      example.run ← それぞれのitブロックをここで実行
+      example.run  # それぞれのitブロックをここで実行
     }
   end
 
@@ -394,9 +401,9 @@ end
 
 == 再びパケットの受信をテスト
 
-いよいよ完成間近です。パケットがhost2とhost3に届くことをテストします
-（図1の②）。最初のテストの保留マーク（pending）を消して，再び実行してみ
-ましょう。
+いよいよ完成間近です。パケットが host2 と host3 に届くことをテストしま
+す（@<img>{repeater_hub} の 2）。最初のテストの保留マーク（pending）を
+消して，再び実行してみましょう。
 
 //cmd{
 Failure/Error: vhost("host2").stats(:rx).should
@@ -405,10 +412,11 @@ Failure/Error: vhost("host2").stats(:rx).should
 //}
 
 失敗してしまいました。host2 がパケットを受信できていません。そういえば，
-flow_modしただけではパケットは送信されないので，明示的にpacket_outして
-やらないといけないのでしたね（リスト14）。さっそく実行してみましょう。
+flow_mod しただけではパケットは送信されないので，明示的に packet_out し
+てやらないといけないのでしたね。packet_out を追加します
+（@<list>{tdd_add_packet_out}）。
 
-//list[tdd_add_packet_out][RepeaterHubにpacket_out処理を追加]{
+//list[tdd_add_packet_out][@<tt>{RepeaterHub} に packet_out 処理を追加]{
 class RepeaterHub < Controller
   def packet_in dpid, message
     send_flow_mod_add(
@@ -425,6 +433,8 @@ class RepeaterHub < Controller
 end
 //}
 
+さっそく実行してみましょう。
+
 //cmd{
 RepeaterHub
   は，入ってきたパケットを他のすべてのポートに転送する
@@ -438,14 +448,15 @@ Finished in 15.66 seconds
 
 == まとめ/参考文献
 
-Tremaのユニットテストフレームワークを使ってリピータハブを作りました。
-Tremaのsrc/examplesディレクトリの下にはテストコードのサンプルがいくつか
-ありますので，本格的にテストコードを書く人は参考にしてください。今回学
-んだことは次の2つです。
+Trema のユニットテストフレームワークを使ってリピータハブを作りました。
+Trema の @<tt>{src/examples} ディレクトリの下にはテストコードのサンプル
+がいくつかありますので，本格的にテストコードを書く人は参考にしてくださ
+い。今回学んだことは次の2つです。
 
- * コントローラをユニットテストする方法を学びました。Trema はRuby のユ
-   ニットテストフレームワークRSpecと統合されており，仮想スイッチのフロー
-   テーブルや仮想ホストの受信パケット数などについてのテストを書けます。
- * テストをGiven，When，Thenの3ステップに分けて分析／設計する方法を学び
-   ました。それぞれのステップをRSpecのテストコードに置き換えることで，
-   テストコードが完成します。
+ * コントローラをユニットテストする方法を学びました。Trema は Ruby のユ
+   ニットテストフレームワーク RSpec と統合されており，仮想スイッチのフ
+   ローテーブルや仮想ホストの受信パケット数などについてのテストを書けま
+   す。
+ * テストを Given，When，Then の3ステップに分けて分析／設計する方法を学
+   びました。それぞれのステップを RSpec のテストコードに置き換えること
+   で，テストコードが完成します。
