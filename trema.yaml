@@ -29,6 +29,9 @@ aut: 高宮 安仁, 鈴木 一哉
 #
 # coverfile: カバーページのbody要素内に挿入する内容を記述したファイル名
 #
+coverfile: _cover.html
+
+#
 # coverimage: カバー用画像。画像ディレクトリ内に置いてもディレクトリ名は不要(例: cover.jpg)
 #
 
