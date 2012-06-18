@@ -1,5 +1,7 @@
 = Trema でテスト駆動開発
 
+#@warn(それぞれのソースコードを別ファイルに分けて include する)
+
 //lead{
 「ワックスかける、ワックスとる」これは偉大な空手マスター、ミヤギさんの
 言葉 (「ベスト・キッド」1984 年アメリカ映画) ですが、その精神性はソフト
@@ -16,9 +18,9 @@
 こしいことはせず、爆発的なプログラミング技術とデバッグ能力だけで何でも
 作ってしまう時代でした。そんな中でも、"ファイナル・ファンタジー" の伝説
 的プログラマ、ナーシャ・ジベリの早撃ちエピソードは有名です。「コードの
-みてくれは気にしねえ。誰よりも早くやってやるぜ」。彼はカウボーイのよう
-にさっそうと現場に現れ、どんなコードでも電光石火で書いてしまったそうで
-す。
+みてくれやちょっとぐらいのバグは気にしねえ。誰よりも早くやってやるぜ」。
+彼はカウボーイのようにさっそうと現場に現れ、どんなコードでも電光石火で
+書いてしまったそうです。
 
 彼のコードは信じられないほど高速に動き ("ファイナル・ファンタジー II"
 の飛行艇を思い出そう)、ゲームは 100 万本以上も売れましたが、ひとつだけ
@@ -30,9 +32,9 @@
 があるためつかまりません。結局、リメイク版の発売は 6 年も遅れてしまいま
 した。
 
-== 秘技:ソフトウェアテスト
+== 奥義、ソフトウェアテスト
 
-こうした悲劇を防ぐ秘技の一つがソフトウェアテストです。きちんと整備され
+こうした悲劇を防ぐ奥義の一つがソフトウェアテストです。きちんと整備され
 たテストコードは、元のコードの仕様書のようなものです。しかもこの仕様書
 は実際に動かせるのです! たくさんのスイッチを接続した OpenFlow ネットワー
 クとコントローラの保守をまかされたとしましょう。もし前任者からテストコー
@@ -45,9 +47,9 @@
 Trema は OpenFlow コントローラ開発のためのテストツールが充実しています。
 アジャイル開発者の大事な仕事道具、テスト駆動開発も Trema はサポートして
 います。本章ではテスト駆動を使ったコントローラの開発テクニックを紹介し
-ますが、要点をつかみやすくするため動作の単純ないわゆる「バカハブ」また
-は「ダムハブ」、つまりリピータハブを採り上げます。ではさっそく実際の流
-れを見て行きましょう。
+ますが、要点をつかみやすくするため動作の単純ないわゆる「バカハブ (ダム
+ハブ)」、つまりリピータハブを採り上げます。ではさっそく実際の流れを見て
+行きましょう。
 
 ===[column] 友太郎の質問: テスト駆動開発とテストファーストの違いは？
 
@@ -119,7 +121,7 @@ Ruby on Rails の作者として有名な DHH は、彼の勤める 37signals �
 コードのすべて行にはコストがかかる。それを書くのには時間がかかり、それ
 を更新するのにも時間がかかり、読んで理解するのにも時間がかかるからだ。
 なので、テストで得られる利益はそれを作るコストより大きくなくてはいけな
-いということになる。やりすぎなテストはその定義からして間違っている。
+いということになる。やりすぎなテストはその定義からすると間違っている。
 //}
 
 2 人の言葉をまとめるとこうです:
@@ -128,7 +130,7 @@ Ruby on Rails の作者として有名な DHH は、彼の勤める 37signals �
  * 動くと確信が得られる最低限のテストを書こう
  * その程度はプログラマやチームによって異なる
 
-つまり、ケースバイケースでやりすぎないように気をつけようということです。
+つまり、「ケースバイケースでやりすぎないように気をつけよう」ということです。
 
 == リピータハブのテスト戦略
 
@@ -160,19 +162,16 @@ OpenFlow に慣れていてシナリオ 1 だけで十分と言う人は、そ�
 ではさっそく、リピータハブのテストコードを書いていきましょう。Trema の
 テストフレームワークは Ruby のユニットテストツール
 @<href>{http://rspec.info/, RSpec} と統合されています。まだインストール
-していない人は、@<tt>{gem install rspec} でインストールしてください。ま
-た、Trema の API は
-@<href>{http://rubydoc.info/github/trema/trema/master/frames/,こちら}で
-参照できます。
+していない人は、@<tt>{gem install rspec} でインストールしてください。
 
 テストコードの最初のバージョンは@<list>{repeater_hub_test_template}のと
-おりです。最初の行は、テストに必要な Trema のライブラリを読み込みます。
-@<tt>{describe} で始まる @<tt>{do...end} ブロックはテストの本体で、
-RepeaterHub コントローラのふるまいをここに記述（describe）する、という
-意味です。
+おりです。最初の @<tt>{require} ではじまる行は、テストに必要な Trema の
+ライブラリを読み込みます。@<tt>{describe} で始まる @<tt>{do...end} ブロッ
+クはテストの本体で、RepeaterHub コントローラのふるまいをここに記述
+（describe）する、という意味です。
 
 //list[repeater_hub_test_template][リピータハブのテストのひな型 (@<tt>{spec/repeater-hub_spec.rb})]{
-require File.join(File.dirname(__FILE__), "spec_helper")
+require File.join( File.dirname( __FILE__ ), "spec_helper" )
 
 describe RepeaterHub do
 end
@@ -194,7 +193,7 @@ $ rspec -fs -c ./spec/repeater-hub_spec.rb
 う（@<list>{add_repeater_hub_class}）。
 
 //list[add_repeater_hub_class][空の @<tt>{RepeaterHub} クラスを追加して NameError を修正]{
-require File.join(File.dirname(__FILE__), "spec_helper")
+require File.join( File.dirname( __FILE__ ), "spec_helper" )
 
 class RepeaterHub < Controller # 空のクラスを追加
 end
@@ -204,7 +203,7 @@ end
 //}
 
 本来、コントローラクラスは独立した @<tt>{.rb} ファイルに書きますが、今
-回は簡便さを優先し、テストコード上に直接書いているので注意してください。
+回は簡便さを優先し、テストコード内に直接書いていることに注意してください。
 
 それでは実行してみましょう。今度はパスするはずです。
 
@@ -218,7 +217,7 @@ Finished in 0.00003 seconds 0 examples, 0 failures
 
 このようにテスト駆動開発では、最初にテストを書き、わざとエラーを起こし
 てからそれを直すためのコードをちょっとだけ追加します。テストを実行した
-結果からのフィードバックを得ながら「テスト書く、コード書く」を何度もく
+結果からのフィードバックを得ながら「テスト書く、コード直す」を何度もく
 りかえしつつ最終的な完成形に近づけていくのです。
 
 == パケット受信をテストする
@@ -233,10 +232,10 @@ Finished in 0.00003 seconds 0 examples, 0 failures
 //}
 
 テストコードは@<list>{first_test_scenario}のように @<tt>{it} ブロックの
-中に記述します。@<tt>{describe} と続けて読むと、「it (RepeaterHub) は、
-入ってきたパケットを他のすべてのポートに転送する」と読めます。RSpec で
-はこのように describe で指したコンポーネントの仕様 (spec) を記述するの
-で、RSpec と呼ばれます。
+中に記述します。"@<tt>{describe RepeaterHub}" の部分と続けて読むと、
+「it (RepeaterHub) は、入ってきたパケットを他のすべてのポートに転送する」
+と読めます。このように describe で指したコンポーネントの仕様 (spec) を
+記述するのが RSpec (Ruby Spec) と呼ばれるゆえんです。
 
 //list[first_test_scenario][テストシナリオの定義]{
 describe RepeaterHub do
@@ -265,10 +264,10 @@ Given（前提条件）、When（○○したとき）、Then（こうなる）�
 describe RepeaterHub do
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     network { # ホスト3台、スイッチ1台のネットワーク
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" } # 自分宛ではないパケットも受け取る
-      vhost("host2") { promisc "on" }
-      vhost("host3") { promisc "on" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on" } # 自分宛ではないパケットも受け取る
+      vhost( "host2" ) { promisc "on" }
+      vhost( "host3" ) { promisc "on" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
@@ -281,7 +280,7 @@ end
 
 Trema のネットワーク設定とまったく同じ文法ですね！ ここで、それぞれの仮
 想ホストが @<tt>{promisc} オプション（自分宛でないパケットを受け取る）
-を@<tt>{"on"} にしていることに注意してください。リピータハブはパケット
+を @<tt>{"on"} にしていることに注意してください。リピータハブはパケット
 がすべてのポートにばらまくので、こうすることでホストがどこからのパケッ
 トでも受信できるようにしておきます。
 
@@ -298,14 +297,14 @@ Given で定義されたホスト host1 から host2 にパケットを送りま
 describe RepeaterHub do
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" }
-      vhost("host2") { promisc "on" }
-      vhost("host3") { promisc "on" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on" }
+      vhost( "host2" ) { promisc "on" }
+      vhost( "host3" ) { promisc "on" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
-    }.run(RepeaterHub) {
+    }.run( RepeaterHub ) {
       # host1 から host2 へテストパケットをひとつ送信
       send_packets "host1", "host2"
     }
@@ -313,7 +312,7 @@ describe RepeaterHub do
 end
 //}
 
-@<tt>{run(RepeaterHub)} は、Given で定義されたネットワークの上で
+@<tt>{run( RepeaterHub )} は、Given で定義されたネットワークの上で
 @<tt>{RepeaterHub} コントローラを動かし、続くブロックを実行するという意
 味です。
 
@@ -327,19 +326,19 @@ Then には「最終的にこうなるはず」というテストを書きます
 describe RepeaterHub do
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" }
-      vhost("host2") { promisc "on" }
-      vhost("host3") { promisc "on" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on" }
+      vhost( "host2" ) { promisc "on" }
+      vhost( "host3" ) { promisc "on" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
-    }.run(RepeaterHub) {
+    }.run( RepeaterHub ) {
       send_packets "host1", "host2"
 
       # host2 と host3 がひとつずつパケットを受け取る
-      vhost("host2").stats(:rx).should have(1).packets
-      vhost("host3").stats(:rx).should have(1).packets
+      vhost( "host2" ).stats( :rx ).should have( 1 ).packets
+      vhost( "host3" ).stats( :rx ).should have( 1 ).packets
     }
   end
 end
@@ -347,7 +346,7 @@ end
 
 @<tt>{vhost("ホスト名")} は仮想ホストにアクセスするためのメソッドで、仮
 想ホストの受信パケットなどさまざまなデータを見ることができます。ここで
-は、受信したパケットの数、つまり受信パケットカウンタ @<tt>{stats(:rx)}
+は、受信したパケットの数、つまり受信パケットカウンタ @<tt>{stats( :rx )}
 が 1 ということをテストしています。
 
 === テストの実行
@@ -355,7 +354,7 @@ end
 ではさっそく実行してみましょう。
 
 //cmd{
-Failure/Error: vhost("host2").stats(:rx).should have( 1 ).packets
+Failure/Error: vhost( "host2" ).stats( :rx ).should have( 1 ).packets
 expected 1 packets, got 0
 //}
 
@@ -369,19 +368,19 @@ describe RepeaterHub do
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     pending "あとで実装する" # この行を追加する
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" }
-      vhost("host2") { promisc "on" }
-      vhost("host3") { promisc "on" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on" }
+      vhost( "host2" ) { promisc "on" }
+      vhost( "host3" ) { promisc "on" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
-    }.run(RepeaterHub) {
+    }.run( RepeaterHub ) {
       send_packets "host1", "host2"
 
       # host2 と host3 がひとつずつパケットを受け取る
-      vhost("host2").stats(:rx).should have(1).packets
-      vhost("host3").stats(:rx).should have(1).packets
+      vhost( "host2" ).stats( :rx ).should have( 1 ).packets
+      vhost( "host3" ).stats( :rx ).should have( 1 ).packets
     }
   end
 //}
@@ -395,8 +394,9 @@ Pending：
 //}
 
 ここで分かれ道です。このテストシナリオ 1 だけで十分な人は RepeaterHub
-本体を実装します。さらに段階を踏んでテストを書いたほうがスッキリする人
-は、テストシナリオ 2 を実装します。今回はテストシナリオ 2 に進みます。
+本体の実装に進んでください。さらに段階を踏んでテストを書いたほうがスッ
+キリする人は、テストシナリオ 2 を実装します。今回はテストシナリオ 2 に
+進みます。
 
 == フローエントリのテスト
 
@@ -408,8 +408,10 @@ Pending：
  * Then: パケットをばらまくフローエントリをスイッチに追加する。
 
 Given と When は最初のテストシナリオと同じで、Then だけが異なります。で
-は、これをテストコードにしてみましょう。パケットをばらまく処理は FLOOD
-ですので@<list>{test_flow_entry} のようになります。
+は、これをテストコードにしてみましょう。パケットをばらまくアクションは
+FLOOD ですので@<list>{test_flow_entry} のようになります。
+
+#@warn(比較対象が "FLOOD" と文字列なのがなんか変。シンボルとかクラス名にすべき？)
 
 //list[test_flow_entry][フローエントリのテスト]{
 describe RepeaterHub do
@@ -420,17 +422,17 @@ describe RepeaterHub do
 
   it "は、パケットをばらまくフローエントリをスイッチに追加する" do
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on" }
-      vhost("host2") { promisc "on" }
-      vhost("host3") { promisc "on" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on" }
+      vhost( "host2" ) { promisc "on" }
+      vhost( "host3" ) { promisc "on" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
-    }.run(RepeaterHub) {
+    }.run( RepeaterHub ) {
       send_packets "host1", "host2"
-      vswitch("switch").should have(1).flows
-      vswitch("switch").flows.first.actions.should == "FLOOD"
+      vswitch( "switch" ).should have( 1 ).flows
+      vswitch( "switch" ).flows.first.actions.should == "FLOOD"
     }
   end
 end
@@ -483,7 +485,7 @@ end
 今度はテストが通りました！ それでは、もう少し Then を詳細化し、フローの
 特徴を細かくテストしてみます（@<list>{tdd_test_src_dst}）。
 
-//list[tdd_test_src_dst][フローの src と dst のテストを追加]{
+//list[tdd_test_src_dst][フローの @<tt>{nw_src} と @<tt>{nw_dst} のテストを追加]{
 describe RepeaterHub do
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     # (省略)
@@ -492,17 +494,17 @@ describe RepeaterHub do
 
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on"; ip "192.168.0.1" }
-      vhost("host2") { promisc "on"; ip "192.168.0.2" }
-      vhost("host3") { promisc "on"; ip "192.168.0.3" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on"; ip "192.168.0.1" }
+      vhost( "host2" ) { promisc "on"; ip "192.168.0.2" }
+      vhost( "host3" ) { promisc "on"; ip "192.168.0.3" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
-    }.run(RepeaterHub) {
+    }.run( RepeaterHub ) {
       send_packets "host1", "host2"
-      vswitch("switch").should have(1).flows
-      flow = vswitch("switch").flows.first
+      vswitch( "switch" ).should have( 1 ).flows
+      flow = vswitch( "switch" ).flows.first
       flow.actions.should == "FLOOD"
       flow.nw_src.should == "192.168.0.1"
       flow.nw_dst.should == "192.168.0.2"
@@ -538,44 +540,44 @@ class RepeaterHub < Controller
 end
 //}
 
-テストにパスしました！ これで、フローエントリが正しくスイッチに書き込ま
-れていることに確信が持てます。
+テストにパスしました！ ここまでやれば、フローエントリが正しくスイッチに
+書き込まれていることに確信が持てます。
 
 === テストコードのリファクタリング
 
 テストが通ったので、最後にコードの重複部分をまとめておきましょう。同じ
-@<tt>{network{...\}} が重複しているので、RSpec の @<tt>{around} ブロッ
+@<tt>{network {...\}} が重複しているので、RSpec の @<tt>{around} ブロッ
 クを使って 1 箇所にまとめます（@<list>{tdd_refactoring}）。
 
 //list[tdd_refactoring][共通部分を @<tt>{around} ブロックに移すことでコードの重複をなくす]{
 describe RepeaterHub do
   around do | example |
-    # 共通のセットアップ処理をここにまとめる
+    # 共通のセットアップをここにまとめる
     network {
-      vswitch("switch") { dpid "0xabc" }
-      vhost("host1") { promisc "on"; ip "192.168.0.1" }
-      vhost("host2") { promisc "on"; ip "192.168.0.2" }
-      vhost("host3") { promisc "on"; ip "192.168.0.3" }
+      vswitch( "switch" ) { dpid "0xabc" }
+      vhost( "host1" ) { promisc "on"; ip "192.168.0.1" }
+      vhost( "host2" ) { promisc "on"; ip "192.168.0.2" }
+      vhost( "host3" ) { promisc "on"; ip "192.168.0.3" }
       link "switch", "host1"
       link "switch", "host2"
       link "switch", "host3"
     }.run(RepeaterHub) {
-      # example がシナリオ (it) に相当。
-      # それぞれの it ブロックを実行する
+      # example がシナリオ (it ブロック) に相当。
+      # 次の行でそれぞれのシナリオを実行する
       example.run  
     }
   end
 
   it "は、入ってきたパケットを他のすべてのポートに転送する" do
     send_packets "host1", "host2"
-    vhost("host2").stats(:rx).should have(1).packets
-    vhost("host3").stats(:rx).should have(1).packets
+    vhost( "host2" ).stats( :rx ).should have( 1 ).packets
+    vhost( "host3" ).stats( :rx ).should have( 1 ).packets
   end
 
   it "は、パケットをばらまくフローエントリをスイッチに追加する" do
     send_packets "host1", "host2"
-    vswitch("switch").should have(1).flows
-    vswitch("switch").flows.first.actions.should == "FLOOD"
+    vswitch( "switch" ).should have( 1 ).flows
+    vswitch( "switch" ).flows.first.actions.should == "FLOOD"
   end
 end
 //}
@@ -587,8 +589,7 @@ host3 に届くことをテストします。さきほどの保留マーク（pe
 再び実行してみましょう。
 
 //cmd{
-Failure/Error: vhost("host2").stats(:rx).should
- have( 1 ).packets
+Failure/Error: vhost( "host2" ).stats( :rx ).should have( 1 ).packets
   expected 1 packets, got 0
 //}
 
@@ -597,18 +598,20 @@ flow_mod しただけではパケットは送信されないので、明示的�
 てやらないといけないのでしたね。というわけで packet_out を追加します
 （@<list>{tdd_add_packet_out}）。
 
-//list[tdd_add_packet_out][@<tt>{RepeaterHub} に packet_out 処理を追加]{
+#@warn(「明示的に packet_out」する章へのリンク)
+
+//list[tdd_add_packet_out][@<tt>{RepeaterHub} に packet_out を追加]{
 class RepeaterHub < Controller
   def packet_in dpid, message
     send_flow_mod_add(
       dpid,
-      :match => ExactMatch.from(message),
-      :actions => ActionOutput.new(OFPP_FLOOD)
+      :match => ExactMatch.from( message ),
+      :actions => ActionOutput.new( OFPP_FLOOD )
     )
     send_packet_out(
       dpid,
       :packet_in => message,
-      :actions => ActionOutput.new(OFPP_FLOOD)
+      :actions => ActionOutput.new( OFPP_FLOOD )
     )
   end
 end
@@ -625,14 +628,15 @@ Finished in 15.66 seconds
 //}
 
 すべてのテストに通りました！ これでリピータハブとテストコード一式が完成
-です。テストコードの実行結果は、RepeaterHub の仕様書としても読めますね。
+です。このテストコードの実行結果は、RepeaterHub の仕様書としても読めま
+すね。
 
-== まとめ/参考文献
+== まとめ
 
 Trema のユニットテストフレームワークを使ってリピータハブを作りました。
 今回学んだことは次の2つです。
 
- * コントローラをユニットテストする方法を学びました。Trema は Ruby のユ
+ * コントローラをテスト駆動開発する方法を学びました。Trema は Ruby のユ
    ニットテストフレームワーク RSpec と統合されており、仮想スイッチのフ
    ローテーブルや仮想ホストの受信パケット数などについてのテストを書けま
    す。
@@ -640,23 +644,53 @@ Trema のユニットテストフレームワークを使ってリピータハ�
    学びました。それぞれのステップを RSpec のテストコードに置き換えるこ
    とで、テストコードが完成します。
 
-Trema の @<tt>{src/examples} ディレクトリの下にはテストコードのサンプル
-がいくつかありますので、本格的にテストコードを書く人は参考にしてくださ
-い。
+Trema のサンプルディレクトリ (@<tt>{src/examples}) の下にはテストコード
+のサンプルがいくつかあります。本格的にテストコードを書く人は参考にして
+ください。
 
 == 参考文献
 
-#@warn(ケントベックの TDD 本と、リファクタリング本もリストアップすべき。)
+: テスト駆動開発入門 (ケント・ベック著、ピアソン・エデュケーション)
+  ケント・ベック自身によるバイブルですが、もったいないことに日本語版の
+  訳がまずく、意味の通らないところがたくさんあります。私達は仲間との勉
+  強会に原著を使いましたが、わかりやすい英語だったので問題ありませんで
+  した。
 
-: stackoverflow (@<tt>{stackoverflow.com})
+: stackoverflow (@<tt>{http://stackoverflow.com/})
   私はテストに限らずプログラミングでわからないことがあると、この Q&A サ
-  イトを検索します。ユーザは役に立つ回答に点数をつけることができ、また
-  ケント・ベックなど有名人が回答してくれることが多いので、質の高い解答
-  を読むことができます。さきほどのケント・ベックのポストはなんと 200 ポ
-  イント以上の点数を稼いでいました!
+  イトを検索します。ユーザは役に立つ回答には点数をつけることができ、ま
+  たケント・ベックなど有名人が回答してくれることが多いので、質の高い回
+  答が揃っています。この章で紹介したケント・ベックの投稿にはなんと 200
+  ポイント以上の点数がついていました!
 
 : Signal vs. Noise (@<tt>{http://37signals.com/svn})
-  Ruby on Rails を作った小さな会社 37signals のブログです。ソフトウェア
-  界の常識を次々と破ってきた会社だけあって、記事それぞれが非常に刺激的
-  で一部過激な意見にみちあふれています。DHH など有名ハッカーの生の声を
-  聞きたい人にもおすすめ。
+  Ruby on Rails を作った小さな会社 37signals のブログです。「100% 自己
+  資本」「必要以上にビジネスを大きくしない」などベンチャー界の常識を次々
+  と打ち破ってきた会社だけあって、記事それぞれが非常に刺激的で (一部)
+  過激な意見にみちあふれています。この章で紹介した DHH のテスト論など、
+  有名ハッカーの生の声を聞きたい人にもおすすめ。
+
+: リファクタリング (マーチン・ファウラー著、ピアソン・エデュケーション)
+  この本の最大の功績は、コードのまずい兆候 (重複するコードがあるとか、
+  長すぎるメソッドなど) を「コードの臭い」と表現したことです。粗相をし
+  た赤ちゃんのおむつのように臭うコードには改善が必要で、この本にはその
+  ためのレシピが揃っています。この本は Java ですが、Ruby 版 (リファクタ
+  リング: Ruby エディション、Jay Fields ら著、ASCII) もあります。
+
+: reek (@<tt>{https://github.com/troessner/reek})
+  「コードの臭い」を検知する能力はプログラマの美意識にいくらか依存しま
+  すが、ソフトウェアで客観的に検知できるとしたらすばらしいと思いません
+  か。reek は Ruby コードの臭いを自動的に検知して改善すべき場所を教えて
+  くれる便利なツールです。次に採り上げる flog, flay とともに、この本の
+  サンプルコードを書く際にとてもお世話になりました。
+
+: flog (@<tt>{http://ruby.sadi.st/Flog.html})
+  「Ruby サディストのためのツール」と銘打ったこのツールは、すべてのメソッ
+  ドがどのくらい複雑かを客観的なポイントで表示してくれます (大きいほど
+  複雑でテストしづらい)。我々は目安としてこれが 10 ポイントを超えないよ
+  うにしています。
+
+:flay (@<tt>{http://ruby.sadi.st/Flay.html})
+  この「Ruby サディストのためのツール その2」は、重複するコードを探して
+  容赦なく指摘してくれます。DRY を目指すならこのツールを使って重複を完
+  璧になくすべきです。
