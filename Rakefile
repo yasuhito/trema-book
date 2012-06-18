@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+task :default => :pdf
+
+
 namespace :clean do
   task :pdf do
     sh "rm -f trema.pdf"
