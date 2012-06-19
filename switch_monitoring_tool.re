@@ -38,8 +38,7 @@ vswitch { datapath_id 0x3 }
 実行結果は次のようになります。
 
 //cmd{
-% ./trema run ./switch-monitor.rb -c ./switch-monitor.
-conf
+% ./trema run ./switch-monitor.rb -c ./switch-monitor.conf
 Switch 0x3 is UP
 Switch 0x2 is UP
 Switch 0x1 is UP
@@ -65,8 +64,7 @@ All switches = 0x1, 0x2, 0x3
 すると、@<tt>{trema run} を動かしたターミナルに次の出力が表示されているはずです。
 
 //cmd{
-% ./trema run ./switch-monitor.rb -c ./switch-monitor.
-conf
+% ./trema run ./switch-monitor.rb -c ./switch-monitor.conf
 Switch 0x3 is UP
 Switch 0x2 is UP
 Switch 0x1 is UP

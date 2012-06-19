@@ -36,11 +36,10 @@ $ ./trema run ./src/examples/learning_switch/learning-switch.rb -d
 //}
 
 以下のコマンドでスイッチとコントローラ間に TCP コネクションが
-はられているかを確認しましょう。
+張られているかを確認しましょう。
 
 //cmd{
 $ netstat -an -A inet | grep 6633
-
 //}
 
 === スイッチの情報を取得する
@@ -89,8 +88,14 @@ OpenFlow スイッチに ssh でログインして、以下のコマンドをう
 //cmd{
 root@OpenWrt:~# dpctl dump-flows unix:/var/run/dp0.sock 
 stats_reply (xid=0x8e5d6e05): flags=none type=1(flow)
-  cookie=38, duration_sec=338s, duration_nsec=858000000s, table_id=0, priority=65535, n_packets=339, n_bytes=25086, idle_timeout=61,hard_timeout=0,icmp,in_port=1,dl_vlan=0xffff,dl_vlan_pcp=0x00,dl_src=00:24:81:5d:6b:f1,dl_dst=c4:2c:03:1d:91:e4,nw_src=192.168.11.3,nw_dst=192.168.11.2,nw_tos=0x00,icmp_type=8,icmp_code=0,actions=output:4
-  cookie=40, duration_sec=338s, duration_nsec=855000000s, table_id=0, priority=65535, n_packets=339, n_bytes=25086, idle_timeout=61,hard_timeout=0,icmp,in_port=4,dl_vlan=0xffff,dl_vlan_pcp=0x00,dl_src=c4:2c:03:1d:91:e4,dl_dst=00:24:81:5d:6b:f1,nw_src=192.168.11.2,nw_dst=192.168.11.3,nw_tos=0x00,icmp_type=0,icmp_code=0,actions=output:1
+  cookie=38, duration_sec=338s, duration_nsec=858000000s,		\
+  ...									\
+  nw_proto = 1, nw_src=192.168.11.3,nw_dst=192.168.11.2,nw_tos=0x00,	\
+  icmp_type=8,icmp_code=0,actions=output:4
+  cookie=40, duration_sec=338s, duration_nsec=855000000s,		\
+  ...									\ 
+  nw_proto = 1, nw_src=192.168.11.2,nw_dst=192.168.11.3,nw_tos=0x00,	\
+  icmp_type=0,icmp_code=0,actions=output:1
 //}
 
 OpenFlow プロトコルには、スイッチ側のフローエントリをコントローラ側から
@@ -101,8 +106,14 @@ Trema apps に用意されています。
 //cmd{
 # (cd apps/flow_dumper; make)
 # TREMA_HOME=./trema apps/flow_dumper/flow_dumper
-[0x00002320698790] priority = 65535, match = [wildcards = 0, in_port = 1, dl_src = 00:24:81:5d:6b:f1, dl_dst = c4:2c:03:1d:91:e4, dl_vlan = 65535, dl_vlan_pcp = 0, dl_type = 0x800, nw_tos = 0, nw_proto = 1, nw_src = 192.168.11.3/32, nw_dst = 192.168.11.2/32, tp_src = 8, tp_dst = 0], actions = [output: port=4 max_len=65535]
-[0x00002320698790] priority = 65535, match = [wildcards = 0, in_port = 4, dl_src = c4:2c:03:1d:91:e4, dl_dst = 00:24:81:5d:6b:f1, dl_vlan = 65535, dl_vlan_pcp = 0, dl_type = 0x800, nw_tos = 0, nw_proto = 1, nw_src = 192.168.11.2/32, nw_dst = 192.168.11.3/32, tp_src = 0, tp_dst = 0], actions = [output: port=1 max_len=65535]
+[0x00002320698790] priority = 65535, match = [wildcards = 0, in_port = 1, \
+  ... 		   	      	     	     		     	       	  \
+  nw_proto = 1, nw_src = 192.168.11.3/32, nw_dst = 192.168.11.2/32, 	  \ 
+  tp_src = 8, tp_dst = 0], actions = [output: port=4 max_len=65535]
+[0x00002320698790] priority = 65535, match = [wildcards = 0, in_port = 4, \ 
+  ... 		   	      	     	     		     	       	  \
+  nw_proto = 1, nw_src = 192.168.11.2/32, nw_dst = 192.168.11.3/32, 	  \ 
+  tp_src = 0, tp_dst = 0], actions = [output: port=1 max_len=65535]
 //}
 
 OpenFlow スイッチ側で確認したエントリが取得できていることが確認できたでしょうか？
@@ -118,14 +129,18 @@ OpenFlow スイッチ側で確認したエントリが取得できているこ�
  * その OpenFlow スイッチを Trema と接続し、
    動作確認を行いました。
 
-参考文献
+: OpenWRT (@<tt>{https://openwrt.org/})
+  無線 LAN ルータで Linux を動かせれば、もっといろいろなことが
+  出来るんじゃないか？では、やってみよう！そんな風に思った人が、
+  始めたプロジェクトです。いまでは、市販品には搭載されていないさまざまな機能が
+  提供されています。
 
- * OpenWRT ( @<href>{https://openwrt.org/} )
+: OpenFlow 対応ファームウェア作者のSRCHACK 氏の Blog (@<tt>{http://www.srchack.org/})
+  無線 LAN ルータで Linux が動くのであれば、OpenFlow も動くんじゃないか？
+  今回紹介したプロジェクトを始めたとき、SRCHACK さんはそんな風に思ったに
+  違いありません。
 
- * OpenFlow 対応ファームウェア作者のSRCHACK 氏の Blog
-   ( @<href>{http://www.srchack.org/} )
-
- * WHR-G301N の OpenFlow 化手順
+: WHR-G301N の OpenFlow 化手順
    ( @<href>{http://www.srchack.org/article.php?story=20120324164358634} )
 
 
