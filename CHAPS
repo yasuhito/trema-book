@@ -14,7 +14,7 @@ router_part2.re
 
 migrating_openflow.re
 routing_switch.re
-sliceable_routing_switch.re
+sliceable_switch.re
 cloud.re
 google.re
 
