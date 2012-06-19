@@ -17,10 +17,13 @@ L2 スイッチ機能を提供します(@<img>{routing_switch})。
 
 === トポロジーを検出する
 
-@<img>{lldp}
-
- * スイッチ間のリンクを見つける
- * LLDP 
+ネットワークトポロジの検出には，OpenFlow で標準的な
+Link Layer Discovery Protocol（LLDP）を用います（@<img>{lldp}）。
+Topology から packet_out により送信された LLDP パケットは，
+LLDP が到達した隣のスイッチから packet_in で Topology へと戻ります。
+LLDP パケット中には，それが経由したスイッチとポート情報などが含まれています。
+そのため，これを繰り返すことでネットワーク中のすべてのスイッチ間の
+接続関係を知ることができます。
 
 === フローの設定
  
