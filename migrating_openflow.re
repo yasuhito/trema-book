@@ -1,11 +1,14 @@
 = 生活ネットワークを OpenFlow に移行する
 
-そろそろ独り立ちするときがやってきました。Part 2 では、OpenFlow コント
-ローラの書き方や Trema の仮想ネットワークを使った実行方法など、Trema を
-使った OpenFlow 開発手法を学んできました。OpenFlow プログラマとしてやっ
-ていくための基本的な知識はすべて身につきました。
-
-#@warn(ここで、もちっと細かく章ごとに振り返る)
+そろそろ独り立ちするときがやってきました。いままで第 II 部では、Trema
+を使ったOpenFlow コントローラの基礎
+(@<chap>{openflow_framework_trema}) にはじまり、仮想ネットワークを使っ
+た実行方法(@<chap>{switch_monitoring_tool})、ソフトウェアパッチパネル
+(@<chap>{patch_panel})、2 種類のスイッチ (@<chap>{learning_switch},
+@<chap>{traffic_monitor})、そしてルータ (@<chap>{router_part1},
+@<chap>{router_part2}) と、レイヤ 1 から 3 までのコントローラを作ってき
+ました。OpenFlow プログラマとしてやっていくための基本的な知識はすでに
+ひととおり身についたと言えます。
 
 次は何をすればよいでしょうか？ あとはやってみるだけです。まずは自宅のネッ
 トワークを OpenFlow で置き換えましょう。うまくいったら，こんどは職場の
