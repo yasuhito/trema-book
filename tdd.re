@@ -492,7 +492,7 @@ describe RepeaterHub do
   end
 
 
-  it "は、入ってきたパケットを他のすべてのポートに転送する" do
+  it "は、パケットをばらまくフローエントリをスイッチに追加する" do
     network {
       vswitch( "switch" ) { dpid "0xabc" }
       vhost( "host1" ) { promisc "on"; ip "192.168.0.1" }
