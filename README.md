@@ -26,5 +26,6 @@
 
 あなたも謝辞に名前を載せませんか!
 
- * まちがいやコメントがありましたら、チケットを切ってください: https://github.com/yasuhito/trema-book/issues
- * マークアップの文法はこちら: https://github.com/kmuto/review/blob/master/doc/format.rdoc
+ * まちがいやコメント等ありましたら、チケットを切ってください: https://github.com/yasuhito/trema-book/issues
+ * 原稿のマークアップ文法はこちら: https://github.com/kmuto/review/blob/master/doc/format.rdoc
+ * 貢献いただいた方リスト: https://github.com/yasuhito/trema-book/blob/master/acknowledgements.txt
