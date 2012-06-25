@@ -13,7 +13,7 @@
 太郎君は Trema に詳しくなってきたし、そのへんの話に興味あろうと思ってな」@<br>{}
 @<em>{友太郎}「いいですよ! さあどうぞどうぞ」
 
-== Trema のアーキテクチャ
+== @<tt>{trema run} の裏側
 
 //noindent
 @<em>{取間先生}「じゃあ基本的な話から。Trema でコントローラを動かすときは
@@ -42,7 +42,9 @@ state_notify::LearningSwitch vendor::LearningSwitch
 
 Switch Manager はスイッチからの接続要求を待ち受けます。接続を確立すると、
 子プロセスとして Switch Daemon プロセスを起動し、接続を引き渡します
-(図○)。@<br>{}
+(@<img>{switch_manager_daemon})。@<br>{}
+
+//image[switch_manager_daemon][スイッチからの接続の受付]
 
 //noindent
 @<em>{友太郎}「いきなりむずかしいですね」@<br>{}
@@ -78,6 +80,35 @@ Trema は受信メッセージもちゃんとチェックするようにした�
 チマークツール cbench のバグを発見したのも Trema チームだし、この間の
 Interop では様々なベンダのスイッチのバグ発見に一役買ったそうじゃ」@<br>{}
 @<em>{友太郎}「へえー! すごいですね!」
+
+===[column] 友太郎の質問: あれれ、Trema バグってる？
+
+Q. 「OpenFlow の仕様を読んでみたら、Flow Cookie というのがあったので使っ
+    てみたんだ。Cookie をフローエントリに指定すると、同じ Cookie を持つ
+    フローエントリを 1 つのグループとしてまとめて管理できて便利だと聞い
+    て。でもなぜか、ぼくが指定した Cookie の値がスイッチに正しく設定さ
+    れてないように見えるんだけど……。Trema バグってない？」
+
+A. それは Switch Daemon が複数のアプリケーション間で競合が起こらないよ
+うに仮想化しているからです。たとえば、Trema 上で動くアプリケーション A
+と B がたまたま同じ Cookie 値を使おうとするとどうなるでしょうか？そのま
+まだと混じってしまい混乱しますよね。
+
+Switch Daemon は、こうした Cookie 値の重複を避けるための変換を行ってい
+ます。つまり、アプリケーションからスイッチに指定する Cookie 値と、逆に
+スイッチがアプリケーションに通知する Cookie を Switch Daemon が自動的に
+変換します (@<img>{switch_daemon_cookie})。この変換のおかげで、アプリケー
+ションがほかのアプリケーションとの間で Cookie 値がかぶらないようにする
+必要がなくなります。
+
+//image[switch_daemon_cookie][Cookie 値の変換]
+
+このほかにも、メッセージのトランザクション ID についても自動変換を行っ
+てくれています。Switch Daemon は、Trema の世界の平和を守る縁の下の力持
+ちなのです。
+
+===[/column]
+
 
 === Trema C ライブラリの構成
 
@@ -177,7 +208,7 @@ OpenFlow スイッチ実装である Open vSwitch
 
 仮想ホストの実態は、任意のイーサネットインタフェースから任意のイーサネッ
 トフレーム・UDP/IP パケットを送受信できる phost と呼ばれるソフトウェア
-です (@<tt>{vendor/phost/)。"trema run" コマンドに与えられた設定ファイ
+です (@<tt>{vendor/phost/})。"trema run" コマンドに与えられた設定ファイ
 ル中の仮想ホスト定義 (@<tt>{vhost} で始まる行) に従って、必要な数のホス
 トプロセスを起動します。
 
@@ -205,12 +236,14 @@ Ethernet Device を仕様しています。これは、Point-to-Point のイー�
 === Tremashark の強力な機能
 
 Tremashark は Trema の内部動作と関連するさまざまな情報を可視化するもの
-で、具体的には次の情報を収集/解析/表示する機能を持ちます (図○)。
+で、具体的には次の情報を収集/解析/表示する機能を持ちます (@<img>{tremashark_overview})。
 
  1. Trema 内部・アプリケーションのモジュール間通信 (IPC) イベント
  2. セキュアチャネル、および任意のネットワークインタフェース上を流れるメッセージ
  3. スイッチなどから送信された Syslog メッセージ
  4. スイッチの CLI 出力など、任意テキスト文字列
+
+//image[tremashark_overview][Tremashark の概要]
 
 情報の収集を行うのが Tremashark イベントコレクタと呼ばれるモジュールで
 す。これは、Trema 内部、もしくは外部プロセス・ネットワーク装置から情報
@@ -313,14 +346,19 @@ Switch Daemon の PID は、switch.[管理するスイッチの Datapath ID].pid
 % ./trema send_packets --source host2 --dest host1
 //}
 
-すると、図○に示すようにモジュール間の通信をリアルタイムに観測できます。
-これによって、モジュール間で正常に情報交換が行われていることや、アプリ
-ケーションが OpenFlow メッセージの送受信を正常に行っているかどうかなど
-を知ることができます。
+すると、@<img>{tremashark_gui} に示すようにモジュール間の通信をリアルタ
+イムに観測できます。これによって、モジュール間で正常に情報交換が行われ
+ていることや、アプリケーションが OpenFlow メッセージの送受信を正常に行っ
+ているかどうかなどを知ることができます。
 
-たとえば、図○の No.7 〜 No.10 のメッセージにより、packet_in メッセージ
-をトリガとして、Learning Switch が Flow Mod メッセージをスイッチに対し
-て送信していることがわかります (図○)。
+//image[tremashark_gui][Tremashark ユーザインタフェース]
+
+たとえば、@<img>{tremashark_gui} の No.7 〜 No.10 のメッセージにより、
+packet_in メッセージをトリガとして、Learning Switch が Flow Mod メッセー
+ジをスイッチに対して送信していることがわかります
+(@<img>{trema_internal_by_tremashark})。
+
+//image[trema_internal_by_tremashark][@<img>{tremashark_gui} からわかる Trema の内部動作]
 
 == まとめ
 
