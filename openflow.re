@@ -24,7 +24,7 @@ Ingress Port		スイッチの物理ポート番号	L1
 Ether src		送信元 MAC アドレス		L2
 Ether dst		宛先 MAC アドレス		L2
 Ether type		イーサネットの種別		L2
-VLAN id			VLAN IDBig Switch		L2
+VLAN id			VLAN ID				L2
 VLAN priority		VLAN PCP の値 (CoS)		L2
 IP src			送信元 IP アドレス		L3
 IP dst			宛先 IP アドレス		L3

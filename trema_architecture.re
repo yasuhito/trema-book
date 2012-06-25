@@ -143,7 +143,7 @@ OpenFlow Application Interface は、受信した OpenFlow メッセージをア
 
 ==== OpenFlow Messages
 
-アプリケーションが OpenFlow メッセージを生成する歳に利用するのが、
+アプリケーションが OpenFlow メッセージを生成する際に利用するのが、
 OpenFlow Messages (@<tt>{src/lib/openflow_message.c}) です。メッセージ
 受信の場合とは逆に、
 
