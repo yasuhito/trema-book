@@ -51,13 +51,15 @@ LAN 側ポートは 4 ポートありますが、どのポートに接続して�
 
 次に、ファームウェアを OpenFlow 対応のものに書き換えます。
 ダウンロードしておいた手順書に従い、アップデートを行なってください。
+``ファームウェアのアップデート中は決して電源を切らないでください'' という
+お約束を守れば、簡単にアップデートできるはずです。
 
-OpenFlow に対応したファームウェアをいれた無線 LAN ルータでは、
+OpenFlow 対応ファームウェアをいれた無線 LAN ルータでは、
 各ポートの役割が変わってしまっていることに注意が必要です。
 LAN 側の 4 ポートは OpenFlow スイッチとして動作するポートとなります。
 また WAN 側ポートは、コントローラとの接続に用いる管理用のポートになります。
 WHR-G301N では Internet と記載されている青いポートが、WAN 側ポートです。
-コントローラとの接続以外にも SSH での接続などにも用いられます。
+コントローラとの接続以外にも telnet での接続などにも用いられます。
 
 ファームウェアのアップデート直後には、WAN 側ポートに 192.168.1.1/24 という
 アドレスが設定されています。
@@ -65,7 +67,110 @@ WHR-G301N では Internet と記載されている青いポートが、WAN 側�
 この WAN 側ポートでは DHCP サーバ機能は動作していないので、
 ホストに固定で IP アドレスを設定してください。
 OpenFlow スイッチ側に事前に設定されているコントローラの IP アドレスが
-192.168.1.10 であるため、ホストにはこのアドレスが設定されているものとします。
+192.168.1.10 であるため、このアドレスを使用しましょう。
+ホストにアドレスを設定した後、OpenFlow スイッチに
+telnet を使って root で接続してみます。
+
+//cmd{
+$ telnet -l root 192.168.1.1 
+Trying 192.168.1.1...
+Connected to 192.168.1.1.
+Escape character is '^]'.
+ === IMPORTANT ============================
+  Use 'passwd' to set your login password
+  this will disable telnet and enable SSH
+ ------------------------------------------
+
+
+BusyBox v1.19.3 (2012-05-20 02:08:52 JST) built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ ATTITUDE ADJUSTMENT (bleeding edge, r30406) ----------
+  * 1/4 oz Vodka      Pour all ingredients into mixing
+  * 1/4 oz Gin        tin with ice, strain into glass.
+  * 1/4 oz Amaretto
+  * 1/4 oz Triple sec
+  * 1/4 oz Peach schnapps
+  * 1/4 oz Sour mix
+  * 1 splash Cranberry juice
+ -----------------------------------------------------
+root@OpenWrt:/# 
+//}
+
+上記のように接続ができたでしょうか？
+
+//cmd{
+root@OpenWrt:~# ps | grep ofprotocol
+ 1453 root      1128 S    ofprotocol unix:/var/run/dp0.sock tcp:192.168.1.1:6
+ 1491 root      1468 S    grep ofprotocol
+}
+
+//list[config_network][/etc/config/network ファイル]{
+config 'interface' 'wan'
+      option 'ifname'         'eth1'
+      option 'proto'          'static'
+      option 'ipaddr'         '192.168.1.1'
+      option 'netmask'        '255.255.255.0'
+
+config 'switch' 'eth0'
+      option 'enable'         '1'
+      
+config 'interface' 'loopback'
+      option 'ifname'         'lo'
+      option 'proto'          'static'
+      option 'ipaddr'         '127.0.0.1'
+      option 'netmask'        '255.0.0.0'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '1'
+      option 'ports'          '1 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '2'
+      option 'ports'          '2 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '3'
+      option 'ports'          '3 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '4'
+      option 'ports'          '4 0t'
+
+config 'interface'
+      option 'ifname'         'eth0.1'
+      option 'proto'          'static'
+      
+config 'interface'
+      option 'ifname'         'eth0.2'
+      option 'proto'          'static'
+
+config 'interface'
+      option 'ifname'         'eth0.3'
+      option 'proto'          'static'
+
+config 'interface'
+      option 'ifname'         'eth0.4'
+      option 'proto'          'static'
+//}
+
+
+//list[config_network][/etc/config/openflow ファイル]{
+config 'ofswitch'
+      option 'dp' 'dp0'
+      option 'ofports' 'eth0.1 eth0.2 eth0.3 eth0.4'
+      option 'ofctl' 'tcp:192.168.1.10:6633'
+      option 'mode'  'outofband'
+//}
 
 == Trema とつないでみよう
 
