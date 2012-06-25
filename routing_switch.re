@@ -37,7 +37,7 @@ LLDP パケット中には，それが経由したスイッチとポート情報
 
 ルーティングスイッチのソースコードは、Trema Apps にて公開されています。
 
- * 準備
+=== 準備
 
 //cmd{
 $ git clone https://github.com/trema/trema.git
@@ -47,7 +47,7 @@ $ (cd apps/topology/; make)
 $ (cd apps/routing_switch; make)
 //}
 
- * ルーティングスイッチを動かす
+=== ルーティングスイッチを動かす
 
 それでは、ルーティングスイッチを動かしてみましょう。
 ソースコード一式の中に routing_switch_fullmesh.conf という
@@ -59,7 +59,7 @@ $ cd ./trema
 $ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
- * 見つけたリンクを表示する
+=== 見つけたリンクを表示する
 
 topology モジュールには、検出したリンクを表示するコマンドが
 用意されていますので、使ってみましょう。
@@ -97,7 +97,7 @@ link "0xe3", "0xe1"
 仮想ホストとスイッチ間のリンクは検出できないため、show_topology の
 検出結果には表示されないことに注意しましょう。
 
- * パケットを送り、フローが設定されているかを確認する
+=== パケットを送り、フローが設定されているかを確認する
    
 次に、仮想ホストからパケットを送り、フローが設定されることを確認しましょう。
 
