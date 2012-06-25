@@ -360,16 +360,81 @@ packet_in メッセージをトリガとして、Learning Switch が Flow Mod �
 
 //image[trema_internal_by_tremashark][@<img>{tremashark_gui} からわかる Trema の内部動作]
 
-== まとめ
+== Trema Apps
 
 //noindent
-@<em>{友太郎}「今夜は、いろいろとためになったなあ」@<br>{}
-@<em>{取間先生}「どうじゃ？やる気が出てきたようじゃな。もし Trema 自体
-の開発にも興味があれば、どんどん Trema へコミットしてみるとよいぞ」@<br>{}
+@<em>{友太郎}「今夜はいろいろとためになるなあ」@<br>{}
+@<em>{取間先生}「どうじゃ？ここまでわかっていれば、本格的な実用コントロー
+ラを作るのも難しくはないぞ。そういえば Trema はサンプルとは別に Trema
+Apps という実用アプリも公開しておる。何か大きなアプリケーションを作ると
+きに役立つと思うから、友太郎君のために紹介しておこうかの」@<br>{}
 
-そうこうしている間に夜が明け、取間先生は自宅へと帰っていきました。今回
-は、Trema の構成、内部動作について学びました。学んだことは、次の 3 点で
+Trema Apps (@<tt>{http://github.com/trema/apps}) は、Trema を使った実用
+的・実験的なアプリケーションを集めたリポジトリです。Trema と同様に
+GitHub 上で公開されており、次の手順でダウンロードできます。
+
+//cmd{
+% git clone https://github.com/trema/apps.git
+//}
+
+実はすでに Routing Switch (@<chap>{routing_switch})、Topology
+(@<chap>{routing_switch})、そして Sliceable Switch
+(@<chap>{sliceable_switch}) は紹介してきました。このほかに Trema Apps
+の中でもとくに実用的なアプリを中心に簡単に解説していきます。
+
+=== Redirectable Routing Switch
+
+Routing Switch (@<chap>{routing_switch})の亜種で、ユーザ認証とパケット
+のリダイレクト機能を付け加えたものです。認証されていないホストからのパ
+ケットをほかのサーバに強制的にリダイレクトします。このしくみを使えばた
+とえば、認証していないユーザの HTTP セッションを強制的に特定のサイトへ
+飛ばすといったことが簡単にできます。
+
+=== Learning switch with memcached
+
+サンプルプログラムの learning_switch (@<chap>{learning_switch}) と同じ
+機能を持ちますが、FDB の実装に memcached を用いています。Ruby の
+memcached ライブラリを使うことで、オリジナルの learning_switch にほとん
+ど変更を加えずに memcached 対応できているところがポイントです。
+
+=== Multi learning switch with memcached
+
+サンプルプログラムの multi_learning_switch
+(@<chap>{openflow_framework_trema}) を memcached 対応したものです。
+
+=== Flow dumper
+
+OpenFlow スイッチのフローテーブルを取得するためのユーティリティです。デ
+バッグツールとしても便利です。@<chap>{diy_switch} で使いかたを紹介して
+います。
+
+=== Packetin dispatcher
+
+packet_in メッセージを複数の Trema アプリケーションに振り分けるサンプル
+です。物理アドレスから、ユニキャストかブロードキャストかを判断します。
+
+=== Broadcast helper
+
+ブロードキャストやマルチキャストなど、コントローラに負荷の大きいトラ
+フィックを分離して、別の独立したコントローラで処理させるためのアプリで
 す。
+
+=== Flow manager
+
+フローエントリとパス情報を管理するアプリケーションおよび API を提供しま
+す。かなり実験的な実装なので、API は変更する可能性があります。
+
+== まとめ
+
+そうこうしている間に夜は白み、取間先生は帰り支度を始めました。
+
+//noindent
+@<em>{取間先生}「友太郎君どうもありがとう。今夜はひさびさに若者と話せて
+楽しかったよ。これで君も立派な OpenFlow プログラマじゃ」@<br>{}
+@<em>{友太郎}「こちらこそありがとうございました。なにかいいアプリケーショ
+ンができたら、先生にも教えますね!」@<br>{}
+
+今回は、Trema の構成、内部動作について学びました。学んだことは、次の 3 点です。
 
  * Trema を利用して開発した OpenFlow コントローラは、Trema が提供する
    Switch Manager、Switch Daemon とアプリケーションプロセスから構成され
