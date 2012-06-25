@@ -64,7 +64,7 @@ Switch Daemon は、Switch Manager が確立したスイッチとの接続を引
  * スイッチから受信した OpenFLow メッセージをアプリケーションプロセス
    へ届ける
 
-Switch Daemon は、交換される OopenFlow メッセージの中身をすべて検査し
+Switch Daemon は、交換される OpenFlow メッセージの中身をすべて検査し
 ます。もし不正なメッセージを発見するとエラーを出します。@<br>{}
 
 //noindent
