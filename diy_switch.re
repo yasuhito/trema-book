@@ -282,14 +282,33 @@ Port no: 65534(0xfffe:Local)(Port up)
 
 Manufacturer description から Human readable description of datapath までは、
 Stats Request メッセージでタイプに OFPST_DESC を指定すると取得できる
-情報です。
+情報です。また、Datapath ID 以降の情報は、Features Request メッセージで
+取得できる情報です。
+
+今回の OpenFlow スイッチの実装として、Stanford 大学で作成された
+リファレンススイッチが使用されていることが分かります。
+また、OpenFlow スイッチとして動作するポート eth0.1 から eth0.4 までと
+tap0 @<fn>{tap0} が定義されています。
+
+\footnote[tap0][tap0 は、内部的に使われるポートであり、ユーザが直接使うことはありません。]
 
 === フローを表示する
 
-#@# ping を打つ説明
+それでは、OpenFlow スイッチに接続する二つのホスト間で通信ができるかを
+確認してみましょう。
+192.168.2.1 のホストから 192.168.2.2 のホストに向けて
+ping をうってみてください。
+
+\\cmd{
+$ ping 192.168.2.2
+PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
+64 bytes from 192.168.2.2: icmp_req=1 ttl=64 time=18.0 ms
+64 bytes from 192.168.2.2: icmp_req=2 ttl=64 time=0.182 ms
+...
+\\}
 
 実際にフローが設定されているか、確認してみましょう。
-OpenFlow スイッチに ssh でログインして、以下のコマンドをうってみてください。
+OpenFlow スイッチに telnet でログインして、以下のコマンドを実行します。
 
 //cmd{
 root@OpenWrt:~# dpctl dump-flows unix:/var/run/dp0.sock 
@@ -306,7 +325,7 @@ stats_reply (xid=0x8e5d6e05): flags=none type=1(flow)
 
 OpenFlow プロトコルには、スイッチ側のフローエントリをコントローラ側から
 取得するためのメッセージが存在します。
-このメッセージを使って取得したフローエントリを表示するコマンドが、
+このメッセージを使って取得したフローエントリを表示する flow_dumper コマンドが、
 Trema apps に用意されています。
 
 //cmd{
@@ -328,12 +347,19 @@ OpenFlow スイッチ側で確認したエントリが取得できているこ�
 
 == まとめ/参考文献
 
-本章で学んだことは、以下の二つです。
+本章で学んだことは、以下の三つです。
 
- * 数千円の無線 LAN ルータを、OpenFlow スイッチに
-   改造しました。
- * その OpenFlow スイッチを Trema と接続し、
-   動作確認を行いました。
+ * 数千円の無線 LAN ルータを OpenFlow スイッチに改造し、
+   learning-switch を使った動作確認を行いました。
+ * show_description コマンドを用意して、
+   スイッチの情報を取得する方法について学びました。
+ * flow_dumper コマンドを使い、実際に設定されているフローの
+   確認を行いました。
+
+今回は learning-switch を使いましたが、他のアプリケーションを
+用いることももちろん可能です。もし、今回の OpenFlow スイッチを
+二台以上用意できるなら、routing-switch (@<chap>{routing_switch}) を
+使うことがお勧めです。
 
 : OpenWRT (@<tt>{https://openwrt.org/})
   無線 LAN ルータで Linux を動かせれば、もっといろいろなことが
