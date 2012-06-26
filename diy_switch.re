@@ -21,15 +21,20 @@ L2 スイッチとして動作しています。
 いまどきの無線 LAN ルータの OS は、Linux で動作しています。
 Linux 上で動作する OpenFlow スイッチのソフトウェア実装がありますので、
 これが無線 LAN ルータ上でも動作させればよさそうです。
-しかし、無線 LAN ルータのメーカーは、そのうえで自由にソフトウェアを
+しかし、無線 LAN ルータのメーカーは、自由にソフトウェアを
 動かす目的で Linux を採用しているわけではありません。
 
- * OpenWRT の話
- * SRCHACK さんの改造ファームの話
+OpenWRT は、そんな制約を超えるために無線 LAN ルータのファームウェアを
+入れ替えてしまおうというプロジェクトです。
+このファームウェアを使えば、その上で自由にソフトウェアを
+動かすことができます。
 
-//footnote[musen]{
-無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。
-}
+SRCHACK さんは、この OpenWRT をベースに OpenFlow スイッチの
+ソフトウェア実装を組み込んだファームウェアを開発しました。
+本章では、このファームウェアを使って、OpenFlow スイッチを作ってみます。
+
+//footnote[musen][
+無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。]
 
 ===[column] オープンルータ・コンペティション
 
@@ -203,11 +208,18 @@ config 'ofswitch'
 
 == Trema とつないでみよう
 
+Trema のサンプルアプリ learning-switch (@<chap>{learning_switch}) を使って、
+今回作った OpenFlow スイッチを動かしてみましょう。
+コントローラを動かすホストに加え、OpenFlow スイッチを使って
+通信を行うホストを二台用意して、@<img>{network} のように接続します。
+
+//image[network][Trema との接続][scale=0.5]
+
 === Trema の起動
 
 #@# Trema 側の設定 (Learning Switch ？)
 
-//image[network][Trema との接続][scale=0.5]
+まずコントローラとして learning-switch を起動します。
 
 //cmd{
 $ cd trema
@@ -221,9 +233,21 @@ $ ./trema run ./src/examples/learning_switch/learning-switch.rb -d
 $ netstat -an -A inet | grep 6633
 //}
 
+TCP コネクションはスイッチ側からコントローラへと接続されます。
+もし、接続がされてないければ、OpenFlow スイッチに telnet で
+ログインして、openflow 機能の再起動を行ってください。
+
+//cmd{
+$ /etc/init.d/openflow restart
+}
+
 === スイッチの情報を取得する
 
-#@# show_description
+OpenFlow プロトコルには、スイッチから情報を取得するための
+メッセージがいくつか定義されています。
+これらのメッセージを使って、スイッチ情報を取得・表示するための
+show_description コマンドが Trema Apps に用意されています。
+まず、コマンドを使えるように用意します。
 
 //cmd{
 $ git clone https://github.com/trema/apps.git
@@ -256,6 +280,10 @@ Port no: 65534(0xfffe:Local)(Port up)
   Hardware address: 00:23:20:47:76:71
   Port name: tap0
 //}
+
+Manufacturer description から Human readable description of datapath までは、
+Stats Request メッセージでタイプに OFPST_DESC を指定すると取得できる
+情報です。
 
 === フローを表示する
 
