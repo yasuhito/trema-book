@@ -13,12 +13,6 @@ L2 スイッチ機能を提供します(@<img>{routing_switch})。
 
 //image[routing_switch][ルーティングスイッチ]
 
-=== 最短パスを計算する
-
-@<img>{shortestpath}
-
-//image[shortestpath][最短パス]
-
 === トポロジーを検出する
 
 ネットワークトポロジの検出には，OpenFlow で標準的な
@@ -31,18 +25,31 @@ LLDP パケット中には，それが経由したスイッチとポート情報
 
 //image[lldp][トポロジーの検出]
 
+=== 最短パスを計算する
+
+@<img>{shortestpath}
+
+//image[shortestpath][最短パス]
+
 === フローの設定
  
 == 実行してみよう
 
-ルーティングスイッチのソースコードは、Trema Apps にて公開されています。
 
 === 準備
 
+ルーティングスイッチのソースコードは、Trema Apps にて公開されています。
+まず Trema Apps を @<tt>{git} を使って取得しましょう。
+
 //cmd{
-$ git clone https://github.com/trema/trema.git
 $ git clone https://github.com/trema/apps.git
-$ (cd trema/; ./build.rb)
+//}
+
+Trema Apps にはさまざまなアプリケーションが含まれていますが、
+今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。
+この二つを順に @<tt>{make} します。
+
+//cmd{
 $ (cd apps/topology/; make)
 $ (cd apps/routing_switch; make)
 //}
@@ -50,8 +57,77 @@ $ (cd apps/routing_switch; make)
 === ルーティングスイッチを動かす
 
 それでは、ルーティングスイッチを動かしてみましょう。
-ソースコード一式の中に routing_switch_fullmesh.conf という
-設定ファイルが同梱されています。
+ソースコード一式の中に @<tt>{routing_switch_fullmesh.conf} という
+ファイルが含まれています。
+
+//list[conf][@<tt>{routing_switch_fullmesh.conf}]{
+vswitch {
+  datapath_id "0xe0"
+}
+
+vswitch {
+  datapath_id "0xe1"
+}
+
+vswitch {
+  datapath_id "0xe2"
+}
+
+vswitch {
+  datapath_id "0xe3"
+}
+
+vhost ("host1") {
+  ip "192.168.0.1"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:01"
+}
+
+vhost ("host2") {
+  ip "192.168.0.2"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:02"
+}
+
+vhost ("host3") {
+  ip "192.168.0.3"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:03"
+}
+
+vhost ("host4") {
+  ip "192.168.0.4"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:04"
+}
+
+link "0xe0", "host1"
+link "0xe1", "host2"
+link "0xe2", "host3"
+link "0xe3", "host4"
+link "0xe0", "0xe1"
+link "0xe0", "0xe2"
+link "0xe0", "0xe3"
+link "0xe1", "0xe2"
+link "0xe1", "0xe3"
+link "0xe2", "0xe3"
+
+run {
+  path "../apps/topology/topology"
+}
+
+run {
+  path "../apps/topology/topology_discovery"
+}
+
+run {
+  path "../apps/routing_switch/routing_switch"
+}
+
+event :port_status => "topology", :packet_in => "filter", :state_notify => "topology"
+filter :lldp => "topology_discovery", :packet_in => "routing_switch"
+//}
+
 今回はこのファイルを使って、以下のように起動してください。
 
 //cmd{
@@ -59,9 +135,13 @@ $ cd ./trema
 $ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
+@<img>{fullmesh} のようなネットワークが構成されます。
+
+//image[fullmesh][ネットワーク構成]
+
 === 見つけたリンクを表示する
 
-topology モジュールには、検出したリンクを表示するコマンドが
+@<tt>{topology} モジュールには、検出したリンクを表示するコマンドが
 用意されていますので、使ってみましょう。
 以下のように実行してください。
 
@@ -91,10 +171,11 @@ link "0xe2", "0xe0"
 link "0xe3", "0xe1"
 //}
 
-ルーティングスイッチの起動時に指定した routing_switch_fullmesh.conf と
-比較してみましょう。topology_discovery モジュールが検出できるのは、
+ルーティングスイッチの起動時に指定した設定ファイル (@<list>{conf}) や
+ネットワーク構成 (@<img>{fullmesh}) と
+比較してみましょう。@<tt>{topology_discovery} モジュールが検出できるのは、
 スイッチ間のリンクのみです。
-仮想ホストとスイッチ間のリンクは検出できないため、show_topology の
+仮想ホストとスイッチ間のリンクは検出できないため、@<tt>{show_topology} の
 検出結果には表示されないことに注意しましょう。
 
 === パケットを送り、フローが設定されているかを確認する
@@ -104,6 +185,9 @@ link "0xe3", "0xe1"
 //cmd{
 $ ./trema send_packets --source host1 --dest host2
 $ ./trema send_packets --source host2 --dest host1
+//}
+
+//cmd{
 $ TREMA_HOME=. ../apps/flow_dumper/flow_dumper
 [0x000000000000e1] table_id = 0, priority = 65535, cookie = 0xbd100000000000e,\
   ...									      \
