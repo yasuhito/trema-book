@@ -28,12 +28,13 @@ Trema でいろいろとアプリを書いているようだし、いろいろ�
 == @<tt>{trema run} の裏側
 
 //noindent
-@<em>{取間先生}「じゃあ基本的な話から。Trema でコントローラを動かすときは
-"trema run" コマンドじゃったな。これって、実は裏でいろんなプロセスを起
-動しているんじゃ。どんなプロセスが起動しているか、"trema run" に -v オ
-プションをつけると見ることができるぞ。ためしにサンプルの
-learning-switch を起動してみてごらん」
+@<em>{取間先生}「では基本的な話から。Trema でコントローラを動かすには
+"@<tt>{trema run}" じゃったな。このコマンド、実は裏でいろんなプロセスを
+起動しているんじゃ。具体的に何をやっているか、"@<tt>{trema run}" に
+@<tt>{-v} オプションをつけると見ることができるぞ。さっそく、サンプルの
+learning-switch (@<chap>{learning_switch}) を試しに起動してみてごらん」
 
+#@warn(後で解説する箇所をすべてここのログで見せること)
 //cmd{
 % ./trema run src/examples/learning_switch/learning-switch.rb \\
   -c src/examples/learning_switch/learning_switch.conf -v
@@ -44,27 +45,29 @@ state_notify::LearningSwitch vendor::LearningSwitch
 //}
 
 //noindent
-@<em>{友太郎}「うわっ、なんかいっぱい字が出てきましたね!」@<br>{}
-@<em>{取間先生}「この出力を見れば、trema コマンドが中でどんなことをしてく
-れるかわかるのじゃ。上のほうを見ると、switch_manager というプロセスが
-起動されておるな？ Trema ではこのプロセスがスイッチと最初に接続するん
-じゃ。」
+@<em>{友太郎君}「うわっ! なんだかいっぱい字が出てきましたね」@<br>{}
+@<em>{取間先生}「この出力を見れば、@<tt>{trema} コマンドが裏でどんなこ
+とをしてくれているのかスグわかるのじゃ。たとえばログの最初を見ると、
+switch_manager というプロセスが起動されておるな？ Trema ではこのプロセ
+スがスイッチと最初に接続するんじゃ。」
 
-=== スイッチ接続の受付
+=== スイッチとの接続
 
-Switch Manager はスイッチからの接続要求を待ち受けます。接続を確立すると、
-子プロセスとして Switch Daemon プロセスを起動し、接続を引き渡します
+Switch Manager はスイッチからの接続要求を待ち受けるデーモンです。スイッ
+チとの接続を確立すると、子プロセスとして Switch Daemon プロセスを起動し、
+スイッチとの接続をこのプロセスへ引き渡します
 (@<img>{switch_manager_daemon})。@<br>{}
 
 //image[switch_manager_daemon][スイッチからの接続の受付]
 
 //noindent
-@<em>{友太郎}「いきなりむずかしいですね」@<br>{}
-@<em>{取間先生}「そんなことはないぞ、ぜんぜん簡単じゃ。inetd と同じで、
-OpenFlow が使う TCP の 6633 番ポートを Switch Manager が見張っていると
-考えるとよい。そして、スイッチが接続してきたら子プロセスとして Switch
-Daemon を起動し、そいつに後のことを全部まかせるのじゃ」@<br>{}
-@<em>{友太郎}「なるほど! たしかに inetd の仕組みと同じですね」
+@<em>{友太郎君}「うーむ。いきなりむずかしいです」@<br>{}
+@<em>{取間先生}「そんなことはないぞ、ぜんぜん簡単じゃ。Switch Manager
+の役割は言わば inetd と同じと考えればよい。つまり Switch Manager は新し
+いスイッチが接続してくるのを見張っているだけで、実際のスイッチとのやり
+とりはスイッチごとに起動する Switch Daemon プロセスに一切合切まかせてし
+まうというわけじゃ」@<br>{}
+@<em>{友太郎君}「なるほど! たしかに仕組みが inetd とよく似ていますね」
 
 ==== Switch Daemon
 
