@@ -48,7 +48,15 @@ OpenWRT は、そんな制約を超えるために無線 LAN ルータのファ�
 
 @SRCHACK さんは、この OpenWRT をベースに OpenFlow スイッチの
 ソフトウェア実装を組み込んだファームウェアを開発しました。
-本章では、このファームウェアを使って、OpenFlow スイッチを作ってみます。
+対応機種は @<table>{wifirouter} のとおりです。
+本章では、このうち WHR-G301N を使って OpenFlow スイッチを作ってみます。
+
+//table[wifirouter][OpenFlow スイッチに改造可能な無線 LAN ルータ (2012 年現在)]{
+機種名		メーカー	価格
+--------------------------------------------------------
+WHR-G301N	Buffalo	     約 2000 円
+WZR-HP-AG300H	Buffalo	     約 6000 円
+//}
 
 //footnote[musen][無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。]
 
@@ -61,7 +69,7 @@ OpenWRT は、そんな制約を超えるために無線 LAN ルータのファ�
 または創造し、その成果を発表すること」という課題に対し、
 一次選考を通過した 10 チームによりその成果が競われました。
 
-その結果、本章で取り上げた @SRCHACK.ORG さんが、
+その結果、本章で取り上げた @SRCHACK さんが、
 見事準グランプリ (NEC 賞) を受賞しました (@<img>{orc})。
 また他にも 3 チームにて OpenFlow に関連した成果発表が行われ、
 これらのチームすべてが Trema を使用していました。
@@ -76,6 +84,8 @@ OpenWRT は、そんな制約を超えるために無線 LAN ルータのファ�
 
 事前に @SRCHACK さんのサイトから、手持ちの機種に対応するファームウェアと、
 アップデート方法について記載された手順書をダウンロードしておいてください。
+異なるいくつかのバージョンの OpenFlow プロトコルに対応したファームウェアが
+用意されていますが、本書で扱っている OpenFlow 1.0 に対応したものを用いてください。
 
  * 無線 LAN ルータ OpenFlow 対応ファームウェア 
    ( @<tt>{http://www.srchack.org/orc12/} )
@@ -300,7 +310,7 @@ Port no: 65534(0xfffe:Local)(Port up)
   Port name: tap0
 //}
 
-@<tt>{Manufacturer description} から H
+@<tt>{Manufacturer description} から
 @<tt>{Human readable description of datapath} までは、
 Stats Request メッセージでタイプに @<tt>{OFPST_DESC} を指定すると取得できる
 情報です。また、@<tt>{Datapath ID} 以降の情報は、Features Request メッセージで
