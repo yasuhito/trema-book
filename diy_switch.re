@@ -16,7 +16,7 @@
 無線 LAN ルータには、LAN 側に有線のポートが 4 ポートついており、
 L2 スイッチとして動作しています。
 この部分を OpenFlow スイッチとして動作させるようにしてみましょう
-(@<fn>{musen})。
+@<fn>{musen}。
 
 いまどきの無線 LAN ルータの OS は、Linux で動作しています。
 Linux 上で動作する OpenFlow スイッチのソフトウェア実装がありますので、
@@ -195,7 +195,7 @@ ofports オプションの部分に指定されます。
 
 //cmd{
 $ /etc/init.d/openflow restart
-}
+//}
 
 //list[config_openflow][/etc/config/openflow ファイル]{
 config 'ofswitch'
@@ -238,7 +238,7 @@ TCP コネクションはスイッチ側からコントローラへと接続さ�
 
 //cmd{
 $ /etc/init.d/openflow restart
-}
+//}
 
 === スイッチの情報を取得する
 
