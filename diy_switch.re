@@ -3,7 +3,7 @@
 あなたも仮想スイッチではそろそろ物足りなくなってきました。やはり実機の
 OpenFlow スイッチを自宅にデンと据えて、Trema で心ゆくまで OpenFlow プロ
 グラミングを楽しみたいものです。「でも、中古でも出てないんだよ」。高価
-な Summit、Catalyst などの中古品を自宅で愉しむ "ネットワークマニア" に
+な Catalyst や Summit などの中古品を自宅で愉しむ "ネットワークマニア" に
 かかっても、まだ実機は入手できていないようです。なぜなら OpenFlow スイッ
 チは新しい分野の製品なので、中古市場には出回っていないのです。
 
@@ -23,9 +23,9 @@ P 社		32 万円〜
 
 そんな中、事件は 2011 年の年末に起きました。ある一人のエンジニアが、二
 千円で買える "家庭用" 無線 LAN ルータをハックし、OpenFlow スイッチに改
-造するファームウェアを公開したのです。しかも、秋葉原の居酒屋 "町役場"
-にて有志による「無線 LAN ルータを OpenFlow 化 & Trema と接続」セミナー
-を無料で開きました。この夢の "Trema とつながる 二千円の OpenFlow スイッ
+造するファームウェアを公開したのです。しかも、秋葉原の居酒屋 "村役場"
+にて有志による「無線 LAN ルータを OpenFlow 化して、Trema と接続してみよう」
+という勉強会が開催されました。この夢の "Trema とつながる 二千円の OpenFlow スイッ
 チ" は Twitter でも公開され、日本中にまたたく間に広まりました。
 
 == 無線 LAN ルータを OpenFlow 化しよう
@@ -46,7 +46,7 @@ OpenWRT は、そんな制約を超えるために無線 LAN ルータのファ�
 このファームウェアを使えば、その上で自由にソフトウェアを
 動かすことができます。
 
-SRCHACK さんは、この OpenWRT をベースに OpenFlow スイッチの
+@SRCHACK さんは、この OpenWRT をベースに OpenFlow スイッチの
 ソフトウェア実装を組み込んだファームウェアを開発しました。
 本章では、このファームウェアを使って、OpenFlow スイッチを作ってみます。
 
@@ -77,6 +77,9 @@ SRCHACK さんは、この OpenWRT をベースに OpenFlow スイッチの
 事前に @SRCHACK さんのサイトから、手持ちの機種に対応するファームウェアと、
 アップデート方法について記載された手順書をダウンロードしておいてください。
 
+ * 無線 LAN ルータ OpenFlow 対応ファームウェア 
+   ( @<tt>{http://www.srchack.org/orc12/} )
+
 まず、ファームウェアを入れたホストを、無線 LAN ルータと接続します。
 この時、@<img>{update} (A) のように無線 LAN ルータの LAN 側ポートに接続してください。
 LAN 側ポートは 4 ポートありますが、どのポートに接続してもよいです。
@@ -95,7 +98,7 @@ OpenFlow 対応ファームウェアをいれた無線 LAN ルータでは、
 LAN 側の 4 ポートは OpenFlow スイッチとして動作するポートとなります。
 また WAN 側ポートは、コントローラとの接続に用いる管理用のポートになります。
 WHR-G301N では Internet と記載されている青いポートが、WAN 側ポートです。
-コントローラとの接続以外にも telnet での接続などにも用いられます。
+コントローラとの接続以外にも @<tt>{telnet} での接続などにも用いられます。
 
 ファームウェアのアップデート直後には、WAN 側ポートに 192.168.1.1/24 という
 アドレスが設定されています。
@@ -105,7 +108,7 @@ WHR-G301N では Internet と記載されている青いポートが、WAN 側�
 OpenFlow スイッチ側に事前に設定されているコントローラの IP アドレスが
 192.168.1.10 であるため、このアドレスを使用しましょう。
 ホストにアドレスを設定した後、OpenFlow スイッチに
-telnet を使って root で接続してみます。
+@<tt>{telnet} を使って @<tt>{root} で接続してみます。
 
 //cmd{
 $ telnet -l root 192.168.1.1 
@@ -140,11 +143,11 @@ root@OpenWrt:/#
 
 上記のように接続ができたでしょうか？ 
 接続ができたら、OpenFlow スイッチの設定ファイルを見てみましょう。
-設定ファイルは、/etc/config 配下にあります。
-IP アドレス等、ネットワーク関連の設定は、network ファイルに
+設定ファイルは、@<tt>{/etc/config} 配下にあります。
+IP アドレス等、ネットワーク関連の設定は、@<tt>{network} ファイルに
 記載されています (@<list>{config_network})。
-WAN 側ポートは OpenFlow スイッチ上では eth1 に対応しているので、
-IP アドレスを変更したい場合には eth1 の ipaddr の値を変更してください。
+WAN 側ポートは OpenFlow スイッチ上では @<tt>{eth1} に対応しているので、
+IP アドレスを変更したい場合には @<tt>{eth1} の @<tt>{ipaddr} の値を変更してください。
 変更後の値を反映させるためには、再起動が必要です。
 
 //list[config_network][/etc/config/network ファイル]{
@@ -201,12 +204,12 @@ config 'interface'
 //}
 
 
-OpenFlow 関連の設定は、openflow ファイルに記載されています
+OpenFlow 関連の設定は、@<tt>{openflow} ファイルに記載されています
 (@<list>{config_openflow})。
 OpenFlow スイッチのポートとして使用する
-LAN 側の 4 ポートはそれぞれ eth0.1, eth0.2, eth0.3, eth0.4 に対応しており、
-ofports オプションの部分に指定されます。
-また OpenFlow コントローラの IP アドレス、ポート番号は ofctl の値として
+LAN 側の 4 ポートはそれぞれ @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} に対応しており、
+@<tt>{ofports} オプションの部分に指定されます。
+また OpenFlow コントローラの IP アドレス、ポート番号は @<tt>{ofctl} の値として
 指定されるので、変更したい場合はこのオプションの値を変更してください。
 変更した設定は、以下のコマンドで反映させることができます。
 
@@ -224,8 +227,8 @@ config 'ofswitch'
 
 == Trema とつないでみよう
 
-Trema のサンプルアプリ learning-switch (@<chap>{learning_switch}) を使って、
-今回作った OpenFlow スイッチを動かしてみましょう。
+今回作った OpenFlow スイッチを
+ラーニングスイッチ (@<chap>{learning_switch}) を使って、動かしてみましょう。
 コントローラを動かすホストに加え、OpenFlow スイッチを使って
 通信を行うホストを二台用意して、@<img>{network} のように接続します。
 
@@ -233,9 +236,7 @@ Trema のサンプルアプリ learning-switch (@<chap>{learning_switch}) を使
 
 === Trema の起動
 
-#@# Trema 側の設定 (Learning Switch ？)
-
-まずコントローラとして learning-switch を起動します。
+まずコントローラとしてラーニングスイッチを起動します。
 
 //cmd{
 $ cd trema
@@ -247,11 +248,13 @@ $ ./trema run ./src/examples/learning_switch/learning-switch.rb -d
 
 //cmd{
 $ netstat -an -A inet | grep 6633
+tcp        0      0 0.0.0.0:6633            0.0.0.0:*               LISTEN     
+tcp        0      0 192.168.11.10:6633      192.168.11.1:60246      ESTABLISHED
 //}
 
 TCP コネクションはスイッチ側からコントローラへと接続されます。
-もし、接続がされてないければ、OpenFlow スイッチに telnet で
-ログインして、openflow 機能の再起動を行ってください。
+もし、接続がされてないければ、OpenFlow スイッチに @<tt>{telnet} で
+ログインして、@<tt>{openflow} 機能の再起動を行ってください。
 
 //cmd{
 $ /etc/init.d/openflow restart
@@ -262,7 +265,7 @@ $ /etc/init.d/openflow restart
 OpenFlow プロトコルには、スイッチから情報を取得するための
 メッセージがいくつか定義されています。
 これらのメッセージを使って、スイッチ情報を取得・表示するための
-show_description コマンドが Trema Apps に用意されています。
+@<tt>{show_description} コマンドが Trema Apps に用意されています。
 まず、コマンドを使えるように用意します。
 
 //cmd{
@@ -297,24 +300,25 @@ Port no: 65534(0xfffe:Local)(Port up)
   Port name: tap0
 //}
 
-Manufacturer description から Human readable description of datapath までは、
-Stats Request メッセージでタイプに OFPST_DESC を指定すると取得できる
-情報です。また、Datapath ID 以降の情報は、Features Request メッセージで
+@<tt>{Manufacturer description} から H
+@<tt>{Human readable description of datapath} までは、
+Stats Request メッセージでタイプに @<tt>{OFPST_DESC} を指定すると取得できる
+情報です。また、@<tt>{Datapath ID} 以降の情報は、Features Request メッセージで
 取得できる情報です。
 
 今回の OpenFlow スイッチの実装として、Stanford 大学で作成された
 リファレンススイッチが使用されていることが分かります。
-また、OpenFlow スイッチとして動作するポート eth0.1 から eth0.4 までと
-tap0 @<fn>{tap0} が定義されています。
+また、OpenFlow スイッチとして動作するポート @<tt>{eth0.1} から @<tt>{eth0.4} までと
+@<tt>{tap0} @<fn>{tap0} が定義されています。
 
-//footnote[tap0][tap0 は、内部的に使われるポートであり、ユーザが直接使うことはありません。]
+//footnote[tap0][@<tt>{tap0} は、内部的に使われるポートであり、ユーザが直接使うことはありません。]
 
 === フローを表示する
 
 それでは、OpenFlow スイッチに接続する二つのホスト間で通信ができるかを
 確認してみましょう。
-192.168.2.1 のホストから 192.168.2.2 のホストに向けて
-ping をうってみてください。
+@<img>{network} のホスト 1 からホスト 2 に向けて
+@<tt>{ping} をうってみてください。
 
 //cmd{
 $ ping 192.168.2.2
@@ -340,10 +344,17 @@ stats_reply (xid=0x8e5d6e05): flags=none type=1(flow)
   icmp_type=0,icmp_code=0,actions=output:1
 //}
 
+ホスト 1 (@<tt>{nw_src=192.168.2.1}) からホスト 2 (@<tt>{nw_dst=192.168.2.2}) 宛の 
+ICMP エコー要求 (@<tt>{nw_proto=1, icmp_type=8}) 用のフローと、
+送信元と宛先が入れ替わった
+ICMP エコー応答 (@<tt>{nw_proto=1, icmp_type=0}) 用のフローが
+設定されていることが確認できるはずです。
+タイミングによっては、これ以外に ARP 用のフローが表示されるかもしれません。
+
 OpenFlow プロトコルには、スイッチ側のフローエントリをコントローラ側から
 取得するためのメッセージが存在します。
-このメッセージを使って取得したフローエントリを表示する flow_dumper コマンドが、
-Trema apps に用意されています。
+このメッセージを使って取得したフローエントリを表示する @<tt>{flow_dumper} コマンドが、
+Trema Apps に用意されています。
 
 //cmd{
 # (cd apps/flow_dumper; make)
@@ -359,23 +370,23 @@ Trema apps に用意されています。
 //}
 
 OpenFlow スイッチ側で確認したエントリが取得できていることが確認できたでしょうか？
-もしかしたら、ping 以外にも OS が独自にだしているパケットによりフローが出来ているかも
+もしかしたら、@<tt>{ping} 以外にも OS が独自にだしているパケットによりフローが出来ているかも
 しれません。その場合はもう一度 OpenFlow スイッチ側のエントリも確認してみてください。
 
 == まとめ/参考文献
 
 本章で学んだことは、以下の三つです。
 
- * 数千円の無線 LAN ルータを OpenFlow スイッチに改造し、
-   learning-switch を使った動作確認を行いました。
- * show_description コマンドを用意して、
+ * 二千円の無線 LAN ルータを OpenFlow スイッチに改造し、
+   ラーニングスイッチを使った動作確認を行いました。
+ * @<tt>{show_description} コマンドを用意して、
    スイッチの情報を取得する方法について学びました。
- * flow_dumper コマンドを使い、実際に設定されているフローの
+ * @<tt>{flow_dumper} コマンドを使い、実際に設定されているフローの
    確認を行いました。
 
-今回は learning-switch を使いましたが、他のアプリケーションを
+今回はラーニングスイッチを使いましたが、他のアプリケーションを
 用いることももちろん可能です。もし、今回の OpenFlow スイッチを
-二台以上用意できるなら、routing-switch (@<chap>{routing_switch}) を
+二台以上用意できるなら、ルーティングスイッチ (@<chap>{routing_switch}) を
 使うことがお勧めです。
 
 : OpenWRT (@<tt>{https://openwrt.org/})
@@ -388,9 +399,6 @@ OpenFlow スイッチ側で確認したエントリが取得できているこ�
   無線 LAN ルータで Linux が動くのであれば、OpenFlow も動くんじゃないか？
   今回紹介したプロジェクトを始めたとき、SRCHACK さんはそんな風に思ったに
   違いありません。
-
-: WHR-G301N の OpenFlow 化手順
-   ( @<tt>{http://www.srchack.org/article.php?story=20120324164358634} )
 
 : オープンルータ・コンペティション ( @<tt>{http://www.interop.jp/2012/orc/} )
   
