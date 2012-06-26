@@ -13,13 +13,28 @@
 
 == 無線 LAN ルータを OpenFlow 化しよう
 
+無線 LAN ルータには、LAN 側に有線のポートが 4 ポートついており、
+L2 スイッチとして動作しています。
+この部分を OpenFlow スイッチとして動作させるようにしてみましょう
+(@<fn>{musen})。
+
+いまどきの無線 LAN ルータの OS は、Linux で動作しています。
+Linux 上で動作する OpenFlow スイッチのソフトウェア実装がありますので、
+これが無線 LAN ルータ上でも動作させればよさそうです。
+しかし、無線 LAN ルータのメーカーは、そのうえで自由にソフトウェアを
+動かす目的で Linux を採用しているわけではありません。
+
  * OpenWRT の話
  * SRCHACK さんの改造ファームの話
+
+//footnote[musen]{
+無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。
+}
 
 ===[column] オープンルータ・コンペティション
 
 毎年、業界最大の展示会 Interop Tokyo が幕張メッセにて開催されています。
-今年はこの Interop と併催で、次世代のインターネットを担う技術者の
+2012 年にはこの Interop と併催で、次世代のインターネットを担う技術者の
 発掘を目指したオープンルータ・コンペティションが開催されました。
 「ソフトウェア、ハードウェアに関わらず OpenRouter を改良、
 または創造し、その成果を発表すること」という課題に対し、
@@ -102,13 +117,14 @@ Enter 'help' for a list of built-in commands.
 root@OpenWrt:/# 
 //}
 
-上記のように接続ができたでしょうか？
-
-//cmd{
-root@OpenWrt:~# ps | grep ofprotocol
- 1453 root      1128 S    ofprotocol unix:/var/run/dp0.sock tcp:192.168.1.1:6
- 1491 root      1468 S    grep ofprotocol
-}
+上記のように接続ができたでしょうか？ 
+接続ができたら、OpenFlow スイッチの設定ファイルを見てみましょう。
+設定ファイルは、/etc/config 配下にあります。
+IP アドレス等、ネットワーク関連の設定は、network ファイルに
+記載されています (@<list>{config_network})。
+WAN 側ポートは OpenFlow スイッチ上では eth1 に対応しているので、
+IP アドレスを変更したい場合には eth1 の ipaddr の値を変更してください。
+変更後の値を反映させるためには、再起動が必要です。
 
 //list[config_network][/etc/config/network ファイル]{
 config 'interface' 'wan'
@@ -164,7 +180,20 @@ config 'interface'
 //}
 
 
-//list[config_network][/etc/config/openflow ファイル]{
+OpenFlow 関連の設定は、openflow ファイルに記載されています
+(@<list>{config_openflow})。
+OpenFlow スイッチのポートとして使用する
+LAN 側の 4 ポートはそれぞれ eth0.1, eth0.2, eth0.3, eth0.4 に対応しており、
+ofports オプションの部分に指定されます。
+また OpenFlow コントローラの IP アドレス、ポート番号は ofctl の値として
+指定されるので、変更したい場合はこのオプションの値を変更してください。
+変更した設定は、以下のコマンドで反映させることができます。
+
+//cmd{
+$ /etc/init.d/openflow restart
+}
+
+//list[config_openflow][/etc/config/openflow ファイル]{
 config 'ofswitch'
       option 'dp' 'dp0'
       option 'ofports' 'eth0.1 eth0.2 eth0.3 eth0.4'
