@@ -1,0 +1,71 @@
+% ruby.sty	ルビを使うためのスタイルファイル
+%		by y-takata@ics.osaka-u.ac.jp (~/.TAKABE)
+%			Mar. ix, mcmxcii
+%			May  viii, mcmxcii modified
+%			Feb. viii, mcmxciii modified
+%				change glues on the end of ruby
+%
+% \ruby[<n|p>]{<熟語>}{<ふりがな>}
+%     : <熟語>の上に<ふりがな>を付けるマクロ．
+%	<熟語>の最上辺から\rubysep だけ上に<ふりがな>のベースラインを
+%	合わす．
+%
+%	[]部分を省略した場合，<熟語>を自然な文字間隔で組版し，
+%	<ふりがな>は，
+%	(1)<熟語>の幅より短ければ<熟語>の幅に合わせて均等割り付けする．
+%	(2)<熟語>の幅より長ければ<熟語>の左右にはみ出させる．つまり左
+%	   右の語の上にかぶさせる．
+%  OPTIONS
+%   n : (narrow)
+%	<ふりがな>または<熟語>の均等割り付けをやめる．
+%   s : (no sticking out)
+%	<ふりがな>が<熟語>の外にはみ出さないようにする．すなわち，
+%	<ふりがな>の幅が<熟語>より長い場合，<ふりがな>の幅に合わせて
+%	<熟語>を均等割り付けする．
+%
+% \rubysep
+%     : <熟語>の最上辺と<ふりがな>のベースラインの間のグルー．
+%	デフォルトは 0pt．
+%
+% \rubysize
+%     : カレントフォントの大きさに対する<ふりがな>の大きさを決める
+%	マクロ．
+%
+%	参考:
+%	  奥村晴彦: LaTeX 美文書作成入門，技術評論社．
+%
+\def\ruby{\@ifnextchar [{\@ruby}{\@ruby[]}}
+\def\@ruby[#1]#2#3{%
+  \setbox\@rubyboxk\hbox{#2}\setbox\@rubyboxr\hbox{\rubysize #3}%
+  \@rubyw\wd\@rubyboxk
+  \@rubyh\ht\@rubyboxk \advance\@rubyh\dp\@rubyboxr
+  \advance\@rubyh\rubysep
+  \skip@=0pt plus 1fil % 均等割の文字間グルー
+  \@tfor \@tempa :=#1\do{%
+    \if\@tempa n\skip@\kanjiskip \fi
+    \if\@tempa s%
+      \ifdim\wd\@rubyboxr >\wd\@rubyboxk \@rubyw\wd\@rubyboxr \fi\fi}%
+  \leavevmode\vbox{\kanjiskip\skip@%
+    \baselineskip\@rubyh
+%   \lineskiplimit=0pt \lineskip=0pt % 熟語とルビが重なるときのグルー
+    \hbox to\@rubyw{\hss\unhbox\@rubyboxr\hss}
+    \hbox to\@rubyw{\hss\unhbox\@rubyboxk\hss}}}
+
+% 漢字とルビのすきま
+\newlength{\rubysep} \rubysep=0pt
+
+% ルビのフォントサイズを選ぶルール
+\def\rubysize{%
+  \ifx\@currsize\large\scriptsize
+  \else\ifx\@currsize\Large\footnotesize
+  \else\ifx\@currsize\LARGE\small
+  \else\ifx\@currsize\huge\normalsize
+  \else\ifx\@currsize\Huge\normalsize
+  \else \tiny \fi\fi\fi\fi\fi}
+
+% その他
+\chardef\@rubyboxk=0
+\chardef\@rubyboxr=2
+\def\@rubyw{\dimen@}
+\def\@rubyh{\dimen@ii}
+

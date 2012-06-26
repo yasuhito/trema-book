@@ -42,7 +42,7 @@ coverfile: _cover.html
 # stylesheet: book.css
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
-# texstyle: samplemacro
+texstyle: ruby
 
 # LaTeX用のdocumentclassを指定する
 # texdocumentclass: ["jsarticle", "b5paper,oneside"]
