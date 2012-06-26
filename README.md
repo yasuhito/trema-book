@@ -29,3 +29,10 @@
  * まちがいやコメント等ありましたら、チケットを切ってください: https://github.com/yasuhito/trema-book/issues
  * 原稿のマークアップ文法はこちら: https://github.com/kmuto/review/blob/master/doc/format.rdoc
  * 貢献いただいた方リスト: https://github.com/yasuhito/trema-book/blob/master/acknowledgements.txt
+
+
+# License
+
+This book is released under the GNU General Public License version 3.0:
+
+ * http://www.gnu.org/licenses/gpl-3.0.html
