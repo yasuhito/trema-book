@@ -13,12 +13,12 @@
 まで無くしてしもうたわい! ワッハッハ」@<br>{}
 
 //noindent
-このおじいさん、すこし酔っていて陽気ですが足元を見るとたしかに裸足です。
-それに着物のすそがやたらと汚れていて、どうやら酔った勢いだけで友太郎君
-の住む武蔵小杉まではるばる歩いてきてしまったようです。@<br>{}
+このおじいさん、酔っていて陽気ですが足元を見るとたしかに裸足です。それ
+に着物のすそがやたらと汚れていて、どうやら酔った勢いだけで友太郎君の住
+む武蔵小杉まではるばる歩いてきてしまったようです。@<br>{}
 
 //noindent
-@<em>{取間先生}「そこで悪いのじゃが友太郎君、今夜はこのおかしな老人めを
+@<em>{取間先生}「そこで悪いのじゃが友太郎君、今夜はこのみじめな老人めを
 泊めてくれんか？お礼と言ってはなんじゃが、始発まで時間はたっぷりあるか
 ら Trema についてまだ話してなかったことをすべて教えよう。友太郎君は
 Trema でいろいろとアプリを書いているようだし、いろいろ聞きたい事もある
@@ -34,14 +34,39 @@ Trema でいろいろとアプリを書いているようだし、いろいろ�
 @<tt>{-v} オプションをつけると見ることができるぞ。さっそく、サンプルの
 learning-switch (@<chap>{learning_switch}) を試しに起動してみてごらん」
 
-#@warn(後で解説する箇所をすべてここのログで見せること)
 //cmd{
-% ./trema run src/examples/learning_switch/learning-switch.rb \\
-  -c src/examples/learning_switch/learning_switch.conf -v
-.../trema/objects/switch_manager/switch_manager --daemonize \\
---port=6633 -- port_status::LearningSwitch packet_in::LearningSwitch \\
-state_notify::LearningSwitch vendor::LearningSwitch
-...
+% ./trema run learning-switch.rb -c learning_switch.conf -v
+.../switch_manager --daemonize --port=6633 -- \
+  port_status::LearningSwitch packet_in::LearningSwitch \
+  state_notify::LearningSwitch vendor::LearningSwitch
+sudo ip link delete trema0-0 2>/dev/null
+sudo ip link delete trema1-0 2>/dev/null
+sudo ip link add name trema0-0 type veth peer name trema0-1
+sudo sysctl -w net.ipv6.conf.trema0-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema0-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema0-0 up
+sudo /sbin/ifconfig trema0-1 up
+sudo ip link add name trema1-0 type veth peer name trema1-1
+sudo sysctl -w net.ipv6.conf.trema1-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema1-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema1-0 up
+sudo /sbin/ifconfig trema1-1 up
+sudo .../phost/phost -i trema0-1 -p .../trema/tmp/pid -l .../trema/tmp/log -D
+sudo .../phost/cli -i trema0-1 set_host_addr --ip_addr 192.168.0.1 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:01
+sudo .../phost/phost -i trema1-1 -p .../trema/tmp/pid -l .../trema/tmp/log -D
+sudo .../phost/cli -i trema1-1 set_host_addr --ip_addr 192.168.0.2 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:02
+sudo .../openvswitch/bin/ovs-openflowd --detach --out-of-band --fail=closed \
+  --inactivity-probe=180 --rate-limit=40000 --burst-limit=20000 \
+  --pidfile=.../trema/tmp/pid/open_vswitch.lsw.pid --verbose=ANY:file:dbg \
+  --verbose=ANY:console:err --log-file=.../trema/tmp/log/openflowd.lsw.log \
+  --datapath-id=0000000000000abc --unixctl=.../trema/tmp/sock/ovs-openflowd.lsw.ctl \
+   --ports=trema0-0,trema1-0 netdev@vsw_0xabc tcp:127.0.0.1:6633
+sudo .../phost/cli -i trema0-1 add_arp_entry --ip_addr 192.168.0.2 \
+  --mac_addr 00:00:00:01:00:02
+sudo .../phost/cli -i trema1-1 add_arp_entry --ip_addr 192.168.0.1 \
+  --mac_addr 00:00:00:01:00:01
 //}
 
 //noindent
@@ -50,6 +75,8 @@ state_notify::LearningSwitch vendor::LearningSwitch
 とをしてくれているのかスグわかるのじゃ。たとえばログの最初を見ると、
 switch_manager というプロセスが起動されておるな？ Trema ではこのプロセ
 スがスイッチと最初に接続するんじゃ。」
+
+#@warn(port_status:: とかの引数の説明)
 
 === スイッチとの接続
 
@@ -72,29 +99,44 @@ Switch Manager はスイッチからの接続要求を待ち受けるデーモ�
 ==== Switch Daemon
 
 Switch Daemon は、Switch Manager が確立したスイッチとの接続を引き継ぎ、
-スイッチと Trema 上のアプリケーションプロセスとの仲介をします。
+スイッチと Trema 上のアプリケーションプロセスとの間で流れる OpenFlow メッ
+セージを仲介します (@<img>{switch_daemon})。
+
+//image[switch_daemon][スイッチと Trema アプリケーションの間で OpenFlow メッセージを仲介する Switch Daemon][scale=0.3]
 
  * アプリケーションプロセスが生成した OpenFlow メッセージをスイッチへ
    配送する
  * スイッチから受信した OpenFLow メッセージをアプリケーションプロセス
    へ届ける
 
-Switch Daemon は、交換される OpenFlow メッセージの中身をすべて検査し
-ます。もし不正なメッセージを発見するとエラーを出します。@<br>{}
+Switch Daemon の重要な仕事として、OpenFlow メッセージの検査があります。
+Switch Daemon は Trema アプリケーションとスイッチの間で交換される
+OpenFlow メッセージの中身をすべて検査します。そして、もし不正なメッセー
+ジを発見するとエラーを出します。@<br>{}
+
+#@warn(エラーはどこに出すか説明)
 
 //noindent
-@<em>{友太郎}「いくつかのプロセスで役割分担ができていて、いかにも UNIX
-っぽいですね。送信するメッセージは厳密にチェックするのはいいと思うんで
-すが、受信もチェックするのってやりすぎではないですか？ほら、"送信する
-ものは厳密に、受信するものは寛容に" って言うじゃないですか」@<br>{}
-@<em>{取間先生}「受信メッセージのチェックをあまり寛容にすると、後々とんでも
-ないことが起こるのじゃ。Trema の開発者が言っておったが、昔それをやって
-インターオペラビリティのテストで死ぬ目に遭ったそうじゃよ。それに、
-Trema は受信メッセージもちゃんとチェックするようにしたおかげで、実際に
-助かったことがたくさんあったそうじゃ。たとえば OpenFlow の標準的なベン
-チマークツール cbench のバグを発見したのも Trema チームだし、この間の
-Interop では様々なベンダのスイッチのバグ発見に一役買ったそうじゃ」@<br>{}
+@<em>{友太郎}「Switch Manager と Switch Daemon プロセスでの役割分担とか、
+スイッチごとに Switch Daemon プロセスが起動するところなど、いかにも
+UNIX っぽいですね。」@<br>{}
+@<em>{取間先生}「うむ。そうしたほうがひとつひとつのデーモンが単純化できるからな」@<br>{}
+@<em>{友太郎}「送信するメッセージを厳密にチェックするのはいいと思うんで
+すが、受信もチェックするのってやりすぎではないですか？ほら、"送信するも
+のは厳密に、受信するものは寛容に" って言うじゃないですか」@<br>{}
+@<em>{取間先生}「受信メッセージのチェックをあまり寛容にすると、後々とん
+でもないことが起こるのじゃ。Trema の開発者が言っておったが、昔それをやっ
+て相互接続テストで死ぬ目に遭ったそうじゃよ。それに、Trema は受信メッセー
+ジもちゃんとチェックするようにしたおかげで、実際に助かったことがたくさ
+んあったのじゃ。たとえば OpenFlow の標準的なベンチマークツール cbench
+のバグを発見したのも Trema チームだし、2012 年の Interop での OpenFlow
+相互接続では様々なベンダのスイッチのバグ発見に Trema が一役買ったそうじゃ
+(@<img>{trema_interop})」@<br>{}
 @<em>{友太郎}「へえー! すごいですね!」
+
+//image[trema_interop][2012 年 Interop で活躍した Trema ベースの OpenFlow コントローラ Rise (NICT 石井秀治さん提供)][scale=0.6]
+
+Switch Daemon のもうひとつの重要な役割がスイッチの仮想化です。
 
 ===[column] 友太郎の質問: あれれ、Trema バグってる？
 
