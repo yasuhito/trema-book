@@ -108,7 +108,7 @@ Switch Daemon (@<tt>{[trema]/src/switch_manager/}) は、Switch Manager
 
  * アプリケーションプロセスが生成した OpenFlow メッセージをスイッチへ
    配送する
- * スイッチから受信した OpenFLow メッセージをアプリケーションプロセス
+ * スイッチから受信した OpenFlow メッセージをアプリケーションプロセス
    へ届ける
 
 === OpenFlow メッセージの検査
@@ -144,7 +144,7 @@ OpenFlow の標準的なベンチマークツール cbench
 
 //footnote[postel][TCP を規定した RFC 793 において、ジョン・ポステルが "相互運用性を確保するために TCP の実装が持つべき性質" として要約した、いわゆる堅牢さ原則のこと。]
 
-//image[trema_interop][2012 年 Interop で活躍した Trema ベースの OpenFlow コントローラ Rise。各ベンダの OpenFlow スイッチのバグをたくさん発見した。(NICT 石井秀治さん提供)][scale=0.6]
+//image[trema_interop][2012 年 Interop で活躍した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相性問題をたくさん解決した。(NICT 石井秀治さん提供)][scale=0.6]
 
 #@warn(パディングを 0 で埋めている話を、取間先生コラムとしてここに追加)
 
@@ -582,6 +582,12 @@ Trema Apps の中でとくに実用的なアプリを中心に解説していき
 ラリを使うことで、オリジナルのラーニングスイッチにほとんど変更を加えず
 に memcached 対応できているところがポイントです。また、マルチラーニング
 スイッチ (@<chap>{openflow_framework_trema}) の memcached 版もあります。
+
+=== シンプルマルチキャスト
+
+IPTV サービスで使われているマルチキャスト転送を実現するコントローラです。
+配信サーバから送られたパケットを OpenFlow スイッチがコピーして、
+すべての視聴者へと届けます。
 
 === フローダンパー
 
