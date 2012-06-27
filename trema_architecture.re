@@ -13,9 +13,9 @@
 まで無くしてしもうたわい! ワッハッハ」@<br>{}
 
 //noindent
-このおじいさん、酔っていて陽気ですが足元を見るとたしかに裸足です。それ
-に着物のすそがやたらと汚れていて、どうやら酔った勢いだけで友太郎君の住
-む武蔵小杉まではるばる歩いてきてしまったようです。@<br>{}
+この取間先生、酔っていて陽気ですが足元を見るとたしかに裸足です。それに
+着物のすそがやたらと汚れていて、どうやら酔った勢いだけで友太郎君の住む
+武蔵小杉まではるばる歩いてきてしまったようです。@<br>{}
 
 //noindent
 @<em>{取間先生}「そこで悪いのじゃが友太郎君、今夜はこのみじめな老人めを
@@ -36,8 +36,8 @@ learning-switch (@<chap>{learning_switch}) を試しに起動してみてごら�
 
 //cmd{
 % ./trema run learning-switch.rb -c learning_switch.conf -v
-.../switch_manager --daemonize --port=6633 -- \
-  port_status::LearningSwitch packet_in::LearningSwitch \
+.../switch_manager --daemonize --port=6633 \
+  -- port_status::LearningSwitch packet_in::LearningSwitch \
   state_notify::LearningSwitch vendor::LearningSwitch
 sudo ip link delete trema0-0 2>/dev/null
 sudo ip link delete trema1-0 2>/dev/null
@@ -76,9 +76,9 @@ sudo .../phost/cli -i trema1-1 add_arp_entry --ip_addr 192.168.0.1 \
 switch_manager というプロセスが起動されておるな？ Trema ではこのプロセ
 スがスイッチと最初に接続するんじゃ。」
 
-#@warn(port_status:: とかの引数の説明)
+#@warn(port_status:: とかの引数が Switch Manager に渡ることの説明)
 
-=== スイッチとの接続
+== Switch Manager
 
 Switch Manager はスイッチからの接続要求を待ち受けるデーモンです。スイッ
 チとの接続を確立すると、子プロセスとして Switch Daemon プロセスを起動し、
@@ -96,7 +96,7 @@ Switch Manager はスイッチからの接続要求を待ち受けるデーモ�
 まうというわけじゃ」@<br>{}
 @<em>{友太郎君}「なるほど! たしかに仕組みが inetd とよく似ていますね」
 
-==== Switch Daemon
+== Switch Daemon
 
 Switch Daemon は、Switch Manager が確立したスイッチとの接続を引き継ぎ、
 スイッチと Trema 上のアプリケーションプロセスとの間で流れる OpenFlow メッ
@@ -167,7 +167,7 @@ Switch Daemon は、こうした Cookie 値の重複を避けるための変換�
 ===[/column]
 
 
-=== Trema C ライブラリの構成
+== Trema C ライブラリ
 
 @<em>{友太郎}「あっそういえば、Trema って実は C からも使えるらしいじゃ
 ないですか。せっかくだから、どんなライブラリがあるか教えてくださいよ」@<br>{}
@@ -176,7 +176,7 @@ Switch Daemon は、こうした Cookie 値の重複を避けるための変換�
 がら説明することにしよう」@<br>{}
 @<em>{友太郎}「いいですね! そうしましょう」
 
-==== OpenFlow Application Interface
+=== OpenFlow Application Interface
 
 OpenFlow メッセージを受信したときにアプリケーションのハンドラを起動した
 り、逆にアプリケーションが送信した OpenFlow メッセージを適切なSwitch
@@ -198,7 +198,7 @@ OpenFlow Application Interface は、受信した OpenFlow メッセージをア
 れたりするってことですか？」@<br>{}
 @<em>{取間先生}「そうそう、そういうことじゃ。友太郎君冴えておるぞ」
 
-==== OpenFlow Messages
+=== OpenFlow Messages
 
 アプリケーションが OpenFlow メッセージを生成する際に利用するのが、
 OpenFlow Messages (@<tt>{src/lib/openflow_message.c}) です。メッセージ
@@ -221,7 +221,7 @@ Switch Daemon を介してスイッチへ送信します。@<br>{}
 てくれないことがほとんどなのじゃ。。。」@<br>{}
 @<em>{友太郎}「そうなんですね! Trema って便利だなあ」
 
-==== パケットパーサ
+=== パケットパーサ
 
 packet_in メッセージに含まれるイーサネットフレームを解析したり、解析結
 果を参照する API を提供したりするのが、パケットパーサ
@@ -229,20 +229,20 @@ packet_in メッセージに含まれるイーサネットフレームを解析�
 といったパケットの種類の判別や、MAC や IP アドレスといったヘッダフィー
 ルド値の参照を用意にしています。
 
-==== プロセス間通信
+=== プロセス間通信
 
 Switch Daemon とユーザのアプリケーション間の OpenFlow メッセージのやり
 とりなど、プロセス間の通信には @<tt>{src/lib/messenger.c} で定義される
 プロセス間通信 API が使われます。
 
-==== 基本データ構造
+=== 基本データ構造
 
 その他、C ライブラリでは基本的なデータ構造を提供しています。たとえば、
 可変長バッファ (@<tt>{src/lib/buffer.c})、連結リスト
 (@<tt>{linked_list.c, doubly_linked_list.c})、ハッシュテーブル
 (@<tt>{src/lib/hash_table.c}) などです。
 
-=== 仮想ネットワークの仕組み
+== 仮想ネットワーク
 
 //noindent
 @<em>{友太郎}「Trema でなにがうれしいかって、仮想ネットワークの機能です
@@ -252,7 +252,7 @@ Switch Daemon とユーザのアプリケーション間の OpenFlow メッセ�
 使って、仮想スイッチプロセスと仮想ホストプロセスをつなげているだけじゃ」@<br>{}
 @<em>{友太郎}「？」
 
-==== 仮想スイッチ
+=== 仮想スイッチ
 
 ソフトウェア実装の OpenFlow スイッチです。Trema では、フリーの
 OpenFlow スイッチ実装である Open vSwitch
@@ -261,7 +261,7 @@ OpenFlow スイッチ実装である Open vSwitch
 (@<tt>{vswitch} で始まる行) に従って、スイッチプロセスを必要な数だけ起
 動します。
 
-==== 仮想ホスト
+=== 仮想ホスト
 
 仮想ホストの実態は、任意のイーサネットインタフェースから任意のイーサネッ
 トフレーム・UDP/IP パケットを送受信できる phost と呼ばれるソフトウェア
@@ -269,7 +269,7 @@ OpenFlow スイッチ実装である Open vSwitch
 ル中の仮想ホスト定義 (@<tt>{vhost} で始まる行) に従って、必要な数のホス
 トプロセスを起動します。
 
-==== 仮想リンク
+=== 仮想リンク
 
 仮想スイッチと仮想ホストを接続するため、Linux が標準で提供する Virtual
 Ethernet Device を仕様しています。これは、Point-to-Point のイーサネット
