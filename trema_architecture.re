@@ -333,47 +333,49 @@ Switch Daemon とユーザのアプリケーション間の OpenFlow メッセ�
 
 == 低レベルデバッグツール Tremashark
 
+コンビニから帰ってきましたが、深夜の二人のTrema 談義はさらに続きます。@<br>{}
+
 //noindent
 @<em>{取間先生}「こうして見ると Trema って意外と複雑じゃろう。もし友太
-郎君がさらに Trema をハックしてみたいとして、ふつうにやるのはちょっとた
-いへんだと思うから、いいツールを紹介してあげよう。これは Tremashark と
-言って、Trema の内部動作を可視化してくれるありがたいツールじゃ。これを
-使うと、アプリケーションと Switch Daemon の間でやりとりされるメッセージ
-など、いろんなものが Wireshark の GUI で見られて便利じゃぞ!」@<br>{}
+郎君がさらに Trema をハックしてみたいとして、ツールの手助け無しにやるの
+はちょっとたいへんだと思うから、いいツールを紹介してあげよう。これは
+Tremashark と言って、Trema の内部動作を可視化してくれるありがたいツール
+じゃ。これを使うと、アプリケーションと Switch Daemon の間でやりとりされ
+るメッセージの中身など、いろんなものが Wireshark の GUI で見られて便利じゃぞ」@<br>{}
 @<em>{友太郎}「おお! ぜひ教えてください!」
 
 === Tremashark の強力な機能
 
-Tremashark は Trema の内部動作と関連するさまざまな情報を可視化するもの
-で、具体的には次の情報を収集/解析/表示する機能を持ちます (@<img>{tremashark_overview})。
+Tremashark は Trema の内部動作と関連するさまざまな情報を可視化するツール
+で、具体的には次の情報を収集・解析し、表示する機能を持ちます (@<img>{tremashark_overview})。
 
- 1. Trema 内部・アプリケーションのモジュール間通信 (IPC) イベント
+ 1. Trema 内部やアプリケーション間の通信 (IPC) イベント
  2. セキュアチャネル、および任意のネットワークインタフェース上を流れるメッセージ
- 3. スイッチなどから送信された Syslog メッセージ
- 4. スイッチの CLI 出力など、任意テキスト文字列
+ 3. スイッチやホストなどから送信された Syslog メッセージ
+ 4. スイッチの CLI 出力など、任意の文字列
 
 //image[tremashark_overview][Tremashark の概要]
 
-情報の収集を行うのが Tremashark イベントコレクタと呼ばれるモジュールで
-す。これは、Trema 内部、もしくは外部プロセス・ネットワーク装置から情報
-を収集して時系列に整列します。整列した情報は、ファイルに保存したりユー
-ザインタフェース上でリアルタイムに表示したりできます。
+各種情報の収集を行うのが Tremashark イベントコレクタです。これは、
+Trema 内部や外部プロセス・ネットワーク装置などから情報を収集し、時系列
+順に整列します。整列した情報は、ファイルに保存したりユーザインタフェー
+ス上でリアルタイムに表示したりできます。
 
-Tremashark のユーザインタフェースは Wireshark と Trema 用プラグインから
-構成されています。Tremashark イベントコレクタによって収集した情報はこの
-プラグインが解析し、GUI もしくは CUI 上に表示されます。
+Tremashark のユーザインタフェースは Wireshark と Trema プラグインからな
+ります。イベントコレクタによって収集した情報はこのプラグインが解析し、
+Wireshark の GUI もしくは CUI 上に表示します。
 
 === 動かしてみよう
 
-Tremashark イベントコレクタは、Trema をビルドする際に自動的にビルドされ
-ます。しかし、ユーザインタフェースは標準ではビルドされていませんので、
-利用するには次の準備が必要です。
+イベントコレクタは、Trema をビルドする際に自動的にビルドされます。しか
+し、Trema プラグイン標準ではビルドされませんので、利用するには次の準備
+が必要です。
 
 ==== Wireshark のインストール
 
-Tremashark のユーザインタフェースは Wireshark を利用していますので、
-Wireshark のインストールが必要です。Ubuntu Linux や Debian GNU/Linux で
-は、次のようにインストールできます。
+Tremashark のユーザインタフェースは Wireshark を利用していますので、ま
+ずは Wireshark のインストールが必要です。Ubuntu Linux や Debian
+GNU/Linux での手順は次のようになります。
 
 //cmd{
 % sudo apt-get install wireshark
@@ -401,7 +403,7 @@ Ubuntu Linux 11.10 の場合の手順は次のとおりです。
 
 ==== OpenFlow プラグインのインストール
 
-Trema のモジュール間で交換される OpenFlow メッセージを解析・表示するに
+Trema のモジュール間で交換される OpenFlow メッセージを解析し表示するに
 は、Trema プラグインに加えて OpenFlow プロトコルのプラグインも必要です。
 OpenFlow プロトコルのプラグインは OpenFlow のリファレンス実装とともに配
 布されており、次の手順でインストールできます。
@@ -417,38 +419,38 @@ OpenFlow プロトコルのプラグインは OpenFlow のリファレンス実�
 
 ==== 実行してみよう
 
-いよいよ、Tremashark を使ってみましょう。ここでは、Trema のモジュール間
-通信を覗いてみます。Trema サンプルアプリケーションとして提供されている
-Learning Switch と Switch Daemon 間の通信を見てみることにします。
+いよいよ、Tremashark を使って Trema のモジュール間通信を覗いてみましょ
+う。例として Trema サンプルアプリケーションのひとつ Learning Switch と
+Switch Daemon 間の通信を見てみることにします。
 
-次のコマンドで Learning Switch を起動してください。オプションに -s を指
-定することで、Tremashark のイベントコレクタとユーザインタフェースが起動
-します。
+まず、次のコマンドで Learning Switch を起動してください。ここでオプショ
+ンに @<tt>{-s} を指定することで、Tremashark のイベントコレクタとユーザ
+インタフェースが起動します。
 
 //cmd{
-% ./trema run src/examples/learning_switch/learning-switch.rb \\
-  -c src/examples/learning_switch/learning_switch.conf -s -d
+% ./trema run learning-switch.rb -c learning_switch.conf -s -d
 //}
 
-Learning Switch の起動後、Tremashark イベントコレクタへの IPC イベント
-通知を有効にします。これは、モジュールのプロセスに USR2 シグナルを送る
-ことで有効にできます。シグナルを送るための各モジュールのプロセスの PID
-は、Trema のディレクトリの下の @<tt>{tmp/pid} 以下のファイルに保存され
-ています。Ruby で書かれたアプリケーションの PID は、
-[コントローラのクラス名].pid という名前のファイルに保存されます。
-Switch Daemon の PID は、switch.[管理するスイッチの Datapath ID].pid と
-いう名前のファイルに保存されます。
+Learning Switch の起動後、イベントコレクタへのイベント通知を有効にする
+必要があります。これは、イベントを収集したいプロセスに USR2 シグナルを
+送ることで有効にできます。シグナルを送るための各プロセスの PID は、
+Trema のディレクトリの下の @<tt>{tmp/pid} 以下のファイルに保存されてい
+ます。たとえば、Ruby で書かれたアプリケーションの PID は、"[コントロー
+ラのクラス名].pid" という名前のファイルに保存されます。また Switch
+Daemon の PID は、"switch.[管理するスイッチの Datapath ID].pid" という
+名前のファイルに保存されます。
 
-今回の例では、次のようにアプリケーションと Switch Daemon に対してシグナ
-ルを送りましょう。
+今回の例では、Learning Switch と Switch Daemon のイベントを見るのですか
+ら、次のように @<tt>{kill} コマンドを使って各プロセスへ USR2 シグナルを送ります。
 
 //cmd{
 % kill -USR2 `cat tmp/pid/LearningSwitch.pid`
 % kill -USR2 `cat tmp/pid/switch.0x1.pid`
 //}
 
-これで、モジュール間の IPC イベントを除く準備ができました。たとえば、以
-下のようにスイッチに接続されたホスト間でパケットを交換してみましょう。
+これで、プロセス間の IPC イベントを覗く準備ができました。ではイベントを
+発生させるために、以下のようにスイッチに接続されたホスト間でパケットを
+交換してみましょう。
 
 //cmd{
 % ./trema send_packets --source host1 --dest host2
@@ -456,18 +458,18 @@ Switch Daemon の PID は、switch.[管理するスイッチの Datapath ID].pid
 //}
 
 すると、@<img>{tremashark_gui} に示すようにモジュール間の通信をリアルタ
-イムに観測できます。これによって、モジュール間で正常に情報交換が行われ
-ていることや、アプリケーションが OpenFlow メッセージの送受信を正常に行っ
-ているかどうかなどを知ることができます。
+イムに観測できます。これによって、アプリケーションがどのような
+OpenFlow メッセージを送受信しているかなどを知ることができます。
 
 //image[tremashark_gui][Tremashark ユーザインタフェース]
 
-たとえば、@<img>{tremashark_gui} の No.7 〜 No.10 のメッセージにより、
-packet_in メッセージをトリガとして、Learning Switch が Flow Mod メッセー
-ジをスイッチに対して送信していることがわかります
-(@<img>{trema_internal_by_tremashark})。
+たとえば、@<img>{tremashark_gui} の一連の解析結果 (7, 8, 9, 10 番のメッ
+セージ) により、Packet In メッセージをトリガとして Learning Switch が
+Flow Mod メッセージをスイッチ 0x1 に対して送信していることがわかります。
+また、下半分のペインには送信した Flow Mod メッセージの各フィールドの値
+が表示されています (@<img>{trema_internal_with_tremashark})。
 
-//image[trema_internal_by_tremashark][@<img>{tremashark_gui} からわかる Trema の内部動作]
+//image[trema_internal_with_tremashark][Tremashark による解析結果 (@<img>{tremashark_gui})]
 
 == Trema Apps
 
