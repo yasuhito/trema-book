@@ -169,6 +169,88 @@ Switch Daemon は、こうした Cookie 値の重複を避けるための変換�
 ID も自動変換を行います。まさに Trema の世界の平和を守る縁の下の力持ち
 と言えます。
 
+== 仮想ネットワーク
+
+//noindent
+@<em>{友太郎}「Trema でなにがうれしいかって、仮想ネットワークの機能です
+よね! おかげでノート PC 1 台で開発できるからすっごく楽なんですけど、あ
+れってどういうしくみなんですか？」@<br>{}
+@<em>{取間先生}「むずかしいことはしておらん。Linux カーネルの標準機能を
+使って、仮想スイッチプロセスと仮想ホストプロセスをつなげているだけじゃ」@<br>{}
+@<em>{友太郎}「？」
+
+=== 仮想スイッチ
+
+仮想スイッチの実体は、フリーの OpenFlow スイッチ実装である Open
+vSwitch (@<tt>{http://openvswitch.org/}) です。@<tt>{trema run} コマン
+ドに与えられた仮想ネットワーク設定ファイル中の仮想スイッチ定義
+(@<tt>{vswitch} で始まる行) に従って、Trema はスイッチプロセスを必要な
+数だけ起動します。@<tt>{trema run} のログの以下の部分がそれに当たります。
+
+//cmd{
+% ./trema run learning-switch.rb -c learning_switch.conf -v
+  ...
+sudo .../openvswitch/bin/ovs-openflowd --detach --out-of-band --fail=closed \
+  --inactivity-probe=180 --rate-limit=40000 --burst-limit=20000 \
+  --pidfile=.../trema/tmp/pid/open_vswitch.lsw.pid --verbose=ANY:file:dbg \
+  --verbose=ANY:console:err --log-file=.../trema/tmp/log/openflowd.lsw.log \
+  --datapath-id=0000000000000abc --unixctl=.../trema/tmp/sock/ovs-openflowd.lsw.ctl \
+   --ports=trema0-0,trema1-0 netdev@vsw_0xabc tcp:127.0.0.1:6633
+  ...
+//}
+
+=== 仮想ホスト
+
+仮想ホストの実体は、phost と呼ばれるユーザレベルプロセスです
+(@<tt>{vendor/phost/})。これは、任意のイーサネットフレーム・UDP/IP パケッ
+トを送受信できます。@<tt>{trema run} コマンドに与えられた設定ファイル中
+の仮想ホスト定義 (@<tt>{vhost} で始まる行) に従って、Trema は必要な数の
+phost プロセスを起動します。@<tt>{trema run} のログの以下の部分がそれに
+当たります。
+
+//cmd{
+% ./trema run learning-switch.rb -c learning_switch.conf -v
+  ...
+sudo .../phost/phost -i trema0-1 -p .../trema/tmp/pid -l .../trema/tmp/log -D
+sudo .../phost/cli -i trema0-1 set_host_addr --ip_addr 192.168.0.1 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:01
+sudo .../phost/phost -i trema1-1 -p .../trema/tmp/pid -l .../trema/tmp/log -D
+sudo .../phost/cli -i trema1-1 set_host_addr --ip_addr 192.168.0.2 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:02
+  ...
+sudo .../phost/cli -i trema0-1 add_arp_entry --ip_addr 192.168.0.2 \
+  --mac_addr 00:00:00:01:00:02
+sudo .../phost/cli -i trema1-1 add_arp_entry --ip_addr 192.168.0.1 \
+  --mac_addr 00:00:00:01:00:01
+//}
+
+=== 仮想リンク
+
+仮想スイッチと仮想ホストを接続する仮想リンクの実体は、Linux が標準で提
+供する Virtual Ethernet Device です。これは、Point-to-Point のイーサネッ
+トリンクを仮想的に構成してくれるものです。@<tt>{trema run} コマンドに与
+えられた仮想ネットワーク設定ファイル中の仮想リンク定義 (@<tt>{link} で
+始まる行)に従って、Trema は必要な数の仮想リンクを作ります。@<tt>{trema run}
+のログの以下の部分がそれに当たります。
+
+//cmd{
+% ./trema run learning-switch.rb -c learning_switch.conf -v
+  ...
+sudo ip link delete trema0-0 2>/dev/null
+sudo ip link delete trema1-0 2>/dev/null
+sudo ip link add name trema0-0 type veth peer name trema0-1
+sudo sysctl -w net.ipv6.conf.trema0-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema0-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema0-0 up
+sudo /sbin/ifconfig trema0-1 up
+sudo ip link add name trema1-0 type veth peer name trema1-1
+sudo sysctl -w net.ipv6.conf.trema1-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema1-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema1-0 up
+sudo /sbin/ifconfig trema1-1 up
+  ...
+//}
+
 == Trema C ライブラリ
 
 @<em>{友太郎}「そういえば、Trema って実は C からも使えるらしいじゃない
@@ -243,43 +325,6 @@ Switch Daemon とユーザのアプリケーション間の OpenFlow メッセ�
 可変長バッファ (@<tt>{src/lib/buffer.c})、連結リスト
 (@<tt>{linked_list.c, doubly_linked_list.c})、ハッシュテーブル
 (@<tt>{src/lib/hash_table.c}) などです。
-
-== 仮想ネットワーク
-
-//noindent
-@<em>{友太郎}「Trema でなにがうれしいかって、仮想ネットワークの機能です
-よね! おかげでノート PC 1 台で開発できるからすっごく楽なんですけど、あ
-れってどういうしくみなんですか？」@<br>{}
-@<em>{取間先生}「むずかしいことはしておらん。Linux カーネルの標準機能を
-使って、仮想スイッチプロセスと仮想ホストプロセスをつなげているだけじゃ」@<br>{}
-@<em>{友太郎}「？」
-
-=== 仮想スイッチ
-
-ソフトウェア実装の OpenFlow スイッチです。Trema では、フリーの
-OpenFlow スイッチ実装である Open vSwitch
-(@<tt>{http://openvswitch.org/}) を利用しています。"trema run" コマン
-ドに与えられた仮想ネットワーク設定ファイル中の仮想スイッチ定義
-(@<tt>{vswitch} で始まる行) に従って、スイッチプロセスを必要な数だけ起
-動します。
-
-=== 仮想ホスト
-
-仮想ホストの実態は、任意のイーサネットインタフェースから任意のイーサネッ
-トフレーム・UDP/IP パケットを送受信できる phost と呼ばれるソフトウェア
-です (@<tt>{vendor/phost/})。"trema run" コマンドに与えられた設定ファイ
-ル中の仮想ホスト定義 (@<tt>{vhost} で始まる行) に従って、必要な数のホス
-トプロセスを起動します。
-
-=== 仮想リンク
-
-仮想スイッチと仮想ホストを接続するため、Linux が標準で提供する Virtual
-Ethernet Device を仕様しています。これは、Point-to-Point のイーサネット
-リンクを仮想的に構成してくれるものです。"trema run コマンドに与えられた
-仮想ネットワーク設定ファイル中の仮想リンク定義 (@<tt>{link} で始まる行)
-に従って、必要な数の仮想リンクが設定されます。
-
-#@warn(今まで説明してきたこのあたり、trema run -v の出力と対応させたいな)
 
 == 低レベルデバッグツール Tremashark
 
