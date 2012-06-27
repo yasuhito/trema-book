@@ -490,10 +490,10 @@ OpenFlow プロトコルのプラグインは OpenFlow のリファレンス実�
 ==== 実行してみよう
 
 いよいよ、Tremashark を使って Trema のモジュール間通信を覗いてみましょ
-う。例として Trema サンプルアプリケーションのひとつ Learning Switch と
-Switch Daemon 間の通信を見てみることにします。
+う。例として Trema サンプルアプリケーションのひとつ、ラーニングスイッチ
+と Switch Daemon 間の通信を見てみることにします。
 
-まず、次のコマンドで Learning Switch を起動してください。ここでオプショ
+まず、次のコマンドでラーニングスイッチを起動してください。ここでオプショ
 ンに @<tt>{-s} を指定することで、Tremashark のイベントコレクタとユーザ
 インタフェースが起動します。
 
@@ -501,7 +501,7 @@ Switch Daemon 間の通信を見てみることにします。
 % ./trema run learning-switch.rb -c learning_switch.conf -s -d
 //}
 
-Learning Switch の起動後、イベントコレクタへのイベント通知を有効にする
+ラーニンスイッチの起動後、イベントコレクタへのイベント通知を有効にする
 必要があります。これは、イベントを収集したいプロセスに USR2 シグナルを
 送ることで有効にできます。シグナルを送るための各プロセスの PID は、
 Trema のディレクトリの下の @<tt>{tmp/pid} 以下のファイルに保存されてい
@@ -510,8 +510,9 @@ Trema のディレクトリの下の @<tt>{tmp/pid} 以下のファイルに保�
 Daemon の PID は、"switch.[管理するスイッチの Datapath ID].pid" という
 名前のファイルに保存されます。
 
-今回の例では、Learning Switch と Switch Daemon のイベントを見るのですか
-ら、次のように @<tt>{kill} コマンドを使って各プロセスへ USR2 シグナルを送ります。
+今回の例では、ラーニングスイッチと Switch Daemon のイベントを見るのです
+から、次のように @<tt>{kill} コマンドを使って各プロセスへ USR2 シグナル
+を送ります。
 
 //cmd{
 % kill -USR2 `cat tmp/pid/LearningSwitch.pid`
@@ -534,7 +535,7 @@ OpenFlow メッセージを送受信しているかなどを知ることがで�
 //image[tremashark_gui][Tremashark ユーザインタフェース]
 
 たとえば、@<img>{tremashark_gui} の一連の解析結果 (7, 8, 9, 10 番のメッ
-セージ) により、Packet In メッセージをトリガとして Learning Switch が
+セージ) により、Packet In メッセージをトリガとしてラーニングスイッチが
 Flow Mod メッセージをスイッチ 0x1 に対して送信していることがわかります。
 また、下半分のペインには送信した Flow Mod メッセージの各フィールドの値
 が表示されています (@<img>{trema_internal_with_tremashark})。
@@ -547,7 +548,7 @@ Flow Mod メッセージをスイッチ 0x1 に対して送信していること
 @<em>{取間先生}「ここまでわかっていれば、本格的な実用コントローラを作る
 のも難しくはないぞ。そういえば Trema はサンプルとは別に Trema Apps とい
 う実用アプリも公開しておる。何か大きなアプリケーションを作るときに役立
-つと思うから、友太郎君のために紹介しておこうかの」@<br>{}
+つと思うから、友太郎君のためについでに紹介しておこうかの」@<br>{}
 
 == Trema Apps
 
@@ -559,50 +560,47 @@ Trema Apps (@<tt>{http://github.com/trema/apps}) は、Trema を使った実用
 % git clone https://github.com/trema/apps.git
 //}
 
-実はすでに第 III 部で Routing Switch (@<chap>{routing_switch})、
-Topology (@<chap>{routing_switch})、そして Sliceable Switch
+実はすでに第 III 部でルーティングスイッチ (@<chap>{routing_switch})、ト
+ポロジ (@<chap>{routing_switch})、そしてスライス対応スイッチ
 (@<chap>{sliceable_switch}) を紹介してきました。本節では、このほかにも
 Trema Apps の中でとくに実用的なアプリを中心に解説していきます。
 
-=== Redirectable Routing Switch
+=== リダイレクト機能付きルーティングスイッチ
 
-Routing Switch (@<chap>{routing_switch}) の亜種で、ユーザ認証とパケット
-のリダイレクト機能を付け加えたものです。基本的な動作は Routing Switch
-と同じですが、認証されていないホストからのパケットをほかのサーバに強制
-的にリダイレクトします。このしくみを使えばたとえば、認証していないユー
-ザの HTTP セッションを強制的に特定のサイトへ飛ばすなどといったことが簡
-単にできます。
+ルーティングスイッチ (@<chap>{routing_switch}) の亜種で、ユーザ認証とパ
+ケットのリダイレクト機能を付け加えたものです。基本的な動作はルーティン
+グスイッチと同じですが、認証されていないホストからのパケットをほかのサー
+バに強制的にリダイレクトします。このしくみを使えばたとえば、認証してい
+ないユーザの HTTP セッションを強制的に特定のサイトへ飛ばすなどといった
+ことが簡単にできます。
 
-=== Learning switch with memcached
+=== memcached 版ラーニングスイッチ
 
-サンプルプログラムの learning_switch (@<chap>{learning_switch}) と同じ
-機能を持ちますが、FDB の実装に memcached を用いています。Ruby の
-memcached ライブラリを使うことで、オリジナルの learning_switch にほとん
-ど変更を加えずに memcached 対応できているところがポイントです。
+サンプルプログラムのラーニングスイッチ (@<chap>{learning_switch}) と同
+じ機能を持ちますが、FDB の実装に memcached
+(@<tt>{http://memcached.org/}) を用いています。Ruby のmemcached ライブ
+ラリを使うことで、オリジナルのラーニングスイッチにほとんど変更を加えず
+に memcached 対応できているところがポイントです。また、マルチラーニング
+スイッチ (@<chap>{openflow_framework_trema}) の memcached 版もあります。
 
-=== Multi learning switch with memcached
-
-サンプルプログラムの multi_learning_switch
-(@<chap>{openflow_framework_trema}) を memcached 対応したものです。
-
-=== Flow dumper
+=== フローダンパー
 
 OpenFlow スイッチのフローテーブルを取得するためのユーティリティです。デ
 バッグツールとしても便利です。@<chap>{diy_switch} で使いかたを紹介して
 います。
 
-=== Packetin dispatcher
+=== Packet In ディスパッチャ
 
 Packet In メッセージを複数の Trema アプリケーションに振り分けるサンプル
 です。物理アドレスから、ユニキャストかブロードキャストかを判断します。
 
-=== Broadcast helper
+=== ブロードキャストヘルパ
 
 ブロードキャストやマルチキャストなど、コントローラに負荷の大きいトラ
 フィックを分離して、別の独立したコントローラで処理させるためのアプリで
 す。
 
-=== Flow manager
+=== フローマネージャ
 
 フローエントリとパス情報を管理するアプリケーションおよび API を提供しま
 す。かなり実験的な実装なので、API は変更する可能性があります。
@@ -613,7 +611,8 @@ Packet In メッセージを複数の Trema アプリケーションに振り分
 
 //noindent
 @<em>{取間先生}「友太郎君どうもありがとう。今夜はひさびさに若者と話せて
-楽しかったよ。これで君も立派な OpenFlow プログラマじゃ」@<br>{}
+楽しかったよ。わしが教えられることはすべて教えたし、これで君も立派な
+OpenFlow プログラマじゃ」@<br>{}
 @<em>{友太郎}「こちらこそありがとうございました。なにかいいアプリケーショ
 ンができたら、先生にも教えますね!」@<br>{}
 
