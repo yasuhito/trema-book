@@ -329,7 +329,7 @@ Switch Daemon とユーザのアプリケーション間の OpenFlow メッセ�
 可変長バッファ (@<tt>{src/lib/buffer.c})、連結リスト
 (@<tt>{linked_list.c, doubly_linked_list.c})、ハッシュテーブル
 (@<tt>{src/lib/hash_table.c}) などです。ただし、Ruby には標準でこれらの
-データ構造があるため使われません。
+データ構造があるため、Ruby ライブラリでは使われません。
 
 == 低レベルデバッグツール Tremashark
 
