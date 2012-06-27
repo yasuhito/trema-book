@@ -54,8 +54,8 @@ OpenWRT は、そんな制約を超えるために無線 LAN ルータのファ�
 //table[wifirouter][OpenFlow スイッチに改造可能な無線 LAN ルータ (2012 年現在)]{
 機種名		メーカー	価格
 --------------------------------------------------------
-WHR-G301N	Buffalo	     約 2000 円
-WZR-HP-AG300H	Buffalo	     約 6000 円
+WHR-G301N	Buffalo		約 2000 円
+WZR-HP-AG300H	Buffalo		約 6000 円
 //}
 
 //footnote[musen][無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。]
