@@ -11,6 +11,7 @@ learning_switch.re
 traffic_monitor.re
 router_part1.re
 router_part2.re
+trema_architecture.re
 
 migrating_openflow.re
 routing_switch.re
@@ -20,4 +21,3 @@ google.re
 
 diy_switch.re
 tdd.re
-trema_architecture.re
