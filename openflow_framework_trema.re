@@ -82,30 +82,44 @@ Trema のセットアップには、@<tt>{make install} のようなシステム
 //}
 
 それでは早速、入門の定番 Hello, Trema! コントローラを Ruby で書いてみま
-しょう。なお、第 2 部では Trema の Ruby ライブラリを使ったプログラミン
-グを取り上げます。C ライブラリを使ったプログラミングの例については、
-Trema の @<tt>{src/examples/} ディレクトリ以下を参照してください。第
-II 部で使った Ruby コードに加えて、同じ内容の C コードを見つけることが
-できます。
+しょう。なお、第 II 部では Trema の Ruby ライブラリを使ったプログラミン
+グを取り上げます。
 
 == Hello, Trema!
 
-trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを作成し、
+Trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを作成し、
 エディタで@<list>{hello-trema.rb}のコードを入力してください。
+"@<tt>{.rb}" は Ruby プログラムの標準的な拡張子です。なお Ruby の文法は後
+で説明しますので、今のところは気にせずそのまま入力してください。
 
-#@warn(ファイル名は hello-trema.rb だけどクラス名は HelloController?)
 //list[hello-trema.rb][Hello Trema! コントローラのソースコード (@<tt>{hello-trema.rb})]{
-  class HelloController < Controller
+  class HelloTrema < Controller
     def start
       puts "Hello, Trema!"
     end
   end
 //}
 
-どうでしょうか? とてもシンプルに書けますね。それではこれを実行する前に
-即席で Ruby の文法を頭に入れておきましょう。難しそう？朝、同じ車両にル
-ビイストが 2 人も乗ってたの気付きましたか。Ruby のプログラマは世界中に
-何百万人もいるんです。
+とてもシンプルに書けますね。それでは細かい文法は脇に置いておいて「習う
+より慣れろ」でさっそく実行してみましょう。
+
+=== 実行してみよう (@<tt>{trema run})
+
+作成したコントローラは @<tt>{trema run} コマンドで実行できます。Ruby は
+インタプリタ言語なので、コンパイル無しですぐに実行できます。ターミナル
+で次のように入力すると、この世界一短い OpenFlow コントローラは画面に
+@<tt>{Hello, Trema!} と出力します。
+
+//cmd{
+% cd trema
+% ./trema run ./hello-trema.rb
+Hello, Trema!  # Ctrl+c で終了
+//}
+
+いかがでしょうか？ Trema を使うと、とても簡単にコントローラを書いてすぐ
+に実行できることがわかると思います。では、気になっていた Ruby の文法に
+進みましょう。第 II 部では今後もたくさん Ruby を使いますが、その都度必
+要な文法を説明しますので心配はいりません。しっかりついてきてください。
 
 == 即席 Ruby 入門
 
@@ -155,20 +169,7 @@ EmpireStateBuilding = "ニューヨーク州ニューヨーク市5番街350"
 定数の値を変えようとすると、Rubyは文句を言ってきます。そういうことには難
 色を示すのです。
 
-=== 実行してみよう
-
-それでは早速実行してみましょう! 作成したコントローラは @<tt>{trema run} 
-コマンドで実行できます。この世界一短いOpenFlowコントローラ(？)は画
-面に @<tt>{Hello, Trema!} と出力します。
-
-//cmd{
-% cd trema
-% ./trema run ./hello-trema.rb
-Hello, Trema!  # Ctrl+c で終了
-//}
-
-いかがでしょうか？ Trema を使うと、とても簡単にコントローラを書いて実行
-できることがわかると思います。えっ？ これがいったいスイッチの何を制御し
+えっ？ これがいったいスイッチの何を制御し
 たかって？ 確かにこのコントローラはほとんど何もしてくれませんが、Trema
 でコントローラを書くのに必要な知識がひととおり含まれています。スイッチ
 をつなげるのはちょっと辛抱して、まずはソースコードを見ていきましょう。
@@ -179,7 +180,7 @@ Ruby で書く場合、すべてのコントローラは @<tt>{Controller} ク�
 します (@<list>{クラス定義}の 1 行目)。
 
 //listnum[クラス定義][コントローラのクラスを定義する]{
- @<ami>{class HelloController < Controller}
+ @<ami>{class HelloTrema < Controller}
     def start
       puts "Hello, Trema!"
     end
@@ -187,7 +188,7 @@ Ruby で書く場合、すべてのコントローラは @<tt>{Controller} ク�
 //}
 
 このように @<tt>{Controller} クラスを継承することで、コントローラに必要
-な基本機能が @<tt>{HelloController} クラスにこっそりと追加されます。
+な基本機能が @<tt>{HelloTrema} クラスにこっそりと追加されます。
 
 === ハンドラを追加する
 
@@ -198,7 +199,7 @@ OpenFlow メッセージの到着など各種イベントに対応するハン�
 コントローラの起動時にこれが自動的に呼ばれます。
 
 //listnum[ハンドラ定義][起動時に呼ばれるハンドラを定義する]{
-  class HelloController < Controller
+  class HelloTrema < Controller
     @<ami>{def start}
       @<ami>{puts "Hello, Trema!"}
     @<ami>{end}
