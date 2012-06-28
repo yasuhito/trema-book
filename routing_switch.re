@@ -87,32 +87,64 @@ OSPF や IS-IS 等の L3 の経路制御プロトコルで用いられていま�
 
 === トポロジーを検出する
 
-ネットワークトポロジの検出には，OpenFlow で標準的な
-Link Layer Discovery Protocol（LLDP）を用います（@<img>{lldp}）。
-Topology から packet_out により送信された LLDP パケットは，
-LLDP が到達した隣のスイッチから packet_in で Topology へと戻ります。
-LLDP パケット中には，それが経由したスイッチとポート情報などが含まれています。
-そのため，これを繰り返すことでネットワーク中のすべてのスイッチ間の
-接続関係を知ることができます。
+ダイクストラ法には、``リンクの先に繋がっているスイッチを調べる'' 
+というステップがありました。
+@<img>{routing_switch} のように、ネットワーク全体のトポロジーを
+コントローラが知っている必要があります。
+ここでは、スイッチ同士がどのように繋がっているかを調べる方法について
+見て行きましょう。
+
+トポロジーの検出には、Link Layer Discovery Protocol（LLDP）を用います
+（@<img>{lldp}）。
+コントローラから Packet Out により送信された LLDP パケットは、
+LLDP が到達した隣のスイッチから Packet In でコントローラへと戻ります。
 
 //image[lldp][トポロジーの検出]
 
+コントローラは、LLDP パケットを作る際に、Packet Out を送るスイッチの 
+Datapath ID と、LLDP パケットを出力するポートの番号を埋め込みます。
+LLDP パケットが Packet In でコントローラへと戻る際には、
+受信ポートの番号が合わせて通知されます。
+コントローラは、これらの情報を総合することで、二つのスイッチ同士が、
+どのポート経由で接続するかを知ることができます。
+これを繰り返すことで、ネットワーク中のすべてのスイッチ間の
+接続関係を知ることができます。
+
+この方法は、仕様等で特に規定されているわけではありませんが、
+OpenFlow でよく用いられています。Packet Out と
+Packet In を用いた ``OpenFlow ならでは'' の方法ですね。
 
 == 実行してみよう
 
+ルーティングスイッチは、Trema Apps の一部として、
+Github 上でソースコードを公開しています。
+このソースコードを使って、ルーティングスイッチの動作を見ていきましょう。
 
 === 準備
 
-ルーティングスイッチのソースコードは、Trema Apps にて公開されています。
-まず Trema Apps を @<tt>{git} を使って取得しましょう。
+Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} に
+あります。
+まずは、@<tt>{git} を使って、ソースコードを取得しましょう。
+以下のように @<tt>{trema} ディレクトリと同じ階層になるよう
+取得してください。
 
 //cmd{
+$ ls -F
+trema/
 $ git clone https://github.com/trema/apps.git
+...
+$ ls -F
+apps/	trema/
 //}
 
-Trema Apps にはさまざまなアプリケーションが含まれていますが、
-今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。
-この二つを順に @<tt>{make} します。
+@<chap>{trema_architecture} で紹介したように、
+Trema Apps にはさまざまなアプリケーションが含まれています。
+そのうち、今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。
+@<tt>{topology} には、トポロジー検出を担当するモジュール 
+@<tt>{topology_discovery}、検出したトポロジーを管理するモジュール @<tt>{topology} と
+最短パスを計算するライブラリ @<tt>{libpathresolver} が含まれています。
+また @<tt>{routing_switch} には、ルーティングスイッチの本体が含まれています。
+この二つを順に @<tt>{make} してください。
 
 //cmd{
 $ (cd apps/topology/; make)
@@ -122,8 +154,13 @@ $ (cd apps/routing_switch; make)
 === ルーティングスイッチを動かす
 
 それでは、ルーティングスイッチを動かしてみましょう。
-ソースコード一式の中に @<tt>{routing_switch_fullmesh.conf} という
-ファイルが含まれています。
+今回は Trema のネットワークエミュレータ機能を用いて、
+@<img>{fullmesh} のようなネットワークを作ってみます。
+
+//image[fullmesh][ネットワーク構成]
+
+このネットワーク構成を作るためには、@<list>{conf} の
+ように記述を行う必要があります。
 
 //list[conf][@<tt>{routing_switch_fullmesh.conf}]{
 vswitch {
@@ -193,6 +230,8 @@ event :port_status => "topology", :packet_in => "filter", :state_notify => "topo
 filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 //}
 
+このファイルは、@<tt>{routing_switch_fullmesh.conf} として、
+ソースコード一式の中に用意されています。
 今回はこのファイルを使って、以下のように起動してください。
 
 //cmd{
@@ -200,13 +239,9 @@ $ cd ./trema
 $ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
-@<img>{fullmesh} のようなネットワークが構成されます。
-
-//image[fullmesh][ネットワーク構成]
-
 === 見つけたリンクを表示する
 
-@<tt>{topology} モジュールには、検出したリンクを表示するコマンドが
+@<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンドが
 用意されていますので、使ってみましょう。
 以下のように実行してください。
 
@@ -252,6 +287,13 @@ $ ./trema send_packets --source host1 --dest host2
 $ ./trema send_packets --source host2 --dest host1
 //}
 
+ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、
+host1 から host2 へとパケットを送っただけではフローは設定されません。
+この段階で host1 の MAC アドレスを学習したので、
+host2 から host1 へと送った段階でフローが設定されます。
+それでは、どのようなフローが設定されたかを見てみましょう。
+
+#@warn(trema コマンドで確認するように変更する)
 //cmd{
 $ TREMA_HOME=. ../apps/flow_dumper/flow_dumper
 [0x000000000000e1] table_id = 0, priority = 65535, cookie = 0xbd100000000000e,\
@@ -266,6 +308,29 @@ $ TREMA_HOME=. ../apps/flow_dumper/flow_dumper
   actions = [output: port=3 max_len=65535]
 //}
 
+@<tt>{0xe1} と @<tt>{0xe0} のスイッチそれぞれに、@<tt>{dl_src} が host2 の
+MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチングルールの
+フローが設定されていることが分かります。
+@<img>{fullmesh} をもう一度見てください。host2 から host1 への最短パスは
+@<tt>{0xe1} → @<tt>{0xe0} なので、この二つのスイッチにきちんとフローが
+設定されています。
+
 == まとめ/参考文献
 
+本章で学んだことは、次の 3 つです。
+
+ * 複数のスイッチからなる大規模ネットワークを扱うことができる、
+   ルーティングスイッチがどのように動作するかを見てみました。
+ * トポロジーを検出する仕組みを見てみました。またエミュレータ機能上の
+   ネットワークで実際に、トポロジーが検出できることを確認しました。
+ * 最短パスを計算する方法について学びました。エミュレータ上で通信を
+   行った結果、最短パス上にフローが設定される様子を見てみました。
+
+: グラフ理論ほにゃらら
+  本章では簡単に説明を行ったダイクストラ法ですが、この本では詳しい説明があります。
+
+: マスタリング TCP/IP 応用編
+  L3 の経路制御プロトコルについて詳しく説明されています。本章で扱ったダイクストラ法を
+  用いた経路制御プロトコルである OSPF についても説明がされているので、
+  ルーティングスイッチとの違いを比べてみるのも面白いかもしれません。
 

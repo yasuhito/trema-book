@@ -9,47 +9,66 @@
 ら説明しますので、ネットワークの専門家はもちろん普通のプログラマもすん
 なり理解できるはずです。
 
-まずは、OpenFlow プログラミングのためのフレームワーク Trema (トレマ) を
-紹介しましょう。
+まずは、OpenFlow プログラミングのためのフレームワーク @<ruby>{Trema,トレマ} を紹介しましょう。
 
 == Trema とは
 
-Trema は、OpenFlow コントローラを開発するための Ruby および C 用のプロ
-グラミングフレームワークです。Trema は github 上で開発されており、
-GPLv2 ライセンスのフリーソフトウェアとして公開されています。公開は
-2011 年の 4 月と非常に新しいソフトウェアですが、その使いやすさから国内
-外の大学や企業および研究機関などですでに採用されています。
+Trema は OpenFlow コントローラを開発するための Ruby 用のプログラミング
+フレームワークです。Trema は github 上でオープンに開発しており、GPL2 ラ
+イセンスのフリーソフトウェアとして公開されています。公開は 2011 年の 4
+月と比較的新しいソフトウェアですが、その使いやすさから国内外の大学や企
+業および研究機関などですでに数多く採用されています。
 
 Trema の情報は次のサイトから入手できます。
 
  * Trema ホームページ: @<href>{http://trema.github.com/trema/}
- * github のページ: @<href>{http://github.com/trema/}
+ * github のプロジェクトページ: @<href>{http://github.com/trema/}
  * メーリングリスト: @<href>{http://groups.google.com/group/trema-dev}
  * Twitter アカウント: @<href>{http://twitter.com/trema_news}
 
-===[column] 友太郎の質問: Trema の由来ってなに？
+Trema を使えば、OpenFlow スイッチを持っていなくても Linux のインストー
+ルされたノート PC 1 台でOpenFlow コントローラの開発とテストができます。
+これが Trema の「フレームワーク」たるゆえんで、最も強力な機能です。第
+II 部では、実際に Trema を使っていろいろと実験しながら OpenFlow コント
+ローラを作っていきます。それではまず Trema をセットアップしましょう。
+
+===[column] @<ruby>{友太郎,ゆうたろう}の質問: Trema の由来ってなに？
 
 #@warn(友太郎のアイコン)
 
-こんにちは！ 僕は最近OpenFlowに興味を持ったプログラマ，友太郎です。
+Q. 「こんにちは! 僕は最近 OpenFlow に興味を持ったプログラマ，友太郎です。
+     Trema っておもしろい名前だけど、何か由来はあるんですか？」
+     
+A. 作者の一人が大好きな、大阪の「とれまレコード
+   (@<tt>{http://www.fumiyatanaka.com/})」という小さいレコードレーベル
+   の名前から取りました。この「とれまレコード」の "とれま" の由来ですが、
+   日本がバブルの頃に道路標識の「とまれ」を「とれま」と誤植したケースが
+   頻発したことが由来です。このありえない道路標識の原因は、バブル当時に
+   急増した日本語の苦手な外国人労働者達が間違えて「とれま」と道路に描い
+   てしまったことにあります。
+   
+   ちなみに、Trema の公式ロゴマークはこんな画像です
+   (@<img>{trema_logo})。これは Twitter の Trema 公式アカウント
+   (@<tt>{@trema_news}) のアイコンとしても使われて います。
 
-#@warn(あとで書く)
+//image[trema_logo][Trema のロゴ][scale=0.5]
+
+   もちろんここまで大胆に間違えた道路標識は日本中どこを探してもありませ
+   ん。この本の編集者が画像編集ソフトでささっと作ってくれたものを気に入っ
+   た作者達が、そのまま公式ロゴとして使っています。
 
 ===[/column]
 
-=== Trema フレームワーク
+== Trema のセットアップ
 
-Trema を使えば、OpenFlow スイッチを持っていなくてもノート PC 1 台で
-OpenFlow コントローラの開発とテストができます。これが Trema の「フレー
-ムワーク」たるゆえんで、最も強力な機能です。第 2 部では、実際に Trema
-を使っていろいろと実験しながら OpenFlow コントローラを作っていきます。
+Trema は Linux 上で動作し、次のディストリビューションとバージョンでの動
+作を保証しています。
 
-=== セットアップ
+ * Ubuntu 12.04, 11.10, 11.04, 10.10, 10.04 (i386/amd64, デスクトップエディション)
+ * Debian GNU/Linux 6.0 (i386/amd64)
 
-Trema は Linux 上で動作し、Ubuntu 10.04 以降および Debian GNU/Linux
-6.0 の 32 ビットおよび 64 ビット版での動作が保証されています。テストは
-されていませんが、その他の Linux ディストリビューションでも基本的には動
-作するはずです。
+なお保証はしませんが、その他の RedHat などの Linux ディストリビューショ
+ンでも動作するはずです。
 
 Trema の提供する trema コマンドの実行には root 権限が必要です。まずは、
 @<tt>{sudo} を使って root 権限でコマンドを実行できるかどうか、
@@ -59,53 +78,79 @@ Trema の提供する trema コマンドの実行には root 権限が必要で�
 % sudo visudo
 //}
 
-@<tt>{sudo} ができることを確認したら、Trema が必要とする @<tt>{gcc} な
-どの外部ソフトウェアを次のようにインストールします。
+@<tt>{sudo} ができることを確認したら、Trema のインストールに必要な
+RubyGems と、コンパイルに必要な @<tt>{gcc} などの外部ソフトウェアを次の
+ようにインストールします。
 
 //cmd{
-% sudo apt-get install git gcc make ruby ruby-dev irb libpcap-dev libsqlite3-dev
+% sudo apt-get install gcc make ruby rubygems ruby-dev irb file libpcap-dev \
+  libsqlite3-dev
 //}
 
-次に Trema 本体をダウンロードします。Trema は github 上で公開されており、
-@<tt>{git} を使って最新版が取得できます。
+=== 簡単にインストールする場合
+
+次に Trema 本体をインストールします。Trema は RubyGems の @<tt>{gem} コ
+マンドを使って次のようにコマンド一発で簡単にインストールできます。
+
+//cmd{
+% gem install trema
+//}
+
+=== ソースコードから最新版をインストールする場合
+
+最新版をインストールしたい人は、github から自分でソースコードをダウンロー
+ドしてビルドすることもできます。まず、次のように @<tt>{git} を使って最
+新のソースコードを取得してください。
 
 //cmd{
 % git clone git://github.com/trema/trema.git
 //}
 
-Trema のセットアップには、@<tt>{make install} のようなシステム全体へイ
-ンストールする手順は不要です。ビルドするだけで使い始めることができます。
-ビルドは次のコマンドを実行するだけです。
+Trema のインストールには、@<tt>{make install} のようなシステム全体への
+インストール手順は不要です。次のコマンドを実行してビルドするだけで使い
+始めることができます。
 
 //cmd{
 % ./trema/build.rb
 //}
 
-それでは早速、入門の定番 Hello, Trema! コントローラを Ruby で書いてみま
-しょう。なお、第 2 部では Trema の Ruby ライブラリを使ったプログラミン
-グを取り上げます。C ライブラリを使ったプログラミングの例については、
-Trema の @<tt>{src/examples/} ディレクトリ以下を参照してください。第
-II 部で使った Ruby コードに加えて、同じ内容の C コードを見つけることが
-できます。
+さあ、これで Trema のコントローラ開発環境が整いました。それでは早速、入
+門の定番 Hello, Trema! コントローラを Ruby で書いてみましょう。
 
 == Hello, Trema!
 
-trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを作成し、
-エディタで@<list>{hello-trema.rb}のコードを入力してください。
+適当なディレクトリに @<tt>{hello-trema.rb} というファイルを作成し、エディ
+タで @<list>{hello-trema.rb} のコードを入力してください。"@<tt>{.rb}"
+は Ruby プログラムの標準的な拡張子です。なお Ruby の文法は後で説明しま
+すの で、今のところは気にせずそのまま入力してください。
 
-#@warn(ファイル名は hello-trema.rb だけどクラス名は HelloController?)
 //list[hello-trema.rb][Hello Trema! コントローラのソースコード (@<tt>{hello-trema.rb})]{
-  class HelloController < Controller
+  class HelloTrema < Controller
     def start
       puts "Hello, Trema!"
     end
   end
 //}
 
-どうでしょうか? とてもシンプルに書けますね。それではこれを実行する前に
-即席で Ruby の文法を頭に入れておきましょう。難しそう？朝、同じ車両にル
-ビイストが 2 人も乗ってたの気付きましたか。Ruby のプログラマは世界中に
-何百万人もいるんです。
+とてもシンプルに見えますね。それでは細かい文法は脇に置いておいて「習う
+より慣れろ」でさっそく実行してみましょう。
+
+=== 実行してみよう (@<tt>{trema run})
+
+作成したコントローラは @<tt>{trema run} コマンドで実行できます。Ruby は
+インタプリタ言語なので、コンパイル無しですぐに実行できます。ターミナル
+で次のように入力すると、この世界一短い OpenFlow コントローラは画面に
+@<tt>{Hello, Trema!} と出力します。
+
+//cmd{
+% trema run ./hello-trema.rb
+Hello, Trema!  # Ctrl+c で終了
+//}
+
+いかがでしょうか？ Trema を使うと、とても簡単にコントローラを書いてすぐ
+に実行できることがわかると思います。では、気になっていた Ruby の文法に
+進みましょう。第 II 部では今後もたくさん Ruby を使いますが、その都度必
+要な文法を説明しますので心配はいりません。しっかりついてきてください。
 
 == 即席 Ruby 入門
 
@@ -155,20 +200,7 @@ EmpireStateBuilding = "ニューヨーク州ニューヨーク市5番街350"
 定数の値を変えようとすると、Rubyは文句を言ってきます。そういうことには難
 色を示すのです。
 
-=== 実行してみよう
-
-それでは早速実行してみましょう! 作成したコントローラは @<tt>{trema run} 
-コマンドで実行できます。この世界一短いOpenFlowコントローラ(？)は画
-面に @<tt>{Hello, Trema!} と出力します。
-
-//cmd{
-% cd trema
-% ./trema run ./hello-trema.rb
-Hello, Trema!  # Ctrl+c で終了
-//}
-
-いかがでしょうか？ Trema を使うと、とても簡単にコントローラを書いて実行
-できることがわかると思います。えっ？ これがいったいスイッチの何を制御し
+えっ？ これがいったいスイッチの何を制御し
 たかって？ 確かにこのコントローラはほとんど何もしてくれませんが、Trema
 でコントローラを書くのに必要な知識がひととおり含まれています。スイッチ
 をつなげるのはちょっと辛抱して、まずはソースコードを見ていきましょう。
@@ -179,7 +211,7 @@ Ruby で書く場合、すべてのコントローラは @<tt>{Controller} ク�
 します (@<list>{クラス定義}の 1 行目)。
 
 //listnum[クラス定義][コントローラのクラスを定義する]{
- @<ami>{class HelloController < Controller}
+ @<ami>{class HelloTrema < Controller}
     def start
       puts "Hello, Trema!"
     end
@@ -187,7 +219,7 @@ Ruby で書く場合、すべてのコントローラは @<tt>{Controller} ク�
 //}
 
 このように @<tt>{Controller} クラスを継承することで、コントローラに必要
-な基本機能が @<tt>{HelloController} クラスにこっそりと追加されます。
+な基本機能が @<tt>{HelloTrema} クラスにこっそりと追加されます。
 
 === ハンドラを追加する
 
@@ -198,7 +230,7 @@ OpenFlow メッセージの到着など各種イベントに対応するハン�
 コントローラの起動時にこれが自動的に呼ばれます。
 
 //listnum[ハンドラ定義][起動時に呼ばれるハンドラを定義する]{
-  class HelloController < Controller
+  class HelloTrema < Controller
     @<ami>{def start}
       @<ami>{puts "Hello, Trema!"}
     @<ami>{end}
@@ -316,8 +348,10 @@ github で pull リクエストを送ってください。あなたの名前が 
 
 さて、これで Trema の基本はおしまいです。この章ではすべてのコントローラ
 のテンプレートとなる Hello, Trema! コントローラを書きました。学んだこと
-は次の 2 つです。
+は次の 4 つです。
 
+ * コントローラは @<tt>{trema run} コマンドでコンパイル無しにすぐ実行で
+   きます。
  * コントローラは Ruby のクラスとして定義し、@<tt>{Controller} クラスを
    継承することで必要なメソッドが取り込まれる。
  * コントローラクラスに各種イベントに対応するハンドラを定義することでロ
