@@ -87,10 +87,10 @@ Trema のセットアップには、@<tt>{make install} のようなシステム
 
 == Hello, Trema!
 
-Trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを作成し、
-エディタで@<list>{hello-trema.rb}のコードを入力してください。
-"@<tt>{.rb}" は Ruby プログラムの標準的な拡張子です。なお Ruby の文法は後
-で説明しますので、今のところは気にせずそのまま入力してください。
+適当なディレクトリに @<tt>{hello-trema.rb} というファイルを作成し、エディ
+タで @<list>{hello-trema.rb} のコードを入力してください。"@<tt>{.rb}"
+は Ruby プログラムの標準的な拡張子です。なお Ruby の文法は後で説明しま
+すの で、今のところは気にせずそのまま入力してください。
 
 //list[hello-trema.rb][Hello Trema! コントローラのソースコード (@<tt>{hello-trema.rb})]{
   class HelloTrema < Controller
@@ -100,7 +100,7 @@ Trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを
   end
 //}
 
-とてもシンプルに書けますね。それでは細かい文法は脇に置いておいて「習う
+とてもシンプルに見えますね。それでは細かい文法は脇に置いておいて「習う
 より慣れろ」でさっそく実行してみましょう。
 
 === 実行してみよう (@<tt>{trema run})
@@ -111,8 +111,7 @@ Trema ディレクトリの中に @<tt>{hello-trema.rb} というファイルを
 @<tt>{Hello, Trema!} と出力します。
 
 //cmd{
-% cd trema
-% ./trema run ./hello-trema.rb
+% trema run ./hello-trema.rb
 Hello, Trema!  # Ctrl+c で終了
 //}
 
@@ -317,8 +316,10 @@ github で pull リクエストを送ってください。あなたの名前が 
 
 さて、これで Trema の基本はおしまいです。この章ではすべてのコントローラ
 のテンプレートとなる Hello, Trema! コントローラを書きました。学んだこと
-は次の 2 つです。
+は次の 4 つです。
 
+ * コントローラは @<tt>{trema run} コマンドでコンパイル無しにすぐ実行で
+   きます。
  * コントローラは Ruby のクラスとして定義し、@<tt>{Controller} クラスを
    継承することで必要なメソッドが取り込まれる。
  * コントローラクラスに各種イベントに対応するハンドラを定義することでロ
