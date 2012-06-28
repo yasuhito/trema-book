@@ -291,26 +291,35 @@ $ ./trema send_packets --source host2 --dest host1
 host1 から host2 へとパケットを送っただけではフローは設定されません。
 この段階で host1 の MAC アドレスを学習したので、
 host2 から host1 へと送った段階でフローが設定されます。
-それでは、どのようなフローが設定されたかを見てみましょう。
 
-#@warn(trema コマンドで確認するように変更する)
+それでは、どのようなフローが設定されたかを見てみます。
+設定されているフローの確認は、
+@<tt>{trema dump_flows [表示したいスイッチの Datapath ID]} でできます。
+@<tt>{0xe0} から @<tt>{0xe1} まで順に表示してみましょう。
+
 //cmd{
-$ TREMA_HOME=. ../apps/flow_dumper/flow_dumper
-[0x000000000000e1] table_id = 0, priority = 65535, cookie = 0xbd100000000000e,\
-  ...									      \
-  dl_src = 00:00:00:01:00:02, dl_dst = 00:00:00:01:00:01, dl_vlan = 65535,    \
-  ...	   		      	       			  	    	      \
-  actions = [output: port=3 max_len=65535]
-[0x000000000000e0] table_id = 0, priority = 65535, cookie = 0xbd100000000000d,\
-  ...									      \
-  dl_src = 00:00:00:01:00:02, dl_dst = 00:00:00:01:00:01, dl_vlan = 65535,    \
-  ...									      \
-  actions = [output: port=3 max_len=65535]
+$ ./trema dump_flows 0xe0
+NXST_FLOW reply (xid=0x4):
+ cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
+ ...	     		   	    		 	    		     \
+ dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
+ nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
+$ ./trema dump_flows 0xe1
+NXST_FLOW reply (xid=0x4):
+ cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0, idle_timeout=61, \
+ ...	     		   	    		 	    		     \
+ dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
+ nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
+$ ./trema dump_flows 0xe2
+NXST_FLOW reply (xid=0x4):
+$ ./trema dump_flows 0xe3
+NXST_FLOW reply (xid=0x4):
 //}
 
-@<tt>{0xe1} と @<tt>{0xe0} のスイッチそれぞれに、@<tt>{dl_src} が host2 の
+@<tt>{0xe0} と @<tt>{0xe1} のスイッチそれぞれに、@<tt>{dl_src} が host2 の
 MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチングルールの
 フローが設定されていることが分かります。
+一方で @<tt>{0xe2} と @<tt>{0xe3} のスイッチには、フローがありません。
 @<img>{fullmesh} をもう一度見てください。host2 から host1 への最短パスは
 @<tt>{0xe1} → @<tt>{0xe0} なので、この二つのスイッチにきちんとフローが
 設定されています。
