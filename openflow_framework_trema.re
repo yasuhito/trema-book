@@ -44,12 +44,16 @@ OpenFlow コントローラの開発とテストができます。これが Trem
 ムワーク」たるゆえんで、最も強力な機能です。第 2 部では、実際に Trema
 を使っていろいろと実験しながら OpenFlow コントローラを作っていきます。
 
-=== セットアップ
+=== Trema のセットアップ
 
-Trema は Linux 上で動作し、Ubuntu 10.04 以降および Debian GNU/Linux
-6.0 の 32 ビットおよび 64 ビット版での動作が保証されています。テストは
-されていませんが、その他の Linux ディストリビューションでも基本的には動
-作するはずです。
+Trema は Linux 上で動作し、次のディストリビューションとバージョンでの動
+作を保証しています。
+
+ * Ubuntu 12.04, 11.10, 11.04, 10.10, 10.04 (i386/amd64, デスクトップエディション)
+ * Debian GNU/Linux 6.0 (i386/amd64)
+
+なお保証はしませんが、その他の RedHat などの Linux ディストリビューショ
+ンでも動作するはずです。
 
 Trema の提供する trema コマンドの実行には root 権限が必要です。まずは、
 @<tt>{sudo} を使って root 権限でコマンドを実行できるかどうか、
@@ -59,31 +63,44 @@ Trema の提供する trema コマンドの実行には root 権限が必要で�
 % sudo visudo
 //}
 
-@<tt>{sudo} ができることを確認したら、Trema が必要とする @<tt>{gcc} な
-どの外部ソフトウェアを次のようにインストールします。
+@<tt>{sudo} ができることを確認したら、Trema のインストールに必要な
+RubyGems と、コンパイルに必要な @<tt>{gcc} などの外部ソフトウェアを次の
+ようにインストールします。
 
 //cmd{
-% sudo apt-get install git gcc make ruby ruby-dev irb libpcap-dev libsqlite3-dev
+% sudo apt-get install gcc make ruby rubygems ruby-dev irb file libpcap-dev \
+  libsqlite3-dev
 //}
 
-次に Trema 本体をダウンロードします。Trema は github 上で公開されており、
-@<tt>{git} を使って最新版が取得できます。
+==== 簡単にインストールする場合
+
+次に Trema 本体をインストールします。Trema は RubyGems の @<tt>{gem} コ
+マンドを使って次のようにコマンド一発で簡単にインストールできます。
+
+//cmd{
+% gem install trema
+//}
+
+==== ソースコードから最新版をインストールする場合
+
+最新版をインストールしたい人は、github から自分でソースコードをダウンロー
+ドしてビルドすることもできます。まず、次のように @<tt>{git} を使って最
+新のソースコードを取得してください。
 
 //cmd{
 % git clone git://github.com/trema/trema.git
 //}
 
-Trema のセットアップには、@<tt>{make install} のようなシステム全体へイ
-ンストールする手順は不要です。ビルドするだけで使い始めることができます。
-ビルドは次のコマンドを実行するだけです。
+Trema のインストールには、@<tt>{make install} のようなシステム全体への
+インストール手順は不要です。次のコマンドを実行してビルドするだけで使い
+始めることができます。
 
 //cmd{
 % ./trema/build.rb
 //}
 
-それでは早速、入門の定番 Hello, Trema! コントローラを Ruby で書いてみま
-しょう。なお、第 II 部では Trema の Ruby ライブラリを使ったプログラミン
-グを取り上げます。
+さあ、これで Trema のコントローラ開発環境が整いました。それでは早速、入
+門の定番 Hello, Trema! コントローラを Ruby で書いてみましょう。
 
 == Hello, Trema!
 
