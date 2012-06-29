@@ -141,8 +141,7 @@ apps/	trema/
 Trema Apps にはさまざまなアプリケーションが含まれています。
 そのうち、今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。
 @<tt>{topology} には、トポロジー検出を担当するモジュール 
-@<tt>{topology_discovery}、検出したトポロジーを管理するモジュール @<tt>{topology} と
-最短パスを計算するライブラリ @<tt>{libpathresolver} が含まれています。
+@<tt>{topology_discovery} と検出したトポロジーを管理するモジュール @<tt>{topology} が含まれています。
 また @<tt>{routing_switch} には、ルーティングスイッチの本体が含まれています。
 この二つを順に @<tt>{make} してください。
 
