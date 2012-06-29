@@ -129,11 +129,11 @@ Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} に
 取得してください。
 
 //cmd{
-$ ls -F
+% ls -F
 trema/
-$ git clone https://github.com/trema/apps.git
+% git clone https://github.com/trema/apps.git
 ...
-$ ls -F
+% ls -F
 apps/	trema/
 //}
 
@@ -146,8 +146,8 @@ Trema Apps にはさまざまなアプリケーションが含まれています
 この二つを順に @<tt>{make} してください。
 
 //cmd{
-$ (cd apps/topology/; make)
-$ (cd apps/routing_switch; make)
+% (cd apps/topology/; make)
+% (cd apps/routing_switch; make)
 //}
 
 === ルーティングスイッチを動かす
@@ -234,8 +234,8 @@ filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 今回はこのファイルを使って、以下のように起動してください。
 
 //cmd{
-$ cd ./trema
-$ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
+% cd ./trema
+% ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
 === 見つけたリンクを表示する
@@ -245,7 +245,7 @@ $ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 以下のように実行してください。
 
 //cmd{
-$ TREMA_HOME=. ../apps/topology/show_topology -D
+% TREMA_HOME=. ../apps/topology/show_topology -D
 vswitch {
   datapath_id "0xe0"
 }
@@ -282,8 +282,8 @@ link "0xe3", "0xe1"
 次に、仮想ホストからパケットを送り、フローが設定されることを確認しましょう。
 
 //cmd{
-$ ./trema send_packets --source host1 --dest host2
-$ ./trema send_packets --source host2 --dest host1
+% ./trema send_packets --source host1 --dest host2
+% ./trema send_packets --source host2 --dest host1
 //}
 
 ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、
@@ -297,21 +297,21 @@ host2 から host1 へと送った段階でフローが設定されます。
 @<tt>{0xe0} から @<tt>{0xe1} まで順に表示してみましょう。
 
 //cmd{
-$ ./trema dump_flows 0xe0
+% ./trema dump_flows 0xe0
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-$ ./trema dump_flows 0xe1
+% ./trema dump_flows 0xe1
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0, idle_timeout=61, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-$ ./trema dump_flows 0xe2
+% ./trema dump_flows 0xe2
 NXST_FLOW reply (xid=0x4):
-$ ./trema dump_flows 0xe3
+% ./trema dump_flows 0xe3
 NXST_FLOW reply (xid=0x4):
 //}
 

@@ -29,7 +29,7 @@
 説明します。
 
 //cmd{
-$ ls -F
+% ls -F
 apps/   trema/
 //}
 
@@ -38,36 +38,36 @@ apps/   trema/
 同様に @<tt>{topology} と連動して動作します。
 また、フロー設定を行う @<tt>{flow_manager} とも連動して
 動作するようになっていますので、これらのモジュールも合わせて
-$<tt>{make} してください。
+@<tt>{make} してください。
 
 //cmd{
-$ (cd apps/topology/; make)
-$ (cd apps/flow_manager/; make)
-$ (cd apps/sliceable_switch; make)
+% (cd apps/topology/; make)
+% (cd apps/flow_manager/; make)
+% (cd apps/sliceable_switch; make)
 //}
 
 === REST API の設定
 
 //cmd{
-$ sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
-$ sudo apt-get install apache2-mpm-prefork libjson-perl
+% sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
+% sudo apt-get install apache2-mpm-prefork libjson-perl
 //}
  
 //cmd{
-$ cd apps/sliceable_switch
-$ ./create_tables.sh
+% cd apps/sliceable_switch
+% ./create_tables.sh
 A filter entry is added successfully.
-$ sudo cp apache/sliceable_switch /etc/apache2/sites-available
-$ sudo a2enmod rewrite actions
-$ sudo a2ensite sliceable_switch
-$ sudo mkdir -p /home/sliceable_switch/script
-$ sudo mkdir /home/sliceable_switch/db
-$ sudo cp Slice.pm Filter.pm config.cgi /home/sliceable_switch/script
-$ sudo cp *.db /home/sliceable_switch/db
+% sudo cp apache/sliceable_switch /etc/apache2/sites-available
+% sudo a2enmod rewrite actions
+% sudo a2ensite sliceable_switch
+% sudo mkdir -p /home/sliceable_switch/script
+% sudo mkdir /home/sliceable_switch/db
+% sudo cp Slice.pm Filter.pm config.cgi /home/sliceable_switch/script
+% sudo cp *.db /home/sliceable_switch/db
 //}
 
 //cmd{
-$ ls /home/sliceable_switch/*
+% ls /home/sliceable_switch/*
 /home/sliceable_switch/db:
 filter.db  slice.db
 
@@ -80,8 +80,8 @@ Filter.pm  Slice.pm  config.cgi
 それでは試してみましょう。
 
 //cmd{
-$ cd ../../trema
-$ sudo ./trema run -c ../apps/sliceable_switch/sliceable_switch_external.conf
+% cd ../../trema
+% sudo ./trema run -c ../apps/sliceable_switch/sliceable_switch_external.conf
 //}
 
 次に REST API を使ってスライスの設定を行ってみます。
@@ -90,8 +90,8 @@ $ sudo ./trema run -c ../apps/sliceable_switch/sliceable_switch_external.conf
 以下のコマンドで取得してみましょう。
 
 //cmd{
-$ (cd ../apps/show_description; make)
-$ TREMA_HOME=. sudo -E ../apps/show_description/show_description
+% (cd ../apps/show_description; make)
+% TREMA_HOME=. sudo -E ../apps/show_description/show_description
 Manufacturer description: Nicira Networks, Inc.
 Hardware description: Open vSwitch
 Software description: 1.2.2
