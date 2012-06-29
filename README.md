@@ -8,15 +8,14 @@
 
 以下は Ubuntu の手順です。Mac でも同様の手順でできます。
 
- * Ruby 環境と rake をインストール
- * review (組版ソフト) の最新版をインストール: https://github.com/kmuto/review
- * texlive をインストール: sudo apt-get install texlive-full
- * ptexlive をインストール: このページ http://www1.pm.tokushima-u.ac.jp/~kohda/tex/ptexlive.html から ptexlive-base と ptexlive-extra を dpkg -i でインストール 
+ 1. Ruby 環境と rake をインストール
+ 2. review (組版ソフト) の最新版をインストール: https://github.com/kmuto/review
+ 3. TeX Live 2012 をインストール: http://oku.edu.mie-u.ac.jp/~okumura/texwiki/?Linux%2FUbuntu#hf3fd9de
 
 
-# PDF や epub を作る
+# PDF や epub を作ろう
 
-ファイルの生成はすべて rake コマンド一発でできます。
+rake コマンド一発でできます。
 
  * "rake pdf" で trema.pdf ができます。
  * "rake epub" で trema.epub ができます。
