@@ -21,6 +21,11 @@ rake コマンド一発でできます。
  * "rake epub" で trema.epub ができます。
 
 
+# 「作ってみた」レポート
+
+ * Trema 本を読もう! (@stereocat さん): http://d.hatena.ne.jp/stereocat/20120619
+
+
 # 執筆に協力いただける方への情報
 
 あなたも謝辞に名前を載せませんか!
