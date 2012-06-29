@@ -60,10 +60,17 @@ WZR-HP-AG300H	Buffalo		約 6000 円
 
 //footnote[musen][無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。]
 
-===[column] オープンルータ・コンペティション
+===[column] Interop Tokyo 2012
 
 毎年、業界最大の展示会 Interop Tokyo が幕張メッセにて開催されています。
-2012 年にはこの Interop と併催で、次世代のインターネットを担う技術者の
+2012 年の Interop Tokyo では、Trema が大活躍しました。
+Trema ベースで開発された情報通信研究機構 (NICT) の RISE Controller が、
+Best of Show Award (ShowNet プロダクト部門) のグランプリを受賞しました
+(@<img>{trema_interop})。
+
+//image[trema_interop][Interop で Best of Show Award を受賞した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相互接続で大活躍した。(NICT 石井秀治さん提供)][scale=0.6]
+
+また Interop と併催で、次世代のインターネットを担う技術者の
 発掘を目指したオープンルータ・コンペティションが開催されました。
 「ソフトウェア、ハードウェアに関わらず OpenRouter を改良、
 または創造し、その成果を発表すること」という課題に対し、
@@ -74,7 +81,7 @@ WZR-HP-AG300H	Buffalo		約 6000 円
 また他にも 3 チームにて OpenFlow に関連した成果発表が行われ、
 これらのチームすべてが Trema を使用していました。
 
-//image[orc][最終審査会場で動作する OpenFlow スイッチ][scale=0.12]
+//image[orc][最終審査会場で動作する無線ルータベースの OpenFlow スイッチ][scale=0.12]
 
 ===[/column]
 
