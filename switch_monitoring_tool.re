@@ -1,56 +1,58 @@
 = スイッチ監視ツール
 
-OpenFlow のメリットのひとつに、運用コストの削減がありました。OpenFlowに
-対応したスイッチであれば、どんなにスイッチが増えてもリモートで集中的に
-管理できます。
-
 #@warn(「運用コストの削減」を説明した章へのリンクを張る)
+OpenFlow のメリットのひとつに、運用コストの削減がありました。OpenFlow に対応したスイッチであれば、どんなに数が増えてもリモートで集中的に管理できるのでした。本章ではこの集中管理ツールの一例として、スイッチの監視ツールを作ります。このツールは「今、ネットワーク中にどんなスイッチが動いているか」をリアルタイムに表示します。何らかの障害で落ちてしまったスイッチを発見したり、予期しないスイッチがネットワークに接続されていることを検出するのに便利です。
 
-本章では集中管理の一例として、スイッチのモニタリングツールを作ります。
-このツールは「今、ネットワーク中にどんなスイッチが動いているか」をリア
-ルタイムに表示します。何らかの障害で落ちてしまったスイッチを発見したり、
-予期しないスイッチがネットワークに接続されていることを検出するのに便利
-です。
+スイッチ監視ツールの動きは次のようになります。OpenFlow スイッチは、起動すると指定した OpenFlow コントローラへ接続するのでした。コントローラはスイッチが接続してきたことを検知すると、接続したスイッチを "起動中のスイッチ" リストに追加します。逆にスイッチが何らかの原因で接続を切った場合、コントローラはこれを検知していなくなったスイッチをリストから削除します。つまりスイッチの接続イベントと切断イベントを捕捉してリストを更新する、たったこれだけです。
 
-では、スイッチモニタリングツールの動作を簡単に説明しましょう。OpenFlow
-スイッチは、起動すると指定した OpenFlow コントローラへ接続します。コン
-トローラは接続を検知すると、接続したスイッチの ID を「起動中のスイッチ
-一覧」に追加します。逆にスイッチが何らかの原因で接続を切った場合、コン
-トローラがこれを検知して一覧を更新し、いなくなったスイッチを一覧から削
-除します。スイッチモニタリングツールは、この一覧を定期的に表示するもの
-です。
+== SwitchMonitor コントローラ
 
-== 実行してみよう
+適当なディレクトリに switch-monitor.rb というファイルを作り、エディタで@<list>{switch-monitor.rb} のコードを入力してください。今回も文法は後まわしで先に実行してみますので、細かいところは気する必要はありません。そのまま入力してしまってください。
 
-それでは早速実行してみましょう。今回の例は実際にスイッチを接続しなけれ
-ばならないのですが、OpenFlow スイッチはなかなか手に入りません。どうす
-ればいいでしょうか？
+//list[switch-monitor.rb][@<tt>{SwitchMonitor} コントローラ]{
+class SwitchMonitor < Controller
+  periodic_timer_event :show_switches, 10
 
-なんと，Trema を使えば OpenFlow スイッチを持っていなくてもこうしたコー
-ドを実行してテストできます。いったいどういうことでしょうか？その答えは、
-Trema の強力な機能の1つ，仮想ネットワーク構築機能にあります。これは仮想
-OpenFlow スイッチや仮想ホストを接続した仮想ネットワークを作る機能です。
-この仮想ネットワークとコントローラを接続することによって、物理的な
-OpenFlow スイッチやホストを準備しなくとも、開発マシン 1 台でOpenFlow コ
-ントローラと動作環境を一度に用意して開発できます。もちろん、開発したコ
-ントローラは実際の物理的な OpenFlow スイッチやホストで構成されたネット
-ワークでもそのまま動作します！
 
-仮想スイッチを起動するには、仮想ネットワークの構成を記述した設定ファイ
-ルを @<tt>{trema run} に渡します。たとえば、@<list>{two virtual switches}
-の設定ファイルでは仮想スイッチ（@<tt>{vswitch}）を2台定義しています。
+  def start
+    @switches = []
+  end
 
-//list[two virtual switches][仮想ネットワークに仮想スイッチを2台追加]{
+
+  def switch_ready datapath_id
+    @switches << datapath_id.to_hex
+    info "Switch #{ datapath_id.to_hex } is UP"
+  end
+
+
+  def switch_disconnected datapath_id
+    @switches -= [datapath_id.to_hex ]
+    info "Switch #{ datapath_id.to_hex } is DOWN"
+  end
+
+
+  # 以下プライベートメソッド
+  private
+
+
+  def show_switches
+    info "All switches = " + @switches.sort.join( ", " )
+  end
+end
+//}
+
+=== 実行してみよう
+
+それでは早速実行してみましょう。でも、スイッチ監視ツールは実際にスイッチを接続してみなければおもしろくありません。どうすればいいでしょうか？なんと，Trema を使えば OpenFlow スイッチを持っていなくてもこうしたコードを実行してテストできます。いったいどういうことでしょうか？その答えは、Trema の強力な機能の1つ，仮想ネットワーク構築機能にあります。これは仮想OpenFlow スイッチや仮想ホストを接続した仮想ネットワークを作る機能です。この仮想ネットワークとコントローラを接続することによって、物理的なOpenFlow スイッチやホストを準備しなくとも、開発マシン 1 台で OpenFlow コントローラと動作環境を一度に用意して開発できます。もちろん、開発したコントローラは実際の物理的な OpenFlow スイッチやホストで構成されたネットワークでもそのまま動作します！
+
+仮想スイッチを起動するには、仮想ネットワークの構成を記述した設定ファイルを @<tt>{trema run} の "-c" オプションに渡します。たとえば、仮想スイッチ（@<tt>{vswitch}）を 2 台定義するには@<list>{two virtual switches} のような設定ファイルを書きます。
+
+//list[two virtual switches][仮想スイッチ 2 台を仮想ネットワークに追加]{
 vswitch { datapath_id 0xabc }
 vswitch { datapath_id 0xdef }
 //}
 
-それぞれに指定されている @<tt>{datapath_id} (@<tt>{0xabc}、
-@<tt>{0xdef}) はネットワークカードにおける MAC アドレスのような存在で、
-スイッチを一意に特定する ID として使われます。OpenFlow の規格によると、
-64 ビットの一意な整数値を OpenFlow スイッチ 1 台ごとに割り振ることになっ
-ています。仮想スイッチでは好きな値を設定できるので、かぶらないように適
-当な値をセットしてください。
+それぞれに指定されている @<tt>{datapath_id} (@<tt>{0xabc}、@<tt>{0xdef}) はネットワークカードにおける MAC アドレスのような存在で、スイッチを一意に特定する ID として使われます。OpenFlow の規格によると、64 ビットの一意な整数値を OpenFlow スイッチ 1 台ごとに割り振ることになっています。仮想スイッチでは好きな値を設定できるので、かぶらないように適当な値をセットしてください。
 
 それでは @<list>{switch-monitor.conf} の内容のファイルを
 @<tt>{switch-monitor.conf} として保存してください。
@@ -148,38 +150,6 @@ Switch 0x3 is UP
 
 スイッチモニタリングツールのソースコードは@<list>{switch-monitor.rb}
 の通りになります。それではさっそく読んでいきましょう。
-
-//list[switch-monitor.rb][@<tt>{SwitchMonitor} コントローラ]{
-class SwitchMonitor < Controller
-  periodic_timer_event :show_switches, 10
-
-
-  def start
-    @switches = []
-  end
-
-
-  def switch_ready datapath_id
-    @switches << datapath_id.to_hex
-    info "Switch #{ datapath_id.to_hex } is UP"
-  end
-
-
-  def switch_disconnected datapath_id
-    @switches -= [datapath_id.to_hex ]
-    info "Switch #{ datapath_id.to_hex } is DOWN"
-  end
-
-
-  # 以下プライベートメソッド
-  private
-
-
-  def show_switches
-    info "All switches = " + @switches.sort.join( ", " )
-  end
-end
-//}
 
 OpenFlow スイッチは、起動すると OpenFlow コントローラへ接続しに行きます。
 Trema では、スイッチとの接続が確立すると，コントローラの
