@@ -136,15 +136,11 @@ UNIX っぽいですね。」@<br>{}
 うじゃよ。それに、Trema は受信メッセージもちゃんとチェックするようにし
 たおかげで、実際に助かったことがたくさんあったのじゃ。たとえば
 OpenFlow の標準的なベンチマークツール cbench
-(@<tt>{http://www.openflow.org/wk/index.php/Oflops}) のバグを発見したの
-も Trema チームだし、2012 年の Interop での OpenFlow 相互接続では様々な
-ベンダのスイッチのバグ発見に Trema が一役買っ たそうじゃ
-(@<img>{trema_interop})」@<br>{}
+(@<tt>{http://www.openflow.org/wk/index.php/Oflops}) のバグ発見に
+Trema が一役買ったそうじゃ。」@<br>{}
 @<em>{友太郎} 「へえー! すごいですね!」
 
 //footnote[postel][TCP を規定した RFC 793 において、ジョン・ポステルが "相互運用性を確保するために TCP の実装が持つべき性質" として要約した、いわゆる堅牢さ原則のこと。]
-
-//image[trema_interop][2012 年 Interop で活躍した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相性問題をたくさん解決した。(NICT 石井秀治さん提供)][scale=0.6]
 
 #@warn(パディングを 0 で埋めている話を、取間先生コラムとしてここに追加)
 

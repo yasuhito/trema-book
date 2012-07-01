@@ -60,10 +60,17 @@ WZR-HP-AG300H	Buffalo		約 6000 円
 
 //footnote[musen][無線 LAN ルータですが、無線 (WiFi) のインターフェイスは今回使用しません。]
 
-===[column] オープンルータ・コンペティション
+===[column] Interop Tokyo 2012
 
 毎年、業界最大の展示会 Interop Tokyo が幕張メッセにて開催されています。
-2012 年にはこの Interop と併催で、次世代のインターネットを担う技術者の
+2012 年の Interop Tokyo では、Trema が大活躍しました。
+Trema ベースで開発された情報通信研究機構 (NICT) の RISE Controller が、
+Best of Show Award (ShowNet プロダクト部門) のグランプリを受賞しました
+(@<img>{trema_interop})。
+
+//image[trema_interop][Interop で Best of Show Award を受賞した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相互接続で大活躍した。(NICT 石井秀治さん提供)][scale=0.6]
+
+また Interop と併催で、次世代のインターネットを担う技術者の
 発掘を目指したオープンルータ・コンペティションが開催されました。
 「ソフトウェア、ハードウェアに関わらず OpenRouter を改良、
 または創造し、その成果を発表すること」という課題に対し、
@@ -74,7 +81,7 @@ WZR-HP-AG300H	Buffalo		約 6000 円
 また他にも 3 チームにて OpenFlow に関連した成果発表が行われ、
 これらのチームすべてが Trema を使用していました。
 
-//image[orc][最終審査会場で動作する OpenFlow スイッチ][scale=0.12]
+//image[orc][最終審査会場で動作する無線ルータベースの OpenFlow スイッチ][scale=0.12]
 
 ===[/column]
 
@@ -121,7 +128,7 @@ OpenFlow スイッチ側に事前に設定されているコントローラの I
 @<tt>{telnet} を使って @<tt>{root} で接続してみます。
 
 //cmd{
-$ telnet -l root 192.168.1.1 
+% telnet -l root 192.168.1.1 
 Trying 192.168.1.1...
 Connected to 192.168.1.1.
 Escape character is '^]'.
@@ -224,7 +231,7 @@ LAN 側の 4 ポートはそれぞれ @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} に�
 変更した設定は、以下のコマンドで反映させることができます。
 
 //cmd{
-$ /etc/init.d/openflow restart
+% /etc/init.d/openflow restart
 //}
 
 //list[config_openflow][/etc/config/openflow ファイル]{
@@ -249,15 +256,15 @@ config 'ofswitch'
 まずコントローラとしてラーニングスイッチを起動します。
 
 //cmd{
-$ cd trema
-$ ./trema run ./src/examples/learning_switch/learning-switch.rb -d
+% cd trema
+% ./trema run ./src/examples/learning_switch/learning-switch.rb -d
 //}
 
 以下のコマンドでスイッチとコントローラ間に TCP コネクションが
 張られているかを確認しましょう。
 
 //cmd{
-$ netstat -an -A inet | grep 6633
+% netstat -an -A inet | grep 6633
 tcp        0      0 0.0.0.0:6633            0.0.0.0:*               LISTEN     
 tcp        0      0 192.168.11.10:6633      192.168.11.1:60246      ESTABLISHED
 //}
@@ -267,7 +274,7 @@ TCP コネクションはスイッチ側からコントローラへと接続さ�
 ログインして、@<tt>{openflow} 機能の再起動を行ってください。
 
 //cmd{
-$ /etc/init.d/openflow restart
+% /etc/init.d/openflow restart
 //}
 
 === スイッチの情報を取得する
@@ -279,14 +286,14 @@ OpenFlow プロトコルには、スイッチから情報を取得するため�
 まず、コマンドを使えるように用意します。
 
 //cmd{
-$ git clone https://github.com/trema/apps.git
-$ (cd ./apps/show_description/; make)
+% git clone https://github.com/trema/apps.git
+% (cd ./apps/show_description/; make)
 //}
 
 作成したコマンドを使って、スイッチの情報を取得してみましょう。
 
 //cmd{
-$ TREMA_HOME=trema/ ./apps/show_description/show_desctiption
+% TREMA_HOME=trema/ ./apps/show_description/show_desctiption
 Manufacturer description: Stanford University
 Hardware description: Reference Userspace Switch
 Software description: 1.0.0
@@ -331,7 +338,7 @@ Stats Request メッセージでタイプに @<tt>{OFPST_DESC} を指定する�
 @<tt>{ping} をうってみてください。
 
 //cmd{
-$ ping 192.168.2.2
+% ping 192.168.2.2
 PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
 64 bytes from 192.168.2.2: icmp_req=1 ttl=64 time=18.0 ms
 64 bytes from 192.168.2.2: icmp_req=2 ttl=64 time=0.182 ms

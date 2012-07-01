@@ -36,6 +36,8 @@ Trema Apps には、複数台の OpenFlow スイッチをまとめて制御す�
 
 まずは、ルーティングスイッチがどのように動作するかを、順に見ていきましょう。
 
+//image[behavior][ルーティングスイッチの動作]
+
 @<img>{flow_mod} のネットワーク中で、
 ホスト 4 宛のパケットをホスト 1 から受け取ったスイッチ 1 は、
 受信したパケットを Packet In でコントローラへと送ります。
@@ -129,11 +131,11 @@ Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} に
 取得してください。
 
 //cmd{
-$ ls -F
+% ls -F
 trema/
-$ git clone https://github.com/trema/apps.git
+% git clone https://github.com/trema/apps.git
 ...
-$ ls -F
+% ls -F
 apps/	trema/
 //}
 
@@ -141,14 +143,13 @@ apps/	trema/
 Trema Apps にはさまざまなアプリケーションが含まれています。
 そのうち、今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。
 @<tt>{topology} には、トポロジー検出を担当するモジュール 
-@<tt>{topology_discovery}、検出したトポロジーを管理するモジュール @<tt>{topology} と
-最短パスを計算するライブラリ @<tt>{libpathresolver} が含まれています。
+@<tt>{topology_discovery} と検出したトポロジーを管理するモジュール @<tt>{topology} が含まれています。
 また @<tt>{routing_switch} には、ルーティングスイッチの本体が含まれています。
 この二つを順に @<tt>{make} してください。
 
 //cmd{
-$ (cd apps/topology/; make)
-$ (cd apps/routing_switch; make)
+% (cd apps/topology/; make)
+% (cd apps/routing_switch; make)
 //}
 
 === ルーティングスイッチを動かす
@@ -235,8 +236,8 @@ filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 今回はこのファイルを使って、以下のように起動してください。
 
 //cmd{
-$ cd ./trema
-$ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
+% cd ./trema
+% ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
 === 見つけたリンクを表示する
@@ -246,7 +247,7 @@ $ ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
 以下のように実行してください。
 
 //cmd{
-$ TREMA_HOME=. ../apps/topology/show_topology -D
+% TREMA_HOME=. ../apps/topology/show_topology -D
 vswitch {
   datapath_id "0xe0"
 }
@@ -283,8 +284,8 @@ link "0xe3", "0xe1"
 次に、仮想ホストからパケットを送り、フローが設定されることを確認しましょう。
 
 //cmd{
-$ ./trema send_packets --source host1 --dest host2
-$ ./trema send_packets --source host2 --dest host1
+% ./trema send_packets --source host1 --dest host2
+% ./trema send_packets --source host2 --dest host1
 //}
 
 ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、
@@ -298,21 +299,21 @@ host2 から host1 へと送った段階でフローが設定されます。
 @<tt>{0xe0} から @<tt>{0xe1} まで順に表示してみましょう。
 
 //cmd{
-$ ./trema dump_flows 0xe0
+% ./trema dump_flows 0xe0
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-$ ./trema dump_flows 0xe1
+% ./trema dump_flows 0xe1
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0, idle_timeout=61, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-$ ./trema dump_flows 0xe2
+% ./trema dump_flows 0xe2
 NXST_FLOW reply (xid=0x4):
-$ ./trema dump_flows 0xe3
+% ./trema dump_flows 0xe3
 NXST_FLOW reply (xid=0x4):
 //}
 
@@ -323,6 +324,12 @@ MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチン�
 @<img>{fullmesh} をもう一度見てください。host2 から host1 への最短パスは
 @<tt>{0xe1} → @<tt>{0xe0} なので、この二つのスイッチにきちんとフローが
 設定されています。
+
+== 利点・欠点
+
+ * スパニングツリーがいらなくなる点
+ * 集中制御なので、いろいろなアルゴリズムを選べる点
+ * パーフローでの処理なので、フィルタが容易に実装できる点
 
 == まとめ/参考文献
 
@@ -335,11 +342,13 @@ MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチン�
  * 最短パスを計算する方法について学びました。エミュレータ上で通信を
    行った結果、最短パス上にフローが設定される様子を見てみました。
 
-: グラフ理論ほにゃらら
-  本章では簡単に説明を行ったダイクストラ法ですが、この本では詳しい説明があります。
-
 : マスタリング TCP/IP 応用編
   L3 の経路制御プロトコルについて詳しく説明されています。本章で扱ったダイクストラ法を
   用いた経路制御プロトコルである OSPF についても説明がされているので、
   ルーティングスイッチとの違いを比べてみるのも面白いかもしれません。
+
+: 最短経路の本 レナのふしぎな数学の旅
+  「最短経路」を題材にした読み物で、難しい理論を知らなくても読むことが
+  できます。本章でも最短パスの計算を簡単に紹介しましたが、
+  この本を読めばより理解が深まるでしょう。
 
