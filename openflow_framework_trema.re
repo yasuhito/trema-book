@@ -63,10 +63,8 @@ Trema の提供する trema コマンドの実行には root 権限が必要で�
 
 開発マシンに必要なのはこれだけです。それでは、Ubuntu のパッケージ管理システム @<tt>{apt-get} を使って次のようにインストールしてください。もし他のディストリビューションを使いたい場合は、コマンド名とパッケージ名を適宜読み替えください。
 
-#@warn(file への依存をなくす)
 //cmd{
-% sudo apt-get install gcc make ruby rubygems ruby-dev irb file libpcap-dev \
-  libsqlite3-dev
+% sudo apt-get install gcc make ruby rubygems ruby-dev irb libpcap-dev libsqlite3-dev
 //}
 
 以上で Trema をインストールするための準備が整いました。Trema をインストールするには、RubyGems のパッケージで手軽にインストールする方法と、最新のソースコードを取得して自分でビルドする方法があります。それぞれ説明していきましょう。
