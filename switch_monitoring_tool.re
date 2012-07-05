@@ -258,7 +258,7 @@ door.open
 質問すると答を返してくれることもあります。
 
 //emlist{
-"restaurant".include? "taura"
+"restaurant".include? "aura"
 #=> true
 //}
 
@@ -271,28 +271,27 @@ door.open
 
 Ruby にはこのようなメソッドが何千種類もあります。そしてもちろん、クラス定義の中で自分で追加することもできます。
 
+さて、今回は少し長くなりましたがこれで必要な Ruby の勉強は終わりです。わからなくなったらいつでも読み返してください。
+
 == ソースコード
 
-それではスイッチモニタリングツールのソースコードを読み解いていきましょう。
+それではスイッチ監視ツールのソースコードを読み解いていきましょう。Trema はスイッチの接続と切断を捕捉するための 2 つのハンドラメソッドを提供しています。
 
-OpenFlow スイッチは、起動すると OpenFlow コントローラへ接続しに行きます。
-Trema では、スイッチとの接続が確立すると、コントローラの
-@<tt>{switch_ready} ハンドラが呼ばれます。コントローラはスイッチ一覧リ
-ストを更新し、新しく起動したスイッチをリストに追加します。逆にスイッチ
-が何らかの原因で接続を切った場合、コントローラの
-@<tt>{switch_disconnected} ハンドラが呼ばれます。コントローラはリストを
-更新し、いなくなったスイッチをリストから削除します。
-
-#@warn(あとで解説ごとにソースコードを網かけつきで書く)
+ * @<tt>{switch_ready}: OpenFlow スイッチは、起動すると OpenFlow コントローラへ接続しに行きます。コントーラはスイッチとの接続が確立すると @<tt>{switch_ready} ハンドラが呼ばれます。引数にはスイッチの Datapath ID が渡されます。
+ * @<tt>{switch_disconnected}: スイッチが障害など何らかの原因でコントローラとの接続を切った場合、コントローラの @<tt>{switch_disconnected} ハンドラが呼ばれます。引数にはスイッチの Datapath ID が渡されます。
 
 === スイッチの起動を捕捉する
 
-スイッチの起動イベントを捕捉するには @<tt>{switch_ready} ハンドラをコ
-ントローラクラスに追加します。
+@<tt>{switch_ready} ハンドラでは、スイッチ一覧リストに新しく接続したスイッチを追加し、接続したスイッチの情報を画面に表示します。
 
-//list[switch_ready][スイッチの起動を捕捉する @<tt>{switch_ready} ハンドラ]{
+//emlist{
 class SwitchMonitor < Controller
   # ...
+
+  def start
+    @switches = []
+  end
+
 
   def switch_ready datapath_id
     @switches << datapath_id.to_hex
@@ -303,17 +302,19 @@ class SwitchMonitor < Controller
 end
 //}
 
-@<tt>{@switches} は現在起動しているスイッチのリストを管理するインスタン
-ス変数で、新しくスイッチが起動するとスイッチの @<tt>{datapath_id} が追
-加されます。また、@<tt>{info} メソッドで @<tt>{datapath_id} を表示しま
-す。
+@<tt>{@switches} は現在起動しているスイッチのリストを管理するインスタンス変数で、@<tt>{start} ハンドラで空の配列に初期化されます。新しくスイッチが起動すると末尾にその Datapath ID を追加します。また、@<tt>{info} メソッドで Datapath ID を表示します。
+
+@<tt>{to_hex} は @<tt>{datapath_id} に定義されたメソッドで、整数値を十六進の文字列 ("0xabc" など) に変換します。また、文字列中の @<tt>{#{...}} は文字列内に文字列を組込む特殊な文法です。これは次のコードと同じで、文字列を @<tt>{+} でつなげるかわりに見やすくしています。
+
+//emlist{
+info "Switch " + datapath_id.to_hex + " is UP"
+//}
 
 === スイッチの切断を捕捉する
 
-同様に、スイッチが落ちて接続が切れたイベントを捕捉してみましょう。この
-ためのハンドラは @<tt>{switch_disconnected} です。
+@<tt>{switch_disconnected} ハンドラでは、スイッチ一覧リストから切断したスイッチを削除し、切断したスイッチの情報を画面に表示します。
 
-//list[switch_disconnected][スイッチの切断を捕捉する @<tt>{switch_disconnected} ハンドラ]{
+//emlist{
 class SwitchMonitor < Controller
   # ...
 
@@ -326,17 +327,30 @@ class SwitchMonitor < Controller
 end
 //}
 
-スイッチの切断を捕捉すると、切断したスイッチの @<tt>{datapath_id} をス
-イッチ一覧 @<tt>{@switches} から除きます。また、@<tt>{datapath_id} を
-@<tt>{info} メソッドで表示します。
+@<tt>{switch_ready} とは逆に配列の引き算 (@<tt>{-=}) で切断したスイッチの Datapath ID を @<tt>{@switches} から除いています。また、切断したスイッチの Datapath ID を表示しています。
 
-=== スイッチの一覧を表示する
+=== スイッチ一覧を一定時間ごとに表示する
 
-最後に、スイッチの一覧を定期的に表示する部分です。一定時間ごとに何らか
-の処理を行いたい場合には、タイマー機能を使います。一定の間隔で呼びたい
-メソッドと間隔(秒数)を@<tt>{periodic_timer_event} で指定すると、指定
-されたメソッドが呼ばれます。ここでは、スイッチの一覧を表示するメソッド
-@<tt>{show_switches} を10 秒ごとに呼び出します。
+#@warn(クラスメソッドの説明)
+
+最後に、スイッチの一覧を一定時間ごとに表示する部分です。このように一定時間ごとに何らかの処理を行いたい場合には、Trema のタイマー機能を使います。次のように @<tt>{periodic_timer_event} に続いて一定間隔ごとに呼び出したいメソッドのシンボル名、間隔を秒数で指定しておくと、指定されたメソッドが呼ばれます。タイマーで呼び出すメソッドは、通常クラスの外からは呼びませんのでプライベートメソッドにしておく必要があります。Ruby では @<tt>{private} と書いた行以降のメソッドはプライベートメソッドとして定義され、クラスの外からは見えなくなります。
+
+//emlist{
+class MyController < Controller
+  periodic_timer_event :callme_every_15seconds, 15
+
+  # ...
+
+
+  private
+
+
+  def call_me_every_15seconds
+    # ...
+  end
+//}
+
+スイッチ監視ツールの場合は、タイマーで 10 秒ごとに @<tt>{show_switches} メソッドを呼んでいます。@<tt>{show_switches} メソッドでは、見やすい出力を得るためにスイッチの Datapath ID のリスト (@<tt>{@switches}) をアルファベット順にソートし (@<tt>{sort})、カンマでつなげて (@<tt>{join( ", " )}) 表示するという工夫をしています。
 
 //list[timer][スイッチの一覧を 10 秒ごとに表示する]{
 class SwitchMonitor < Controller
@@ -344,7 +358,7 @@ class SwitchMonitor < Controller
 
   # ...
 
-  # 以下プライベートメソッド
+
   private
 
 
