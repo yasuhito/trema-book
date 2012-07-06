@@ -29,7 +29,7 @@ class SwitchMonitor < Controller
 
 
   def switch_disconnected datapath_id
-    @switches -= [datapath_id.to_hex ]
+    @switches -= [ datapath_id.to_hex ]
     info "Switch #{ datapath_id.to_hex } is DOWN"
   end
 
@@ -280,30 +280,28 @@ Ruby にはこのようなメソッドが何千種類もあります。そして
 
 == ソースコード
 
-それではスイッチ監視ツールのソースコードを読み解いていきましょう。Trema はスイッチの接続と切断を捕捉するための 2 つのハンドラメソッドを提供しています。
+それではスイッチ監視ツールのソースコードを読み解いていきましょう。今回の肝となるのは、スイッチの接続と切断イベントをハンドラで検知する部分と、スイッチ一覧を一定時間ごとに表示する部分です。Trema はスイッチの接続と切断を捕捉するための 2 つのハンドラメソッドを提供しています。
 
  * @<tt>{switch_ready}: OpenFlow スイッチは、起動すると OpenFlow コントローラへ接続しに行きます。コントーラはスイッチとの接続が確立すると @<tt>{switch_ready} ハンドラが呼ばれます。引数にはスイッチの Datapath ID が渡されます。
  * @<tt>{switch_disconnected}: スイッチが障害など何らかの原因でコントローラとの接続を切った場合、コントローラの @<tt>{switch_disconnected} ハンドラが呼ばれます。引数にはスイッチの Datapath ID が渡されます。
 
-===[column] 友太郎の質問: @<tt>{switch_ready} ってなに？
+===[column] 取間先生曰く: @<tt>{switch_ready} の中身はどうなっている？
 
-Q.「OpenFlow の仕様を読んでみたけど、どこにも @<tt>{switch_ready} って出てこなかったよ？ OpenFlow にそんなメッセージが定義されてるの？」@<br>{}
-
-A. @<tt>{switch_ready} は Trema 独自のイベントで、OpenFlow にはそのようなメッセージはありません。@<tt>{switch_ready} の裏では @<img>{switch_ready} の一連の処理が行われており、Trema が OpenFlow プロトコルの詳細をうまくカーペットの裏に隠してくれているのです。
+実は OpenFlow の仕様には @<tt>{switch_ready} というメッセージは定義されておらん。これは Trema が独自に定義するイベントなのじゃ。@<tt>{switch_ready} の裏では @<img>{switch_ready} に示す一連の複雑な処理が行われていて、Trema が OpenFlow プロトコルの詳細をうまくカーペットの裏に隠してくれているんじゃ。
 
 //image[switch_ready][@<tt>{switch_ready} イベントが起こるまで]
 
-最初に、スイッチとコントローラがしゃべる OpenFlow プロトコルが合っているか確認します。OpenFlow の HELLO メッセージを使ってお互いのプロトコルバージョンを確認し、うまく会話できそうか確認します。
+最初に、スイッチとコントローラがしゃべる OpenFlow プロトコルが合っているか確認する。OpenFlow の Hello メッセージを使ってお互いのプロトコルバージョンを確認し、うまく会話できそうか確認するのじゃ。
 
-次は、スイッチを識別するための datapath ID の取得です。datapath ID のようなスイッチ固有の情報は、スイッチに対して OpenFlow の Features Request メッセージを送ることで取得できます。成功した場合、datapath ID やポート数などの情報が Features Reply メッセージに乗ってやってきます。
+次は、スイッチを識別するための datapath ID の取得じゃ。datapath ID のようなスイッチ固有の情報は、スイッチに対して OpenFlow の Features Request メッセージを送ることで取得できる。成功した場合、datapath ID やポート数などの情報が Features Reply メッセージに乗ってやってくる。
 
-最後にスイッチを初期化します。スイッチに以前の状態が残っていると、コントローラが管理する情報と競合が起こるため、初期化することでこれを避けます。これら一連の処理が終わると、ようやく @<tt>{switch_ready} がコントローラに通知されます。
+最後にスイッチを初期化する。スイッチに以前の状態が残っているとコントローラが管理する情報と競合が起こるので、スイッチを初期化することでこれを避けるのじゃ。これら一連の処理が終わると、ようやく @<tt>{switch_ready} がコントローラに通知されるというわけじゃ。
 
 ===[/column]
 
 === スイッチの起動を捕捉する
 
-@<tt>{switch_ready} ハンドラでは、スイッチ一覧リストに新しく接続したスイッチを追加し、接続したスイッチの情報を画面に表示します。
+@<tt>{switch_ready} ハンドラでは、スイッチ一覧リストに新しく接続したスイッチの Datapath ID を追加し、接続したスイッチの情報を画面に表示します。
 
 //emlist{
 class SwitchMonitor < Controller
@@ -323,24 +321,51 @@ class SwitchMonitor < Controller
 end
 //}
 
-@<tt>{@switches} は現在起動しているスイッチのリストを管理するインスタンス変数で、@<tt>{start} ハンドラで空の配列に初期化されます。新しくスイッチが起動すると末尾にその Datapath ID を追加します。また、@<tt>{info} メソッドで Datapath ID を表示します。
+@<tt>{@switches} は現在起動しているスイッチの Datapath ID を管理するインスタンス変数で、@<tt>{start} ハンドラで空の配列に初期化されます。新しくスイッチが起動すると @<tt>{switch_ready} ハンドラが起動し、@<tt>{@switches} が保持する配列の末尾にその Datapath ID を追加します。また、@<tt>{info} メソッドで新しいスイッチの Datapath ID を表示します。
 
-@<tt>{to_hex} は @<tt>{datapath_id} に定義されたメソッドで、整数値を十六進の文字列 ("0xabc" など) に変換します。また、文字列中の @<tt>{#{...}} は文字列内に文字列を組込む特殊な文法です。これは次のコードと同じで、文字列を @<tt>{+} でつなげるかわりに見やすくしています。
+==== Datapath ID を 16 進にする
+
+@<tt>{to_hex} は整数を 16 進の文字列に変換するメソッドです。@<tt>{datapath_id} の値は @<tt>{65531} のような整数なので、画面に表示する場合はユーザにわかりやすくするために @<tt>{0xfffb} のような 16 進フォーマットに変更しておいたほうがよいでしょう。
+
+==== ロギングメソッド
+
+@<tt>{info} メソッドは Trema が提供するロギングメソッドで、出力するメッセージの重要度に応じたさまざまなロギングレベル用メソッドを定義しています。
+
+ * @<tt>{critical}: 回復不能なエラー
+ * @<tt>{error}: エラー
+ * @<tt>{warn}: 警告
+ * @<tt>{notice}: 注意が必要な情報
+ * @<tt>{info}: 通常レベルの情報
+ * @<tt>{debug}: デバッグ出力
+
+メッセージはコントローラのログファイル (@<tt>{[trema]/tmp/log/SwitchMonitor.log}) とターミナル (@<tt>{trema run} をフォアグラウンドで実行している場合) に出力されます。
+
+==== 文字列の連結
+
+@<tt>{info} に渡される文字列中の @<tt>{#{...\}} は、文字列内に Ruby の式を組込む文法です。
+
+//emlist{
+info "Switch #{ datapath_id.to_hex } is UP"
+//}
+
+これは次のコードと同じです。
 
 //emlist{
 info "Switch " + datapath_id.to_hex + " is UP"
 //}
 
+どちらを使ってもかまいませんが、@<tt>{+} による文字列の連結を使いすぎると最終的な出力がわかりにくくなることがあるため、このように @<tt>{#{...\}} で組み込んだ方が良いこともあります。
+
 === スイッチの切断を捕捉する
 
-@<tt>{switch_disconnected} ハンドラでは、スイッチ一覧リストから切断したスイッチを削除し、切断したスイッチの情報を画面に表示します。
+@<tt>{switch_disconnected} ハンドラでは、スイッチ一覧リストから切断したスイッチの Datapath ID を削除し、切断したスイッチの情報を画面に表示します。
 
 //emlist{
 class SwitchMonitor < Controller
   # ...
 
   def switch_disconnected datapath_id
-    @switches -= [datapath_id.to_hex ]
+    @switches -= [ datapath_id.to_hex ]
     info "Switch #{ datapath_id.to_hex } is DOWN"
   end
 
@@ -348,13 +373,24 @@ class SwitchMonitor < Controller
 end
 //}
 
-@<tt>{switch_ready} とは逆に配列の引き算 (@<tt>{-=}) で切断したスイッチの Datapath ID を @<tt>{@switches} から除いています。また、切断したスイッチの Datapath ID を表示しています。
+@<tt>{switch_ready} とは逆に、配列の引き算 (@<tt>{-=}) で切断したスイッチの Datapath ID を @<tt>{@switches} から除いていることに注意してください。
 
 === スイッチ一覧を一定時間ごとに表示する
 
 #@warn(クラスメソッドの説明)
 
-最後に、スイッチの一覧を一定時間ごとに表示する部分です。このように一定時間ごとに何らかの処理を行いたい場合には、Trema のタイマー機能を使います。次のように @<tt>{periodic_timer_event} に続いて一定間隔ごとに呼び出したいメソッドのシンボル名、間隔を秒数で指定しておくと、指定されたメソッドが呼ばれます。タイマーで呼び出すメソッドは、通常クラスの外からは呼びませんのでプライベートメソッドにしておく必要があります。Ruby では @<tt>{private} と書いた行以降のメソッドはプライベートメソッドとして定義され、クラスの外からは見えなくなります。
+最後に、スイッチの一覧を一定時間ごとに表示する部分です。このようにいわゆるタイマー処理を行いたい場合には、Trema のタイマー機能を使います。次のように @<tt>{periodic_timer_event} に続いて一定間隔ごとに呼び出したいメソッドのシンボル名、間隔を秒数で指定しておくと、指定されたメソッドが指定された間隔ごとに呼ばれます。
+
+//emlist{
+class MyController < Controller
+  # 15 秒ごとに callme_every_15seconds メソッドを呼ぶ
+  periodic_timer_event :callme_every_15seconds, 15
+
+//}
+
+この定義はクラス名定義の直後に来るので、まるでクラスの属性としてタイマーがセットされているように読めることに注目してください。このように Trema ではタイマー処理も短く読みやすく書けるのです。
+
+タイマーで呼び出すメソッドは、通常クラスの外からは呼びませんのでプライベートメソッドにしておく必要があります。Ruby では @<tt>{private} と書いた行以降のメソッドはプライベートメソッドとして定義され、クラスの外からは見えなくなります。
 
 //emlist{
 class MyController < Controller
@@ -371,9 +407,9 @@ class MyController < Controller
   end
 //}
 
-スイッチ監視ツールの場合は、タイマーで 10 秒ごとに @<tt>{show_switches} メソッドを呼んでいます。@<tt>{show_switches} メソッドでは、見やすい出力を得るためにスイッチの Datapath ID のリスト (@<tt>{@switches}) をアルファベット順にソートし (@<tt>{sort})、カンマでつなげて (@<tt>{join( ", " )}) 表示するという工夫をしています。
+スイッチ監視ツールのソースコードのタイマー部分を見てみましょう。
 
-//list[timer][スイッチの一覧を 10 秒ごとに表示する]{
+//emlist{
 class SwitchMonitor < Controller
   periodic_timer_event :show_switches, 10
 
@@ -389,14 +425,16 @@ class SwitchMonitor < Controller
 end
 //}
 
+クラス名定義直後のタイマー定義より、10 秒ごとに @<tt>{show_switches} メソッドを呼んでいることがわかります。@<tt>{show_switches} メソッドでは、見やすい出力を得るためにスイッチの Datapath ID のリスト (@<tt>{@switches}) をアルファベット順にソートし (@<tt>{sort})、カンマでつなげて (@<tt>{join( ", " )}) 表示するという工夫をしています。
+
 == まとめ
 
-スイッチの動作状況を監視するスイッチ監視ツールを作りました。学んだことは次の3つです。
+この章ではスイッチの動作状況を監視するスイッチ監視ツールを作りました。学んだことは次の3つです。また、作ったスイッチ監視ツールをテストするため Trema の仮想ネットワーク機能を使ってみました。
 
- * OpenFlow ネットワークはパケットを処理するスイッチ (datapath)と、スイッチを制御するコントローラから構成されます。スイッチには固有の Datapath ID が振られます。
- * Trema は仮想ネットワーク機能を持っており、OpenFlow スイッチを持っていなくてもコントローラのテストができます。たとえば、任意の datapath ID を設定した仮想スイッチを何台でも起動できます。
  * スイッチの起動と切断を捕捉するには、@<tt>{switch_ready} と @<tt>{switch_disconnected} ハンドラメソッドを定義します。
+ * タイマー (@<tt>{periodic_timer_event}) を使うと一定間隔ごとに指定したメソッドを起動できます。
+ * 仮想ネットワーク機能を使うと OpenFlow スイッチを持っていなくてもコントローラのテストができます。
 
-短いソースコードでも実用的なツールを書けるところが OpenFlow の魅力です。続く章では、遠隔操作可能なソフトウェアパッチパネルを作ります。もうラックのあるサーバルームまでわざわざ移動する必要はありません。
+今回作ったスイッチ監視ツールのように、比較的短いソースコードでもそこそこ実用的なツールを書けるところが OpenFlow の魅力です。続く章では、もう 1 つの便利ツールの例として遠隔操作可能なソフトウェアパッチパネルを作ります。ネットワークケーブルを挿し替えるためだけにラックのあるサーバルームまで出向く必要はなくなります。
 
 == 参考文献
