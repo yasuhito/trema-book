@@ -61,7 +61,7 @@ apps/   trema/
 % sudo a2ensite sliceable_switch
 //}
 
-次に、スライス機能つきスイッチが参照するデータベースと、CGI 経由でデータベースに設定を書き込むためのスクリプト群を用意し、適切なディレクトリに配置します。
+次に、スライス機能つきスイッチが参照するデータベースと、CGI 経由でデータベースに設定を書き込むためのスクリプト群を用意し、適切なディレクトリに配置します。そして最後に Apache の再起動を行います。
 
 //cmd{
 % ./create_tables.sh
@@ -70,6 +70,8 @@ A filter entry is added successfully.
 % sudo mkdir /home/sliceable_switch/db
 % sudo cp Slice.pm Filter.pm config.cgi /home/sliceable_switch/script
 % sudo cp *.db /home/sliceable_switch/db
+% sudo chown -R www-data.www-data /home/sliceable_switch
+% sudo /etc/init.d/apache2 reload
 //}
 
 以下のように、各ファイルが適切に配置されていることを確認してください。
@@ -85,24 +87,28 @@ Filter.pm  Slice.pm  config.cgi
 
 以上で設定は終了です。ポート 8888 にアクセスすることで、各設定ができるようになっています。
 
-まず、スライスを作ってみましょう。@<tt>{/networks} という URI に POST メソッドでアクセスし、json 形式で記載されたパラメータを送ります。@<tt>{slice1} という ID のスライスを作る場合には、以下のようにします。
+まず、スライスを作ってみましょう。@<tt>{slice1} という ID のスライスを作る場合には、JSON 形式のファイル (@<list>{slice}) を用意します。
 
-//cmd{
-% telnet localhost 8888
-POST /networks HTTP/1.1
-Content-type: application/json
+//list[slice][slice.json]{
 {
   "id" : "slice1",
-  "description" : "Trema-team's network"
+  "description" : "Trema-team network"
 }
 //}
 
-次にスライスにポートを割り当ててみましょう。URI は @<tt>{/networks/<スライスID>/ports} になります。以下の例では、@<tt>{slice1} というスライスに、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを割り当てています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、以下の例のように 65535 としてください。
+@<tt>{/networks} という URI に POST メソッドでアクセスし、slice.json を送ります。
 
 //cmd{
-% telnet localhost 8888
-POST /network/slice1/ports HTTP/1.1
-Content-type: application/json
+% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks ./slice.json
+Status: 202 Accepted
+Content:
+{"id":"slice1","description":"Trema-team network"}
+//}
+
+
+次にスライスにポートを割り当ててみましょう。URI は @<tt>{/networks/<スライスID>/ports} になります。以下の例では、@<tt>{slice1} というスライスに、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを割り当てています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、以下の例のように 65535 としてください。
+
+//list[port][port.json]{
 {
   "id" : "port0",
   "datapath_id" : "0xe0",
@@ -111,15 +117,45 @@ Content-type: application/json
 }
 //}
 
+//cmd{
+% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
+Status: 202 Accepted
+//}
+
 MAC アドレスをスライスに対応させるためには、以下のようにします。URI は、@<tt>{/networks/<スライスID>/attachments} です。
 
-//cmd{
-% telnet localhost 8888
-POST /network/slice1/attachments HTTP/1.1
-Content-type: application/json
+//list[attachment][attachment.json]{
 {
   "id" : "attach0",
   "mac" : "01:00:00:00:00:01"
+}
+//}
+
+//cmd{
+% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
+Status: 202 Accepted
+//}
+
+//cmd{
+% ./test/rest_if/httpc GET http://127.0.0.1:8888/networks/slice1
+Status: 200 OK
+Content:
+{ "bindings" : 
+  [
+    {
+      "type" : 2,
+      "id" : "attach0",
+      "mac" : "01:00:00:00:00:01"
+    },
+    {
+      "vid" : 65535,
+      "datapath_id" : "224",
+      "type" : 1,
+      "id" : "port0",
+      "port" : 33 
+    }
+  ],
+  "description" : "Trema-team network"
 }
 //}
 
