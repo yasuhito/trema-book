@@ -6,3 +6,4 @@
 石井 秀治さん: 「Trema のアーキテクチャ」の章で写真を提供。そのほか Trema への貢献多数。
 金海 好彦さん: README.md のバグ報告。
 @stereocat さん: Trema 本のビルド方法をブログで紹介 (http://d.hatena.ne.jp/stereocat/20120619)
+高田 将司さん: typo の指摘など多数。
