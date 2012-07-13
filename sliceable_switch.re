@@ -152,9 +152,16 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 
 == REST API で設定する
 
-スライス機能つきスイッチのスライス設定は、前節で紹介したようにコマンドで行うこともできますが、REST ベースの API で行うこともできます。 @<img>{rest} のように sqlite3 のデータベースがスライス設定を格納しており、@<tt>{sliceable_switch} モジュールはこのデータベースを参照し、スライス設定を取得しています。
+スライス機能つきスイッチのスライス設定は、前節で紹介したようにコマンドで行うこともできますが、REST ベースの API で行うこともできます。
 
 //image[rest][REST API を使用する場合のモジュール間の関係]
+
+@<img>{rest} に示すように、スライスの設定は、@<tt>{slice.db} という名前の sqlite3 のデータベースに格納されています。@<tt>{sliceable_switch} モジュールはこのデータベースから、スライス設定を取得しています。先ほど紹介した @<tt>{slice} コマンドを実行すると、スライスの設定がこのデータベースに書き込まれます。
+
+スライス機能つきスイッチの REST API は、Apache 上で動作する CGI で実現しています。HTTP クライアントからアクセスすると、@<tt>{config.cgi} が呼び出され、パースした結果を @<tt>{slice.db} へと書き込みます。
+
+
+=== REST API を使うための準備
 
 REST API を使用するためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
 
@@ -163,7 +170,7 @@ REST API を使用するためには、少し準備が必要です。まずは�
 % sudo apt-get install apache2-mpm-prefork libjson-perl
 //}
 
-次に apache の設定を行います。必要な設定ファイル等は同梱されていますので、以下の手順を実施してください。
+次に Apache の設定を行います。必要な設定ファイル等は同梱されていますので、以下の手順を実施してください。
 
 //cmd{
 % cd apps/sliceable_switch
@@ -172,7 +179,7 @@ REST API を使用するためには、少し準備が必要です。まずは�
 % sudo a2ensite sliceable_switch
 //}
 
-次に、スライス機能つきスイッチが参照するデータベースと、CGI 経由でデータベースに設定を書き込むためのスクリプト群を用意し、適切なディレクトリに配置します。そして最後に Apache の再起動を行います。
+次に、スライス機能つきスイッチが参照するデータベースと、CGI 経由でデータベースに書き込むためのスクリプト群を用意し、適切なディレクトリに配置します。そして最後に Apache の再起動を行います。
 
 //cmd{
 % ./create_tables.sh
@@ -185,7 +192,7 @@ A filter entry is added successfully.
 % sudo /etc/init.d/apache2 reload
 //}
 
-以下のように、各ファイルが適切に配置されていることを確認してください。
+これで設定は終了です。最後に 各ファイルが適切に配置されていることを確認してください。
 
 //cmd{
 % ls /home/sliceable_switch/*
@@ -196,18 +203,20 @@ filter.db  slice.db
 Filter.pm  Slice.pm  config.cgi
 //}
 
-以上で設定は終了です。ポート 8888 にアクセスすることで、各設定ができるようになっています。
+=== REST API を使ってみる
 
-まず、スライスを作ってみましょう。@<tt>{slice1} という ID のスライスを作る場合には、JSON 形式のファイル (@<list>{slice}) を用意します。
+まず、スライスを作ってみましょう。@<tt>{slice1} という ID のスライスを作る場合には、JSON 形式のファイル (@<list>{slice.json}) を用意します。
 
-//list[slice][slice.json]{
+//list[slice.json][slice.json]{
 {
   "id" : "slice1",
   "description" : "Trema-team network"
 }
 //}
 
-@<tt>{/networks} という URI に POST メソッドでアクセスし、slice.json を送ります。
+この JSON 形式のファイルを、@<tt>{/networks} という URI に POST メソッドで送ることで、スライスを作ることができます。
+
+@<tt>{httpc} というテスト用の HTTP クライアントが @<tt>{./test/rest_if/} のディレクトリ配下に用意されていますので、これを用います。今回の設定では Apache の待ち受けポートは 8888 になっていますので、以下のように実行してみましょう。
 
 //cmd{
 % ./test/rest_if/httpc POST http://127.0.0.1:8888/networks ./slice.json
@@ -216,10 +225,11 @@ Content:
 {"id":"slice1","description":"Trema-team network"}
 //}
 
+成功すれば、上記のように表示されるはずです。
 
-次にスライスにポートを割り当ててみましょう。URI は @<tt>{/networks/<スライスID>/ports} になります。以下の例では、@<tt>{slice1} というスライスに、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを割り当てています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、以下の例のように 65535 としてください。
+次にスライスにポートを割り当ててみましょう。まずは割り当てるポートに関する情報を記載した JSON 形式のファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、この例のように 65535 としてください。
 
-//list[port][port.json]{
+//list[port.json][port.json]{
 {
   "id" : "port0",
   "datapath_id" : "0xe0",
@@ -228,24 +238,31 @@ Content:
 }
 //}
 
+スライスにポートを割り当てる際に使用する URI は @<tt>{/networks/<スライスID>/ports} になります。@<list>{port.json} で指定したポートを @<tt>{slice1} というスライスにを割り当てるには、以下のようにします。
+
 //cmd{
 % ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
 Status: 202 Accepted
 //}
 
-MAC アドレスをスライスに対応させるためには、以下のようにします。URI は、@<tt>{/networks/<スライスID>/attachments} です。
+次に、MAC アドレスをスライスに対応させてみましょう。このときも同様に JSON 形式で、割り当てる MAC アドレスを指定したファイルを用意します(@<list>{attachment.json})。
 
-//list[attachment][attachment.json]{
+//list[attachment.json][attachment.json]{
 {
   "id" : "attach0",
   "mac" : "01:00:00:00:00:01"
 }
 //}
 
+
+このとき使用する URI は、@<tt>{/networks/<スライスID>/attachments} です。以下のように @<tt>{attachment.json} を @<tt>{slice1} に割り当てます。
+
 //cmd{
 % ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
 Status: 202 Accepted
 //}
+
+これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスID>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。以下のようにして、@<tt>{slice1} に関する情報を取得してみましょう。
 
 //cmd{
 % ./test/rest_if/httpc GET http://127.0.0.1:8888/networks/slice1
@@ -270,9 +287,13 @@ Content:
 }
 //}
 
-ここで紹介した REST API の正式名称は、Sliceable Network Management API です。上記で紹介した以外を、@<table>{API} に示します。
+この出力結果は見やすいようにインデント表示にしていますが、実際には改行なしで表示されます。先に設定した内容が、きちんと反映されているかの確認ができます。
 
-//table[API][Sliceable Network Management API]{
+=== REST API を使いこなす
+
+本章で紹介した REST API は、正式名称を Sliceable Network Management API と言います。紹介した以外にも、@<table>{API} にあるような API が用意されています。
+
+//table[API][Sliceable Network Management API 一覧]{
 Method	URI	       説明
 ----------------------------
 POST	/networks	スライス作成
@@ -290,7 +311,7 @@ GET	/networks/<スライスID>/attachments/<アタッチメントID>	アタッ�
 DELETE	/networks/<スライスID>/attachments/<アタッチメントID>	アタッチメント削除
 //}
 
-以下のサイトで仕様が公開されていますので、詳細を確認したい人はこちらをご参照ください、
+Sliceable Network Management API の仕様は、以下のサイトで公開されていますので、詳細を確認したい人はこちらをご参照ください。
 
  * Sliceable Network Management API ( @<tt>{https://github.com/trema/apps/wiki} )
 
