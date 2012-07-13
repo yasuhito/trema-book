@@ -227,7 +227,23 @@ Content:
 
 成功すれば、上記のように表示されるはずです。
 
-次にスライスにポートを割り当ててみましょう。まずは割り当てるポートに関する情報を記載した JSON 形式のファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、この例のように 65535 としてください。
+次に、MAC アドレスをスライスに対応させてみましょう。JSON 形式で、割り当てる MAC アドレスを指定したファイルを用意します(@<list>{attachment.json})。
+
+//list[attachment.json][attachment.json]{
+{
+  "id" : "attach0",
+  "mac" : "01:00:00:00:00:01"
+}
+//}
+
+スライスに MAC アドレスを割り当てる際に使用する URI は、@<tt>{/networks/<スライスID>/attachments} です。以下のように @<tt>{attachment.json} を @<tt>{slice1} に割り当てます。
+
+//cmd{
+% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
+Status: 202 Accepted
+//}
+
+今度は、ポートをスライスに割り当てる方法を見ていきましょう。これまでと同様に、JSON 形式で、割り当てるポートに関する情報を記載したファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN tag を付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN tag の設定が不要の場合には、この例のように 65535 としてください。
 
 //list[port.json][port.json]{
 {
@@ -238,31 +254,14 @@ Content:
 }
 //}
 
-スライスにポートを割り当てる際に使用する URI は @<tt>{/networks/<スライスID>/ports} になります。@<list>{port.json} で指定したポートを @<tt>{slice1} というスライスにを割り当てるには、以下のようにします。
+このとき使用する URI は @<tt>{/networks/<スライスID>/ports} になります。以下のようにして、@<list>{port.json} で指定したポートを @<tt>{slice1} というスライスにを割り当てます。
 
 //cmd{
 % ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
 Status: 202 Accepted
 //}
 
-次に、MAC アドレスをスライスに対応させてみましょう。このときも同様に JSON 形式で、割り当てる MAC アドレスを指定したファイルを用意します(@<list>{attachment.json})。
-
-//list[attachment.json][attachment.json]{
-{
-  "id" : "attach0",
-  "mac" : "01:00:00:00:00:01"
-}
-//}
-
-
-このとき使用する URI は、@<tt>{/networks/<スライスID>/attachments} です。以下のように @<tt>{attachment.json} を @<tt>{slice1} に割り当てます。
-
-//cmd{
-% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
-Status: 202 Accepted
-//}
-
-これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスID>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。以下のようにして、@<tt>{slice1} に関する情報を取得してみましょう。
+これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスID>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。@<tt>{slice1} に関する情報を取得してみましょう。
 
 //cmd{
 % ./test/rest_if/httpc GET http://127.0.0.1:8888/networks/slice1
