@@ -31,21 +31,132 @@ apps/   trema/
 % (cd apps/sliceable_switch; make)
 //}
 
-
 === 試してみる
 
-それではさっそくスライス機能つきスイッチを動かしてみましょう。スライス機能つきスイッチの起動には、ルート権限が必要です。@<tt>{sudo} を使って、以下のように起動してください。
+//image[slicing][ネットワーク構成]
+
+それではさっそくスライス機能つきスイッチを動かしてみましょう。今回はエミュレータ機能を使い、@<img>{slicing} のようなネットワークを作ります。@<tt>{network.conf} に示す内容のファイルを、@<tt>{network.conf} という名前で用意してください。
+
+//list[conf][network.conf]{
+vswitch {
+  datapath_id "0xe0"
+}
+
+vhost ("host1") {
+  ip "192.168.0.1"
+  netmask "255.255.0.0"
+  mac "00:00:00:00:00:01"
+}
+
+vhost ("host2") {
+  ip "192.168.0.2"
+  netmask "255.255.0.0"
+  mac "00:00:00:00:00:02"
+}
+
+vhost ("host3") {
+  ip "192.168.0.3"
+  netmask "255.255.0.0"
+  mac "00:00:00:00:00:03"
+}
+
+vhost ("host4") {
+  ip "192.168.0.4"
+  netmask "255.255.0.0"
+  mac "00:00:00:00:00:04"
+}
+
+link "0xe0", "host1"
+link "0xe0", "host2"
+link "0xe0", "host3"
+link "0xe0", "host4"
+
+
+run {
+  path "../apps/topology/topology"
+}
+
+run {
+  path "../apps/topology/topology_discovery"
+}
+
+run {
+  path "../apps/flow_manager/flow_manager"
+}
+
+run {
+  path "../apps/sliceable_switch/sliceable_switch"
+  options "-s", "../apps/sliceable_switch/slice.db", "-f", "../apps/sliceable_sw
+itch/filter.db"
+}
+
+event :port_status => "topology", :packet_in => "filter", :state_notify => "topo
+logy"
+filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
+//}
+
+trema のディレクトリに移動し、スライス機能つきスイッチを起動します。
+スライス機能つきスイッチの起動には、ルート権限が必要です。@<tt>{sudo} を使って、以下のように起動してください。
 
 //cmd{
 % cd ../../trema
-% sudo ./trema run -c ../apps/sliceable_switch/sliceable_switch_external.conf
+% sudo ./trema run -c ./network.conf
 //}
 
-このように起動しただけでは、スライス機能つきスイッチはなにも動作しません。スライスの設定が必要になります。
+このように起動しただけでは、スライス機能つきスイッチは動作しません。スライスの設定が必要です。今回は @<img>{slicing} のように二つのスライスを作ってみましょう。
+
+スライスの作成には、@<tt>{sliceable_switch} のディレクトリに用意されている @<tt>{slice} コマンドを使用します。このコマンドを使って、以下のように、二つのスライス @<tt>{slice1, slice2} を作ってみましょう。
+
+//cmd{
+% cd ../apps/sliceable_switch
+% ./slice create slice1
+A new slice is created successfully.
+% ./slice create slice2
+A new slice is created successfully.
+//}
+
+次は作成したそれぞれのスライスにホストを所属させます。その方法には、ホストが接続しているポートの指定と、ホストの MAC アドレスの登録の二通りがあります。今回は後者の方法で試してみましょう。以下のように @<tt>{host1, host2} の MAC アドレスを @<tt>{slice1} に、@<tt>{host3, host4} の MAC アドレスを @<tt>{slice2} に、それぞれ登録を行います。
+
+//cmd{
+% ./slice add-mac slice1 00:00:00:00:00:01
+A MAC-based binding is added successfully.
+% ./slice add-mac slice1 00:00:00:00:00:02
+A MAC-based binding is added successfully.
+% ./slice add-mac slice2 00:00:00:00:00:03
+A MAC-based binding is added successfully.
+% ./slice add-mac slice2 00:00:00:00:00:04
+A MAC-based binding is added successfully.
+//}
+
+ここまでで準備は完了です。それではまず同じスライスに所属するホスト同士が通信できることを確認してみましょう。
+
+MAC アドレスをスライスに登録する方法では、コントローラは起動直後に、登録した MAC アドレスを持つホストがどこにいるのかを知りません。@<tt>{host1} の位置をコントローラに学習させるために、はじめに @<tt>{host1} から @<tt>{host2} へとパケットを送ります。その後、@<tt>{host2} から @<tt>{host1} へパケットを送り、@<tt>{host1} の受信カウンタを見てみます。@<tt>{host2} からのパケットが受信できていることが確認できます。
+
+//cmd{
+% cd ../../trema
+% ./trema send_packet --source host1 --dest host2
+% ./trema send_packet --source host2 --dest host1
+% ./trema show_stats host1 --rx
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.1,1,192.168.0.2,1,1,50
+//}
+
+次に、異なるスライスに所属するホスト同士は通信できないことを確認してみます。@<tt>{slice2} に所属する @<tt>{host4} から @<tt>{slice1} に所属する @<tt>{host1} へとパケットを送ってみましょう。@<tt>{host1} の受信カウンタを見ても、@<tt>{host4} からのパケットが届いていないことがわかります。
+
+//cmd{
+% ./trema send_packet --source host4 --dest host1
+% ./trema show_stats host1 --rx
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.1,1,192.168.0.2,1,1,50
+//}
 
 == REST API で設定する
 
-まずは必要なモジュールのインストールを行います。
+スライス機能つきスイッチのスライス設定は、前節で紹介したようにコマンドで行うこともできますが、REST ベースの API で行うこともできます。 @<img>{rest} のように sqlite3 のデータベースがスライス設定を格納しており、@<tt>{sliceable_switch} モジュールはこのデータベースを参照し、スライス設定を取得しています。
+
+//image[rest][REST API を使用する場合のモジュール間の関係]
+
+REST API を使用するためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
 
 //cmd{
 % sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
