@@ -87,7 +87,7 @@ WZR-HP-AG300H	Buffalo		約六千円
 
 === 動作確認
 
-さていよいよ動作確認です。うまく OpenFlow 化されたかどうかの確認はおなじみ @<tt>{telnet} コマンドで行うことができます。次のように @<tt>{root} ユーザで OpenFlow スイッチに接続してみてください (パスワードは初期状態では設定されていません)。OpenWRT のアスキーアートロゴが次のように表示されれば OpenFlow 化成功です。
+さていよいよ動作確認です。うまく OpenFlow 化されたかどうかの確認はおなじみ @<tt>{telnet} コマンドで行うことができます。次のように @<tt>{root} ユーザで無線 LAN ルータに接続してみてください (パスワードは初期状態では設定されていません)。OpenWRT のアスキーアートロゴが次のように表示されれば OpenFlow 化成功です。
 
 //cmd{
 % telnet -l root 192.168.1.1 
@@ -118,81 +118,6 @@ Enter 'help' for a list of built-in commands.
   * 1 splash Cranberry juice
  -----------------------------------------------------
 root@OpenWrt:/# 
-//}
-
-== OpenFlow スイッチの内部構成
-
-こうしてできた OpenFlow スイッチの内部構成は次のようになっています。スイッチ内で動作する Linux からは eth0、eth1 の 2 つのネットワークインタフェースが見えており、それぞれ内部スイッチと WAN 側ポートに接続されています。内部スイッチは VLAN に対応したレイヤ 2 スイッチで、タグを付けることによって 4 つの LAN 側ポートからのパケットを区別します。このように eth0 を 4 つの論理ポートに分けることで、OpenFlow から LAN 側の 4 ポートを区別して使うことができます。
-
-//image[switch_internal_vlan][OpenFlow スイッチの内部構成][scale=0.3]
-
-=== VLAN の設定
-
-VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて eth0 とつながっているということがわかると思います。
-
-//list[config_network][/etc/config/network ファイル]{
-config 'interface' 'wan'
-      option 'ifname'         'eth1'
-      option 'proto'          'static'
-      option 'ipaddr'         '192.168.1.1'
-      option 'netmask'        '255.255.255.0'
-
-config 'switch' 'eth0'
-      option 'enable'         '1'
-      
-config 'interface' 'loopback'
-      option 'ifname'         'lo'
-      option 'proto'          'static'
-      option 'ipaddr'         '127.0.0.1'
-      option 'netmask'        '255.0.0.0'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '1'
-      option 'ports'          '1 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '2'
-      option 'ports'          '2 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '3'
-      option 'ports'          '3 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '4'
-      option 'ports'          '4 0t'
-
-config 'interface'
-      option 'ifname'         'eth0.1'
-      option 'proto'          'static'
-      
-config 'interface'
-      option 'ifname'         'eth0.2'
-      option 'proto'          'static'
-
-config 'interface'
-      option 'ifname'         'eth0.3'
-      option 'proto'          'static'
-
-config 'interface'
-      option 'ifname'         'eth0.4'
-      option 'proto'          'static'
-//}
-
-=== OpenFlow 関連の設定
-
-OpenFlow 関連の設定は、@<tt>{/etc/config/openflow} ファイルに記載されています (@<list>{config_openflow})。@<tt>{ofports} オプションの項目より、OpenFlow スイッチのポートとして使用する LAN 側の 4 ポートはそれぞれ @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} に対応していることがなんとなくわかります。
-
-//list[config_openflow][/etc/config/openflow ファイル]{
-config 'ofswitch'
-      option 'dp' 'dp0'
-      option 'ofports' 'eth0.1 eth0.2 eth0.3 eth0.4'
-      option 'ofctl' 'tcp:192.168.1.10:6633'
-      option 'mode'  'outofband'
 //}
 
 == Trema とつないでみよう
@@ -227,8 +152,6 @@ tcp        0      0 192.168.11.10:6633      192.168.11.1:60246      ESTABLISHED
 //}
 
 === スイッチの情報を取得する
-
-
 
 OpenFlow プロトコルには、スイッチから情報を取得するためのメッセージがいくつか定義されています。これらのメッセージを使って、スイッチ情報を取得・表示するための @<tt>{show_description} コマンドが Trema Apps に用意されています。まず、コマンドを使えるように用意します。
 
@@ -315,6 +238,81 @@ OpenFlow プロトコルには、スイッチ側のフローエントリをコ�
 //}
 
 OpenFlow スイッチ側で確認したエントリが取得できていることが確認できたでしょうか？もしかしたら、@<tt>{ping} 以外にも OS が独自にだしているパケットによりフローが出来ているかもしれません。その場合はもう一度 OpenFlow スイッチ側のエントリも確認してみてください。
+
+== OpenFlow スイッチの内部構成
+
+こうしてできた OpenFlow スイッチの内部構成は次のようになっています。スイッチ内で動作する Linux からは eth0、eth1 の 2 つのネットワークインタフェースが見えており、それぞれ内部スイッチと WAN 側ポートに接続されています。内部スイッチは VLAN に対応したレイヤ 2 スイッチで、タグを付けることによって 4 つの LAN 側ポートからのパケットを区別します。このように eth0 を 4 つの論理ポートに分けることで、OpenFlow から LAN 側の 4 ポートを区別して使うことができます。
+
+//image[switch_internal_vlan][OpenFlow スイッチの内部構成][scale=0.3]
+
+=== VLAN の設定
+
+VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて eth0 とつながっているということがわかると思います。
+
+//list[config_network][/etc/config/network ファイル]{
+config 'interface' 'wan'
+      option 'ifname'         'eth1'
+      option 'proto'          'static'
+      option 'ipaddr'         '192.168.1.1'
+      option 'netmask'        '255.255.255.0'
+
+config 'switch' 'eth0'
+      option 'enable'         '1'
+      
+config 'interface' 'loopback'
+      option 'ifname'         'lo'
+      option 'proto'          'static'
+      option 'ipaddr'         '127.0.0.1'
+      option 'netmask'        '255.0.0.0'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '1'
+      option 'ports'          '1 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '2'
+      option 'ports'          '2 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '3'
+      option 'ports'          '3 0t'
+
+config 'switch_vlan'
+      option 'device'         'eth0'
+      option 'vlan'           '4'
+      option 'ports'          '4 0t'
+
+config 'interface'
+      option 'ifname'         'eth0.1'
+      option 'proto'          'static'
+      
+config 'interface'
+      option 'ifname'         'eth0.2'
+      option 'proto'          'static'
+
+config 'interface'
+      option 'ifname'         'eth0.3'
+      option 'proto'          'static'
+
+config 'interface'
+      option 'ifname'         'eth0.4'
+      option 'proto'          'static'
+//}
+
+=== OpenFlow 関連の設定
+
+OpenFlow 関連の設定は、@<tt>{/etc/config/openflow} ファイルに記載されています (@<list>{config_openflow})。@<tt>{ofports} オプションの項目より、OpenFlow スイッチのポートとして使用する LAN 側の 4 ポートはそれぞれ @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} に対応していることがなんとなくわかります。
+
+//list[config_openflow][/etc/config/openflow ファイル]{
+config 'ofswitch'
+      option 'dp' 'dp0'
+      option 'ofports' 'eth0.1 eth0.2 eth0.3 eth0.4'
+      option 'ofctl' 'tcp:192.168.1.10:6633'
+      option 'mode'  'outofband'
+//}
 
 == まとめ
 
