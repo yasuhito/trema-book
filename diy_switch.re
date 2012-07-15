@@ -48,9 +48,9 @@ WZR-HP-AG300H	Buffalo		約六千円
 
 2012 年の Interop Tokyo では、先ほど紹介したオープンルータ・コンペティション以外でも Trema が大活躍しました。
 
-2012 年は OpenFlow 元年ということもありベンダ各社が OpenFlow 対応スイッチを展示していましたが、さまざまなブースで OpenFlow スイッチと接続した Trema を見ることができました。
+2012 年は OpenFlow 元年ということもありベンダ各社が OpenFlow 対応スイッチを展示していましたが、多くのブースで OpenFlow スイッチと接続した Trema を見ることができました。すでに日本国内では、Trema は OpenFlow コントローラを作る上でのデファクトスタンダードとなっているようです。
 
-また、Interop の華である Shownet (Interop 開催中のネットワークインフラ。各社の最新のネットワーク機器を接続しショーケースとしても展示される) の OpenFlow ネットワークは Trema で構築されました。この情報通信研究機構 (NICT) による Trema ベースの RISE Controller は Best of Show Award (ShowNet プロダクト部門) のグランプリを受賞しました (@<img>{trema_interop})。
+また、Interop の華である Shownet の OpenFlow ネットワークでも Trema が活躍しました。Shownet とは Interop 開催中に構築されるネットワークインフラで、各社の最新のネットワーク機器を接続したショーケースとしての顔も持っています。Shownet の OpenFlow ネットワークでは多種多様なベンダの OpenFlow スイッチを相互接続する必要があったのですが、「正しい」OpenFlow プロトコルをしゃべることで定評のある Trema がコントローラ開発プラットフォームに選ばれました。こうして開発された情報通信研究機構 (NICT) による RISE Controller は、グランプリである "Best of Show Award" を受賞しました (@<img>{trema_interop})。
 
 //image[trema_interop][Interop で Best of Show Award を受賞した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相互接続で大活躍した。(NICT 石井秀治さん提供)][scale=0.6]
 
