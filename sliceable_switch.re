@@ -152,19 +152,19 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 192.168.0.1,1,192.168.0.2,1,1,50
 //}
 
-== REST API で設定する
+== 設定の Web サービス化
 
-スライス機能つきスイッチのスライス設定は、前節で紹介したようにコマンドで行うこともできますが、REST ベースの API で行うこともできます。
+スライス機能つきスイッチは、スライス設定・管理を Web サービスとして提供するしくみを持っています。
 
-//image[rest][REST API を使用する場合のモジュール間の関係][scale=0.5]
+//image[rest][Web サービスを使用する場合のモジュール間の関係][scale=0.5]
 
 @<img>{rest} に示すように、スライスの設定は、@<tt>{slice.db} という名前の sqlite3 のデータベースに格納されています。@<tt>{sliceable_switch} モジュールはこのデータベースから、スライス設定を取得しています。先ほど紹介した @<tt>{slice} コマンドを実行すると、スライスの設定がこのデータベースに書き込まれます。
 
-スライス機能つきスイッチの REST API は、Apache 上で動作する CGI で実現しています。HTTP クライアントからアクセスすると、@<tt>{config.cgi} が呼び出され、パースした結果を @<tt>{slice.db} へと書き込みます。
+スライス機能つきスイッチの Web サービスは、Apache 上で動作する CGI で実現しています。HTTP クライアントからアクセスすると、@<tt>{config.cgi} が呼び出され、パースした結果を @<tt>{slice.db} へと書き込みます。
 
-=== REST API を使うための準備
+=== Web サービス化のための準備
 
-REST API を使用するためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
+Web サービス化を行うためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
 
 //cmd{
 % sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
@@ -204,7 +204,7 @@ filter.db  slice.db
 Filter.pm  Slice.pm  config.cgi
 //}
 
-=== REST API を使ってみる
+=== Web サービスを使ってみる
 
 まず、スライスを作ってみましょう。@<tt>{slice1} という ID のスライスを作る場合には、JSON 形式のファイル (@<list>{slice.json}) を用意します。
 
@@ -290,9 +290,9 @@ Content:
 
 この出力結果は見やすいようにインデント表示にしていますが、実際には改行なしで表示されます。先に設定した内容が、きちんと反映されているかの確認ができます。
 
-=== REST API を使いこなす
+=== Web サービスを使いこなす
 
-本章で紹介した REST API は、正式名称を Sliceable Network Management API と言い、今回紹介した以外にも、@<table>{API} にあるような API を用意しています。
+本章で紹介した Web サービスは、正式名称を Sliceable Network Management API と言います。今回紹介した以外にも、@<table>{API} にあるような API を用意しています。
 
 //table[API][Sliceable Network Management API 一覧]{
 Method	URI	       説明
