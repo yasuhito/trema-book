@@ -123,6 +123,7 @@ root@OpenWrt:/#
 === うまく行かない場合？
 
 #@warn(うまく動かなかった場合のチェックポイント、復旧方法をここで説明すべし)
+#@warn{この段階でうまく行かなかった場合の対処法の説明は、むずかしいです。tftp を使った復旧方法を書く必要ある？}
 
 == Trema とつないでみよう
 
@@ -262,7 +263,7 @@ OpenFlow スイッチ側で確認したフローが取得できていること�
 
 === VLAN の設定
 
-VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて @<tt>{eth0} とつながっているということがわかると思います。また @<tt>{config 'interface'} セクションを見ると、それぞれの VLAN に対応した論理ポート @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} が作成されていることがわかります。
+VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて @<tt>{eth0} とつながっているということがわかると思います。また @<tt>{config 'interface'} セクションを見ると、先ほどの VLAN に論理ポート @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} がそれぞれ対応していることがわかります。
 
 //list[config_network][/etc/config/network ファイル]{
 config 'interface' 'wan'
