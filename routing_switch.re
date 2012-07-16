@@ -20,7 +20,7 @@
 
 //image[flow_mod][フローの設定]
 
-//image[behavior][ルーティングスイッチの動作]
+//image[behavior][ルーティングスイッチの動作][scale=0.4]
 
 それでは、コントローラの動作を、@<img>{behavior} を使って、順に見ていきましょう。
 
