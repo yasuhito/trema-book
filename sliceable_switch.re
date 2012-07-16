@@ -154,12 +154,11 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 
 スライス機能つきスイッチのスライス設定は、前節で紹介したようにコマンドで行うこともできますが、REST ベースの API で行うこともできます。
 
-//image[rest][REST API を使用する場合のモジュール間の関係]
+//image[rest][REST API を使用する場合のモジュール間の関係][scale=0.5]
 
 @<img>{rest} に示すように、スライスの設定は、@<tt>{slice.db} という名前の sqlite3 のデータベースに格納されています。@<tt>{sliceable_switch} モジュールはこのデータベースから、スライス設定を取得しています。先ほど紹介した @<tt>{slice} コマンドを実行すると、スライスの設定がこのデータベースに書き込まれます。
 
 スライス機能つきスイッチの REST API は、Apache 上で動作する CGI で実現しています。HTTP クライアントからアクセスすると、@<tt>{config.cgi} が呼び出され、パースした結果を @<tt>{slice.db} へと書き込みます。
-
 
 === REST API を使うための準備
 
@@ -219,7 +218,8 @@ Filter.pm  Slice.pm  config.cgi
 @<tt>{httpc} というテスト用の HTTP クライアントが @<tt>{./test/rest_if/} のディレクトリ配下に用意されていますので、これを用います。今回の設定では Apache の待ち受けポートは 8888 になっていますので、以下のように実行してみましょう。
 
 //cmd{
-% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks ./slice.json
+% cd ./test/rest_if
+% ./httpc POST http://127.0.0.1:8888/networks ./slice.json
 Status: 202 Accepted
 Content:
 {"id":"slice1","description":"Trema-team network"}
@@ -239,7 +239,7 @@ Content:
 スライスに MAC アドレスを割り当てる際に使用する URI は、@<tt>{/networks/<スライスID>/attachments} です。以下のように @<tt>{attachment.json} を @<tt>{slice1} に割り当てます。
 
 //cmd{
-% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
+% ./httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
 Status: 202 Accepted
 //}
 
@@ -257,14 +257,14 @@ Status: 202 Accepted
 このとき使用する URI は @<tt>{/networks/<スライスID>/ports} になります。以下のようにして、@<list>{port.json} で指定したポートを @<tt>{slice1} というスライスにを割り当てます。
 
 //cmd{
-% ./test/rest_if/httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
+% ./httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
 Status: 202 Accepted
 //}
 
 これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスID>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。@<tt>{slice1} に関する情報を取得してみましょう。
 
 //cmd{
-% ./test/rest_if/httpc GET http://127.0.0.1:8888/networks/slice1
+% ./httpc GET http://127.0.0.1:8888/networks/slice1
 Status: 200 OK
 Content:
 { "bindings" : 
@@ -290,7 +290,7 @@ Content:
 
 === REST API を使いこなす
 
-本章で紹介した REST API は、正式名称を Sliceable Network Management API と言います。紹介した以外にも、@<table>{API} にあるような API が用意されています。
+本章で紹介した REST API は、正式名称を Sliceable Network Management API と言い、今回紹介した以外にも、@<table>{API} にあるような API を用意しています。
 
 //table[API][Sliceable Network Management API 一覧]{
 Method	URI	       説明
