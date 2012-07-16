@@ -139,6 +139,8 @@ root@OpenWrt:/#
 % ./trema run ./src/examples/learning_switch/learning-switch.rb -d
 //}
 
+ラーニングスイッチ起動時のオプションとして、@<tt>{-d} を使っています。このオプションを指定すると、Trema はコントローラをデーモンとして起動します。
+
 次に、スイッチとコントローラ間に TCP コネクションが張られているかを確認しましょう。TCP コネクションを確認するためには、@<tt>{netstat} コマンドを使います。OpenFlow プロトコルではポート 6633 が使用されますので、@<tt>{grep} を使い OpenFlow のコネクションだけを表示します。
 
 //cmd{
@@ -152,19 +154,31 @@ tcp        0      0 192.168.11.10:6633      192.168.11.1:60246      ESTABLISHED
 もし 2 行目の表示がされない場合、スイッチ側の OpenFlow サービスが、なんらかの理由で有効になっていない可能性があります。この場合、スイッチの OpenFlow サービスを再起動する必要があります。OpenFlow スイッチに @<tt>{telnet} でログインし、以下のようにして、サービスの再起動を行います。
 
 //cmd{
-% /etc/init.d/openflow restart
+root@OpenWrt:/# /etc/init.d/openflow restart
 //}
 
-=== スイッチの情報を取得する
+また動作確認を行うための準備をここで行なっておきましょう。Trema Apps には動作確認を行う上で、有益なツールである @<tt>{show_description} と @<tt>{flow_dumper} が含まれています。これらのツールを使えるように準備を行います。
 
-OpenFlow プロトコルには、スイッチから情報を取得するためのメッセージがいくつか定義されています。これらのメッセージを使って、スイッチ情報を取得・表示するための @<tt>{show_description} コマンドが Trema Apps に用意されています。まず、コマンドを使えるように用意します。
+Trema Apps をまだ取得していない場合、以下のように @<tt>{git} を使って取得してください。
 
 //cmd{
 % git clone https://github.com/trema/apps.git
-% (cd ./apps/show_description/; make)
 //}
 
-作成したコマンドを使って、スイッチの情報を取得してみましょう。
+次に @<tt>{show_description} と @<tt>{flow_dumper} をそれぞれ以下のようにビルドします。
+
+//cmd{
+% (cd ./apps/show_description/; make)
+% (cd ./apps/flow_dumper/; make)
+//}
+
+これで準備は完了です。
+
+=== スイッチの情報を取得する
+
+次に、コントローラ側から、スイッチに関する情報を取得して表示してみましょう。
+
+OpenFlow プロトコルには、情報取得のためのメッセージがいくつか定義されています。前節で準備を行った @<tt>{show_description} は、これらのメッセージを用いて、スイッチ情報を取得・表示するためコマンドです。このコマンドを使って、スイッチの情報を取得してみましょう。
 
 //cmd{
 % TREMA_HOME=trema/ ./apps/show_description/show_desctiption
@@ -193,9 +207,7 @@ Port no: 65534(0xfffe:Local)(Port up)
 
 @<tt>{Manufacturer description} から @<tt>{Human readable description of datapath} までは、Stats Request メッセージでタイプに @<tt>{OFPST_DESC} を指定すると取得できる情報です。また、@<tt>{Datapath ID} 以降の情報は、Features Request メッセージで取得できる情報です。
 
-今回の OpenFlow スイッチの実装として、Stanford 大学で作成されたリファレンススイッチが使用されていることが分かります。また、OpenFlow スイッチとして動作するポート @<tt>{eth0.1} から @<tt>{eth0.4} までと@<tt>{tap0} @<fn>{tap0} が定義されています。
-
-//footnote[tap0][@<tt>{tap0} は、内部的に使われるポートであり、ユーザが直接使うことはありません。]
+今回の OpenFlow スイッチの実装として、Stanford 大学で作成されたリファレンススイッチが使用されていることが分かります。また、OpenFlow スイッチとして動作するポート @<tt>{eth0.1} から @<tt>{eth0.4} までと @<tt>{tap0} が定義されています。@<tt>{tap0} は、Forward アクションの出力先ポートに LOCAL を指定した場合に使われるポートです(@<chap>{openflow} の Forward アクションを参照)。このポートをユーザが普段使うことはありません。
 
 === フローを表示する
 
@@ -226,11 +238,10 @@ stats_reply (xid=0x8e5d6e05): flags=none type=1(flow)
 
 ホスト 1 (@<tt>{nw_src=192.168.2.1}) からホスト 2 (@<tt>{nw_dst=192.168.2.2}) 宛の ICMP エコー要求 (@<tt>{nw_proto=1, icmp_type=8}) 用のフローと、送信元と宛先が入れ替わった ICMP エコー応答 (@<tt>{nw_proto=1, icmp_type=0}) 用のフローが設定されていることが確認できるはずです。タイミングによっては、これ以外に ARP 用のフローが表示されるかもしれません。
 
-OpenFlow プロトコルには、スイッチ側のフローエントリをコントローラ側から取得するためのメッセージが存在します。このメッセージを使って取得したフローエントリを表示する @<tt>{flow_dumper} コマンドが、Trema Apps に用意されています。
+OpenFlow プロトコルには、スイッチ側に設定されているフローを、コントローラ側から取得するためのメッセージが存在します。前に準備を行った @<tt>{flow_dumper} は、このメッセージを使って、取得したフローを表示するコマンドです。このコマンドを使って、フローを取得してみましょう。
 
 //cmd{
-# (cd apps/flow_dumper; make)
-# TREMA_HOME=./trema apps/flow_dumper/flow_dumper
+% TREMA_HOME=./trema apps/flow_dumper/flow_dumper
 [0x00002320698790] priority = 65535, match = [wildcards = 0, in_port = 1, \
   ... 		   	      	     	     		     	       	  \
   nw_proto = 1, nw_src = 192.168.2.1/32, nw_dst = 192.168.2.2/32, 	  \ 
@@ -241,7 +252,7 @@ OpenFlow プロトコルには、スイッチ側のフローエントリをコ�
   tp_src = 0, tp_dst = 0], actions = [output: port=1 max_len=65535]
 //}
 
-OpenFlow スイッチ側で確認したエントリが取得できていることが確認できたでしょうか？もしかしたら、@<tt>{ping} 以外にも OS が独自にだしているパケットによりフローが出来ているかもしれません。その場合はもう一度 OpenFlow スイッチ側のエントリも確認してみてください。
+OpenFlow スイッチ側で確認したフローが取得できていることが確認できたでしょうか？もしかしたら、@<tt>{ping} 以外にも OS が独自にだしているパケットによりフローが出来ているかもしれません。その場合はもう一度 OpenFlow スイッチ側のフローも確認してみてください。
 
 == OpenFlow スイッチの内部構成
 
@@ -335,3 +346,6 @@ config 'ofswitch'
 
 : @SRCHACK 氏のブログ (@<tt>{http://www.srchack.org/})
   今回紹介した激安 OpenFlow スイッチを作るための無線 LAN 対応ファームウェアの作者 @SRCHACK 氏のブログです。改造ファームウェアを完成させるまでの試行錯誤の様子などが紹介されています。
+
+: オープンルータ・コンペティションまとめサイト (@<tt>{https://sites.google.com/site/orcmatome/})
+  @SRCHACK 氏が活躍したオープンルータ・コンペティションですが、他のチームからも、さまざまなアイデアでの参戦がありました。このサイトには、各チームのプレゼンや公開されたソースコードへのリンクがまとめてありますので、興味が有る方はご覧になって下さい。
