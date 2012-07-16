@@ -262,7 +262,7 @@ OpenFlow スイッチ側で確認したフローが取得できていること�
 
 === VLAN の設定
 
-VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて eth0 とつながっているということがわかると思います。
+VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて @<tt>{eth0} とつながっているということがわかると思います。また @<tt>{config 'interface'} セクションを見ると、それぞれの VLAN に対応した論理ポート @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} が作成されていることがわかります。
 
 //list[config_network][/etc/config/network ファイル]{
 config 'interface' 'wan'
@@ -319,7 +319,7 @@ config 'interface'
 
 === OpenFlow 関連の設定
 
-OpenFlow 関連の設定は、@<tt>{/etc/config/openflow} ファイルに記載されています (@<list>{config_openflow})。@<tt>{ofports} オプションの項目より、OpenFlow スイッチのポートとして使用する LAN 側の 4 ポートはそれぞれ @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} に対応していることがなんとなくわかります。
+OpenFlow 関連の設定は、@<tt>{/etc/config/openflow} ファイルに記載されています (@<list>{config_openflow})。@<tt>{ofports} オプションの項目には、@<tt>{eth0.1, eth0.2, eth0.3, eth0.4} を OpenFlow スイッチのポートとして使用するという設定がされています。
 
 //list[config_openflow][/etc/config/openflow ファイル]{
 config 'ofswitch'
