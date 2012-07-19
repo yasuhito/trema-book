@@ -136,7 +136,7 @@ root@OpenWrt:/#
  * host1: 192.168.2.1/24
  * host2: 192.168.2.2/24
 
-と固定で振ってください。なお以下のコマンド例では、コントローラを動かすホストのプロンプトを @<tt>{controller%}、host1 と host2 のプロンプトをそれぞれ @<tt>{host1%}、@<tt>{host2%} と表示します。
+と固定で振ってください。なお以下のコマンド例では、コントローラを動かすホストのプロンプトを @<tt>{controller%}、host1 のプロンプトを @<tt>{host1%} と表示します。
 
 //image[diy_switch_network][Trema との接続][scale=0.3]
 
