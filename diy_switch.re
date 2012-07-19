@@ -246,7 +246,7 @@ controller% trema run apps/flow_dumper/flow-dumper.rb
   tp_src = 0, tp_dst = 0], actions = [output: port=1 max_len=65535]
 //}
 
-#@warn(いちおう ICMP == ping という説明が必要です)
+#@warn(ここで、わかりやすさのためには ICMP == ping という説明が必要です)
 
 出力より、ホスト 1 (@<tt>{nw_src=192.168.2.1}) からホスト 2 (@<tt>{nw_dst=192.168.2.2}) 宛の ICMP エコー要求用のフローと、逆向きの ICMP エコー応答用のフローが設定されていることが確認できるはずです。なおタイミングによっては、これ以外に ARP 用のフローが表示されるかもしれません。
 
