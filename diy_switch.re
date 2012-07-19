@@ -247,80 +247,13 @@ controller% trema run apps/flow_dumper/flow-dumper.rb
 
 出力より、ホスト 1 (@<tt>{nw_src=192.168.2.1}) からホスト 2 (@<tt>{nw_dst=192.168.2.2}) 宛の ICMP エコー要求用のフローと、逆向きの ICMP エコー応答用のフローが設定されていることが確認できるはずです。なおタイミングによっては、これ以外に ARP 用のフローが表示されるかもしれません。
 
-== OpenFlow スイッチの内部構成
+== 自作 OpenFlow スイッチの制限
 
-こうしてできた OpenFlow スイッチの内部構成は次のようになっています。スイッチ内で動作する Linux からは eth0、eth1 の 2 つのネットワークインタフェースが見えており、それぞれ内部スイッチと WAN 側ポートに接続されています。内部スイッチは VLAN に対応したレイヤ 2 スイッチで、タグを付けることによって 4 つの LAN 側ポートからのパケットを区別します。このように eth0 を 4 つの論理ポートに分けることで、OpenFlow から LAN 側の 4 ポートを区別して使うことができます。
+こうしてできた OpenFlow スイッチの内部構成は次のようになっています。スイッチ内で動作するファームウェア (Linux) からは eth0、eth1 の 2 つのネットワークインタフェースが見えており、それぞれ内部スイッチと WAN 側ポートに接続されています。ルータには VLAN に対応した内部スイッチが入っており、これが VLAN タグを付けることによって 4 つの LAN 側ポートからのパケットを区別して eth0 に転送します。このように eth0 を内部スイッチが 4 つのポートに分けることで、仮想的に 4 ポートを使うことができるようになっているわけです。
 
-//image[switch_internal_vlan][OpenFlow スイッチの内部構成][scale=0.3]
+//image[switch_internal_vlan][OpenFlow スイッチの内部構成][scale=0.2]
 
-=== VLAN の設定
-
-VLAN の設定ファイルは、@<tt>{/etc/config/network} に記載されています (@<list>{config_network})。この設定ファイル中の 4 つの @<tt>{config 'switch_vlan'} セクションにより、LAN 側ポートごとに VLAN が切られていて @<tt>{eth0} とつながっているということがわかると思います。また @<tt>{config 'interface'} セクションを見ると、先ほどの VLAN に論理ポート @<tt>{eth0.1, eth0.2, eth0.3, eth0.4} がそれぞれ対応していることがわかります。
-
-//list[config_network][/etc/config/network ファイル]{
-config 'interface' 'wan'
-      option 'ifname'         'eth1'
-      option 'proto'          'static'
-      option 'ipaddr'         '192.168.1.1'
-      option 'netmask'        '255.255.255.0'
-
-config 'switch' 'eth0'
-      option 'enable'         '1'
-      
-config 'interface' 'loopback'
-      option 'ifname'         'lo'
-      option 'proto'          'static'
-      option 'ipaddr'         '127.0.0.1'
-      option 'netmask'        '255.0.0.0'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '1'
-      option 'ports'          '1 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '2'
-      option 'ports'          '2 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '3'
-      option 'ports'          '3 0t'
-
-config 'switch_vlan'
-      option 'device'         'eth0'
-      option 'vlan'           '4'
-      option 'ports'          '4 0t'
-
-config 'interface'
-      option 'ifname'         'eth0.1'
-      option 'proto'          'static'
-      
-config 'interface'
-      option 'ifname'         'eth0.2'
-      option 'proto'          'static'
-
-config 'interface'
-      option 'ifname'         'eth0.3'
-      option 'proto'          'static'
-
-config 'interface'
-      option 'ifname'         'eth0.4'
-      option 'proto'          'static'
-//}
-
-=== OpenFlow 関連の設定
-
-OpenFlow 関連の設定は、@<tt>{/etc/config/openflow} ファイルに記載されています (@<list>{config_openflow})。@<tt>{ofports} オプションの項目には、@<tt>{eth0.1, eth0.2, eth0.3, eth0.4} を OpenFlow スイッチのポートとして使用するという設定がされています。
-
-//list[config_openflow][/etc/config/openflow ファイル]{
-config 'ofswitch'
-      option 'dp' 'dp0'
-      option 'ofports' 'eth0.1 eth0.2 eth0.3 eth0.4'
-      option 'ofctl' 'tcp:192.168.1.10:6633'
-      option 'mode'  'outofband'
-//}
+このように、内部的には 1 つのインタフェースを無理矢理 VLAN で 4 ポートに分けているため、自作 OpenFlow スイッチには次の制限があります。@<chap>{routing_switch}で紹介した Trema Apps の Topology は、リンクの UP と DOWN をポート単位で検出します。一方で自作 OpenFlow スイッチでは 1 つのインタフェースが仮想的に 4 ポートに分かれており、実質的には 1 つのポートとして扱われます。このため、ルーティングスイッチなど Topology を使うコントローラでは個々のポートの UP や DOWN をうまく検出できない点に注意してください。
 
 == まとめ
 
@@ -329,10 +262,9 @@ config 'ofswitch'
  * @SRCHACK 氏公開の OpenWRT ベースのファームウェアを使うと、一部の無線 LAN ルータを OpenFlow スイッチに改造することができます。
  * @<tt>{show-switch-features.rb} コマンドを使うと、スイッチの詳細情報を表示できます。
  * @<tt>{flow-dumper.rb} コマンドを使うと、実際に設定されているフローの中身を確認できます。
+ * 自作 OpenFlow スイッチでは個々のポートが仮想的に実現されているので、ポート単位の UP や DOWN がうまく検出できないという制限があります。
  
-#@warn(OpenFlow スイッチとしての制限も一項目として必ず触れておく)
-
-さあ、これであなたも OpenFlow スイッチのオーナーです。お金に余裕があれば @SRCHACK 氏のように複数台買ってネットワークを拡張することも可能です。今回は動作確認にラーニングスイッチを使いましたが、スイッチが増えたときには@<chap>{routing_switch}で紹介したルーティングスイッチを使うのがおすすめです。
+さあ、これであなたも OpenFlow スイッチのオーナーです。今まで紹介してきた Trema のコントローラを動かしていろいろ実験してみましょう。お金に余裕があれば @SRCHACK 氏のように複数台買ってネットワークを拡張することも可能です。
 
 == 参考文献
 
