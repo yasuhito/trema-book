@@ -12,20 +12,30 @@
 
 === スライスの実現
 
+スライス機能つきスイッチは、どのようにスライスを実現しているのか見ていきましょう。
+
 //image[behavior][スライス機能つきスイッチの動作][scale=0.4]
 
  1. スライス機能つきスイッチは、 スイッチが受信したパケットを Packet In メッセージで受け取ります。
  2. 次に fdb を検索し、宛先であるホストが接続されているスイッチ、ポートを検索します。
- 3. パケットをはじめに受信したポートと、出口となるポートとが、同じスライスに所属しているかの判定を行います。もし、同じスライスではない場合には、以降の処理は行われません。
+ 3. はじめに送信元からのパケットを受信したポートと、宛先となるホストが接続しているポートとが、同じスライスに所属しているかの判定を行います。もし、同じスライスではない場合には、以降の処理は行われません。
  4. Packet In を送ってきたスイッチから出口となるスイッチまでの最短パスを計算します。
  5. 最短パスに沿ってパケットが転送されるよう、各スイッチそれぞれに Flow Mod メッセージを送り、フローを設定します。
  6. その後、Packet In でコントローラに送られたパケットを 2 で決定したスイッチのポートから出力するよう、Packet Out メッセージを送ります。
+
+◆ルーティングスイッチの動(ページ番号)◆ で説明したルーティングスイッチの動作と見比べてみましょう。基本的な動きは、ほぼ同じであることが分かるでしょう。
+
+スライス機能つきスイッチが、ルーティングスイッチと異なる点は、上記のステップ 3 の処理が付け加えられている点です。スライス機能つきスイッチは、送信元と宛先ホストがそれぞれ同じスライスに所属しているかの判定を行います。両者が同じスライスに所属している場合のみ、フローの設定等の以降の処理を行います。このように動作することで、異なるスライスに所属するホスト間における通信の遮断を行なっています(@<img>{isolate})。
+
+//image[isolate][同じスライスに所属するホスト同士のみ通信ができる]
+
+=== VLAN (従来技術) との違い
 
 == 実行してみよう
 
 === 準備
 
-スライス機能つきスイッチも、@<chap>{routing_switch} で取り上げたルーティングスイッチと同様に @<tt>{https://github.com/trema/apps/} にてソースコードが公開されています。ソースコードをまだ取得していない場合は、前章を参考に @<tt>{git} で取得しておいてください。ここでは、以下のようなディレクトリ構成になっていることが前提です。
+スライス機能つきスイッチも、ルーティングスイッチと同様に @<tt>{https://github.com/trema/apps/} にてソースコードが公開されています。ソースコードをまだ取得していない場合は、前章を参考に @<tt>{git} で取得しておいてください。ここでは、以下のようなディレクトリ構成になっていることが前提です。
 
 //cmd{
 % ls -F
@@ -108,8 +118,7 @@ trema のディレクトリに移動し、スライス機能つきスイッチ�
 スライス機能つきスイッチの起動には、ルート権限が必要です。@<tt>{sudo} を使って、以下のように起動してください。
 
 //cmd{
-% cd ../../trema
-% sudo ./trema run -c ./network.conf
+% sudo trema run -c ./network.conf
 //}
 
 このように起動しただけでは、スライス機能つきスイッチは動作しません。スライスの設定が必要です。今回は @<img>{slicing} のように二つのスライスを作ってみましょう。
@@ -117,7 +126,6 @@ trema のディレクトリに移動し、スライス機能つきスイッチ�
 スライスの作成には、@<tt>{sliceable_switch} のディレクトリに用意されている @<tt>{slice} コマンドを使用します。このコマンドを使って、以下のように、二つのスライス @<tt>{slice1, slice2} を作ってみましょう。
 
 //cmd{
-% cd ../apps/sliceable_switch
 % ./slice create slice1
 A new slice is created successfully.
 % ./slice create slice2
@@ -142,10 +150,9 @@ A MAC-based binding is added successfully.
 MAC アドレスをスライスに登録する方法では、コントローラは起動直後に、登録した MAC アドレスを持つホストがどこにいるのかを知りません。@<tt>{host1} の位置をコントローラに学習させるために、はじめに @<tt>{host1} から @<tt>{host2} へとパケットを送ります。その後、@<tt>{host2} から @<tt>{host1} へパケットを送り、@<tt>{host1} の受信カウンタを見てみます。@<tt>{host2} からのパケットが受信できていることが確認できます。
 
 //cmd{
-% cd ../../trema
-% ./trema send_packet --source host1 --dest host2
-% ./trema send_packet --source host2 --dest host1
-% ./trema show_stats host1 --rx
+% trema send_packet --source host1 --dest host2
+% trema send_packet --source host2 --dest host1
+% trema show_stats host1 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 192.168.0.1,1,192.168.0.2,1,1,50
 //}
@@ -153,8 +160,8 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 次に、異なるスライスに所属するホスト同士は通信できないことを確認してみます。@<tt>{slice2} に所属する @<tt>{host4} から @<tt>{slice1} に所属する @<tt>{host1} へとパケットを送ってみましょう。@<tt>{host1} の受信カウンタを見ても、@<tt>{host4} からのパケットが届いていないことがわかります。
 
 //cmd{
-% ./trema send_packet --source host4 --dest host1
-% ./trema show_stats host1 --rx
+% trema send_packet --source host4 --dest host1
+% trema show_stats host1 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 192.168.0.1,1,192.168.0.2,1,1,50
 //}
@@ -224,7 +231,7 @@ Filter.pm  Slice.pm  config.cgi
 
 この JSON 形式のファイルを、@<tt>{/networks} という URI に POST メソッドで送ることで、スライスを作ることができます。
 
-今回は @<tt>{httpc} というテスト用の HTTP クライアントが @<tt>{test/rest_if/} ディレクトリ配下に用意されていますので、これを用います。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行してみましょう。
+今回は @<tt>{httpc} というテスト用の HTTP クライアントが、@<tt>{sliceable_switch} 内の @<tt>{test/rest_if/} ディレクトリ配下に用意されていますので、これを用います。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行してみましょう。
 
 //cmd{
 % cd ./test/rest_if
@@ -302,30 +309,25 @@ Content:
 本章で紹介した Web サービスは、正式名称を Sliceable Network Management API と言います。今回紹介した以外にも、@<table>{API} にあるような API を用意しています。
 
 //table[API][Sliceable Network Management API 一覧]{
-Method	URI	       説明
+動作		Method	URI
 ----------------------------
-POST	/networks	スライス作成
-GET	/networks	スライス一覧取得
-GET	/networks/<スライスID>	スライス詳細取得
-DELETE	/networks/<スライスID>	スライス削除
-PUT	/networks/<スライスID>	スライス変更
-POST	/networks/<スライスID>/ports	ポート作成
-GET	/networks/<スライスID>/ports	ポート一覧取得
-GET	/networks/<スライスID>/ports/<ポートID>	ポート詳細取得
-DELETE	/networks/<スライスID>/ports/<ポートID>	ポート削除
-POST	/networks/<スライスID>/attachments	アタッチメント作成
-GET	/networks/<スライスID>/attachments	アタッチメント一覧取得
-GET	/networks/<スライスID>/attachments/<アタッチメントID>	アタッチメント詳細取得
-DELETE	/networks/<スライスID>/attachments/<アタッチメントID>	アタッチメント削除
+スライス作成	POST	/networks	
+スライス一覧取得	GET	/networks
+スライス詳細取得	GET	/networks/<スライスID>
+スライス削除	DELETE	/networks/<スライスID>
+スライス変更	PUT	/networks/<スライスID>
+ポート作成	POST	/networks/<スライスID>/ports
+ポート一覧取得	GET	/networks/<スライスID>/ports
+ポート詳細取得	GET	/networks/<スライスID>/ports/<ポートID>
+ポート削除	DELETE	/networks/<スライスID>/ports/<ポートID>
+アタッチメント作成	POST	/networks/<スライスID>/attachments
+アタッチメント一覧取得	GET	/networks/<スライスID>/attachments
+アタッチメント詳細取得	GET	/networks/<スライスID>/attachments/<アタッチメントID>
+アタッチメント削除	DELETE	/networks/<スライスID>/attachments/<アタッチメントID>
 //}
 
 Sliceable Network Management API の仕様は、以下のサイトで公開されていますので、詳細を確認したい人はこちらをご参照ください。
 
  * Sliceable Network Management API ( @<tt>{https://github.com/trema/apps/wiki} )
-
-== VLAN (従来技術) との違い
-
-=== 動作を比べてみる
-=== 長所・短所
 
 == まとめ/参考文献
