@@ -230,7 +230,7 @@ sudo /sbin/ifconfig trema1-1 up
 
 OpenFlow メッセージを受信したときにアプリケーションのハンドラを起動したり、逆にアプリケーションが送信した OpenFlow メッセージを適切な Switch Daemon に配送したりするのが OpenFlow Application Interface (@<tt>{[trema]/src/lib/openflow_application_interface.c}) です。
 
-OpenFlow Application Interface は、アプリケーションが受信した OpenFlow メッセージをプログラマが扱いやすいに変換してハンドラに渡します。たとえば、次の処理を行います。
+OpenFlow Application Interface は、アプリケーションが受信した OpenFlow メッセージをプログラマが扱いやすい形に変換してハンドラに渡します。たとえば、次の処理を行います。
 
  * OpenFlow メッセージのマッチングルール部をホストバイトオーダへ変換
  * アクションなどの可変長部分をリストに変換
@@ -409,7 +409,7 @@ IPTV サービスで使われているマルチキャスト転送を実現する
 
 === フローダンパー
 
-OpenFlow スイッチのフローテーブルを取得するためのユーティリティです。デバッグツールとしても便利です。@<chap>{diy_switch} で使いかたを紹介しています。
+OpenFlow スイッチのフローテーブルを取得するためのユーティリティです。デバッグツールとしても便利です。@<chap>{diy_switch} で使い方を紹介しています。
 
 === Packet In ディスパッチャ
 
