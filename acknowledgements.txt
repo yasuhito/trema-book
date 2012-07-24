@@ -8,3 +8,4 @@
 @stereocat さん: Trema 本のビルド方法をブログで紹介 (http://d.hatena.ne.jp/stereocat/20120619)
 高田 将司さん: typo の指摘など多数。
 @SRCHACK さん: 18 章のネタを提供、レビューなど多岐に渡って貢献。
+富永 光俊さん : 誤字の指摘を頂いた。
