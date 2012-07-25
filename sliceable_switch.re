@@ -331,3 +331,6 @@ Sliceable Network Management API の仕様は、以下のサイトで公開さ�
  * Sliceable Network Management API ( @<tt>{https://github.com/trema/apps/wiki} )
 
 == まとめ/参考文献
+
+: 現場で使える REST (Web+DB PRESS, Vol.42, 2008)
+REST という言葉は知っているが、どんなものかよくわからない。そんな人は、ぜひこの記事を読んで、REST の真髄に触れてみてください。
