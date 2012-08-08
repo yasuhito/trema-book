@@ -36,24 +36,18 @@
 
 == LearningSwitch コントローラ
 
-ラーニングスイッチは大きく分けるとラーニングスイッチ本体と FDB の 2 つの部品からなります。まずは今までどおり、ざっとそれぞれのソースコード(@<list>{learning-switch.rb}、@<list>{fdb.rb}) を眺めてみましょう。このソースコードは Trema のサンプルアプリに付属する @<tt>{learning_switch/learning-switch.rb, fdb.rb} でも読むことができます。
+まずはラーニングスイッチのソースコード (@<list>{learning-switch.rb}) をざっと眺めてみましょう。とくに、@<tt>{private} の行よりも上のパブリックなメソッドに注目してください。
 
 //list[learning-switch.rb][ラーニングスイッチ (@<tt>{learning-switch.rb}) のソースコード]{
-require "fdb"
-
-
 class LearningSwitch < Controller
-  add_timer_event :age_fdb, 5, :periodic
-
-
   def start
-    @fdb = FDB.new
+    @fdb = {}
   end
 
 
   def packet_in datapath_id, message
-    @fdb.learn message.macsa, message.in_port
-    port_no = @fdb.port_no_of( message.macda )
+    @fdb[ message.macsa ] = message.in_port
+    port_no = @fdb[ message.macda ]
     if port_no
       flow_mod datapath_id, message, port_no
       packet_out datapath_id, message, port_no
@@ -63,14 +57,7 @@ class LearningSwitch < Controller
   end
 
 
-  def age_fdb
-    @fdb.age
-  end
-
-
-  ##############################################################################
   private
-  ##############################################################################
 
 
   def flow_mod datapath_id, message, port_no
@@ -97,86 +84,14 @@ class LearningSwitch < Controller
 end
 //}
 
-//list[fdb.rb][フォワーディングデータベース (@<tt>{fdb.rb}) のソースコード]{
-class ForwardingEntry
-  attr_reader :mac
-  attr_reader :port_no
-  attr_reader :dpid
-  attr_writer :age_max
+今までの知識だけでもわかることがいくつもあります。
 
+  * ラーニングスイッチの本体は LearningSwitch という名前のクラスです。
+  * 起動時に呼ばれる @<tt>{start} ハンドラで FDB のインスタンス変数を作っています。FDB の本体はハッシュで、キーを MAC アドレスとしてポート番号を保存しているようです。
+  * 見慣れないハンドラ @<tt>{packet_in} が登場しました。これは、ご想像のとおり @<chap>{whats_openflow}で説明した Packet In を捕捉するためのハンドラです。スイッチのフローにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれます。
+  * @<tt>{packet_in} ハンドラの中では、パケットの宛先 MAC アドレスから FDB でポート番号を調べています。もし宛先のポート番号がみつかった場合には、Flow Mod でフローを打ち込み Packet Out (@<chap>{whats_openflow}) でパケットを送信しているようです。もしポート番号がみつからなかった場合は、flood という処理をしています。これは先程のスイッチの説明であった「パケットをばらまく」という処理でしょう。
 
-  def initialize mac, port_no, age_max, dpid
-    @mac = mac
-    @port_no = port_no
-    @age_max = age_max
-    @dpid = dpid
-    @last_update = Time.now
-  end
-
-
-  def update port_no
-    @port_no = port_no
-    @last_update = Time.now
-  end
-
-
-  def aged_out?
-    Time.now - @last_update > @age_max
-  end
-end
-
-
-#
-# A database that keep pairs of MAC address and port number
-#
-class FDB
-  DEFAULT_AGE_MAX = 300
-
-
-  def initialize
-    @db = {}
-  end
-
-
-  def port_no_of mac
-    dest = @db[ mac ]
-    if dest
-      dest.port_no
-    else
-      nil
-    end
-  end
-
-
-  def lookup mac
-    if dest = @db[ mac ]
-      [ dest.dpid, dest.port_no ]
-    else
-      nil
-    end
-  end
-
-
-  def learn mac, port_no, dpid = nil
-    entry = @db[ mac ]
-    if entry
-      entry.update port_no
-    else
-      new_entry = ForwardingEntry.new( mac, port_no, DEFAULT_AGE_MAX, dpid )
-      @db[ new_entry.mac ] = new_entry
-    end
-  end
-
-
-  def age
-    @db.delete_if do | mac, entry |
-      entry.aged_out?
-    end
-  end
-end
-//}
-
-ラーニングスイッチの本体は @<tt>{LearningSwitch} という名前のクラスです。そして MAC アドレスを管理するのが @<tt>{FDB} クラスです。
+いかがでしょうか。ラーニングスイッチの心臓部は @<tt>{packet_in} ハンドラだけで、その中身もやっていることはなんとなくわかると思います。細かい実装の解説は後回しにして、ここまでをざっくりと理解できたところでさっそく実行してみましょう。
 
 === 実行してみよう
 
@@ -209,30 +124,112 @@ link "lsw", "host2"
 % ./trema run ./learning-switch.rb -c ./learning-switch.conf
 //}
 
-別ターミナルを開き、@<tt>{trema send_packets} コマンドを使って host1 と host2 の間で適当にテストパケットを送ってみます。
+別ターミナルを開き、@<tt>{trema send_packets} コマンドを使って host1 と host2 の間でテストパケットを送ってみます。
 
 //cmd{
-% ./trema send_packets --source host1 --source host2
-% ./trema send_packets --source host2 --source host1
+% ./trema send_packets --source host1 --dest host2
+% ./trema send_packets --source host2 --dest host1
 //}
 
 @<tt>{trema show_stats} コマンドで host1 と host2 の受信パケット数をチェックし、それぞれでパケットが受信されていれば成功です。
 
-== LearningSwitch コントローラの仕組み
-=== 未知のパケット (packet-in) の処理
-=== フローテーブルの書き換え
-=== フォワーディングデータベース (FDB)
+//cmd{
+% trema show_stats host1 --rx
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.1,1,192.168.0.2,1,1,50
+% trema show_stats host2 --rx
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.2,1,192.168.0.1,1,1,50
+//}
 
-== ソースコード
-=== フォワーディングデータベースクラス
-=== ラーニングスイッチクラス
-=== Packet Out でパケットを送り出す
+ラーニングスイッチの動作イメージがわかったところで、ソースコードの解説に移りましょう。まずはこの章で新しく登場した Trema の Packet In ハンドラの使いかたと、Packet Out API を紹介します。
+
+== Packet In ハンドラ
+
+コントローラに上がってくる未知のパケットを拾うには、Packet In ハンドラをコントローラクラスに実装します。典型的な Packet In ハンドラは次のように実装されます。
+
+//emlist{
+class MyController < Controller
+  # ...
+
+  def packet_in datapath_id, message
+    # ...
+  end
+
+  # ...
+//}
+
+最初の引数 @<tt>{datapath_id} は、Packet In を上げたスイッチの Datapath ID です。二番目の引数 @<tt>{message} は @<tt>{PacketIn} クラスのオブジェクトで、Packet In メッセージをオブジェクトとしてラップしたものです。この @<tt>{PacketIn} クラスには主に次の 3 種類のメソッドが定義されています。
+
+ * Packet In を起こしたバッファ ID や、パケットが入ってきたスイッチのポート番号など OpenFlow メッセージ固有の情報
+ * IP のバージョンや TCP/UDP、また ARP や ICMP、VLAN タグの有無といった Packet In を起こしたパケットの種別を判定するためのユーティリティメソッド
+ * TCP のシーケンス番号や VLAN の VID など、パケットの種類に応じたフィールドを調べるためのアクセサメソッド
+
+@<tt>{PacketIn} クラスは非常に多くのメソッドを持っており、また Trema のバージョンアップごとにその数も増え続けているためすべては紹介しきれません。そのかわり、代表的でよく使うものを以下に紹介します。
+
+: @<tt>{:data}
+  パケットのデータ全体をバイナリ文字列で返します。
+
+: @<tt>{:in_port}
+  パケットが入ってきたスイッチのポート番号を返します。
+
+: @<tt>{:total_len}
+  パケットのデータ長を返します。
+
+: @<tt>{:buffered?}
+  Packet In を起こしたパケットがスイッチにバッファされているかどうかを返します。
+
+: @<tt>{:macsa}
+  パケットの送信元 MAC アドレスを返します。
+
+: @<tt>{:macda}
+  パケットの宛先 MAC アドレスを返します。
+
+: @<tt>{:ipv4?}
+  パケットが IPv4 である場合 true を返します。
+
+: @<tt>{:ipv4_saddr}
+  パケットの送信元 IP アドレスを返します。
+
+: @<tt>{:ipv4_daddr}
+  パケットの宛先 IP アドレスを返します。
+
+: @<tt>{:tcp?}
+  パケットが TCP である場合 true を返します。
+
+: @<tt>{:tcp_src_port}
+  パケットの TCP の送信元ポート番号を返します。
+
+: @<tt>{:tcp_dst_port}
+  パケットの TCP 宛先ポート番号を返します。
+
+: @<tt>{:udp}
+  パケットが UDP である場合 true を返します。
+
+: @<tt>{:udp_src_port}
+  パケットの UDP の送信元ポート番号を返します。
+
+: @<tt>{:udp_dst_port}
+  パケットの UDP の宛先ポート番号を返します。
+
+: @<tt>{:vtag?}
+  パケットに VLAN ヘッダが付いている場合 true を返します。
+
+: @<tt>{:vlan_vid}
+  VLAN の VID を返します。
+
+: @<tt>{:vlan_prio}
+  VLAN のプライオリティを返します。
+
+このようなメソッドは他にもたくさんあります。メソッドの完全なリストや詳しい情報を知りたい場合には、@<chap>{openflow_framework_trema} で紹介した @<tt>{trema run} コマンドで最新の Trema API ドキュメントを参照してください。
+
+== Packet Out API
 
 Packet Out は OpenFlow で定義されたメッセージの 1 つで、スイッチの指定したポートからパケットを送信させるためのものです。送信するときにはパケットを書き換えることもできます。よく使われる用途として、Packet In でコントローラにパケットが上がってきたときに Packet Out でこのパケットを書き換えてスイッチのポートから送り出す場合があります。
 
 Trema の Packet Out API は @<tt>{Controller#send_packet_out} メソッドで定義されています。なお @<tt>{Controller} クラスはすべてのコントローラの親クラスなので、コントローラはこの @<tt>{send_packet_out} メソッドをクラス内で直接呼び出すことができます。それでは、API 定義を見ていきましょう。
 
-==== API 定義
+=== API 定義
 
 @<tt>{send_packet_out} メソッドは次の 2 つの引数を取ります。
 
@@ -247,7 +244,7 @@ send_packet_out( datapath_id, options )
 
 具体的な利用例は次のとおりです。
 
-==== パケットを作って出す
+=== パケットを作って出す
 
 任意のパケットを作ってスイッチの特定のポートに出したい場合、次のように @<tt>{:data} オプションにパケットの中身を指定してスイッチの @<tt>{port_number} 番ポートへと出力します。この呼び出しはコントローラのコードのどこからでもできます。
 
@@ -261,11 +258,11 @@ send_packet_out(
 
 パケットを送り出すときには、ポートへの出力だけでなく Modify-Field タイプのアクションを指定して書き換えることもできます。
 
-==== packet_in ハンドラで使う
+=== packet_in ハンドラで使う
 
 @<tt>{packet_in} ハンドラから使う場合、Packet In メッセージとして入ってきたパケットの内容をそのままスイッチのポートから送り出す場合がほとんどです。この場合、パケットの送信にスイッチのバッファを使う場合と、バッファを使わずにコントローラからパケットを送る場合で呼び出しかたが変わります。
 
-===== スイッチのバッファを使って Packet Out する場合
+==== スイッチのバッファを使って Packet Out する場合
 
 通信量が少なくパケットがスイッチのバッファに乗っていることが期待できる場合には、次のように @<tt>{:buffer_id} オプションを指定してやることでバッファに乗っているパケットデータを ID で指定して Packet Out できます。この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、バッファがすでに消されている場合にはエラーが返ります。
 
@@ -296,7 +293,7 @@ def packet_in datapath_id, message
   )
 //}
 
-===== スイッチのバッファを使わずに Packet Out する場合
+==== スイッチのバッファを使わずに Packet Out する場合
 
 スイッチのバッファを使わずに Packet Out する場合、次のように @<tt>{:data} オプションを指定する必要があります。バッファに乗っているかいないかにかかわらず Packet Out できるので、若干遅くなりますが安全です。
 
@@ -311,7 +308,7 @@ def packet_in datapath_id, message
   )
 //}
 
-==== フローテーブルでパケットを制御する
+=== フローテーブルでパケットを制御する
 
 パケットの出力や書き換えをスイッチのフローテーブルにまかせたい場合には、@<tt>{ActionOutput} の出力先ポート番号として特殊なポート番号である @<tt>{OFPP_TABLE} を指定することができます。この場合、フローテーブルでの検索に使う入力ポートは、@<tt>{:in_port} オプションを使って次のように指定できます。
 
@@ -340,7 +337,7 @@ def packet_in datapath_id, message
   )
 //}
 
-==== オプション一覧
+=== オプション一覧
 
 次が options に指定できるオプション一覧です。
 
@@ -359,5 +356,8 @@ def packet_in datapath_id, message
 : @<tt>{:actions}
   Packet Out のときに実行したいアクションの配列を指定します。アクションが一つの場合は配列でなくてかまいません。
 
-== 実行してみよう
-== まとめ/参考文献
+== ソースコード
+=== 未知のパケット (packet-in) の処理
+=== フローテーブルの書き換え
+== まとめ
+== 参考文献
