@@ -51,14 +51,13 @@ end
 
 === トラフィックモニタクラス
 
-@<tt>{TrafficMonitor} クラスはコントローラの本体です（リスト3）。メイン
-の処理はリスト3①～③の3つになります。
+@<tt>{TrafficMonitor} クラスはコントローラの本体です (@<list>{traffic_monitor_class})。メインの処理はリスト3①～③の3つになります。
 
  1. packet_inメッセージが到着したとき，パケットを宛先のスイッチポートに転送し，フローテーブルを更新する部分
  2. flow_removedメッセージが到着したとき，トラフィック集計情報を更新する部分
  3. タイマーで10秒ごとにトラフィックの集計情報を表示する部分
 
-//list[counter_class][本体 @<tt>{TrafficMonitor} クラス（@<tt>{traffic-monitor.rb}）]{
+//list[traffic_monitor_class][本体 @<tt>{TrafficMonitor} クラス（@<tt>{traffic-monitor.rb}）]{
 require "counter"
 require "fdb"
 
