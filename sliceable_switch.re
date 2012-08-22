@@ -50,6 +50,14 @@ apps/   trema/
 % (cd apps/sliceable_switch; make)
 //}
 
+スライス機能つきスイッチでは、スライスに関する情報を格納するためのデータベースとして、sqlite3 を用いています。以下のようにして、@<tt>{apt-get} で関連するモジュールをインストールした後、データベースファイルの作成を行ってください。
+
+//cmd{
+% sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl libwww-Perl
+% (cd apps/sliceable_switch; ./create_tables.sh)
+A filter entry is added successfully.
+//}
+
 === 試してみる
 
 //image[slicing][ネットワーク構成]
@@ -105,12 +113,10 @@ run {
 
 run {
   path "../apps/sliceable_switch/sliceable_switch"
-  options "-s", "../apps/sliceable_switch/slice.db", "-f", "../apps/sliceable_sw
-itch/filter.db"
+  options "-s", "../apps/sliceable_switch/slice.db", "-a", "../apps/sliceable_switch/filter.db"
 }
 
-event :port_status => "topology", :packet_in => "filter", :state_notify => "topo
-logy"
+event :port_status => "topology", :packet_in => "filter", :state_notify => "topology"
 filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
 //}
 
@@ -181,7 +187,6 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 Web サービス化を行うためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
 
 //cmd{
-% sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
 % sudo apt-get install apache2-mpm-prefork libjson-perl
 //}
 
