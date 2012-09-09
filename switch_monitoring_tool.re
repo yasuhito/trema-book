@@ -68,7 +68,7 @@ vswitch { datapath_id 0x3 }
 @<tt>{switch-monitor.rb} コントローラをこの仮想ネットワーク内で実行するには、この設定ファイルを @<tt>{trema run} の "@<tt>{-c}" オプションに渡します。スイッチ監視ツールの出力は次のようになります。
 
 //cmd{
-% ./trema run ./switch-monitor.rb -c ./switch-monitor.conf
+% trema run ./switch-monitor.rb -c ./switch-monitor.conf
 Switch 0x3 is UP
 Switch 0x2 is UP
 Switch 0x1 is UP
@@ -102,13 +102,13 @@ OpenFlow の世界でもこれと同じ用法が踏襲されています。OpenF
 それでは、スイッチの切断がうまく検出されるか確かめてみましょう。スイッチを停止するコマンドは @<tt>{trema kill} です。@<tt>{trema run} を実行したターミナルはそのままで別ターミナルを開き、次のコマンドでスイッチ @<tt>{0x3} を落としてみてください。
 
 //cmd{
-% ./trema kill 0x3
+% trema kill 0x3
 //}
 
 すると、@<tt>{trema run} を動かしたターミナルで新たに @<tt>{"Switch 0x3 is DOWN"} の行が出力されているはずです。
 
 //cmd{
-% ./trema run ./switch-monitor.rb -c ./switch-monitor.conf
+% trema run ./switch-monitor.rb -c ./switch-monitor.conf
 Switch 0x3 is UP
 Switch 0x2 is UP
 Switch 0x1 is UP
@@ -122,13 +122,13 @@ Switch 0x3 is DOWN
 うまくいきました！それでは、逆にさきほど落としたスイッチを起動してみましょう。スイッチを起動するコマンドは @<tt>{trema up} です。
 
 //cmd{
-% ./trema up 0x3
+% trema up 0x3
 //}
 
 @<tt>{"Switch 0x3 is UP"} の行が出力されれば成功です。
 
 //cmd{
-% ./trema run ./switch-monitor.rb -c ./switch-monitor.conf
+% trema run ./switch-monitor.rb -c ./switch-monitor.conf
 Switch 0x3 is UP
 Switch 0x2 is UP
 Switch 0x1 is UP

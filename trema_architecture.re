@@ -24,7 +24,7 @@
 @<em>{取間先生} 「では基本的な話から。Trema でコントローラを動かすには @<tt>{trema run} じゃったな (@<chap>{openflow_framework_trema})。このコマンド、実は裏でいろんなプロセスを起動しているんじゃ。具体的に何をやっているか、@<tt>{trema run} に@<tt>{-v} オプションをつけると見ることができるぞ。さっそく、サンプルに付いているラーニングスイッチ (@<chap>{learning_switch}) を試しに起動してみてごらん」
 
 //cmd{
-% ./trema run learning-switch.rb -c learning_switch.conf -v
+% trema run learning-switch.rb -c learning_switch.conf -v
 .../switch_manager --daemonize --port=6633 \
   -- port_status::LearningSwitch packet_in::LearningSwitch \
   state_notify::LearningSwitch vendor::LearningSwitch
@@ -141,7 +141,7 @@ vswitch("lsw") {
 これに対応する @<tt>{trema run} のログはこうなります。
 
 //cmd{
-% ./trema run learning-switch.rb -c learning_switch.conf -v
+% trema run learning-switch.rb -c learning_switch.conf -v
   ...
 sudo .../openvswitch/bin/ovs-openflowd --detach --out-of-band --fail=closed \
   --inactivity-probe=180 --rate-limit=40000 --burst-limit=20000 \
@@ -173,7 +173,7 @@ vhost("host2") {
 これに対応する @<tt>{trema run} のログはこうなります。
 
 //cmd{
-% ./trema run learning-switch.rb -c learning_switch.conf -v
+% trema run learning-switch.rb -c learning_switch.conf -v
   ...
 sudo .../phost/phost -i trema0-1 -p .../trema/tmp/pid -l .../trema/tmp/log -D
 sudo .../phost/cli -i trema0-1 set_host_addr --ip_addr 192.168.0.1 \
@@ -200,7 +200,7 @@ link "lsw", "host2"
 これに対応する @<tt>{trema run} のログはこうなります。
 
 //cmd{
-% ./trema run learning-switch.rb -c learning_switch.conf -v
+% trema run learning-switch.rb -c learning_switch.conf -v
   ...
 sudo ip link delete trema0-0 2>/dev/null
 sudo ip link delete trema1-0 2>/dev/null
@@ -346,7 +346,7 @@ Trema のモジュール間で交換される OpenFlow メッセージを解析�
 まず、次のコマンドでラーニングスイッチを起動してください。ここでオプションに @<tt>{-s} を指定することで、Tremashark のイベントコレクタとユーザインタフェースが起動します。
 
 //cmd{
-% ./trema run learning-switch.rb -c learning_switch.conf -s -d
+% trema run learning-switch.rb -c learning_switch.conf -s -d
 //}
 
 ラーニンスイッチの起動後、イベントコレクタへのイベント通知を有効にする必要があります。これは、イベントを収集したいプロセスに USR2 シグナルを送ることで有効にできます。シグナルを送るための各プロセスの PID は、Trema のディレクトリの下の @<tt>{tmp/pid} 以下のファイルに保存されています。たとえば、Ruby で書かれたアプリケーションの PID は、"[コントローラのクラス名].pid" という名前のファイルに保存されます。また Switch Daemon の PID は、"switch.[管理するスイッチの Datapath ID].pid" という名前のファイルに保存されます。
@@ -361,8 +361,8 @@ Trema のモジュール間で交換される OpenFlow メッセージを解析�
 これで、プロセス間の IPC イベントを覗く準備ができました。ではイベントを発生させるために、以下のようにスイッチに接続されたホスト間でパケットを交換してみましょう。
 
 //cmd{
-% ./trema send_packets --source host1 --dest host2
-% ./trema send_packets --source host2 --dest host1
+% trema send_packets --source host1 --dest host2
+% trema send_packets --source host2 --dest host1
 //}
 
 すると、@<img>{tremashark_gui} に示すようにモジュール間の通信をリアルタイムに観測できます。これによって、アプリケーションがどのような OpenFlow メッセージを送受信しているかなどを知ることができます。
