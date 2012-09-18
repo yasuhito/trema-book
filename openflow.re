@@ -79,15 +79,13 @@ OpenFlow スイッチとコントローラは OpenFlow 仕様で規定された�
 ちなみに、Flow Mod と Packet Out を同時にやる場合、バッファに残っていてもいなくても正しく動く疑似コードは次のようになる。
 
 //emlist{
-  func packet_in( message )
-    begin
-     # Buffer ID 指定あり
-     flow_mod( Buffer-ID = message.buffer_id )
-    rescue
-     # Flow Mod が失敗した場合、明示的に Packet Out
-     packet_out( message )
-    end
-  end
+begin
+  # Buffer ID 指定あり
+  flow_mod( Buffer-ID = packet_in.buffer_id )
+rescue
+  # Flow Mod が失敗した場合、明示的に Packet Out
+  packet_out( packet_in )
+end
 //}
 
 //noindent
@@ -96,10 +94,8 @@ OpenFlow スイッチとコントローラは OpenFlow 仕様で規定された�
 正しい方法を見てみよう:
 
 //emlist{
-  func packet_in( message )
-    flow_mod # Buffer ID 指定なし
-    packet_out( message )
-  end
+flow_mod # Buffer ID 指定なし
+packet_out( packet_in )
 //}
 
 //noindent
@@ -235,7 +231,7 @@ Forward アクションでは指定した宛先ポートにパケットを転送
  * NORMAL: パケットをスイッチの機能を使って転送する。
  * LOCAL: パケットをスイッチのローカルスタックに上げる。ローカルスタック上で動作するアプリケーションにパケットを渡したい場合に使う。あまり使われない。
 
-この中でも FLOOD や NORMAL は OpenFlow スイッチ機能とスイッチ本来の機能を組み合わせて使うための論理ポートです。
+この中でも FLOOD や NORMAL は OpenFlow スイッチ機能と既存のスイッチ機能を組み合わせて使うための論理ポートです。
 
 ===== Modify-Field アクション
 
