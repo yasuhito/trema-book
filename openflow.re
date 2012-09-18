@@ -104,14 +104,14 @@ Ingress Port		スイッチの物理ポート番号
 Ether src			送信元 MAC アドレス
 Ether dst			宛先 MAC アドレス
 Ether type			イーサネットの種別
-VLAN id				VLAN ID
-VLAN priority		VLAN PCP の値 (CoS)
 IP src				送信元 IP アドレス
 IP dst				宛先 IP アドレス
 IP proto			IP のプロトコル種別
 IP ToS bits			IP の ToS 情報
 TCP/UDP src port	TCP/UDP の送信元ポート番号
 TCP/UDP dst port	TCP/UDP の宛先ポート番号
+VLAN id				VLAN ID
+VLAN priority		VLAN PCP の値 (CoS)
 //}
 
 OpenFlow の世界では、このマッチングルールで指定できる条件を自由に組み合わせて通信を制御します。たとえば、
