@@ -60,6 +60,53 @@ OpenFlow スイッチとコントローラは OpenFlow 仕様で規定された�
 
 //image[flowmod_packetout][Flow Mod によってフローテーブルを更新し、Packet In を起こしたパケットを Packet Out で転送]
 
+===[column] 取間先生いわく: Flow Mod と Packet Out を同時にやる方法？
+
+実は OpenFlow の仕様には、一発の Flow Mod で Packet Out もまとめてやってしまう方法が載っている。しかしこれは危険なプログラミングスタイルじゃ。
+
+スイッチに Packet In が上がると、スイッチのバッファ領域に Packet In を起こしたパケットの中身がバッファされる。そしてコントローラに上がる Packet In メッセージには、このバッファ領域の ID (Buffer ID と呼ばれる) が通知される。これを Flow Mod のときに指定すると、スイッチが Packet Out をやってくれるのじゃ (@<img>{buffer_id})。
+
+//image[buffer_id][Flow Mod のときに Buffer ID を指定することで Packet Out を同時にやる][scale=0.25]
+
+しかし、この方法は@<em>{禁じ手}じゃ。これは次の理由による:
+
+ * スイッチのバッファにパケットが残っているかどうかはスイッチの外から観測できないので、指定した Buffer ID のパケットがバッファに残っているかは一か八かである。
+ * 確実にスイッチのバッファに残っていると分かっていても、Flod Mod を打った瞬間に消えているかもしれない。
+ * 格安のスイッチなど、スイッチによってはそもそもバッファがないかもしれない。
+
+というわけで、本文中で説明したように Packet Out は Flow Mod と独立して打つのが良い方法じゃ。
+
+ちなみに、Flow Mod と Packet Out を同時にやる場合、バッファに残っていてもいなくても正しく動く疑似コードは次のようになる。
+
+//emlist{
+  func packet_in( message )
+    begin
+     # Buffer ID 指定あり
+     flow_mod( Buffer-ID = message.buffer_id )
+    rescue
+     # Flow Mod が失敗した場合、明示的に Packet Out
+     packet_out( message )
+    end
+  end
+//}
+
+//noindent
+見ればわかるように、万が一バッファに残っていなかったときの例外処理に Packet Out を書かなければならん。そのせいでコードが長くなってしまう。
+
+正しい方法を見てみよう:
+
+//emlist{
+  func packet_in( message )
+    flow_mod # Buffer ID 指定なし
+    packet_out( message )
+  end
+//}
+
+//noindent
+ずっと短いし、これで正しく動く。
+
+===[/column]
+
 === フローの寿命と統計情報
 
 Flow Mod で打ち込むフローには「寿命」を設定できます。寿命の指定には次の 2 種類があります。
@@ -239,7 +286,7 @@ TCP/UDP ポート番号書き換えの代表的な例が IP マスカレード�
 
 既存のタグ付き VLAN で構築したネットワークと OpenFlow で構築したネットワークを接続するという特別な用途のために、VLAN ヘッダの書き換えアクションがあります。VLAN をひとことで説明すると、既存のスイッチで構成されるネットワーク (ブロードキャストが届く範囲のネットワーク) を複数のネットワークに分割して使用するための仕組みです。この分割したネットワーク自体を VLAN と呼ぶ場合もあります。どの VLAN に所属するかを区別するのが VLAN のタグ (VLAN ID) で、パケットに付与される VLAN ヘッダがこのタグ情報を含みます。Modify-Field アクションは VLAN ヘッダの操作に必要なアクションを 3 種類用意しています。
 
-//image[strip_vlan][VLAN ヘッダを書き換えるアクションの使い道][scale=0.6]
+//image[strip_vlan][VLAN ヘッダを書き換えるアクションの使い道][scale=0.3]
 
 : VLAN ヘッダの除去
   VLAN を流れる VLAN ヘッダ付きパケットから VLAN ヘッダを除去し、普通のパケットに戻すアクションです。
