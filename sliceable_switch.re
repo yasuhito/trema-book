@@ -8,7 +8,7 @@ OpenFlow の魅力は、ネットワークをソフトウェアで自在にコ�
 
 == ネットワークを分割する
 
-スライスを 2 つ設定した例を @<img>{sliceable_switch} に示します。同一のスライスに接続されたホスト同士はパケットをやりとりできますが，異なるスライスに接続されたホスト同士ではできません。このようにうまくスライスを設定することで，アプリケーションやグループ別など用途に応じて独立したネットワークを作ることができます。
+スライス機能つきスイッチが、どのようにネットワークをスライスするのか見てみましょう。@<img>{sliceable_switch} は、3 つの OpenFlow スイッチから構成されるネットワークを、2 つのスライスに分割している例です。同一のスライスに接続されたホスト同士はパケットをやりとりできますが，異なるスライスに接続されたホスト同士ではできません。このようにうまくスライスを設定することで，アプリケーションやグループ別など用途に応じて独立したネットワークを作ることができます。
 
 //image[sliceable_switch][スライスの作成]
 
@@ -19,7 +19,7 @@ OpenFlow の魅力は、ネットワークをソフトウェアで自在にコ�
 //image[behavior][スライス機能つきスイッチの動作][scale=0.4]
 
  1. スライス機能つきスイッチは、 スイッチが受信したパケットを Packet In メッセージで受け取ります。
- 2. 次に fdb を検索し、宛先であるホストが接続されているスイッチ、ポートを検索します。
+ 2. 次に FDB を検索し、宛先であるホストが接続されているスイッチ、ポートを検索します。
  3. はじめに送信元からのパケットを受信したポートと、宛先となるホストが接続しているポートとが、同じスライスに所属しているかの判定を行います。もし、同じスライスではない場合には、以降の処理は行われません。
  4. Packet In を送ってきたスイッチから出口となるスイッチまでの最短パスを計算します。
  5. 最短パスに沿ってパケットが転送されるよう、各スイッチそれぞれに Flow Mod メッセージを送り、フローを設定します。
@@ -35,26 +35,21 @@ OpenFlow の魅力は、ネットワークをソフトウェアで自在にコ�
 
 === 準備
 
-スライス機能つきスイッチも、ルーティングスイッチと同様に @<tt>{https://github.com/trema/apps/} にてソースコードが公開されています。ソースコードをまだ取得していない場合は、前章を参考に @<tt>{git} で取得しておいてください。ここでは、以下のようなディレクトリ構成になっていることが前提です。
-
-//cmd{
-% ls -F
-apps/   trema/
-//}
+スライス機能つきスイッチも、ルーティングスイッチと同様に @<tt>{https://github.com/trema/apps/} にてソースコードが公開されています。ソースコードをまだ取得していない場合は、前章を参考に @<tt>{git} で取得しておいてください。
 
 スライス機能つきスイッチは、ルーティングスイッチから派生したアプリケーションです。そのため、ルーティングスイッチと同様に @<tt>{topology} と連動して動作します。また、フロー設定を行う @<tt>{flow_manager} とも連動して動作するようになっていますので、これらのモジュールも合わせて @<tt>{make} してください。
 
 //cmd{
-% (cd apps/topology/; make)
-% (cd apps/flow_manager/; make)
-% (cd apps/sliceable_switch; make)
+% (cd ./apps/topology/; make)
+% (cd ./apps/flow_manager/; make)
+% (cd ./apps/sliceable_switch; make)
 //}
 
 スライス機能つきスイッチでは、スライスに関する情報を格納するためのデータベースとして、sqlite3 を用いています。以下のようにして、@<tt>{apt-get} で関連するモジュールをインストールした後、データベースファイルの作成を行ってください。
 
 //cmd{
 % sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl libwww-Perl
-% (cd apps/sliceable_switch; ./create_tables.sh)
+% (cd ./apps/sliceable_switch; ./create_tables.sh)
 A filter entry is added successfully.
 //}
 
@@ -100,20 +95,20 @@ link "0xe0", "host4"
 
 
 run {
-  path "../apps/topology/topology"
+  path "./apps/topology/topology"
 }
 
 run {
-  path "../apps/topology/topology_discovery"
+  path "./apps/topology/topology_discovery"
 }
 
 run {
-  path "../apps/flow_manager/flow_manager"
+  path "./apps/flow_manager/flow_manager"
 }
 
 run {
-  path "../apps/sliceable_switch/sliceable_switch"
-  options "-s", "../apps/sliceable_switch/slice.db", "-a", "../apps/sliceable_switch/filter.db"
+  path "./apps/sliceable_switch/sliceable_switch"
+  options "-s", "./apps/sliceable_switch/slice.db", "-a", "./apps/sliceable_switch/filter.db"
 }
 
 event :port_status => "topology", :packet_in => "filter", :state_notify => "topology"
@@ -132,6 +127,7 @@ trema のディレクトリに移動し、スライス機能つきスイッチ�
 スライスの作成には、@<tt>{sliceable_switch} のディレクトリに用意されている @<tt>{slice} コマンドを使用します。このコマンドを使って、以下のように、二つのスライス @<tt>{slice1, slice2} を作ってみましょう。
 
 //cmd{
+% cd apps/sliceable_switch
 % ./slice create slice1
 A new slice is created successfully.
 % ./slice create slice2
@@ -337,7 +333,12 @@ Sliceable Network Management API の仕様は、以下のサイトで公開さ�
 
 == まとめ/参考文献
 
-: 現場で使える REST (Web+DB PRESS, Vol.42, 2008)
-REST という言葉は知っているが、どんなものかよくわからない。そんな人は、ぜひこの記事を読んで、REST の真髄に触れてみてください。
+本章で学んだことは、次の 2 つです。
 
-: RESTful Web 
+ * 大きなネットワークを複数にスライスして使用することができる、スライス機能つきスイッチがどのように動作するかを見てみました。また、スライス機能つきスイッチを実際に動作させ、同一のスライスに所属するホスト同士しか通信ができないことを確認しました。
+ * スライス機能つきスイッチの設定を行うための Web サービス API である Sliceable Network Management API を使って、スライスの設定を行う方法について学びました。
+
+Sliceable Network Management API を使うことで、他のシステムとの連携も可能です。次の章では、スライス機能つきスイッチを使った OpenFlow ネットワークとクラウド管理システムとの連携についても紹介します。
+
+: RESTful Web サービス （Leonard Richardson, Sam Ruby　著、オライリー)
+  SOAP や WSDL など Web サービスのためにさまざまな仕様が存在しますが、これらと比較すると非常にシンプルであることが REST の特徴です。REST についてもっと深く知りたい人は、ぜひこの本を読んで、REST の真髄に触れてみてください。

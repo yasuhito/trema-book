@@ -93,15 +93,10 @@
 
 === 準備
 
-Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} にあります。まずは、@<tt>{git} を使って、ソースコードを取得しましょう。以下のように @<tt>{trema} ディレクトリと同じ階層になるよう取得してください。
+Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} にあります。まずは、@<tt>{git} を使って、ソースコードを取得しましょう。
 
 //cmd{
-% ls -F
-trema/
 % git clone https://github.com/trema/apps.git
-...
-% ls -F
-apps/	trema/
 //}
 
 @<chap>{trema_architecture} で紹介したように、Trema Apps にはさまざまなアプリケーションが含まれています。そのうち、今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。@<tt>{topology} には、トポロジー検出を担当するモジュール @<tt>{topology_discovery} と検出したトポロジーを管理するモジュール @<tt>{topology} が含まれています。また @<tt>{routing_switch} には、ルーティングスイッチの本体が含まれています。この二つを順に @<tt>{make} してください。
@@ -190,8 +185,7 @@ filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 このファイルは、@<tt>{routing_switch_fullmesh.conf} として、ソースコード一式の中に用意されています。今回はこのファイルを使って、以下のように起動してください。
 
 //cmd{
-% cd ./trema
-% ./trema run -c ../apps/routing_switch/routing_switch_fullmesh.conf -d
+% trema run -c ./apps/routing_switch/routing_switch_fullmesh.conf -d
 //}
 
 === 見つけたリンクを表示する
@@ -199,7 +193,7 @@ filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 @<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンドが用意されていますので、使ってみましょう。以下のように実行してください。
 
 //cmd{
-% TREMA_HOME=. ../apps/topology/show_topology -D
+% ./apps/topology/show_topology -D
 vswitch {
   datapath_id "0xe0"
 }
@@ -231,8 +225,8 @@ link "0xe3", "0xe1"
 次に、仮想ホストからパケットを送り、フローが設定されることを確認しましょう。
 
 //cmd{
-% ./trema send_packets --source host1 --dest host2
-% ./trema send_packets --source host2 --dest host1
+% trema send_packets --source host1 --dest host2
+% trema send_packets --source host2 --dest host1
 //}
 
 ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、host1 から host2 へとパケットを送っただけではフローは設定されません。この段階で host1 の MAC アドレスを学習したので、host2 から host1 へと送った段階でフローが設定されます。
@@ -240,7 +234,7 @@ link "0xe3", "0xe1"
 それでは、どのようなフローが設定されたかを見てみます。設定されているフローの確認は、@<tt>{trema dump_flows [表示したいスイッチの Datapath ID]} でできます。@<tt>{0xe0} から @<tt>{0xe1} まで順に表示してみましょう。
 
 //cmd{
-% ./trema dump_flows 0xe0
+% trema dump_flows 0xe0
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
  ...	     		   	    		 	    		     \
