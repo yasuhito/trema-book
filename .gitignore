@@ -4,3 +4,4 @@ Gemfile.lock
 *.log
 *.pdf
 *.tex
+*.key
