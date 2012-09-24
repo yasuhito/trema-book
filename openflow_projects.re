@@ -75,10 +75,23 @@ link "switch3", "switch4"
 
 == NOX
 
-NOX は C++ と Python に対応したフレームワークで、OpenFlow の登場から比
-較的早い時期に公開されたため他のフレームワークと比べて広く使われていま
-す。しかし NOX 自体の開発は終了し、Python 部分が POX プロジェクトとして
-分離し、一からの作り直しへと移行しています。
+NOX は OpenFlow の生まれ故郷スタンフォード大で開発されたもっとも古いフレームワークで、C++ に対応しています。ライセンスは GPL バージョン 3 のフリーソフトウェアです。
+
+//image[nox][NOX のサイト (@<tt>{http://www.noxrepo.org/nox/about-nox/})]
+
+NOX の長所はユーザ層の厚さです。OpenFlow の登場直後から開発しており、メーリングリストには OpenFlow 仕様を作った研究者本人など、SDN の主要な関係者が活発に議論しています。また歴史が古いため、Web で情報を集めやすいという利点もあります。
+
+有用なリソースをいくつか紹介しておきます:
+
+ * nox-dev メーリングリスト: http://lists.noxrepo.org/listinfo.cgi/nox-dev-noxrepo.org
+ * openflow-discuss メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-discuss
+ * openflow-annouce メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-announce
+ * openflow-dev メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-dev
+ * openflow-spec メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-spec
+ * openflow-meeting メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-meeting
+ * openflow-jobs メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-jobs
+
+NOX はいくつかの派生プロジェクトを産み出しつつ進化しています。もともとは C++ と Python に対応していましたが、Python の部分が次に紹介する POX プロジェクトとして分離し、一からの作り直しが始まっています。分離前の古い NOX は NOX Classic と名前を変え、開発を停止しました。現在は C++ のみでの開発が進められているようです。
 
 == POX
 
