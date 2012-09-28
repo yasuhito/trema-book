@@ -58,14 +58,6 @@ NOX は OpenFlow の生まれ故郷スタンフォード大で開発されたも
 
 NOX の長所はユーザ層の厚さです。OpenFlow の登場直後から開発しており、メーリングリストでは OpenFlow 仕様を作った研究者本人など、SDN の主要な関係者が活発に議論しています。また歴史が古いため、Web で情報を集めやすいという利点もあります。
 
-有用なリソースをいくつか紹介しておきます:
-
- * nox-dev メーリングリスト: http://lists.noxrepo.org/listinfo.cgi/nox-dev-noxrepo.org
- * openflow-discuss メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-discuss
- * openflow-annouce メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-announce
- * openflow-dev メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-dev
- * openflow-spec メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-spec
-
 NOX はいくつかの派生プロジェクトを産み出してきました。もともとは C++ と Python に対応していましたが、Python の部分が次に紹介する POX プロジェクトとして分離し、一からの作り直しが始まっています。分離前の古い NOX は NOX Classic と名前を変え、開発を停止しました。現在は C++ のみでの開発が進められているようです。
 
 最後に NOX のサンプルコードとして、Trema と同じくハブを実装した例を紹介します (@<list>{nox_hub})。
@@ -367,7 +359,7 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
 //noindent
 Trema (Ruby) や POX (Python) などスクリプティング言語を採用するフレームワークでは短い行数で実装できていますが、NOX (C++) や Floodlight (Java) など従来の言語を採用するフレームワークでは一気に行数がはねあがっています。とくに、最も短い Trema (14 行) と最も長い Floodlight (111 行) を比べるとその差は 8 倍にもなります。単純には言えませんが、行数だけで見ると Trema は Floodlight の 1/8 の労力で同じ機能を実装できるのです。
 
-筆者の予想では、OpenFlow コントローラフレームワークはかつての Web アプリケーションフレームワークと同じ道をたどるのではと思っています。歴史をさかのぼると、1990 年代〜 2000 年代初頭は Java のフレームワーク全盛期でした。無数の Java フレームワークが雨後の竹の子のように登場し、Java EE、JSP、JSF など (筆者もよく分からない) 新しい専門用語が次々と出てきました。IDE が自動生成する長いコードや XML ファイルと格闘しながら、次々と登場する新しい仕様を理解して Web アプリケーションを書くのは至難の業でした。しかし 2004 年、Ruby のフレームワークである Rails の登場によって Web 業界は一変します。Java による鈍重な実装は避け、なるべく短いコードで書こうという考え方が Web 業界を席巻したのです。この流れは、「コードが長くなるフレームワーク」の代名詞であった Java の世界にも取り入れられ、最近の Django や Play など近代的なフレームワークを産んできました。
+筆者の予想では、OpenFlow コントローラフレームワークはかつての Web アプリケーションフレームワークと同じ道をたどるのではと思っています。歴史をさかのぼると、1990 年代〜 2000 年代初頭は Java 用フレームワーク全盛期でした。無数の Java 用フレームワークが雨後の竹の子のように登場し、Java EE、JSP、JSF など新しい技術も次々と出てきました。IDE が自動生成する長いコードや XML ファイルと格闘しながら、次々と登場する新しい仕様を理解して Web アプリケーションを書くのは至難の業でした。しかし 2004 年、Ruby の Web アプリケーションフレームワークである Rails の登場によって Web 業界は一変します。Java による鈍重な実装は避け、なるべく短いコードで書こうという考え方が Web 業界を席巻したのです。この流れは、「コードが長くなるフレームワーク」の代名詞であった Java の世界にも取り入れられ、最近の Django や Play など近代的なフレームワークを産んできました。
 
 OpenFlow コントローラフレームワークはまだまだ黎明期にあります。Trema のように最近の考えかたを取り入れたフレームワークはありますが、とくに海外では NOX や Floodlight など旧来的なフレームワークが主流を占めています。しかし、ネットワーク業界でもスクリプティング言語を使えるプログラマが増えれば、古い設計のフレームワークを使うプログラマよりも何倍もの生産性をあげることができるようになるでしょう。そしてこの考え方が順調に浸透していけば、さまざまな言語で生産性の高いフレームワークが登場するはずです。
 
