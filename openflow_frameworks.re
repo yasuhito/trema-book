@@ -1,7 +1,7 @@
 = OpenFlow の開発フレームワーク
 
 //lead{
-「さっそく OpenFlow で何かを作ってみたい!」その前に先人たちの所産を見てみましょう。巨人の肩に乗ってしまえば目的地まではもうすぐです。
+「さっそく OpenFlow で何かを作ってみたい!」その前に OpenFlow 開発に便利なフレームワークを見てみましょう。巨人の肩に乗ってしまえば目的地まではもうすぐです。
 //}
 
 今の時代、新しい Web サービスを立ち上げるには Rails などの Web アプリケーションフレームワークの利用が常識です。年々複雑化する Web サービスを作るには、Web アプリケーションフレームワークが提供するライブラリやツールが不可欠だからです。書店の技術書コーナーに行くと、さまざまな Web アプリケーションフレームワークの本があふれかえっています。
@@ -37,12 +37,12 @@ class RepeaterHub < Controller
     send_flow_mod_add(
       datapath_id,
       :match => ExactMatch.from( message ),
-      :actions => ActionOutput.new( OFPP_FLOOD )
+      :actions => SendOutPort.new( OFPP_FLOOD )
     )
     send_packet_out(
       datapath_id,
       :packet_in => message,
-      :actions => ActionOutput.new( OFPP_FLOOD )
+      :actions => SendOutPort.new( OFPP_FLOOD )
     )
   end
 end
@@ -66,7 +66,7 @@ NOX の長所はユーザ層の厚さです。OpenFlow の登場直後から開�
  * openflow-dev メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-dev
  * openflow-spec メーリングリスト: https://mailman.stanford.edu/mailman/listinfo/openflow-spec
 
-NOX はいくつかの派生プロジェクトを産み出してきました。もともとは C++ と Python に対応していましたが、Python の部分が次に紹介する POX プロジェクトとして分離し、一からの作り直しが始まっています。分離前の古い NOX は NOX Classic と名前を変え、開発を停止しました。現在は C++ のみでの開発が進められているようです。
+NOX はいくつかの派生プロジェクトを産み出してきました。もともとは C++ と Python に対応していましたが、Python の部分が次に紹介する POX プロジェクトとして分離し、一からの作り直しが始まっています。C++ の部分は新しい NOX として現在も開発が進められているようです。分離前の古い NOX は NOX Classic と名前を変え、開発を停止しました。
 
 最後に NOX のサンプルコードとして、Trema と同じくハブを実装した例を紹介します (@<list>{nox_hub})。
 
