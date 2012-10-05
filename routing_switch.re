@@ -122,71 +122,55 @@ LLDP によるリンク発見を OpenFlow で実現する方法を見ていき�
 
 それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、@<img>{fullmesh} のネットワークを作ります。
 
-//image[fullmesh][スイッチ 4 台からなるネットワーク]
+//image[fullmesh][スイッチ 4 台からなるネットワーク][scale=0.5]
 
 //noindent
-設定ファイルは @<list>{conf} のようになります。
+設定ファイルは@<list>{conf} のようになります。
 
 //list[conf][@<tt>{routing_switch_fullmesh.conf}]{
-vswitch {
-  datapath_id "0xe0"
-}
-
-vswitch {
-  datapath_id "0xe1"
-}
-
-vswitch {
-  datapath_id "0xe2"
-}
-
-vswitch {
-  datapath_id "0xe3"
-}
+vswitch { datapath_id "0x1" }
+vswitch { datapath_id "0x2" }
+vswitch { datapath_id "0x3" }
+vswitch { datapath_id "0x4" }
 
 vhost ("host1") {
   ip "192.168.0.1"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:01"
 }
-
 vhost ("host2") {
   ip "192.168.0.2"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:02"
 }
-
 vhost ("host3") {
   ip "192.168.0.3"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:03"
 }
-
 vhost ("host4") {
   ip "192.168.0.4"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:04"
 }
 
-link "0xe0", "host1"
-link "0xe1", "host2"
-link "0xe2", "host3"
-link "0xe3", "host4"
-link "0xe0", "0xe1"
-link "0xe0", "0xe2"
-link "0xe0", "0xe3"
-link "0xe1", "0xe2"
-link "0xe1", "0xe3"
-link "0xe2", "0xe3"
+link "0x1", "host1"
+link "0x2", "host2"
+link "0x3", "host3"
+link "0x4", "host4"
+link "0x1", "0x2"
+link "0x1", "0x3"
+link "0x1", "0x4"
+link "0x2", "0x3"
+link "0x2", "0x4"
+link "0x3", "0x4"
 
 run {
   path "../apps/topology/topology"
 }
-
 run {
   path "../apps/topology/topology_discovery"
 }
-
 run {
   path "../apps/routing_switch/routing_switch"
 }
@@ -207,69 +191,71 @@ filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 
 === トポロジを表示する
 
-@<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンド @<tt>{show_topology} が用意されています。以下のように実行してください。出力フォーマットは仮想ネットワーク設定ファイルとまったく同じです。
+Trema Apps の @<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンド @<tt>{show_topology} が用意されています。以下のように実行すると、仮想ネットワーク設定ファイルと同じフォーマットでトポロジーを出力します。
 
 //cmd{
 % ./apps/topology/show_topology -D
 vswitch {
-  datapath_id "0xe0"
+  datapath_id "0x1"
 }
 
 vswitch {
-  datapath_id "0xe2"
+  datapath_id "0x3"
 }
 
 vswitch {
-  datapath_id "0xe3"
+  datapath_id "0x4"
 }
 
 vswitch {
-  datapath_id "0xe1"
+  datapath_id "0x2"
 }
 
-link "0xe3", "0xe2"
-link "0xe1", "0xe0"
-link "0xe3", "0xe0"
-link "0xe2", "0xe1"
-link "0xe2", "0xe0"
-link "0xe3", "0xe1"
+link "0x4", "0x3"
+link "0x2", "0x1"
+link "0x4", "0x1"
+link "0x3", "0x2"
+link "0x3", "0x1"
+link "0x4", "0x2"
 //}
 
-ルーティングスイッチの起動時に指定した設定ファイル (@<list>{conf}) 比較してみましょう。スイッチ間のリンクがうまく検出できていることがわかります。ただし、仮想ホストとスイッチ間のリンクは検出できません。LLDP はスイッチ間のリンクを検出する仕組みだからです。
+ルーティングスイッチの起動時に指定した設定ファイル (@<list>{conf}) と比較すると、スイッチ間のリンクがうまく検出できていることがわかります。しかし、仮想ホストとスイッチ間のリンクは検出できません。LLDP と OpenFlow によるトポロジ検出は、あくまでスイッチ間のリンクを検出する仕組みだからです。
 
 === 最短パスを通すフローを確認する
    
-次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローがうまく設定されることを確認しましょう。
+次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、host1 から host2 へとパケットを送っただけではフローは設定されません。次のように逆方向の host2 から host1 へとパケットを送った段階でフローが設定されます。
 
 //cmd{
 % trema send_packets --source host1 --dest host2
 % trema send_packets --source host2 --dest host1
 //}
 
-ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、host1 から host2 へとパケットを送っただけではフローは設定されません。この段階で host1 の MAC アドレスを学習したので、host2 から host1 へと送った段階でフローが設定されます。
-
-それでは、どのようなフローが設定されたかを見てみます。設定されているフローの確認は、@<tt>{trema dump_flows [表示したいスイッチの Datapath ID]} でできます。@<tt>{0xe0} から @<tt>{0xe1} まで順に表示してみましょう。
+それでは、どのようなフローが設定されたかを見てみます。設定されているフローの確認は、@<tt>{trema dump_flows [表示したいスイッチの Datapath ID]} でできます。まずは host1 から host2 への最短パスであるスイッチ 0x1, 0x2 のフローテーブルを見てみましょう。
 
 //cmd{
-% trema dump_flows 0xe0
+% trema dump_flows 0x1
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-% ./trema dump_flows 0xe1
+% ./trema dump_flows 0x2
 NXST_FLOW reply (xid=0x4):
  cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0, idle_timeout=61, \
  ...	     		   	    		 	    		     \
  dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
  nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
-% ./trema dump_flows 0xe2
-NXST_FLOW reply (xid=0x4):
-% ./trema dump_flows 0xe3
-NXST_FLOW reply (xid=0x4):
 //}
 
-@<tt>{0xe0} と @<tt>{0xe1} のスイッチそれぞれに、@<tt>{dl_src} が host2 の MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチングルールのフローが設定されていることが分かります。一方で @<tt>{0xe2} と @<tt>{0xe3} のスイッチには、フローがありません。@<img>{fullmesh} をもう一度見てください。host2 から host1 への最短パスは@<tt>{0xe1} → @<tt>{0xe0} なので、この二つのスイッチにきちんとフローが設定されています。
+//noindent
+@<tt>{0x1} と @<tt>{0x2} のスイッチそれぞれに、@<tt>{dl_src} が host2 の MAC アドレス、@<tt>{dl_dst} が host1 の MAC アドレスがマッチングルールのフローが設定されていることが分かります。一方で最短パス上にないスイッチ @<tt>{0x3}, @<tt>{0x4} には次のようにフローがありません。
+
+//cmd{
+% ./trema dump_flows 0x3
+NXST_FLOW reply (xid=0x4):
+% ./trema dump_flows 0x4
+NXST_FLOW reply (xid=0x4):
+//}
 
 == OpenFlow を使う利点
 
@@ -279,11 +265,11 @@ NXST_FLOW reply (xid=0x4):
 
 通常の L2 スイッチで構成されたネットワークでは、パケットがループすることを防ぐために、スパニングツリープロトコルが用いられています。例えば、@<img>{spt1} のようなループを含むネットワークでスパニングツリープロトコルを使うと、スイッチ 2 とスイッチ 3 間のリンクが遮断され、ループが解消されます。この時、例えばホスト 2 からホスト 3 へのパケットは、この遮断されたリンクを通過できないため、スイッチ 1 を経由して転送されます。
 
-//image[spt1][ループを含む構成では、一部のリンクを遮断する必要がある]
+//image[spt1][スパニングツリーではループを避けるために一部のリンクを遮断する]
 
 ルーティングスイッチでは、Packet In メッセージが送られてきた時に、そのパケットに対するフローを各スイッチに設定するという動作を行います。この時、Packet In を受信したスイッチから、出口となるスイッチまでの最短パスを計算し、そのパス上の各スイッチに対してフローの設定を行います。このため、ループを含むトポロジーであっても問題なく動作します。ブロックリンクを作る必要がないため、スパニングツリーを使う場合と比べて、ネットワーク中のリンクを有効に使うことができます(@<img>{spt2})。
 
-//image[spt2][ルーティングスイッチでは、ネットワーク中のリンクを有効に使うことができる]
+//image[spt2][ルーティングスイッチではネットワーク中のリンクを有効に使える]
 
 === いろいろなパス選択アルゴリズムを使える
 
