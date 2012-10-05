@@ -94,34 +94,38 @@ LLDP によるリンク発見を OpenFlow で実現する方法を見ていき�
 
 == 実行してみよう
 
-ルーティングスイッチは、Trema Apps の一部として、Github 上で公開されています。公開されているルーティングスイッチを使いながら、実際の動作を見ていきましょう。
-
-=== 準備
-
-Trema Apps のソースコードは、@<tt>{https://github.com/trema/apps/} にあります。まずは、@<tt>{git} を使って、ソースコードを取得しましょう。
+ではルーティングスイッチを使って実際のトポロジ検出や最短路計算の動作を見ていきましょう。ルーティングスイッチは Trema Apps の一部として GitHub で公開されています。次のようにソースコードを取得してください。
 
 //cmd{
 % git clone https://github.com/trema/apps.git
 //}
 
-@<chap>{trema_architecture} で紹介したように、Trema Apps 中はさまざまなアプリケーションがあります。そのうち、今回使用するのは @<tt>{topology} と @<tt>{routing_switch} です。@<tt>{topology} は、トポロジー検出を担当するモジュール @<tt>{topology_discovery} と検出したトポロジーを管理するモジュール @<tt>{topology} を含んでいます。また @<tt>{routing_switch} は、ルーティングスイッチの本体を含んでいます。各モジュールの関係を @<img>{modules} に示します。
+//noindent
+ルーティングスイッチは次の 3 つのアプリケーションが連携して動作します。
 
-//image[modules][ルーティングスイッチの動作に必要なモジュール][scale=0.7]
+ * @<tt>{topology}: 検出したトポロジー情報を管理する。
+ * @<tt>{topology_discovery}: トポロジー情報を検出する。
+ * @<tt>{routing_switch}: ルーティングスイッチ本体。
 
-@<tt>{topology} と @<tt>{routing_switch} を順に @<tt>{make} してください。
+//noindent
+この 3 つをセットアップするには、ダウンロードした Trema Apps の @<tt>{topology} と @<tt>{routing_switch} を次のようにコンパイルしてください。
 
 //cmd{
 % (cd apps/topology/; make)
 % (cd apps/routing_switch; make)
 //}
 
+//noindent
+これで準備は完了です。
+
 === ルーティングスイッチを動かす
 
-それでは、ルーティングスイッチを動かしてみましょう。今回は Trema のネットワークエミュレータ機能を用いて、@<img>{fullmesh} のネットワークを作ります。
+それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、@<img>{fullmesh} のネットワークを作ります。
 
-//image[fullmesh][スイッチ 4 台から構成されるネットワーク]
+//image[fullmesh][スイッチ 4 台からなるネットワーク]
 
-このネットワーク構成を作るためには、@<list>{conf} のように記述します。
+//noindent
+設定ファイルは @<list>{conf} のようになります。
 
 //list[conf][@<tt>{routing_switch_fullmesh.conf}]{
 vswitch {
@@ -191,15 +195,19 @@ event :port_status => "topology", :packet_in => "filter", :state_notify => "topo
 filter :lldp => "topology_discovery", :packet_in => "routing_switch"
 //}
 
-以下のように、@<tt>{-d} オプションを使い、デーモンモードで trema を起動します。
+//noindent
+ルーティングスイッチを起動するには、次のようにデーモンモードで起動してください。
 
 //cmd{
 % trema run -c ./routing_switch_fullmesh.conf -d
 //}
 
-=== 見つけたリンクを表示する
+//noindent
+それでは起動したルーティングスイッチを使ってトポロジがどのように検出できているかを見てみましょう。
 
-@<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンドが用意されていますので、使ってみましょう。以下のように実行してください。
+=== トポロジを表示する
+
+@<tt>{topology} ディレクトリには、検出したトポロジーを表示するコマンド @<tt>{show_topology} が用意されています。以下のように実行してください。出力フォーマットは仮想ネットワーク設定ファイルとまったく同じです。
 
 //cmd{
 % ./apps/topology/show_topology -D
@@ -227,11 +235,11 @@ link "0xe2", "0xe0"
 link "0xe3", "0xe1"
 //}
 
-ルーティングスイッチの起動時に指定した設定ファイル (@<list>{conf}) やネットワーク構成 (@<img>{fullmesh}) と比較してみましょう。@<tt>{topology_discovery} モジュールが検出できるのは、スイッチ間のリンクのみです。仮想ホストとスイッチ間のリンクは検出できないため、@<tt>{show_topology} の検出結果には表示されないことに注意しましょう。
+ルーティングスイッチの起動時に指定した設定ファイル (@<list>{conf}) 比較してみましょう。スイッチ間のリンクがうまく検出できていることがわかります。ただし、仮想ホストとスイッチ間のリンクは検出できません。LLDP はスイッチ間のリンクを検出する仕組みだからです。
 
-=== パケットを送り、フローが設定されているかを確認する
+=== 最短パスを通すフローを確認する
    
-次に、仮想ホストからパケットを送り、フローが設定されることを確認しましょう。
+次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローがうまく設定されることを確認しましょう。
 
 //cmd{
 % trema send_packets --source host1 --dest host2
