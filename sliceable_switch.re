@@ -85,13 +85,15 @@ A filter entry is added successfully.
 
 === スライス機能つきスイッチを動かす
 
-//image[slicing][スライス機能つきスイッチで制御するネットワーク構成]
+それでは、スライス機能つきスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、@<img>{sliceable_switch_network} のネットワークを作ります。
 
-それではさっそくスライス機能つきスイッチを動かしてみましょう。今回はエミュレータ機能を使い、@<img>{slicing} のようなネットワークを作ります。@<list>{conf} に示す内容のファイルを、@<tt>{network.conf} という名前で用意してください。
+//image[sliceable_switch_network][スイッチ 1 台、ホスト 4 台からなるネットワーク][scale=0.5]
 
-//list[conf][network.conf]{
+設定ファイルは@<list>{network.conf}のようになります。
+
+//list[network.conf][network.conf]{
 vswitch {
-  datapath_id "0xe0"
+  datapath_id "0x1"
 }
 
 vhost ("host1") {
@@ -99,43 +101,37 @@ vhost ("host1") {
   netmask "255.255.0.0"
   mac "00:00:00:01:00:01"
 }
-
 vhost ("host2") {
   ip "192.168.0.2"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:02"
 }
-
 vhost ("host3") {
   ip "192.168.0.3"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:03"
 }
-
 vhost ("host4") {
   ip "192.168.0.4"
   netmask "255.255.0.0"
   mac "00:00:00:01:00:04"
 }
 
-link "0xe0", "host1"
-link "0xe0", "host2"
-link "0xe0", "host3"
-link "0xe0", "host4"
+link "0x1", "host1"
+link "0x1", "host2"
+link "0x1", "host3"
+link "0x1", "host4"
 
 
 run {
   path "./apps/topology/topology"
 }
-
 run {
   path "./apps/topology/topology_discovery"
 }
-
 run {
   path "./apps/flow_manager/flow_manager"
 }
-
 run {
   path "./apps/sliceable_switch/sliceable_switch"
   options "-s", "./apps/sliceable_switch/slice.db", "-a", "./apps/sliceable_switch/filter.db"
@@ -145,16 +141,20 @@ event :port_status => "topology", :packet_in => "filter", :state_notify => "topo
 filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
 //}
 
-trema のディレクトリに移動し、スライス機能つきスイッチを起動します。
-スライス機能つきスイッチの起動には、ルート権限が必要です。@<tt>{sudo} を使って、以下のように起動してください。
+スライス機能つきスイッチを起動するには、次のように @<tt>{sudo} を使って root 権限で起動してください。
 
 //cmd{
 % sudo trema run -c ./network.conf
 //}
 
-このように起動しただけでは、スライス機能つきスイッチは動作しません。スライスの設定が必要です。今回は @<img>{slicing} のように二つのスライスを作ってみましょう。
+//noindent
+それでは起動したスライス機能つきスイッチを使ってさっそくいくつかスライスを作ってみましょう。
 
-スライスの作成には、@<tt>{sliceable_switch} のディレクトリに用意されている @<tt>{slice} コマンドを使用します。このコマンドを使って、以下のように、二つのスライス @<tt>{slice1, slice2} を作ってみましょう。
+=== スライスを作る
+
+Trema Apps の @<tt>{sliceable_switch} ディレクトリには、スライスを作成するコマンド @<tt>{slice} が用意されています。このコマンドを使って@<img>{creating_slices}のような 2 枚のスライス @<tt>{slice1, slice2} を作ってみましょう。
+
+//image[creating_slices][スライスを 2 枚作る][scale=0.5]
 
 //cmd{
 % cd apps/sliceable_switch
@@ -164,7 +164,7 @@ A new slice is created successfully.
 A new slice is created successfully.
 //}
 
-次は作成したそれぞれのスライスにホストを所属させます。その方法には、ホストが接続しているポートの指定と、ホストの MAC アドレスの登録の二通りがあります。今回は後者の方法で試してみましょう。以下のように @<tt>{host1, host2} の MAC アドレスを @<tt>{slice1} に、@<tt>{host3, host4} の MAC アドレスを @<tt>{slice2} に、それぞれ登録します。
+スライスができたらスライスにホストを追加します。以下のように @<tt>{host1, host2} の MAC アドレスを @<tt>{slice1} に、@<tt>{host3, host4} の MAC アドレスを @<tt>{slice2} に、それぞれ登録します。
 
 //cmd{
 % ./slice add-mac slice1 00:00:00:01:00:01
@@ -177,7 +177,12 @@ A MAC-based binding is added successfully.
 A MAC-based binding is added successfully.
 //}
 
-ここまでで準備は完了です。それではまず同じスライスに所属するホスト同士が通信できることを確認してみましょう。
+//noindent
+とても簡単にスライスを作れました。それではさっそくきちんとネットワークが分割できているか確認してみましょう。
+
+=== スライスによるネットワーク仮想化を確認する
+
+それではまず同じスライスに所属するホスト同士が通信できることを確認してみましょう。
 
 MAC アドレスをスライスに登録する方法では、コントローラは起動直後に、登録した MAC アドレスを持つホストがどこにいるのかを知りません。@<tt>{host1} の位置をコントローラに学習させるために、はじめに @<tt>{host1} から @<tt>{host2} へとパケットを送ります。その後、@<tt>{host2} から @<tt>{host1} へパケットを送り、@<tt>{host1} の受信カウンタを見てみます。@<tt>{host2} からのパケットが受信できていることが確認できます。
 
@@ -290,12 +295,12 @@ Content:
 Status: 202 Accepted
 //}
 
-今度は、ポートをスライスに割り当てる方法を見ていきましょう。これまでと同様に、JSON 形式で、割り当てるポートに関する情報を記載したファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0xe0} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN タグを付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN タグの設定が不要の場合には、この例のように 65535 としてください。
+今度は、ポートをスライスに割り当てる方法を見ていきましょう。これまでと同様に、JSON 形式で、割り当てるポートに関する情報を記載したファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0x1} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN タグを付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN タグの設定が不要の場合には、この例のように 65535 としてください。
 
 //list[port.json][port.json]{
 {
   "id" : "port0",
-  "datapath_id" : "0xe0",
+  "datapath_id" : "0x1",
   "port" : 33,
   "vid" : 65535
 }
