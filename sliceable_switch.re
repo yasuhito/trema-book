@@ -51,11 +51,20 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
 
 == 実行してみよう
 
-=== 準備
+ではスライス機能つきスイッチを使ってネットワーク仮想化を実際に試してみましょう。スライス機能スイッチもルーティングスイッチと同じく Trema Apps の一部として GitHub で公開されています。まだ Trema Apps のソースコードを取得していない人は、次のようにダウンロードしてください。
 
-スライス機能つきスイッチも、ルーティングスイッチと同様に @<tt>{https://github.com/trema/apps/} にてソースコードが公開されています。ソースコードをまだ取得していない場合は、前章を参考に @<tt>{git} で取得しておいてください。
+//cmd{
+% git clone https://github.com/trema/apps.git
+//}
 
-スライス機能つきスイッチは、ルーティングスイッチから派生したアプリケーションです。そのため、ルーティングスイッチと同様に @<tt>{topology} と連動して動作します。また、フロー設定を行う @<tt>{flow_manager} とも連動して動作するようになっていますので、これらのモジュールも合わせて @<tt>{make} してください。
+スライス機能つきスイッチは次の 4 つのアプリケーションが連携して動作します。トポロジー関連のアプリ (@<tt>{topology}、@<tt>{topology_discovery}) を使うところはルーティングスイッチと同じです。
+
+ * @<tt>{topology}: 検出したトポロジ情報を管理する。
+ * @<tt>{topology_discovery}: トポロジ情報を検出する。
+ * @<tt>{flow_manager}: 複数スイッチへのフロー書き込み API を提供。
+ * @<tt>{sliceable_switch}: ルーティングスイッチ本体。
+
+これらの 4 つをセットアップするには、ダウンロードした Trema Apps の @<tt>{topology}, @<tt>{flow_manager}、そして @<tt>{sliceable_switch} を次のようにコンパイルしてください。
 
 //cmd{
 % (cd ./apps/topology/; make)
@@ -63,7 +72,7 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
 % (cd ./apps/sliceable_switch; make)
 //}
 
-スライス機能つきスイッチでは、スライスに関する情報を格納するためのデータベースとして、sqlite3 を用いています。以下のようにして、@<tt>{apt-get} で関連するモジュールをインストールした後、データベースファイルを作成してください。
+スライス機能つきスイッチはスライス情報を格納するためのデータベースとして sqlite3 を用います。以下のように @<tt>{apt-get} で splite3 関連のパッケージをインストールし、@<tt>{sliceable_switch} 付属のスクリプトで空のスライスデータベースを作成してください。
 
 //cmd{
 % sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl libwww-Perl
@@ -71,7 +80,10 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
 A filter entry is added successfully.
 //}
 
-=== スライス機能つきスイッチを実行する
+//noindent
+これで準備は完了です。
+
+=== スライス機能つきスイッチを動かす
 
 //image[slicing][スライス機能つきスイッチで制御するネットワーク構成]
 
