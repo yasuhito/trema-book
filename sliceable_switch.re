@@ -16,9 +16,9 @@
 
 スライスを実現する代表的な技術として VLAN があります。VLAN はスイッチをポート単位や MAC アドレス単位でスライスに分割できます。また VLAN タグと呼ばれる ID をパケットにつけることでスイッチをまたがったスライスも作れます。
 
-ただし、VLAN にはプロトコル上 4096 個までのスライスしか作れないという制約があります。このため、オフィスなどの中小規模ネットワークではともかく、IaaS のようにユーザ数がゆうに数万を超えるオーダーになる場合には使えません。
+ただし、VLAN にはプロトコル上 4094 個までのスライスしか作れないという制約があります。このため、オフィスなどの中小規模ネットワークではともかく、IaaS のようにユーザ数がゆうに数万を超えるオーダーになる場合には使えません。
 
-一方 OpenFlow でスライスを実装すればこの制約を超えられます。フローによって同じスライス内にあるホスト同志のみが通信できるようにすれば、既存の VLAN の仕組みを使わなくてもフローだけでスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限の無い VLAN」を作れます。
+一方 OpenFlow によるスライスではこの制約はありません。フローによって同じスライス内にあるホスト同志のみが通信できるようにすれば、既存の VLAN の仕組みを使わなくてもフローだけでスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限のない VLAN」を作れます。
 
 OpenFlow によるスライス実装のひとつが「スライス機能つきスイッチ」です。これは@<chap>{routing_switch}で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
 
@@ -192,18 +192,16 @@ A MAC-based binding is added successfully.
 
 //cmd{
 % trema send_packet --source host1 --dest host2
-% trema send_packet --source host2 --dest host1
-% trema show_stats host1 --rx
+% trema show_stats host2 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
-192.168.0.1,1,192.168.0.2,1,1,50
+192.168.0.2,1,192.168.0.1,1,1,50
 //}
 
 異なるスライス間での通信はどうでしょう。これも次のように簡単にテストできます。
 
 //cmd{
-% trema reset_stats host1
-% trema send_packet --source host4 --dest host1
-% trema show_stats host1 --rx
+% trema send_packet --source host1 --dest host4
+% trema show_stats host4 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 //}
 
