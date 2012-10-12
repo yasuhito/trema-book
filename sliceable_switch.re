@@ -10,9 +10,9 @@
 
 == スライスとは何か？
 
-スライスとはひとつの物理ネットワークを論理的なネットワークに分割することで、たくさんのユーザが独立した専用ネットワークを使えるようにするものです (@<img>{slice})。たとえば IaaS のようなたくさんのユーザを限られた台数の物理サーバに集約するシステムでは、物理サーバを仮想マシンで、またネットワークをスライスで分割することでそれぞれのユーザに仮想的な専用環境 （仮想マシン＋仮想ネットワーク）を提供します。
+スライスとはひとつの物理ネットワークを論理的なネットワークに分割することで、たくさんのユーザが独立した専用ネットワークを使えるようにするものです (@<img>{slice})。たとえば IaaS のようなたくさんのユーザをなるべく少ない台数の物理サーバに集約するシステムでは、物理サーバを仮想マシンで、またネットワークをスライスで分割することでそれぞれのユーザに仮想的な専用環境 （仮想マシン + 仮想ネットワーク）を提供します。
 
-//image[slice][スライスとはひとつの物理ネットワークをそれぞれ独立した仮想ネットワークに分割したもの][scale=0.5]
+//image[slice][スライスとはひとつの物理ネットワークをいくつかの独立した仮想ネットワークに分割したもの][scale=0.5]
 
 スライスを実現する代表的な技術として VLAN があります。VLAN はスイッチをポート単位や MAC アドレス単位でスライスに分割できます。また VLAN タグと呼ばれる ID をパケットにつけることでスイッチをまたがったスライスも作れます。
 
@@ -20,7 +20,7 @@
 
 一方 OpenFlow でスライスを実装すればこの制約を超えられます。フローによって同じスライス内にあるホスト同志のみが通信できるようにすれば、既存の VLAN の仕組みを使わなくてもフローだけでスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限の無い VLAN」を作れます。
 
-OpenFlow によるスライス実装のひとつが「スライス機能つきスイッチ」です。これは@<chap>{routing_switch}で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack など IaaS 構築用ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
+OpenFlow によるスライス実装のひとつが「スライス機能つきスイッチ」です。これは@<chap>{routing_switch}で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
 
 == スライスによるネットワーク仮想化
 
@@ -47,7 +47,7 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
  6. この最短パスに沿ってパケットが転送されるよう、パス上のスイッチそれぞれに Flow Mod を送りフローを書き込みます。
  7. 最初の Packet In を起こしたパケットも宛先に送るために、出口となるスイッチに Packet Out を送ります。
 
-スライス機能つきスイッチがルーティングスイッチと異なるのは、ステップ 4 が付け加えられている点だけです。ステップ 4 では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ意外はルーティングスイッチとまったく同じです。
+スライス機能つきスイッチがルーティングスイッチと異なるのは、ステップ 4 が付け加えられている点だけです。ステップ 4 では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ以外はルーティングスイッチとまったく同じです。
 
 == 実行してみよう
 
@@ -148,7 +148,7 @@ filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
 //}
 
 //noindent
-それでは起動したスライス機能つきスイッチを使ってさっそくいくつかスライスを作ってみましょう。
+それでは起動したスライス機能つきスイッチを使って、さっそくいくつかスライスを作ってみましょう。
 
 === スライスを作る
 
@@ -178,7 +178,7 @@ A MAC-based binding is added successfully.
 //}
 
 //noindent
-とても簡単にスライスを作れました。それではさっそくきちんとネットワークが分割できているか、念のため確認してみましょう。
+とても簡単にスライスを作れました。それではさっそくきちんとネットワークが分割できているか確認してみましょう。
 
 === スライスによるネットワーク分割を確認する
 
@@ -210,25 +210,26 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 //noindent
 たしかに、@<tt>{slice1} に属する @<tt>{host1} から @<tt>{slice2} に属する @<tt>{host4} へのパケットは届いていません。以上で、ひとつのネットワークが 2 つの独立したスライスにうまく分割できていることを確認できました。
 
-== 設定の Web サービス化
+== REST API を使う
 
-スライス機能つきスイッチは、スライス設定・管理を Web サービスとして提供するしくみを持っています。
+スライス機能つきスイッチは OpenStack などのクラウド構築ミドルウェアと連携するための REST API を提供しています。スライスの作成や削除を REST と JSON による Web サービスとして提供することで、さまざまなプログラミング言語から仮想ネットワーク機能を使えます。これによって、仮想ネットワーク機能を必要とするいろいろなミドルウェアからの利用がしやすくなります。
 
-//image[rest][Web サービスを使用する場合のモジュール間の関係][scale=0.5]
+スライス機能つきスイッチの REST API は、Apache 上で動作する CGI として実現しています (@<img>{rest_overview})。クラウド構築ミドルウェアなどから HTTP でアクセスすると、スライスの変更をスライス DB へと反映し、スライス機能つきスイッチはこの内容を実際のスライス構成に反映します。
 
-@<img>{rest} に示すように、スライスの設定は、@<tt>{slice.db} という名前の sqlite3 のデータベースに格納されています。@<tt>{sliceable_switch} モジュールはこのデータベースから、スライス設定を取得しています。先ほど紹介した @<tt>{slice} コマンドは、スライスの設定をこのデータベースに書き込むために用います。
+//image[rest_overview][スライス機能つきスイッチの REST API 構成][scale=0.5]
 
-スライス機能つきスイッチの Web サービスは、Apache 上で動作する CGI で実現しています。HTTP クライアントからアクセスすると、@<tt>{config.cgi} が呼び出され、パースした結果を @<tt>{slice.db} へと書き込みます。
+//noindent
+では、さっそく REST API をセットアップして使ってみましょう。
 
-=== Web サービス化のための準備
+=== セットアップ
 
-Web サービス化のためには、少し準備が必要です。まずは必要なモジュールのインストールを行いましょう。
+まずは REST API の動作に必要ないくつかのパッケージをインストールしましょう。
 
 //cmd{
 % sudo apt-get install apache2-mpm-prefork libjson-perl
 //}
 
-次に Apache を設定します。必要な設定ファイル等は同梱されていますので、以下の手順を実施してください。
+次は CGI の動作に必要な Apache の設定です。必要な設定ファイル等はすべて Trema/Apps の @<tt>{sliceable_switch} ディレクトリに入っていますので、以下の手順でコピーし Apache の設定に反映してください。
 
 //cmd{
 % cd apps/sliceable_switch
@@ -237,7 +238,7 @@ Web サービス化のためには、少し準備が必要です。まずは必�
 % sudo a2ensite sliceable_switch
 //}
 
-次に、スライス機能つきスイッチが参照するデータベースと、CGI 経由でデータベースに書き込むためのスクリプト群を用意し、適切なディレクトリに配置します。そして最後に Apache を再起動します。
+次に CGI 本体とスライスデータベース、そしてデータベースを操作するための各種スクリプトを次の手順で配置します。最後に Apache を再起動し準備完了です。
 
 //cmd{
 % ./create_tables.sh
@@ -250,7 +251,7 @@ A filter entry is added successfully.
 % sudo /etc/init.d/apache2 reload
 //}
 
-これで設定は終了です。最後に 各ファイルが適切に配置されていることを確認してください。
+正しくセットアップするとファイル構成は次のようになります。
 
 //cmd{
 % ls /home/sliceable_switch/*
@@ -261,48 +262,51 @@ filter.db  slice.db
 Filter.pm  Slice.pm  config.cgi
 //}
 
-=== Web サービスを使ってみる
+=== REST API でスライスを作る
 
-まず、スライスを作ってみましょう。@<tt>{slice1} という ID のスライスを作る場合には、JSON 形式のファイル (@<list>{slice.json}) を用意します。
+REST API 経由でスライスを作るには、スライスの情報を書いた JSON 形式のファイルを作り、これを HTTP で REST API の CGI に送ってやります。たとえば @<tt>{slice_yutaro} という名前のスライスを作るには、次の内容のファイル (@<list>{slice.json}) を用意します。
 
 //list[slice.json][slice.json]{
 {
-  "id" : "slice1",
-  "description" : "Trema-team network"
+  "id" : "slice_yutaro",
+  "description" : "Yutaro's Network"
 }
 //}
 
-この JSON 形式のファイルを、@<tt>{/networks} という URI に POST メソッドで送ることで、スライスを作ることができます。
-
-@<tt>{httpc} というテスト用の HTTP クライアントが、@<tt>{sliceable_switch} 内の @<tt>{test/rest_if/} ディレクトリ配下に用意されていますので、これを用います。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行してみましょう。
+次にこの JSON 形式のファイルを @<tt>{/networks} という URI に POST メソッドで送ります。Trema/Apps の @<tt>{sliceable_switch/test/rest_if/} ディレクトリには @<tt>{httpc} という簡単な HTTP クライアントが用意されていますので、これを使ってみましょう。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行します。
 
 //cmd{
 % cd ./test/rest_if
 % ./httpc POST http://127.0.0.1:8888/networks ./slice.json
-Status: 202 Accepted
-Content:
-{"id":"slice1","description":"Trema-team network"}
 //}
 
-成功すれば、上記のように表示されるはずです。
+実行すると次のように実行結果と作成したスライスの情報が表示されます。
 
-次に、MAC アドレスをスライスに対応させてみましょう。MAC アドレスとスライスの対応のことをアタッチメントと呼びます。アタッチメントを作る場合、割り当てる MAC アドレスを指定した JSON 形式のファイルを用意します(@<list>{attachment.json})。
+//cmd{
+Status: 202 Accepted
+Content:
+{"id":"slice_yutaro","description":"Yutaro's Network"}
+//}
+
+=== スライスにホストを追加する
+
+作ったスライスにはホストを追加できます。次のように追加したいホストの MAC アドレスを記述した JSON 形式のファイルを用意します (@<list>{attachment.json})。
 
 //list[attachment.json][attachment.json]{
 {
-  "id" : "attach0",
+  "id" : "yutaro_desktop",
   "mac" : "01:00:00:01:00:01"
 }
 //}
 
-アタッチメントを作成する際に使用する URI は、@<tt>{/networks/<スライスID>/attachments} です。以下のように @<tt>{attachment.json} を @<tt>{slice1} に割り当てます。
+ホスト追加の URI は @<tt>{/networks/<スライスの名前>/attachments} です。作った JSON ファイルをこの URI に POST メソッドで送ってください。
 
 //cmd{
-% ./httpc POST http://127.0.0.1:8888/networks/slice1/attachments attachment.json
+% ./httpc POST http://127.0.0.1:8888/networks/slice_yutaro/attachments attachment.json
 Status: 202 Accepted
 //}
 
-今度は、ポートをスライスに割り当てる方法を見ていきましょう。これまでと同様に、JSON 形式で、割り当てるポートに関する情報を記載したファイルを用意します(@<list>{port.json})。ここでは、データパス ID が @<tt>{0x1} である OpenFlow スイッチの 33 番目のポートを指定しています。このポートからパケットを出す際に VLAN タグを付与したい場合には @<tt>{vid} のパラメータにその値を設定します。VLAN タグの設定が不要の場合には、この例のように 65535 としてください。
+スライスに追加するホストの指定には、ホストの MAC アドレスだけでなくホストが接続するスイッチのポート番号も使えます。次のようにホストが接続するスイッチのデータパス ID と、接続するポート番号を記述した JSON 形式のファイルを用意してください (@<list>{port.json})。もし、このポートから出るパケットに VLAN タグを付与したい場合には @<tt>{vid} にその値を設定します。不要な場合には 65535 としてください。
 
 //list[port.json][port.json]{
 {
@@ -313,24 +317,26 @@ Status: 202 Accepted
 }
 //}
 
-このとき使用する URI は @<tt>{/networks/<スライスID>/ports} になります。以下のようにして、@<list>{port.json} で指定したポートを @<tt>{slice1} というスライスにを割り当てます。
+ポート番号を指定してホストを追加するには、@<tt>{/networks/<スライスの名前>/ports} という URI を使います。今までと同じく、作った JSON ファイルを POST してみましょう。
 
 //cmd{
-% ./httpc POST http://127.0.0.1:8888/networks/slice1/ports ./port.json
+% ./httpc POST http://127.0.0.1:8888/networks/slice_yutaro/ports ./port.json
 Status: 202 Accepted
 //}
 
-これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスID>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。@<tt>{slice1} に関する情報を取得してみましょう。
+=== スライスの構成を見る
+
+これまでの設定がきちんと行われているかを確認してみましょう。@<tt>{/networks/<スライスの名前>} に GET メソッドでアクセスすることで、スライスに関する情報を取得できます。先ほど作った @<tt>{slice_yutaro} スライスに関する情報を取得してみましょう。
 
 //cmd{
-% ./httpc GET http://127.0.0.1:8888/networks/slice1
+% ./httpc GET http://127.0.0.1:8888/networks/slice_yutaro
 Status: 200 OK
 Content:
 { "bindings" :
   [
     {
       "type" : 2,
-      "id" : "attach0",
+      "id" : "yutaro_desktop",
       "mac" : "01:00:00:01:00:01"
     },
     {
@@ -341,44 +347,48 @@ Content:
       "port" : 33
     }
   ],
-  "description" : "Trema-team network"
+  "description" : "Yutaro's Network"
 }
 //}
 
-この出力結果は見やすいようにインデント表示にしていますが、実際には改行なしで表示されます。先に設定した内容が、きちんと反映されているかの確認できます。
+作ったスライスとスライスに属するホスト情報が JSON 形式で出力されます。なお、この出力結果は見やすいように改行しインデントしていますが、実際には改行やインデントなしで表示されることに注意してください。
 
-=== Web サービスを使いこなす
+=== REST API 一覧
 
-今回紹介した以外にも、@<table>{API} にあるような API を用意しています。
+REST API は今回紹介した以外にもいくつかの便利な API を提供しています (@<table>{API})。JSON ファイルの書式などこの API の詳しい仕様は @<tt>{https://github.com/trema/apps/wiki} で公開していますので、本格的に使いたい人はこちらも参照してください。
 
 //table[API][REST API 一覧]{
-動作		Method	URI
-----------------------------
-スライス作成	POST	/networks
-スライス一覧取得	GET	/networks
-スライス詳細取得	GET	/networks/<スライスID>
-スライス削除	DELETE	/networks/<スライスID>
-スライス変更	PUT	/networks/<スライスID>
-ポート作成	POST	/networks/<スライスID>/ports
-ポート一覧取得	GET	/networks/<スライスID>/ports
-ポート詳細取得	GET	/networks/<スライスID>/ports/<ポートID>
-ポート削除	DELETE	/networks/<スライスID>/ports/<ポートID>
-アタッチメント作成	POST	/networks/<スライスID>/attachments
-アタッチメント一覧取得	GET	/networks/<スライスID>/attachments
-アタッチメント詳細取得	GET	/networks/<スライスID>/attachments/<アタッチメントID>
-アタッチメント削除	DELETE	/networks/<スライスID>/attachments/<アタッチメントID>
+動作						Method	URI
+------------------------------------------------------------------------------------------
+スライス作成				POST	/networks
+スライス一覧				GET		/networks
+スライス詳細				GET		/networks/<スライスの名前>
+スライス削除				DELETE	/networks/<スライスの名前>
+スライス変更				PUT		/networks/<スライスの名前>
+ホスト追加 (ポート指定)		POST	/networks/<スライスの名前>/ports
+ホスト一覧 (ポート指定)		GET		/networks/<スライスの名前>/ports
+ホスト詳細 (ポート指定)		GET		/networks/<スライスの名前>/ports/<ポートの名前>
+ホスト削除 (ポート指定)		DELETE	/networks/<スライスの名前>/ports/<ポートの名前>
+ホスト追加 (MAC 指定)		POST	/networks/<スライスの名前>/attachments
+ホスト一覧 (MAC 指定)		GET		/networks/<スライスの名前>/attachments
+ホスト詳細 (MAC 指定)		GET		/networks/<スライスの名前>/attachments/<ホストの名前>
+ホスト削除 (MAC 指定)		DELETE	/networks/<スライスの名前>/attachments/<ホストの名前>
 //}
 
-この API の仕様は、以下のサイトで公開していますので、詳細を確認したい人はこちらをご参照ください。
+== OpenStack と連携する
 
- * Sliceable Network Management API ( @<tt>{https://github.com/trema/apps/wiki} )
+スライス機能つきスイッチの OpenStack 用プラグインを使うと、OpenStack で仮想ネットワークまでを含めた IaaS を構築できます。このプラグインは OpenStack のネットワークコントロール機能である Quantum にスライス機能を追加します。
 
-== まとめ/参考文献
+OpenStack Quantum の詳細やセットアップ方法は本書の範囲を超えるので省きますが、利用に必要なすべての情報がまとまった Web サイトを紹介しておきます。
 
-本章で学んだことは、次の 2 つです。
+ * OpenStack プラグインのページ: @<tt>{https://github.com/nec-openstack/quantum-openflow-plugin}
+ * OpenStack のプラグイン解説ページ: @<tt>{http://wiki.openstack.org/Quantum-NEC-OpenFlow-Plugin}
 
- * 大きなネットワークを複数にスライスして使用することができる、スライス機能つきスイッチがどのように動作するかを見てみました。また、スライス機能つきスイッチを実際に動作させ、ホストが同一のスライスに所属している場合のみ通信が許可される仕組みを学びました。
- * スライス機能つきスイッチを設定するための Web サービス API を使って、スライスを設定する方法について学びました。
+== まとめ
 
-本章で紹介した Web サービス API を使うことで、他のシステムとの連携ができます。次の章では、スライス機能つきスイッチを使った OpenFlow ネットワークとクラウド管理システムとの連携についても紹介します。
+Hello Trema から始めた Trema プログラミングも、いつの間にか本格的なクラウドを作れるまでになりました!
 
+ * ネットワークを仮想的なスライスに分割して使える、スライス機能つきスイッチがどのように動作するかを見てきました。また実際に動作させ、同一のスライス内のみ通信が許可される仕組みを学びました。
+ * スライス機能つきスイッチを利用するための REST API を使って、スライスを設定する方法を学びました。
+
+次章では Trema を使った商用 IaaS の一つである Wakame-vdc のアーキテクチャを紹介します。本章で解説したスライス機能つきスイッチとはまったく異なる「分散 Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
