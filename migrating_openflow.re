@@ -178,11 +178,11 @@ end
 
 == 実行してみよう
 
-それではさっそく実行してみましょう。実行のためには、レガシーネットワークと OpenFlow ネットワークの間に OneWayBridge コントローラで制御する仮想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。vswitch のポートは、vswitch を実行するマシンの NIC（eth0、eth1）に結び付けます。
+それではさっそく実行してみましょう。まず、レガシーネットワークと OpenFlow ネットワークの間に仮想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。この vswitch を OneWayBridge コントローラで制御します。vswitch のポートは、vswitch を実行するマシンの NIC（eth0、eth1）に結び付けます。
 
-//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するときの物理構成][scale=0.5]
+//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するときの構成][scale=0.5]
 
-@<img>{oneway_bridge} の物理構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
+@<img>{oneway_bridge} の構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
 
 //list[oneway_bridge_conf][逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル]{
 vswitch ( "bridge" ) {
@@ -196,7 +196,7 @@ link "bridge", "eth1"
 実行するには、この設定ファイルを trema run の -c オプションに渡します。
 
 //cmd{
-% ./trema run ./one-way-bridge.rb -c ./one-way-bridge.conf
+% trema run ./one-way-bridge.rb -c ./one-way-bridge.conf
 //}
 
 === 職場で使ってみた
