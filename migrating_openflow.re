@@ -8,15 +8,15 @@
 
 あとはひたすら実践するだけです。今まで手に入れた知識を実際に道具として使い、いま生活しているネットワーク上で OpenFlow を実際に動かしてみるのが一番です。まずは自宅のネットワークを OpenFlow で置き換えましょう。これがうまく行き物足りなくなったら、こんどは職場で小規模に OpenFlow ネットワークを作りましょう。このように徐々に規模を広げて行くのです。
 
-実際にその環境で暮らしてみて、はじめて見えてくるニーズやアイデア、改善案があります。初めて自転車に乗ったときのことを思い出してください。補助輪をはずしただけで最初は派手に転びますが、多少は怪我はしつつもあきらめずに練習を繰り返しているうち誰でも乗りこなせるようになります。自転車に乗れれば、隣りの街やそのまた隣りと行動範囲は一気に広がります。しかし補助輪をはずさずにただ考えているだけではどこにも行けません。
+実際にその環境で暮らしてみて、はじめて見えてくるニーズやアイデア、改善案があります。初めて自転車に乗ったときのことを思い出してください。補助輪をはずしただけで最初は派手に転びますが、多少はケガはしつつもあきらめずに練習を繰り返しているうち誰でも乗りこなせるようになります。自転車に乗れれば、隣りの街やそのまた隣りと行動範囲は一気に広がります。しかし補助輪をはずさずにただ考えているだけではどこにも行けません。
 
-== 大怪我しないためのヘルメット
+== 大ケガしないためのヘルメット
 
 「でも、いきなり OpenFlow に移行してもし大失敗したら……」。そう考えるのが人情です。家のネットワークはともかく、もし職場のネットワークを止めて同僚に迷惑をかけてしまったらどうしよう……。管理者や上司に注意されたらどうしよう……。
 
 本章ではそうした大失敗を防ぐための「ヘルメット」を紹介します。筆者らは、OpenFlow が登場したころから職場ネットワークで実験を始め、それこそ数え切れないほどの失敗を繰り返してきました。とにかく何度も怒られましたが、その経験からうまくやる方法をアドバイスできます。私たちは既存のネットワークを穏便に OpenFlow に移行するテクニックを知っています。ちょっとした OpenFlow コントローラを書くだけで、移行の際に起こりがちなネットワーク障害を簡単に防げるのです。
 
-まずは、筆者たちの失敗談を振り返らせてください。
+まずは、私たちの失敗談を振り返らせてください。
 
 == 私たちの失敗談
 
@@ -100,19 +100,17 @@ Host Flapping とは、1 つのホストがいくつかのポートの間で高�
 
 == 逆流防止フィルタ
 
-検討の結果、このパターンが一番良さそうでした。この逆流防止フィルタは OpenFlow コントローラとして実装できそうです。前置きが長くなりましたが、さっそく Trema で実装してみましょう。
+検討の結果、逆流防止フィルタを使ったパターンが一番良さそうでした。フィルタを動かすためのサーバも余っていましたし、何よりコントローラとして簡単に実装できそうだったからです。前置きが長くなりましたが、さっそく Trema で実装してみましょう。
 
 逆流防止フィルタは 1 つの Packet In に対して 2 つのフローを設定します。1 つは順方向のフローで、入ってきたパケットをもう 1 つのスイッチポートに転送します。もう 1 つは逆方向のフローで、同じパケットが逆方向に流れてきたときにこのパケットを落とします。
 
 === ソースコード
 
-逆流防止フィルタ（OneWayBridge コントローラ）のソースコードを
-@<list>{oneway_bridge} に示します。このコントローラは、packet_in と
-flow_removed のハンドラを定義しています。
+逆流防止フィルタ（OneWayBridge コントローラ）のソースコードを@<list>{oneway_bridge} に示します。このコントローラは、Packet In と Flow Removed のハンドラを定義しています。
 
-//list[oneway_bridge][逆流防止弁 (OneWayBridge コントローラ)]{
+//list[oneway_bridge][逆流防止フィルタ (OneWayBridge コントローラ)]{
 class OneWayBridge < Controller
-  # 順方向と逆方向のフローを設定する
+  # Packet In で順方向および逆方向のフローを設定する
   def packet_in datapath_id, message
     out_port = { 1 => 2, 2 => 1 }[ message.in_port ]
     add_flow datapath_id, message.macsa, message.in_port, out_port
@@ -131,28 +129,20 @@ class OneWayBridge < Controller
   private
 
 
+  # 順方向のフローの設定:
   # 送信元 MAC アドレスが macsa で、スイッチポート in_port から out_port へのフローを追加
   def add_flow datapath_id, macsa, in_port, out_port
     send_flow_mod_add(
       datapath_id,
       :idle_timeout => 10 * 60,
       :match => Match.new( :in_port => in_port, :dl_src => macsa ),
-      :actions => ActionOutput.new( out_port )
+      :actions => SendOutPort.new( out_port )
     )
   end
 
 
-  # パケットをスイッチポート out_port へ転送
-  def send_packet datapath_id, message, out_port
-    send_packet_out(
-      datapath_id,
-      :packet_in => message,
-      :actions => ActionOutput.new( out_port )
-    )
-  end
-
-
-  # 逆流してきたパケットを落とすフローを追加（:actions を指定していないので、マッチしたパケットは破棄）
+  # 逆方向のフローの設定:
+  # 逆流してきたパケット (送信元 MAC アドレスから判断) を落とす。
   def add_drop_flow datapath_id, macsa, in_port
     send_flow_mod_add(
       datapath_id,
@@ -162,7 +152,17 @@ class OneWayBridge < Controller
   end
 
 
-  # 順方向と逆方向のフローを両方とも消す
+  # パケットをスイッチポート out_port へ転送
+  def send_packet datapath_id, message, out_port
+    send_packet_out(
+      datapath_id,
+      :packet_in => message,
+      :actions => SendOutPort.new( out_port )
+    )
+  end
+
+
+  # 順方向と逆方向のフローで残っている方を消す
   def delete_flow datapath_id, macsa
     send_flow_mod_delete(
       datapath_id,
@@ -172,36 +172,19 @@ class OneWayBridge < Controller
 end
 //}
 
-packet_in ハンドラでは、packet_in したスイッチポートとは別のポートへパ
-ケットを転送するフロー（たとえば、スイッチポート 1 番から入ってきたパケッ
-トはスイッチポート 2 番に転送するフロー）を設定し（add_flow メソッド）、
-実際にパケットを転送します（send_packet メソッド）。また、同じパケット
-が逆向きに流れないようにするフローを設定することで逆流を防ぎます
-（add_drop_flow メソッド）。
+@<tt>{packet_in} ハンドラでは、Packet In したスイッチポートとは別のポートへパケットを転送するフロー（たとえば、スイッチポート 1 番から入ってきたパケットはスイッチポート 2 番に転送するフロー）を設定し（@<tt>{add_flow} メソッド）、Packet In を起こしたパケットを転送します（@<tt>{send_packet} メソッド）。また、同じパケット (送信元の MAC アドレスから判断) が逆向きに流れないようにするフローを設定することで逆流を防ぎます（@<tt>{add_drop_flow} メソッド）。
 
-flow_removed ハンドラは、順方向または逆方向のフローが消えたときに呼ばれ
-ます。これらのフローはどちらも dl_src に同じ MAC アドレスを指定している
-ので、delete_flow でもう片方を消します。なおここではやっていませんが、
-flow_removed メッセージに乗ってくる統計情報（○章を参照）を使って、逆流
-パケットがあった場合には警告メッセージを出すようにするとさらに効果的で
-しょう。
-
-#@warn(9 章への参照をここに入れる)
+@<tt>{flow_removed} ハンドラは、順方向または逆方向のフローが消えたときに呼ばれます。これらのフローはどちらも @<tt>{:dl_src} に同じ MAC アドレスを指定しているので、@<tt>{delete_flow} メソッドでもう片方を消します。
 
 == 実行してみよう
 
-それではさっそく実行してみましょう。実行のためには、レガシーネットワー
-クと OpenFlow ネットワークの間に OneWayBridge コントローラで制御する仮
-想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。vswitch のポートは、vswitch
-を実行するマシンの NIC（eth0、eth1）に結び付けます。
+それではさっそく実行してみましょう。実行のためには、レガシーネットワークと OpenFlow ネットワークの間に OneWayBridge コントローラで制御する仮想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。vswitch のポートは、vswitch を実行するマシンの NIC（eth0、eth1）に結び付けます。
 
-//image[oneway_bridge][逆流防止弁（OneWayBridge コントローラ）を実行するときの物理構成]
+//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するときの物理構成][scale=0.5]
 
-@<img>{oneway_bridge} の物理構成を Trema 設定ファイルにしたものがリスト
-2（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にイン
-ターフェース名 eth0、eth1 を指定していることに注目してください。
+@<img>{oneway_bridge} の物理構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
 
-//list[oneway_bridge_conf][逆流防止弁（OneWayBridgeコントローラ）の設定ファイル]{
+//list[oneway_bridge_conf][逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル]{
 vswitch ( "bridge" ) {
   datapath_id 0xabc
 }
@@ -216,24 +199,13 @@ link "bridge", "eth1"
 % ./trema run ./one-way-bridge.rb -c ./one-way-bridge.conf
 //}
 
-=== 使ってみた
+=== 職場で使ってみた
 
-さっそくこの逆流防止フィルタを導入したところ、期待していたとおり、問題
-は起こらなくなりました。現在、OpenFlow スイッチ 5 台、ホスト約 100 台か
-ら構成される OpenFlow ネットワークを職場ネットワークと接続して運用して
-います。もちろん、この OpenFlow ネットワークはどんどん拡大しつつあり、
-ゆくゆくは職場ネットワークを置き換える予定です。
+さっそくこの逆流防止フィルタを導入したところ、問題は起こらなくなりました。現在、OpenFlow スイッチ 5 台、ホスト約 100 台から構成される OpenFlow ネットワークを職場ネットワークと接続して運用しています。この OpenFlow ネットワークは現在もどんどん拡大しつつあり、その上で OpenFlow を使ったたくさんの研究が生まれています。研究成果の一つとして Trema が生まれたのも、こうした「実践あるのみ」という姿勢があったからに違いありません。
 
 == まとめ
 
 職場のネットワークを安全に OpenFlow に移行するための Tips を学びました。
-今回学んだことは次の2つです。
 
- * 既存のレガシーネットワークを OpenFlow に移行するいくつかのパターンを
-   見ました。自宅ネットワークなど自由にできるネットワークでは「いきなり
-   接続パターン」で十分ですが、職場ネットワークでは「逆流防止パターン」
-   が最適です
- * 逆流防止フィルタを実現する OpenFlow コントローラを実装しました。基本
-   的には 2 つのフローを設定するだけで、簡単に逆流を防止できます
-
-== 参考文献
+ * 既存のレガシーネットワークを OpenFlow に移行するいくつかのパターンを見ました。自宅ネットワークなど自由にできるネットワークでは「いきなり接続パターン」で十分ですが、職場ネットワークでは「逆流防止パターン」が最適です。
+ * 逆流防止フィルタを実現する OpenFlow コントローラを実装しました。基本的には 2 つのフローを設定するだけで、簡単に逆流を防止できます。
