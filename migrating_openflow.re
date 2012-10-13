@@ -178,11 +178,11 @@ end
 
 == 実行してみよう
 
-それではさっそく実行してみましょう。まず、レガシーネットワークと OpenFlow ネットワークの間に仮想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。この vswitch を OneWayBridge コントローラで制御します。vswitch のポートは、vswitch を実行するマシンの NIC（eth0、eth1）に結び付けます。
+それではさっそく実行してみましょう。逆流防止フィルタを実行するには、レガシーネットワークと OpenFlow ネットワークの間に OpenFlow スイッチをはさみ、これを OneWayBridge コントローラで制御します。でも実機の OpenFlow スイッチを準備するのは大変なので、Trema の仮想ネットワーク機能でやってしまいましょう。NIC の 2 枚挿さったサーバを用意し、仮想ネットワーク内で起動した仮想スイッチ (vswitch) の各ポートとそれぞれの NIC を接続します (@<img>{oneway_bridge}）。
 
-//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するときの構成][scale=0.5]
+//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するための物理構成例][scale=0.5]
 
-@<img>{oneway_bridge} の構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
+この物理構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
 
 //list[oneway_bridge_conf][逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル]{
 vswitch ( "bridge" ) {
