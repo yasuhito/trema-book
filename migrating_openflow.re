@@ -108,7 +108,7 @@ Host Flapping とは、1 つのホストがいくつかのポートの間で高�
 
 逆流防止フィルタ（OneWayBridge コントローラ）のソースコードを@<list>{oneway_bridge} に示します。このコントローラは、Packet In と Flow Removed のハンドラを定義しています。
 
-//list[oneway_bridge][逆流防止弁 (OneWayBridge コントローラ)]{
+//list[oneway_bridge][逆流防止フィルタ (OneWayBridge コントローラ)]{
 class OneWayBridge < Controller
   # Packet In で順方向および逆方向のフローを設定する
   def packet_in datapath_id, message
@@ -178,18 +178,13 @@ end
 
 == 実行してみよう
 
-それではさっそく実行してみましょう。実行のためには、レガシーネットワー
-クと OpenFlow ネットワークの間に OneWayBridge コントローラで制御する仮
-想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。vswitch のポートは、vswitch
-を実行するマシンの NIC（eth0、eth1）に結び付けます。
+それではさっそく実行してみましょう。実行のためには、レガシーネットワークと OpenFlow ネットワークの間に OneWayBridge コントローラで制御する仮想スイッチ（vswitch）をはさみます（@<img>{oneway_bridge}）。vswitch のポートは、vswitch を実行するマシンの NIC（eth0、eth1）に結び付けます。
 
-//image[oneway_bridge][逆流防止弁（OneWayBridge コントローラ）を実行するときの物理構成]
+//image[oneway_bridge][逆流防止フィルタ（OneWayBridge コントローラ）を実行するときの物理構成]
 
-@<img>{oneway_bridge} の物理構成を Trema 設定ファイルにしたものがリスト
-2（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にイン
-ターフェース名 eth0、eth1 を指定していることに注目してください。
+@<img>{oneway_bridge} の物理構成を Trema 設定ファイルにしたものが@<list>{oneway_bridge_conf}（one-way-bridge.conf）です。仮想リンク（link で始まる行）の端点にインターフェース名 eth0、eth1 を指定していることに注目してください。
 
-//list[oneway_bridge_conf][逆流防止弁（OneWayBridgeコントローラ）の設定ファイル]{
+//list[oneway_bridge_conf][逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル]{
 vswitch ( "bridge" ) {
   datapath_id 0xabc
 }
@@ -206,22 +201,11 @@ link "bridge", "eth1"
 
 === 使ってみた
 
-さっそくこの逆流防止フィルタを導入したところ、期待していたとおり、問題
-は起こらなくなりました。現在、OpenFlow スイッチ 5 台、ホスト約 100 台か
-ら構成される OpenFlow ネットワークを職場ネットワークと接続して運用して
-います。もちろん、この OpenFlow ネットワークはどんどん拡大しつつあり、
-ゆくゆくは職場ネットワークを置き換える予定です。
+さっそくこの逆流防止フィルタを導入したところ、期待していたとおり、問題は起こらなくなりました。現在、OpenFlow スイッチ 5 台、ホスト約 100 台から構成される OpenFlow ネットワークを職場ネットワークと接続して運用しています。もちろん、この OpenFlow ネットワークはどんどん拡大しつつあり、ゆくゆくは職場ネットワークを置き換える予定です。
 
 == まとめ
 
 職場のネットワークを安全に OpenFlow に移行するための Tips を学びました。
-今回学んだことは次の2つです。
 
- * 既存のレガシーネットワークを OpenFlow に移行するいくつかのパターンを
-   見ました。自宅ネットワークなど自由にできるネットワークでは「いきなり
-   接続パターン」で十分ですが、職場ネットワークでは「逆流防止パターン」
-   が最適です
- * 逆流防止フィルタを実現する OpenFlow コントローラを実装しました。基本
-   的には 2 つのフローを設定するだけで、簡単に逆流を防止できます
-
-== 参考文献
+ * 既存のレガシーネットワークを OpenFlow に移行するいくつかのパターンを見ました。自宅ネットワークなど自由にできるネットワークでは「いきなり接続パターン」で十分ですが、職場ネットワークでは「逆流防止パターン」が最適です。
+ * 逆流防止フィルタを実現する OpenFlow コントローラを実装しました。基本的には 2 つのフローを設定するだけで、簡単に逆流を防止できます。
