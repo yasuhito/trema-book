@@ -100,19 +100,17 @@ Host Flapping とは、1 つのホストがいくつかのポートの間で高�
 
 == 逆流防止フィルタ
 
-検討の結果、このパターンが一番良さそうでした。この逆流防止フィルタは OpenFlow コントローラとして実装できそうです。前置きが長くなりましたが、さっそく Trema で実装してみましょう。
+検討の結果、逆流防止フィルタを使ったパターンが一番良さそうでした。フィルタを動かすためのサーバも余っていましたし、何よりコントローラとして簡単に実装できそうだったからです。前置きが長くなりましたが、さっそく Trema で実装してみましょう。
 
 逆流防止フィルタは 1 つの Packet In に対して 2 つのフローを設定します。1 つは順方向のフローで、入ってきたパケットをもう 1 つのスイッチポートに転送します。もう 1 つは逆方向のフローで、同じパケットが逆方向に流れてきたときにこのパケットを落とします。
 
 === ソースコード
 
-逆流防止フィルタ（OneWayBridge コントローラ）のソースコードを
-@<list>{oneway_bridge} に示します。このコントローラは、packet_in と
-flow_removed のハンドラを定義しています。
+逆流防止フィルタ（OneWayBridge コントローラ）のソースコードを@<list>{oneway_bridge} に示します。このコントローラは、Packet In と Flow Removed のハンドラを定義しています。
 
 //list[oneway_bridge][逆流防止弁 (OneWayBridge コントローラ)]{
 class OneWayBridge < Controller
-  # 順方向と逆方向のフローを設定する
+  # Packet In で順方向および逆方向のフローを設定する
   def packet_in datapath_id, message
     out_port = { 1 => 2, 2 => 1 }[ message.in_port ]
     add_flow datapath_id, message.macsa, message.in_port, out_port
@@ -131,28 +129,20 @@ class OneWayBridge < Controller
   private
 
 
+  # 順方向のフローの設定:
   # 送信元 MAC アドレスが macsa で、スイッチポート in_port から out_port へのフローを追加
   def add_flow datapath_id, macsa, in_port, out_port
     send_flow_mod_add(
       datapath_id,
       :idle_timeout => 10 * 60,
       :match => Match.new( :in_port => in_port, :dl_src => macsa ),
-      :actions => ActionOutput.new( out_port )
+      :actions => SendOutPort.new( out_port )
     )
   end
 
 
-  # パケットをスイッチポート out_port へ転送
-  def send_packet datapath_id, message, out_port
-    send_packet_out(
-      datapath_id,
-      :packet_in => message,
-      :actions => ActionOutput.new( out_port )
-    )
-  end
-
-
-  # 逆流してきたパケットを落とすフローを追加（:actions を指定していないので、マッチしたパケットは破棄）
+  # 逆方向のフローの設定:
+  # 逆流してきたパケット (送信元 MAC アドレスから判断) を落とす。
   def add_drop_flow datapath_id, macsa, in_port
     send_flow_mod_add(
       datapath_id,
@@ -162,7 +152,17 @@ class OneWayBridge < Controller
   end
 
 
-  # 順方向と逆方向のフローを両方とも消す
+  # パケットをスイッチポート out_port へ転送
+  def send_packet datapath_id, message, out_port
+    send_packet_out(
+      datapath_id,
+      :packet_in => message,
+      :actions => SendOutPort.new( out_port )
+    )
+  end
+
+
+  # 順方向と逆方向のフローで残っている方を消す
   def delete_flow datapath_id, macsa
     send_flow_mod_delete(
       datapath_id,
@@ -172,21 +172,9 @@ class OneWayBridge < Controller
 end
 //}
 
-packet_in ハンドラでは、packet_in したスイッチポートとは別のポートへパ
-ケットを転送するフロー（たとえば、スイッチポート 1 番から入ってきたパケッ
-トはスイッチポート 2 番に転送するフロー）を設定し（add_flow メソッド）、
-実際にパケットを転送します（send_packet メソッド）。また、同じパケット
-が逆向きに流れないようにするフローを設定することで逆流を防ぎます
-（add_drop_flow メソッド）。
+@<tt>{packet_in} ハンドラでは、Packet In したスイッチポートとは別のポートへパケットを転送するフロー（たとえば、スイッチポート 1 番から入ってきたパケットはスイッチポート 2 番に転送するフロー）を設定し（@<tt>{add_flow} メソッド）、Packet In を起こしたパケットを転送します（@<tt>{send_packet} メソッド）。また、同じパケット (送信元の MAC アドレスから判断) が逆向きに流れないようにするフローを設定することで逆流を防ぎます（@<tt>{add_drop_flow} メソッド）。
 
-flow_removed ハンドラは、順方向または逆方向のフローが消えたときに呼ばれ
-ます。これらのフローはどちらも dl_src に同じ MAC アドレスを指定している
-ので、delete_flow でもう片方を消します。なおここではやっていませんが、
-flow_removed メッセージに乗ってくる統計情報（○章を参照）を使って、逆流
-パケットがあった場合には警告メッセージを出すようにするとさらに効果的で
-しょう。
-
-#@warn(9 章への参照をここに入れる)
+@<tt>{flow_removed} ハンドラは、順方向または逆方向のフローが消えたときに呼ばれます。これらのフローはどちらも @<tt>{:dl_src} に同じ MAC アドレスを指定しているので、@<tt>{delete_flow} メソッドでもう片方を消します。
 
 == 実行してみよう
 
