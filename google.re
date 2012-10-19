@@ -70,7 +70,7 @@ Google では、G-Scale を構成する OpenFlow スイッチを自作してい�
 
 == WAN 回線の効率利用を実現する G-Scale
 
-ここでは、Google のデータセンター間ネットワークである G-Scale の動作を紹介します。その中で、前節で述べた課題をどのように解決し、WAN の効率化を実現しているかを見ていきます。G-Scale を模式的に示したのが @<img>{interdc-network} になります。
+Google のデータセンター間ネットワークである G-Scale では、前節で述べた課題をどのように解決して、WAN の効率化を実現しているのでしょうか? ここでは、G-Scale の構成を見ていきましょう。G-Scale を模式的に示したのが @<img>{interdc-network} になります。
 
 //image[interdc-network][G-Scale はデータセンター間のトラフィックを運ぶ]
 
