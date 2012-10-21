@@ -22,13 +22,15 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
 //noindent
 ちょうど、和食の基本である@<ruby>{出汁,だし}をマスターすればおいしい吸い物や煮物などを作れるように、ラーニングスイッチをベースに機能を付け加えていけば、さまざまな OpenFlow アプリケーションが出来上がるのです。
 
-というわけでさっそく、ネットワークの基本部品であるラーニングスイッチを Trema で実装してみましょう。まずは一般的なハードウェアスイッチの動作原理を理解し、次にこれを OpenFlow で実装します。
+というわけでさっそく、ネットワークの基本部品であるラーニングスイッチを Trema で実装してみましょう。まずは一般的なハードウェアスイッチの動作原理を理解し、次にこれを OpenFlow で実現する方法を見ていきます。
 
 == スイッチの仕組み
 
-簡単なネットワークを例にしてスイッチの動作を説明します (@<img>{switch_network})。スイッチのポート 1 番と 4 番に、ホスト 1 と 2 をそれぞれ接続しています。また、それぞれのホストのネットワークカードには図に示した MAC アドレスを持つとします。
+簡単なネットワークを例にしてスイッチの動作を説明します (@<img>{switch_network})。スイッチのポート 1 番と 4 番に、ホスト 1 と 2 をそれぞれ接続しています。また、それぞれのホストのネットワークカードは図に示した MAC アドレスを持つとします。
 
 //image[switch_network][スイッチ 1 台とホスト 2 台からなるネットワーク][scale=0.5]
+
+=== ホストの位置情報の学習
 
 スイッチは次のようにネットワーク上でのホストの位置情報を学習します (@<img>{host1to2})。
 
@@ -36,9 +38,11 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
  2. スイッチはパケットの送信元 MAC アドレスとパケットの入ってきたポート番号から、「ポート 1 番には MAC アドレスが 00:11:11:11:11:11 のホストがつながっている」と学習します。
 
 //noindent
-この学習した位置情報 (「ホストの MAC アドレス + ポート番号」の組) をためておくデータベースのことを、フォワーディングデータベース (FDB) と呼びます。この情報は、以降のパケットの転送に使います。
+この学習した位置情報 (「ホストの MAC アドレス + ポート番号」の組) をためておくスイッチ上のデータベースを、フォワーディングデータベース (FDB) と呼びます。この情報は、以降のパケットの転送に使います。
 
 //image[host1to2][パケットの送信元 MAC アドレスとスイッチのポート番号を FDB に学習する][scale=0.5]
+
+=== パケットの転送 (フラッディング)
 
 学習が終わると、スイッチはパケットを宛先のホストに次のように転送します (@<img>{host1to2_flood})。
 
@@ -49,6 +53,8 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
 宛先のホストの位置情報をまだ学習していないときには、このようにパケットをばらまきます。これをフラッディングと呼び、無駄なトラフィックが発生してしまいます。
 
 //image[host1to2_flood][パケットの宛先 MAC アドレスからスイッチのポート番号が FDB にみつからないため、パケットをばらまく][scale=0.5]
+
+=== ふたたび学習と転送
 
 この状態でホスト 2 がホスト 1 へパケットを送信するとどうなるでしょうか (@<img>{host2to1})
 
@@ -69,11 +75,13 @@ OpenFlow によるスイッチの構成は @<img>{switch_network_openflow} の�
 
  * FDB をソフトウェアとして実装し、コントローラが管理する。
  * パケットの転送は、コントローラがフローテーブルにフローを書き込むことで制御する。
- 
+
 //noindent
 なお、初期状態での FDB とフローテーブルの中身はどちらも空です。
 
 //image[switch_network_openflow][OpenFlow によるスイッチ (ラーニングスイッチ) の構成][scale=0.45]
+
+=== Packet In からホストの位置情報を学習
 
 この状態でホスト 1 がホスト 2 へパケットを送信すると、コントローラは次のようにホスト 1 のネットワーク上での位置情報を学習します (@<img>{host1to2_openflow})。
 
@@ -82,12 +90,16 @@ OpenFlow によるスイッチの構成は @<img>{switch_network_openflow} の�
 
 //image[host1to2_openflow][Packet In の送信元 MAC アドレスとスイッチのポート番号を FDB に学習する][scale=0.45]
 
-次はパケットの転送です。もちろん、パケットの宛先はまだ学習していないので、コントローラは次のようにパケットをフラッディングします (@<img>{host1to2_flood_openflow})。
+=== Packet Out でパケットを転送 (フラッディング)
+
+学習が終わると次はパケットの転送です。もちろん、パケットの宛先はまだ学習していないので、コントローラは次のようにパケットをフラッディングします (@<img>{host1to2_flood_openflow})。
 
  1. コントローラは Packet In メッセージの宛先 MAC アドレスを調べ、FDB から送出先のポート番号を探します。しかし、ホスト 2 の MAC アドレスとポート番号はまだ FDB に入っていないので分かりません。
  2. コントローラは Packet Out メッセージ (出力ポート = フラッディング) でパケットをばらまくようにスイッチに指示します。その結果、ポート 4 につながるホスト 2 にパケットが届きます。
 
 //image[host1to2_flood_openflow][パケットの宛先 MAC アドレスからスイッチのポート番号が FDB にみつからないため、Packet Out メッセージ (出力ポート = フラッディング) でパケットをばらまく][scale=0.45]
+
+=== ふたたび学習と転送 (Flow Mod と Packet Out)
 
 この状態でホスト 2 がホスト 1 へパケットを送信すると次のようになります (@<img>{host2to1_openflow})。
 
@@ -257,15 +269,15 @@ fdb[ "00:11:11:11:11:11" ] = 1
  * FDB の更新とポート番号の検索
  * ポート番号がみつかった場合の、Flow Mod と Packet Out 処理
  * ポート番号がみつからなかった場合のフラッディング処理
- 
-それでは、最初に Packet In ハンドラの定義方法から見ていきましょう。 
+
+それでは、最初に Packet In ハンドラの定義方法から見ていきましょう。
 
 === 未知のパケット (Packet In) の処理
 
-コントローラに上がってくる未知のパケットを拾うには、Packet In ハンドラをコントローラクラスに実装します。典型的な Packet In ハンドラは次のように実装されます。
+コントローラに上がってくる未知のパケットを拾うには、Packet In ハンドラをコントローラクラスに実装します。典型的な Packet In ハンドラは次のように実装されます (@<list>{learning-switch.rb}より抜粋)。
 
 //emlist{
-class MyController < Controller
+class LearningSwitch < Controller
   # ...
 
   def packet_in datapath_id, message
@@ -275,7 +287,7 @@ class MyController < Controller
   # ...
 //}
 
-最初の引数 @<tt>{datapath_id} は、Packet In を上げたスイッチの Datapath ID です。二番目の引数 @<tt>{message} は @<tt>{PacketIn} クラスのオブジェクトで、Packet In メッセージをオブジェクトとしてラップしたものです。この @<tt>{PacketIn} クラスには主に次の 3 種類のメソッドが定義されています。
+最初の引数 @<tt>{datapath_id} は、Packet In を上げたスイッチの Datapath ID です。二番目の引数 @<tt>{message} は @<tt>{PacketIn} クラスのインスタンスで、Packet In メッセージをオブジェクトとしてラップしたものです。この @<tt>{PacketIn} クラスには主に次の 3 種類のメソッドが定義されています。
 
  * Packet In を起こしたバッファ ID や、パケットが入ってきたスイッチのポート番号など OpenFlow メッセージ固有の情報
  * IP のバージョンや TCP/UDP、また ARP や ICMP、VLAN タグの有無といった Packet In を起こしたパケットの種別を判定するためのユーティリティメソッド
@@ -341,13 +353,13 @@ class MyController < Controller
 
 === FDB の更新とポート番号の検索
 
-知らないパケットが Packet In として入ってきたとき、ラーニングスイッチは次のように FDB に学習します。
+知らないパケットが Packet In として入ってきたとき、ラーニングスイッチは次のように FDB にホストの位置情報を学習し、宛先のポート番号を調べます。
 
  1. パケットの送信元 MAC アドレスとパケットが入ってきたポート番号を Packet In メッセージから取り出し、FDB (@<tt>{@fdb}) に保存します。
  2. パケットの宛先 MAC アドレスと FDB から、パケットを出力するポート番号を調べます。
 
 //noindent
-ここは FDB として単純にハッシュテーブルを使っているだけなので、ひっかかる箇所は無いと思います。
+FDB の実装は単純にハッシュテーブルを使っているだけなので、ひっかかる箇所は無いと思います。
 
 //emlist{
 class LearningSwitch < Controller
@@ -361,25 +373,63 @@ class LearningSwitch < Controller
   def packet_in datapath_id, message
     @fdb[ message.macsa ] = message.in_port
     port_no = @fdb[ message.macda ]
-    
+
     # ...
   end
-  
+
   # ...
 end
 //}
 
 === 宛先ポート番号がみつかった場合 (Flow Mod と Packet Out)
 
+もし宛先ポートがみつかった場合、以降は同じパケットは同様に転送せよ、というフローをスイッチに書き込みます (@<tt>{flow_mod} プライベートメソッド)。また、Packet In を起こしたパケットも忘れずにそのポートへ出力します (@<tt>{packet_out} プライベートメソッド)。
+
+//emlist{
+def packet_in datapath_id, message
+  # ...
+  port_no = @fdb[ message.macda ]
+  if port_no
+    flow_mod datapath_id, message, port_no
+    packet_out datapath_id, message, port_no
+  else
+
+  # ...
+//}
+
+この @<tt>{flow_mod} プライベートメソッドと @<tt>{packet_out} プライベートメソッドはそれぞれ Trema の Flow Mod API (@<tt>{Controller#send_flow_mod_add}) および Packet Out API (@<tt>{Controller#send_packet_out}) を次のように抽象化しています。
+
+//emlist{
+  # ...
+
+  private
+
+
+  def flow_mod datapath_id, message, port_no
+    send_flow_mod_add(
+      datapath_id,
+      :match => ExactMatch.from( message ),
+      :actions => SendOutPort.new( port_no )
+    )
+  end
+
+
+  def packet_out datapath_id, message, port_no
+    send_packet_out(
+      datapath_id,
+      :packet_in => message,
+      :actions => SendOutPort.new( port_no )
+    )
+  end
+
+  # ...
+//}
+
+それでは、今回初めて登場した Packet Out API の詳細を見て行きましょう。
+
 ==== Packet Out API
 
-Packet Out は OpenFlow で定義されたメッセージの 1 つで、スイッチの指定したポートからパケットを送信させるためのものです。送信するときにはパケットを書き換えることもできます。よく使われる用途として、Packet In でコントローラにパケットが上がってきたときに Packet Out でこのパケットを書き換えてスイッチのポートから送り出す場合があります。
-
-Trema の Packet Out API は @<tt>{Controller#send_packet_out} メソッドで定義されています。なお @<tt>{Controller} クラスはすべてのコントローラの親クラスなので、コントローラはこの @<tt>{send_packet_out} メソッドをクラス内で直接呼び出すことができます。それでは、API 定義を見ていきましょう。
-
-===== API 定義
-
-@<tt>{send_packet_out} メソッドは次の 2 つの引数を取ります。
+Packet Out は OpenFlow で定義されたメッセージの 1 つで、スイッチの指定したポートからパケットを送信させるためのものです。Trema で Packet Out を送るためのメソッド、@<tt>{send_packet_out} は次の 2 つの引数を取ります。
 
 //emlist{
 send_packet_out( datapath_id, options )
@@ -388,33 +438,13 @@ send_packet_out( datapath_id, options )
 それぞれの引数の意味は次のとおりです。
 
  * datapath_id: Packet Out の届け先となるスイッチの Datapath ID です。
- * options: Packet Out メッセージの中身を決めるためのオプションで、アクションによるパケットの書き換えや出力するポートの指定が行われます。これは @<tt>{Hash} で定義されていて、必要なオプションのみを指定すればいいことになっています。
+ * options: Packet Out メッセージの中身を決めるためのオプションで、アクションによるパケットの書き換えや出力するポートの指定が行われます。これはハッシュテーブルで定義されていて、必要なオプションのみを指定すればいいことになっています。
 
-具体的な利用例は次のとおりです。
+Packet Out の使い道は、Packet In メッセージとして入ってきたパケットをそのままスイッチのポートから送り出す場合がほとんどです。この場合、パケットの送信にスイッチのバッファを使う場合と使わない場合とで呼び出しかたが変わります。
 
-===== パケットを作って出す
+===== スイッチのバッファを使って Packet Out する場合
 
-任意のパケットを作ってスイッチの特定のポートに出したい場合、次のように @<tt>{:data} オプションにパケットの中身を指定してスイッチの @<tt>{port_number} 番ポートへと出力します。この呼び出しはコントローラのコードのどこからでもできます。
-
-//emlist{
-send_packet_out(
-  0x1,
-  :data => packet_data,
-  :actions => SendOutPort.new( port_number )
-)
-//}
-
-パケットを送り出すときには、ポートへの出力だけでなく Modify-Field タイプのアクションを指定して書き換えることもできます。
-
-===== packet_in ハンドラで使う
-
-@<tt>{packet_in} ハンドラから使う場合、Packet In メッセージとして入ってきたパケットの内容をそのままスイッチのポートから送り出す場合がほとんどです。この場合、パケットの送信にスイッチのバッファを使う場合と、バッファを使わずにコントローラからパケットを送る場合で呼び出しかたが変わります。
-
-====== スイッチのバッファを使って Packet Out する場合
-
-通信量が少なくパケットがスイッチのバッファに乗っていることが期待できる場合には、次のように @<tt>{:buffer_id} オプションを指定してやることでバッファに乗っているパケットデータを ID で指定して Packet Out できます。この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、バッファがすでに消されている場合にはエラーが返ります。
-
-#@warn(エラーハンドリングの説明をどこかでやる)
+パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように @<tt>{:buffer_id} オプションでバッファに乗っているパケットデータの ID を指定してやることで Packet Out できます。この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、@<chap>{openflow}のコラムで説明したとおり、バッファの中身は予測不能でいつデータが消えるかわからないため、この方法は推奨しません。
 
 //emlist{
 def packet_in datapath_id, message
@@ -428,86 +458,81 @@ def packet_in datapath_id, message
   )
 //}
 
-これは次のように @<tt>{:packet_in} オプションを使って短く書くこともできます。この場合、@<tt>{:packet_in} オプションは @<tt>{:buffer_id}, @<tt>{:data} オプションを @<tt>{PacketIn} オブジェクトを使って自動的にセットします。
+===== スイッチのバッファを使わずに Packet Out する場合
+
+スイッチのバッファを使わずに Packet Out する場合、次のように @<tt>{:data} オプションでパケットのデータを指定する必要があります。バッファに乗っているかいないかにかかわらず Packet Out できるので、若干遅くなりますが安全です。
 
 //emlist{
 def packet_in datapath_id, message
   # ...
 
   send_packet_out(
-    0x1,
-    :packet_in => message,
-    :actions => SendOutPort.new( port_number )
-  )
-//}
-
-====== スイッチのバッファを使わずに Packet Out する場合
-
-スイッチのバッファを使わずに Packet Out する場合、次のように @<tt>{:data} オプションを指定する必要があります。バッファに乗っているかいないかにかかわらず Packet Out できるので、若干遅くなりますが安全です。
-
-//emlist{
-def packet_in datapath_id, message
-  # ...
-
-  send_packet_out(
-    0x1,
+    datapath_id,
     :data => message.data,
     :actions => SendOutPort.new( port_number )
   )
 //}
 
-=== フローテーブルでパケットを制御する
-
-パケットの出力や書き換えをスイッチのフローテーブルにまかせたい場合には、@<tt>{SendOutPort} の出力先ポート番号として特殊なポート番号である @<tt>{OFPP_TABLE} を指定することができます。この場合、フローテーブルでの検索に使う入力ポートは、@<tt>{:in_port} オプションを使って次のように指定できます。
-
-//emlist{
-def packet_in datapath_id, message
-  # ...
-
-  send_packet_out(
-    0x1,
-    :in_port => message.in_port,
-    :data => message.data,
-    :actions => SendOutPort.new( OFPP_TABLE )
-  )
-//}
-
-このコードも、@<tt>{:packet_in} オプションを使って次のように短く書けます。@<tt>{:packet_in} オプションは @<tt>{:buffer_id}, @<tt>{:data}, @<tt>{:in_port} オプションを @<tt>{PacketIn} オブジェクトを使って自動的にセットします。
+//noindent
+これは、@<tt>{:packet_in} オプションを使うことで若干短くできます。
 
 //emlist{
 def packet_in datapath_id, message
   # ...
 
   send_packet_out(
-    0x1,
+    datapath_id,
     :packet_in => message,
-    :actions => SendOutPort.new( OFPP_TABLE )
+    :actions => SendOutPort.new( port_number )
   )
 //}
 
-=== オプション一覧
+===== オプション一覧
 
-次が options に指定できるオプション一覧です。
+@<tt>{options} に指定できる主なオプションは次のとおりです。
 
 : @<tt>{:buffer_id}
   スイッチでバッファされているパケットの ID を指定します。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなります。ただし、スイッチにバッファされていない時はエラーになります。この値を @<tt>{0xffffffff} に指定した場合、バッファされているパケットは使われず @<tt>{:data} オプションに指定した値を Packet Out することになります。デフォルトは @<tt>{0xffffffff} です。
-
-: @<tt>{:in_port}
-  @<tt>{:actions} オプションに @<tt>{OFPP_TABLE} ポートへのアウトプットが指定されている場合にのみ有効です。指定されている場合、フローテーブルのルックアップにはこの値が使われます。デフォルトは @<tt>{OFPP_NONE} です。
 
 : @<tt>{:data}
   Packet Out するパケットの中身を指定します。もし @<tt>{:buffer_id} オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われません。@<tt>{:buffer_id} オプションが @<tt>{0xfffffff} のときは、@<tt>{:data} オプションに指定された値を使うので指定する必要があります。デフォルトで @<tt>{nil} です。
 
 : @<tt>{:packet_in}
-  @<tt>{:in_port}, @<tt>{:buffer_id}, @<tt>{:data} オプションを指定するためのショートカットです。@<tt>{packet_in} ハンドラの引数として渡される @<tt>{PacketIn} メッセージを指定します。
+  @<tt>{:in_port}, @<tt>{:data} オプションを指定するためのショートカットです。@<tt>{packet_in} ハンドラの引数として渡される @<tt>{PacketIn} メッセージを指定します。
 
 : @<tt>{:actions}
   Packet Out のときに実行したいアクションの配列を指定します。アクションが一つの場合は配列でなくてかまいません。
 
-== 宛先ポート番号がらなかった場合 (フラッディング)
+=== 宛先ポート番号がみつからなかった場合 (フラッディング)
 
+もし宛先ポートがみつからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが @<tt>{flood} プライベートメソッドで、実体は @<tt>{packet_out} メソッドのポート番号に仮想ポート番号 @<tt>{OFPP_FLOOD} を指定しているだけです。これが指定された Packet Out メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
 
+//emlist{
+def packet_in datapath_id, message
+  # ...
+  port_no = @fdb[ message.macda ]
+  if port_no
+    # ...
+  else
+   flood datapath_id, message
+  end
+  # ...
+end
 
+private
 
-=== フローテーブルの書き換え
+# ...
+
+def flood datapath_id, message
+  packet_out datapath_id, message, OFPP_FLOOD
+end
+//}
+
 == まとめ
+
+さまざまな OpenFlow アプリケーションのベースとなるラーニングスイッチの動作と作り方を学びました。
+
+ * コントローラは、Packet In メッセージから送信元ホストの MAC アドレスとホストのつながるスイッチポート番号を FDB に学習します。
+ * Packet In の転送先が FDB から分かる場合、Flow Mod で以降の転送情報をスイッチに書き込み Packet Out します。FDB で決定できない場合は、入力ポート以外のすべてのポートに Packet Out でフラッディングします。
+
+続く章ではさっそくこのラーニングスイッチを少し改造してトラフィック集計機能を加えます。@<chap>{openflow_usecases}で紹介した「フローでできること」4 つのうち、流量を調べる方法の実装例です。
