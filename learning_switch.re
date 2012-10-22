@@ -15,7 +15,6 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
 
  * 複数スイッチ対応ラーニングスイッチ (Trema のサンプルアプリの一つ。@<chap>{openflow_framework_trema}で紹介)
  * トラフィックモニタ (@<chap>{traffic_monitor}で紹介)
- * ルータ (@<chap>{router_part1},@<chap>{router_part2}で紹介)
  * ルーティングスイッチ (@<chap>{routing_switch}で紹介)
  * スライス機能つきルーティングスイッチ (@<chap>{sliceable_switch}で紹介)
 
@@ -50,7 +49,7 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
   2. しょうがないのでパケットをポート 1 以外のすべてのポートにばらまき、最終的にポート 4 につながるホスト 2 にパケットが届きます。
 
 //noindent
-宛先のホストの位置情報をまだ学習していないときには、このようにパケットをばらまきます。これをフラッディングと呼び、無駄なトラフィックが発生してしまいます。
+宛先のホストの位置情報をまだ学習していないときには、このようにパケットをばらまきます。これをフラッディングと呼び、余計なトラフィックが発生してしまいます。
 
 //image[host1to2_flood][パケットの宛先 MAC アドレスからスイッチのポート番号が FDB にみつからないため、パケットをばらまく][scale=0.5]
 
@@ -61,7 +60,7 @@ OpenFlow の世界では、コントローラとしてソフトウェア実装�
  1.「ポート 4 番には MAC アドレスが 00:22:22:22:22:22 のホストがつながっている」と学習します。
  2. パケットの宛先 MAC アドレスと FDB を照らし合わせ、出力先のポート番号を探します。ここですでに「MAC アドレス 00:11:11:11:11:11 = ポート 1」と学習しているので、ポート 1 にパケットを出力します。
 
-この場合パケットは宛先のポートのみに出力するので、フラッディングと異なり無駄なトラフィックが発生しません。
+この場合パケットは宛先のポートのみに出力するので、フラッディングと異なり余計なトラフィックが発生しません。
 
 //image[host2to1][同様にホスト 2 の MAC アドレスとポート番号を学習し、FDB の情報からパケットをホスト 1 に届ける][scale=0.5]
 
@@ -170,8 +169,8 @@ end
 
   * ラーニングスイッチの本体は LearningSwitch という名前のクラスです。
   * 起動時に呼ばれる @<tt>{start} ハンドラで FDB のインスタンス変数を作っています。@<tt>{{\}} という文法は見慣れませんが、これに MAC アドレスとポート番号の組を保存するのでしょう。
-  * 見慣れないハンドラ @<tt>{packet_in} が登場しました。これは、ご想像のとおり@<chap>{openflow}で説明した Packet In を捕捉するためのハンドラです。スイッチのフローにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれます。
-  * @<tt>{packet_in} ハンドラの中では、パケットの宛先 MAC アドレスから FDB でポート番号を調べています。もし宛先のポート番号がみつかった場合には、Flow Mod でフローを打ち込み Packet Out (@<chap>{openflow}) でパケットを送信しているようです。もしポート番号がみつからなかった場合は、flood というメソッドを呼んでいます。これは先程の説明であった「パケットをばらまく (フラッディング)」という処理でしょう。
+  * 見慣れないハンドラ @<tt>{packet_in} が登場しました。これは、ご想像のとおり Packet In を捕捉するためのハンドラです。スイッチのフローにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれます。
+  * @<tt>{packet_in} ハンドラの中では、パケットの宛先 MAC アドレスから FDB でポート番号を調べています。もし宛先のポート番号がみつかった場合には、Flow Mod でフローを打ち込み Packet Out でパケットを送信しているようです。もしポート番号がみつからなかった場合は、flood というメソッドを呼んでいます。これは先程の説明であった「パケットをばらまく (フラッディング)」という処理でしょう。
 
 いかがでしょうか。ラーニングスイッチの心臓部は @<tt>{packet_in} ハンドラだけで、その中身もやっていることはなんとなくわかると思います。細かい実装の解説は後回しにして、さっそく実行してみましょう。
 
@@ -228,7 +227,7 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 
 == 即席 Ruby 入門
 
-ラーニングスイッチのソースコード (@<list>{learning-switch.rb}) で新しく登場した構文はたった一つだけです。@<tt>{start} ハンドラの中で登場した FDB の本体 @<tt>{{\}} がそれですが、カンの良い読者ならこれが何者か、うすうす感付いているかもしれません。
+ラーニングスイッチのソースコード (@<list>{learning-switch.rb}) で新しく登場した構文はたった一つだけです。@<tt>{start} ハンドラの中で登場した FDB の本体 @<tt>{{\}} がそれですが、カンの良い読者ならこれはハッシュテーブルでは？と気付いているかもしれません。
 
 === ハッシュテーブル
 
@@ -260,7 +259,32 @@ Ruby のハッシュテーブルはとても高性能なので、文字列だけ
 fdb[ "00:11:11:11:11:11" ] = 1
 //}
 
-そうそう、言い忘れていましたが @<tt>{{\}} はもちろん空のハッシュテーブルです。FDB は最初は空なので、@<tt>{{\}} に初期化されていました。
+もちろん @<tt>{{\}} は空のハッシュテーブルです。FDB は最初は空なので、@<tt>{{\}} に初期化されていました。
+
+//emlist{
+def start
+  @fdb = {}
+end
+//}
+
+実は、すでにいろんなところでハッシュテーブルを使ってきました。@<tt>{send_flow_mod_add} などの省略可能なオプションは、矢印 (@<tt>{=>}) を使っていることからも分かるように実はハッシュテーブルなのです。Ruby では、引数の最後がハッシュテーブルである場合、その中カッコを次のように省略できます。
+
+//emlist{
+send_flow_mod_add(
+  datapath_id,
+  :match => ExactMatch.from( message ),
+  :actions => SendOutPort.new( port_no )
+)
+
+# これと同じ
+send_flow_mod_add(
+  datapath_id,
+  {
+    :match => ExactMatch.from( message ),
+    :actions => SendOutPort.new( port_no )
+  }
+)
+//}
 
 == ソースコード
 
@@ -289,9 +313,9 @@ class LearningSwitch < Controller
 
 最初の引数 @<tt>{datapath_id} は、Packet In を上げたスイッチの Datapath ID です。二番目の引数 @<tt>{message} は @<tt>{PacketIn} クラスのインスタンスで、Packet In メッセージをオブジェクトとしてラップしたものです。この @<tt>{PacketIn} クラスには主に次の 3 種類のメソッドが定義されています。
 
- * Packet In を起こしたバッファ ID や、パケットが入ってきたスイッチのポート番号など OpenFlow メッセージ固有の情報
- * IP のバージョンや TCP/UDP、また ARP や ICMP、VLAN タグの有無といった Packet In を起こしたパケットの種別を判定するためのユーティリティメソッド
- * TCP のシーケンス番号や VLAN の VID など、パケットの種類に応じたフィールドを調べるためのアクセサメソッド
+ * Packet In を起こしたパケットのデータやその長さ、およびパケットが入ってきたスイッチのポート番号など OpenFlow メッセージ固有の情報を返すメソッド
+ * Packet In を起こしたパケットの種別 (TCP か UDP か？ また VLAN タグの有無など) を判定するための、"@<tt>{?}" で終わるメソッド
+ * 送信元や宛先の MAC アドレス、IP アドレスなど、パケットの各フィールドを調べるためのアクセサメソッド
 
 @<tt>{PacketIn} クラスは非常に多くのメソッドを持っており、また Trema のバージョンアップごとにその数も増え続けているためすべては紹介しきれません。そのかわり、代表的でよく使うものを以下に紹介します。
 
@@ -346,9 +370,6 @@ class LearningSwitch < Controller
 : @<tt>{:vlan_vid}
   VLAN の VID を返します。
 
-: @<tt>{:vlan_prio}
-  VLAN のプライオリティを返します。
-
 このようなメソッドは他にもたくさんあります。メソッドの完全なリストや詳しい情報を知りたい場合には、@<chap>{openflow_framework_trema} で紹介した @<tt>{trema run} コマンドで最新の Trema API ドキュメントを参照してください。
 
 === FDB の更新とポート番号の検索
@@ -365,11 +386,6 @@ FDB の実装は単純にハッシュテーブルを使っているだけなの�
 class LearningSwitch < Controller
   # ...
 
-  def start
-    @fdb = {}
-  end
-
-
   def packet_in datapath_id, message
     @fdb[ message.macsa ] = message.in_port
     port_no = @fdb[ message.macda ]
@@ -383,7 +399,7 @@ end
 
 === 宛先ポート番号がみつかった場合 (Flow Mod と Packet Out)
 
-もし宛先ポートがみつかった場合、以降は同じパケットは同様に転送せよ、というフローをスイッチに書き込みます (@<tt>{flow_mod} プライベートメソッド)。また、Packet In を起こしたパケットも忘れずにそのポートへ出力します (@<tt>{packet_out} プライベートメソッド)。
+もし宛先ポートがみつかった場合、以降は同じパケットは同様に転送せよ、というフローをスイッチに書き込みます (@<tt>{flow_mod} メソッド)。また、Packet In を起こしたパケットも忘れずにそのポートへ出力します (@<tt>{packet_out} メソッド)。
 
 //emlist{
 def packet_in datapath_id, message
@@ -397,7 +413,7 @@ def packet_in datapath_id, message
   # ...
 //}
 
-この @<tt>{flow_mod} プライベートメソッドと @<tt>{packet_out} プライベートメソッドはそれぞれ Trema の Flow Mod API (@<tt>{Controller#send_flow_mod_add}) および Packet Out API (@<tt>{Controller#send_packet_out}) を次のように抽象化しています。
+この @<tt>{flow_mod} メソッドと @<tt>{packet_out} メソッドはそれぞれ @<tt>{Controller} クラスの @<tt>{send_flow_mod_add} (@<chap>{patch_panel}で紹介) および @<tt>{send_packet_out} (Packet Out の送信) メソッドを次のように呼び出します。
 
 //emlist{
   # ...
@@ -425,7 +441,65 @@ def packet_in datapath_id, message
   # ...
 //}
 
-それでは、今回初めて登場した Packet Out API の詳細を見て行きましょう。
+ここでいくつか見慣れない要素が登場しています。
+
+ * @<tt>{send_flow_mod_add} の中では、マッチングルールに @<tt>{ExactMatch.from} の返り値を指定しています。
+ * Packet Out の送信用メソッド (@<tt>{send_packet_out}) は初登場です。
+
+それでは、それぞれの詳細を見て行きましょう。
+
+==== Exact Match の作り方
+
+マッチングルールの中でもすべての条件を指定したものを Exact Match と呼びます。たとえば Packet In としてコントローラに入ってきたパケットと、
+
+ * パケットが入ってきたスイッチのポート番号
+ * 送信元 MAC アドレス
+ * 宛先 MAC アドレス
+ * ...
+
+//noindent
+などなどマッチングルールが定義する 12 個の条件 (詳しくは@<chap>{openflow}を参照) がすべてまったく同じ、というのが Exact Match です。
+
+もし、Exact Match を普通に作るとどうなるでしょうか？
+
+//emlist{
+def packet_in datapath_id, message
+  # ...
+
+  send_flow_mod_add(
+    datapath_id,
+    :match => Match.new(
+      :in_port => message.in_port
+      :dl_src => message.macsa,
+      :dl_dst => message.macda,
+      # ...
+//}
+
+//noindent
+うーん。やりたいことは分かりますが、マッチングルールを 1 つ作るだけでこのようにいちいち 10 行以上も書いていたらしんどいですよね。
+
+そこで、Trema ではこのような Exact Match を楽に欠ける次のショートカットを用意しています。
+
+//emlist{
+def packet_in datapath_id, message
+  # ...
+
+  send_flow_mod_add(
+    datapath_id,
+    :match => ExactMatch.from( message ),
+    # ...
+//}
+
+//noindent
+なんとたった 1 行で書けました! Trema ではこのようにプログラムを短く書ける工夫がたくさんありますので、そのつど説明して行きましょう。
+
+ところで今回のラーニングスイッチの例では、スイッチに書き込まれるフローは次の 2 パターンだけです。
+
+ 1. ホスト 1 からホスト 2
+ 2. ホスト 2 からホスト 1
+
+//noindent
+今回は流れるパケットの種類も限られていますので、フローのマッチングルールを楽に作るために Exact Macth を使っています。
 
 ==== Packet Out API
 
@@ -444,19 +518,22 @@ Packet Out の使い道は、Packet In メッセージとして入ってきた�
 
 ===== スイッチのバッファを使って Packet Out する場合
 
-パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように @<tt>{:buffer_id} オプションでバッファに乗っているパケットデータの ID を指定してやることで Packet Out できます。この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、@<chap>{openflow}のコラムで説明したとおり、バッファの中身は予測不能でいつデータが消えるかわからないため、この方法は推奨しません。
+パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように @<tt>{:buffer_id} オプションでバッファに乗っているパケットデータの ID を指定してやることで Packet Out できます。
 
 //emlist{
 def packet_in datapath_id, message
   # ...
 
   send_packet_out(
-    0x1,
+    datapath_id,
     :buffer_id => message.buffer_id,
     :data => message.data,
     :actions => SendOutPort.new( port_number )
   )
 //}
+
+//noindent
+この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、@<chap>{openflow}のコラムで説明したとおり、バッファの中身は予測不能でいつデータが消えるかわからないため、この方法は推奨しません。
 
 ===== スイッチのバッファを使わずに Packet Out する場合
 
@@ -474,7 +551,7 @@ def packet_in datapath_id, message
 //}
 
 //noindent
-これは、@<tt>{:packet_in} オプションを使うことで若干短くできます。
+これは、次のように @<tt>{:packet_in} オプションを使うことで若干短くできます (@<tt>{.data} を書かなくてよくなります)。
 
 //emlist{
 def packet_in datapath_id, message
@@ -487,25 +564,27 @@ def packet_in datapath_id, message
   )
 //}
 
-===== オプション一覧
+===== 主なオプション一覧
 
 @<tt>{options} に指定できる主なオプションは次のとおりです。
 
 : @<tt>{:buffer_id}
-  スイッチでバッファされているパケットの ID を指定します。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなります。ただし、スイッチにバッファされていない時はエラーになります。この値を @<tt>{0xffffffff} に指定した場合、バッファされているパケットは使われず @<tt>{:data} オプションに指定した値を Packet Out することになります。デフォルトは @<tt>{0xffffffff} です。
+  スイッチでバッファされているパケットの ID を指定します。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなります。ただし、スイッチにバッファされていない時はエラーになります。
 
 : @<tt>{:data}
-  Packet Out するパケットの中身を指定します。もし @<tt>{:buffer_id} オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われません。@<tt>{:buffer_id} オプションが @<tt>{0xfffffff} のときは、@<tt>{:data} オプションに指定された値を使うので指定する必要があります。デフォルトで @<tt>{nil} です。
+  Packet Out するパケットの中身を指定します。もし @<tt>{:buffer_id} オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われません。
 
 : @<tt>{:packet_in}
-  @<tt>{:in_port}, @<tt>{:data} オプションを指定するためのショートカットです。@<tt>{packet_in} ハンドラの引数として渡される @<tt>{PacketIn} メッセージを指定します。
+  @<tt>{:data} および @<tt>{:in_port} オプションを指定するためのショートカットです@<fn>{in_port_option}。@<tt>{packet_in} ハンドラの引数として渡される @<tt>{PacketIn} メッセージを指定します。
 
 : @<tt>{:actions}
   Packet Out のときに実行したいアクションの配列を指定します。アクションが一つの場合は配列でなくてかまいません。
 
+//footnote[in_port_option][@<tt>{:in_port} オプションは出力ポートに @<tt>{OFPP_TABLE} という特殊なポートを指定したときに使うオプションです。通常はまったく使いませんが、もし知りたい方は Trema Ruby API を参照してください。]
+
 === 宛先ポート番号がみつからなかった場合 (フラッディング)
 
-もし宛先ポートがみつからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが @<tt>{flood} プライベートメソッドで、実体は @<tt>{packet_out} メソッドのポート番号に仮想ポート番号 @<tt>{OFPP_FLOOD} を指定しているだけです。これが指定された Packet Out メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
+もし宛先ポートがみつからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが @<tt>{flood} メソッドで、実体は @<tt>{packet_out} メソッドのポート番号に仮想ポート番号 @<tt>{OFPP_FLOOD} を指定しているだけです。これが指定された Packet Out メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
 
 //emlist{
 def packet_in datapath_id, message
@@ -514,7 +593,7 @@ def packet_in datapath_id, message
   if port_no
     # ...
   else
-   flood datapath_id, message
+    flood datapath_id, message
   end
   # ...
 end
@@ -535,4 +614,4 @@ end
  * コントローラは、Packet In メッセージから送信元ホストの MAC アドレスとホストのつながるスイッチポート番号を FDB に学習します。
  * Packet In の転送先が FDB から分かる場合、Flow Mod で以降の転送情報をスイッチに書き込み Packet Out します。FDB で決定できない場合は、入力ポート以外のすべてのポートに Packet Out でフラッディングします。
 
-続く章ではさっそくこのラーニングスイッチを少し改造してトラフィック集計機能を加えます。@<chap>{openflow_usecases}で紹介した「フローでできること」4 つのうち、流量を調べる方法の実装例です。
+続く章ではさっそくこのラーニングスイッチを少し改造してトラフィック集計機能を加えます。@<chap>{openflow_usecases}で紹介したフローでできる 4 つのことのうち、"流量を調べる" の実装例です。
