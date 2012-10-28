@@ -25,6 +25,7 @@ rake コマンド一発でできます。
 
  * Ubuntu での作りかた: 「Trema 本を読もう! (@stereocat さん)」 http://d.hatena.ne.jp/stereocat/20120619
  * Mac での作りかた: 「OpenFlow 実践入門　〜Tremaの本〜 (@q_megumi_p さん)」 http://katsumegu.wordpress.com/2012/08/08/openflow-%E5%AE%9F%E8%B7%B5%E5%85%A5%E9%96%80%E3%80%80%E3%80%9Ctrema%E3%81%AE%E6%9C%AC%E3%80%9C/
+ * Kindle で読む: 「Trema本をKindleで読む (笹生健 さん)」http://www.takeru.org/2012/10/tremakindle.html
 
 
 # 執筆に協力いただける方への情報
