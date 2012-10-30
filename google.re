@@ -124,7 +124,7 @@ OpenFlow コントローラからの指示に従い、実際に動作 3 のト�
 
 === OpenFlow コントローラの協調動作
 
-G-Scale は複数の OpenFlow コントローラが協調してネットワークを制御しています。ネットワーク中の全 OpenFlow スイッチを一台のコントローラで制御するルーティングスイッチ (@<chap>{routing_switch}) とは異なっています。各 OpenFlow コントローラが制御を行なっているのは、同じ拠点内の OpenFlow スイッチだけです。BGP や TE サーバからの情報を元にフローエントリを設定することで、G-Scale 全体として WAN の帯域の有効活用を実現しています。
+G-Scale は複数の OpenFlow コントローラが協調してネットワークを制御しています(@<img>{cooperate})。@<chap>{routing_switch} で紹介したルーティングスイッチも、G-Scale と同様に、複数の OpenFlow スイッチを制御しますが、これらを一台のコントローラで行います。G-Scale では フローエントリの作成を BGP や TE サーバからの情報を元に行うことで、コントローラ同士の協調動作を実現しています。
 
 //image[cooperate][複数の OpenFlow コントローラが協調して動作する]
 
