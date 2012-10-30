@@ -5,3 +5,5 @@ Gemfile.lock
 *.pdf
 *.tex
 *.key
+*.epub
+*.mobi
