@@ -5,15 +5,207 @@
 //}
 
 == ソースコード
-=== パケットを調べる
 
- * PacketIn クラスの各種アクセサ関数
- * 自分宛かを調べる
- * パケットの種類を調べる
+=== ルーティングテーブルの実装
 
-=== ARP に応答する
-=== ARP でアドレスを問い合わせる
-=== ICMP に応答する
+//list[routing-table.rb][ルーティングテーブルのソースコード]{
+require "ipaddr"
+
+
+class RoutingTable
+  ADDR_LEN = 32
+
+
+  def initialize route = []
+    @db = Array.new( ADDR_LEN + 1 ) { Hash.new }
+    route.each do | each |
+      add( each )
+    end
+  end
+
+
+  def add options
+    dest = IPAddr.new( options[ :destination ] )
+    prefixlen = options[ :prefixlen ]
+    prefix = dest.mask( prefixlen )
+    @db[ prefixlen ][ prefix.to_i ] = IPAddr.new( options[ :gateway ] )
+  end
+
+
+  def delete options
+    dest = IPAddr.new( options[ :destination ] )
+    prefixlen = options[ :prefixlen ]
+    prefix = dest.mask( prefixlen )
+    @db[ prefixlen ].delete( prefix.to_i )
+  end
+
+
+  def lookup dest
+    ( 0..ADDR_LEN ).reverse_each do | prefixlen |
+      prefix = dest.mask( prefixlen )
+      entry = @db[ prefixlen ][ prefix.to_i ]
+      return entry if entry
+    end
+    nil
+  end
+end
+//}
+
+=== ARP テーブルの実装
+
+//list[arptable.rb][ARP テーブル (@<tt>{arptable.rb}) のソースコード]{
+class ARPEntry
+  include Trema::Logger
+
+
+  attr_reader :port
+  attr_reader :hwaddr
+  attr_writer :age_max
+
+
+  def initialize port, hwaddr, age_max
+    @port = port
+    @hwaddr = hwaddr
+    @age_max = age_max
+    @last_updated = Time.now
+    info "New entry: MAC addr = #{ @hwaddr.to_s }, port = #{ @port }"
+  end
+
+
+  def update port, hwaddr
+    @port = port
+    @hwaddr = hwaddr
+    @last_updated = Time.now
+    info "Update entry: MAC addr = #{ @hwaddr.to_s }, port = #{ @port }"
+  end
+
+
+  def aged_out?
+    aged_out = Time.now - @last_updated > @age_max
+    info "Age out: An ARP entry (MAC address = #{ @hwaddr.to_s }, port number = #{ @port }) has been aged-out" if aged_out
+    aged_out
+  end
+end
+
+
+class ARPTable
+  DEFAULT_AGE_MAX = 300
+
+
+  def initialize
+    @db = {}
+  end
+
+
+  def update port, ipaddr, hwaddr
+    entry = @db[ ipaddr.to_i ]
+    if entry
+      entry.update( port, hwaddr )
+    else
+      new_entry = ARPEntry.new( port, hwaddr, DEFAULT_AGE_MAX )
+      @db[ ipaddr.to_i ] = new_entry
+    end
+  end
+
+
+  def lookup ipaddr
+    @db[ ipaddr.to_i ]
+  end
+
+
+  def age
+    @db.delete_if do | ipaddr, entry |
+      entry.aged_out?
+    end
+  end
+end
+//}
+
+=== Interface クラス
+
+//list[interface.rb][Interface クラス (@<tt>{interface.rb}) のソースコード]{
+require "arptable"
+require "routing-table"
+
+
+class Interface
+  attr_reader :hwaddr
+  attr_reader :ipaddr
+  attr_reader :prefixlen
+  attr_reader :port
+
+
+  def initialize options
+    @port = options[ :port ]
+    @hwaddr = Mac.new( options[ :hwaddr ] )
+    @ipaddr = IPAddr.new( options[ :ipaddr ] )
+    @prefixlen = options[ :prefixlen ]
+  end
+
+  
+  def has? mac
+    mac == hwaddr
+  end
+
+
+  def forward_action macda
+    [
+      ActionSetDlSrc.new( hwaddr.to_s ),
+      ActionSetDlDst.new( macda.to_s ),
+      ActionOutput.new( port )
+    ]
+  end
+end
+
+
+class Interfaces
+  def initialize interfaces = []
+    @list = []
+    interfaces.each do | each |
+      @list << Interface.new( each )
+    end
+  end
+
+  
+  def find_by_port port
+    @list.find do | each |
+      each.port == port
+    end
+  end
+
+
+  def find_by_ipaddr ipaddr
+    @list.find do | each |
+      each.ipaddr == ipaddr
+    end
+  end
+
+
+  def find_by_prefix ipaddr
+    @list.find do | each |
+      prefixlen = each.prefixlen
+      each.ipaddr.mask( prefixlen ) == ipaddr.mask( prefixlen )
+    end
+  end
+
+
+  def find_by_port_and_ipaddr port, ipaddr
+    @list.find do | each |
+      each.port == port and each.ipaddr == ipaddr
+    end
+  end
+
+
+  def ours? port, macda
+    return true if macda.broadcast?
+
+    interface = find_by_port( port )
+    if not interface.nil? and interface.has?( macda )
+      return true
+    end
+  end
+end
+//}
 
 == 実行してみよう
 
