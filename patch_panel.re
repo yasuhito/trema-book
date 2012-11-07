@@ -290,10 +290,58 @@ send_flow_mod_add( datapath_id, options )
  * @<tt>{datapath_id}: Flow Mod メッセージの届け先となるスイッチの Datapath ID です。
  * @<tt>{options}: Flow Mod メッセージの中身を決めるためのオプションで、フローエントリの構成要素であるマッチングルールとアクションに加え、フローエントリの寿命や優先度といった属性を指定します。各オプションにはデフォルト値があるので、必要な属性のみを指定すればいいようになっています。
 
+典型的な利用例は次の通りです。
 
-==== オプション一覧
+==== フローエントリを追加する
 
-このほか、@<tt>{send_flow_mod_add} では次のオプションを指定できます。
+フローエントリを追加するには、フローエントリを作るのに必要な要素であるマッチングルールとアクションを次のように指定します。
+
+//emlist{
+send_flow_mod_add(
+  datapath_id,
+  :match => Match.new( :in_port => port_a ),
+  :actions => SendOutPort.new( port_b )
+)
+//}
+
+ * マッチングルール (@<tt>{:match} オプション) には Match クラスのインスタンスを指定します。
+ * アクション (@<tt>{:actions}) には単体のアクションか、またはアクションのリスト (配列) を指定します。
+
+それぞれの API を詳しく見て行きましょう。
+
+==== マッチングルール
+
+
+==== アクション
+
+: SendOutPort
+  指定したスイッチのポートにパケットを出力します。ポートにはポート番号か、または OpenFlow で規定されている論理ポート (→ @<chap>{openflow}) を指定できます。
+: SetEthSrcAddr
+  送信元 MAC アドレスを指定した値に書き換えます。
+: SetEthDstAddr
+  宛先 MAC アドレスを指定した値に書き換えます。
+: SetIpSrcAddr
+  送信元の IP アドレスを指定した値に書き換えます。
+: SetIpDstAddr
+  宛先の IP アドレスを指定した値に書き換えます。
+: SetIpTos
+  IP の ToS フィールドを書き換えます。
+: SetTransportSrcPort
+  TCP/UDP の送信元ポート番号を書き換えます。
+: SetTransportDstPort
+  TCP/UDP の宛先ポート番号を書き換えます。
+: StripVlanHeader
+  VLAN のヘッダを除去します。
+: SetVlanVid
+  指定された VLAN ID をセットする、または既存のものがあれば書き換えます。
+: SetVlanPriority
+  指定された VLAN プライオリティをセットする、または既存のものがあれば書き換えます。
+: VendorAction
+  ベンダ定義のアクションを実行します。
+
+==== @<tt>{send_flow_mod_add} のオプション一覧
+
+マッチングルールとアクションのほか、@<tt>{send_flow_mod_add} では次のオプションを指定できます。
 
 : @<tt>{:idle_timeout}
   フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定します。デフォルトは 0 秒で、この場合フローエントリは破棄されません。
