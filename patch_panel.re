@@ -311,6 +311,32 @@ send_flow_mod_add(
 
 ==== マッチングルール
 
+#@warn(アクションに関係するクラスの名前に合わせて、以下のオプション名も変更)
+
+: @<tt>{:in_port}
+  スイッチの物理ポート番号
+: @<tt>{:dl_src}
+  送信元 MAC アドレス
+: @<tt>{:dl_dst}
+  宛先 MAC アドレス
+: @<tt>{:dl_type}
+  イーサネットの種別
+: @<tt>{:nw_src}
+  送信元 IP アドレス
+: @<tt>{:nw_dst}
+  宛先 IP アドレス
+: @<tt>{:nw_proto}
+  IP のプロトコル種別
+: @<tt>{:nw_tos}
+  IP の ToS フィールド
+: @<tt>{:tp_src}
+  TCP/UDP の送信元ポート番号
+: @<tt>{:tp_dst}
+  TCP/UDP の宛先ポート番号
+: @<tt>{:dl_vlan}
+  VLAN ID の値
+: @<tt>{:dl_vlan_pcp}
+  VLAN のプライオティ
 
 ==== アクション
 
