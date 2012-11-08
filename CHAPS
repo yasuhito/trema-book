@@ -16,7 +16,7 @@ trema_architecture.re
 migrating_openflow.re
 routing_switch.re
 sliceable_switch.re
-datacenter.re
+datacenter_wakame.re
 google.re
 
 diy_switch.re
