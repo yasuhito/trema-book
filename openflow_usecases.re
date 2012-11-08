@@ -126,7 +126,7 @@ OpenFlow を使うと、ネットワーク構成を物理的な構成にしば�
 
 //image[patch_panel][各ホストの所属するネットワークを切り替える][scale=0.5]
 
-こうした機能を持つハードウェアをパッチパネルと呼び、@<chap>{patch_panel}で詳しく説明します。より高度な例については、@<chap>{sliceable_switch}および@<chap>{datacenter}で紹介します。
+こうした機能を持つハードウェアをパッチパネルと呼び、@<chap>{patch_panel}で詳しく説明します。より高度な例については、@<chap>{sliceable_switch}および@<chap>{datacenter_wakame}で紹介します。
 
 == まとめ
 
