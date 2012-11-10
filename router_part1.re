@@ -62,7 +62,25 @@ Ethernet だけでネットワークを作る場合にも、いくつかの比�
 
 //image[arp_request][送り先ホストの MAC アドレスを問い合わせる]
 
-=== 送り先を決める
+=== 次転送先を決める
+
+ここでは @<img>{router_network} のように、複数のルータから構成されるネットワーク上で、ルータがどのような転送動作を行うかについて考えてみます。
+
+//image[router_network][複数のルータから構成されるネットワーク]
+
+@<img>{forward} のようにルータが一台の場合と比べ、複数台から構成されるネットワークでの転送動作は、少し複雑になります。例えば、ホスト A がホスト B 宛にパケットを送るとします。ルータ A は受け取ったパケットを転送する必要がありますが、宛先であるホスト B はルータ A と直接はつながっていません。そのため、ルータ A はルータ B にパケットを転送し、ルータ B がそのパケットをホスト B へと転送します。
+
+次にどのルータに転送するかは、宛先毎に決める必要があります。例えばホスト A から、今度はホスト C へパケットを送る場合には、ルータ A はそのパケットをルータ C へと転送します。
+
+このような動作を行うために、各ルータは、宛先と次転送先の関係を記述したテーブルを持っています。このテーブルを、経路表 @<fn>{routingtable} と呼びます。例えば、ルータ A の経路表は、@<table>{rtable_a} のようになっています。
+
+//table[rtable_a][ルータ A の経路表]{
+宛先			次転送先
+ホスト B		ルータ B
+ホスト C		ルータ C
+//}
+
+//footnote[routingtable][ルーティングテーブルと呼ぶこともあります。]
 
 == ソースコード
 
@@ -145,7 +163,7 @@ class SimpleRouter < Controller
     saddr = message.ipv4_saddr.value
     arp_entry = @arp_table.lookup( saddr )
     if arp_entry
-      packet = create_icmpv4_reply( arp_entry, interface, message )      
+      packet = create_icmpv4_reply( arp_entry, interface, message )
       send_packet( dpid, packet, interface )
     else
       handle_unresolved_packet( dpid, message, interface, saddr )
@@ -158,7 +176,7 @@ class SimpleRouter < Controller
 
     interface = @interfaces.find_by_prefix( nexthop )
     if not interface or interface.port == message.in_port
-      return 
+      return
     end
 
     arp_entry = @arp_table.lookup( nexthop )
@@ -174,7 +192,7 @@ class SimpleRouter < Controller
 
   def resolve_nexthop( message )
     daddr = message.ipv4_daddr.value
-    nexthop = @routing_table.lookup( daddr ) 
+    nexthop = @routing_table.lookup( daddr )
     if nexthop
       nexthop
     else
@@ -205,13 +223,13 @@ class SimpleRouter < Controller
     packet_out( dpid, packet, ActionOutput.new( :port => interface.port ) )
   end
 
-  
+
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
     packet = create_arp_request( interface, ipaddr )
     send_packet( dpid, packet, interface )
   end
 
-  
+
   def age_arp_table
     @arp_table.age
   end
@@ -263,7 +281,7 @@ end
 : @<tt>{arp_request?}
   受信パケットが ARP リクエストの場合、true を返します。
 : @<tt>{arp_reply?}
-  受信パケットが ARP リプライの場合、true を返します。    
+  受信パケットが ARP リプライの場合、true を返します。
 : @<tt>{ipv4?}
   受信パケットが IPv4 パケットの場合、true を返します。
 
