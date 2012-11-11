@@ -82,7 +82,7 @@ IP アドレス		   MAC アドレス
 
 //footnote[routingtable][ルーティングテーブルと呼ぶこともあります。]
 
-=== 経路表の詳細
+=== 複数の宛先ホストをまとめた経路を作る
 
 経路表は、ルータの転送動作にとって欠かせない存在です。ルータの動作を理解するために、もう少し詳しく見ていきましょう。
 
@@ -94,9 +94,7 @@ IP アドレス		   MAC アドレス
 
 このようにアドレスを振ることで、ルータ A の経路表は、@<img>{network} のようにシンプルに書くことができます。この時、例えばホスト X 宛のパケットを受け取ったルータ A は、次のように動作します。ルータ A の経路表には宛先 192.168.1.0/24 というエントリがあります。パケットは、宛先が 192.168.1.1 であるので、上位 24 ビット分を比較すると、このエントリに該当することがわかります。その結果、ルータ A は次にルータ B にパケットを転送すればいいことがわかります。ホスト Y, Z 宛も同様な処理できるため、このエントリ一つで複数の宛先をカバーできます。
 
-#@warn(デフォルトルートの話を書く)
-
-=== オンリンク
+=== 宛先ホストがルータと直接つながっているかを調べる
 
 @<img>{router_network} では、ルータが宛先ホストに直接接続していない場合について説明しましたが、その判断はどのように行なっているのでしょうか？
 
@@ -107,8 +105,6 @@ IP アドレス		   MAC アドレス
 @<img>{onlink} のネットワーク上でのホスト X 宛のパケットについて考えてみます。
 
 //image[onlink][ルータは、インターフェイスに割り当てられているアドレスを見て、宛先ホストが直接接続しているかの判断する]
-
-#@warn(オンリンクの判断を書く)
 
 == ソースコード
 
@@ -368,6 +364,55 @@ packet_in ハンドラ中で受信パケットが IPv4 であると判断され�
 
 @<tt>{should_forward?} では、パケットの宛先 IPv4 アドレスを参照し、自身のインターフェイスに割り当てられているものと同じかどうかを調べます。宛先 IPv4 アドレスが自身に割り当てられたものでない場合、@<tt>{forward} メソッドを呼び出し、パケットを転送します。
 
-パケットの宛先が自身である場合、ルータが処理を行う必要があります。今回実装したシンプルルータでは、ICMP Echo リクエストに対する応答機能だけ実装しています。そのため @<tt>{PacketIn} クラスのメソッドである @<tt>{icmpv4_echo_request?} でパケット種別の判定を行い、ICMP Eco リクエストである場合のみ @<tt>{handle_icmpv4_echo_request} を呼び出し、応答を行います。
+パケットの宛先が自身である場合、ルータが処理を行う必要があります。今回実装したシンプルルータでは、ICMP Echo リクエストに対する応答機能だけ実装しています。そのため @<tt>{PacketIn} クラスのメソッドである @<tt>{icmpv4_echo_request?} でパケット種別の判定を行い、ICMP Echo リクエストである場合のみ @<tt>{handle_icmpv4_echo_request} を呼び出し、応答を行います。
+
+=== パケットの転送
+
+パケット転送の役目を担うのが、@<tt>{forward} メソッドです。
+
+//emlist{
+  def forward( dpid, message )
+    # 1. 経路表を参照し、次転送先を決定する
+    nexthop = resolve_nexthop( message )
+
+    # 2. 出力インターフェイスを決定する
+    interface = @interfaces.find_by_prefix( nexthop )
+    if not interface or interface.port == message.in_port
+      return
+    end
+
+    # 3. ARP テーブルを検索する
+    arp_entry = @arp_table.lookup( nexthop )
+    if arp_entry
+      # 4. 転送用のフローエントリを設定し、受信パケットを Packet Out する
+      action = interface.forward_action( arp_entry.hwaddr )
+      flow_mod( dpid, message, action )
+      packet_out( dpid, message.data, action )
+    else
+      # 5. MAC アドレスを問い合わせるための ARP リクエストを出す
+      handle_unresolved_packet( dpid, message, interface, nexthop )
+    end
+  end
+//}
+
+このメソッドでは、主に以下の 5 つの処理を行なっています。
+
+ 1. 経路表を参照し、次転送先を決定する
+ 2. 次転送先に送るための、出力インターフェイスを決定する
+ 3. ARP テーブルを検索する
+ 4. 3 で ARP エントリが見つかった場合、転送用のフローエントリを設定し、受信パケットを Packet Out する
+ 5. 3 で ARP エントリが見つからなかった場合、MAC アドレスを問い合わせるための ARP リクエストを作り、Packet Out する
+
+4 の処理では、@<tt>{Interface} クラスの @<tt>{forward_action} メソッドを用いて、フローエントリのアクションを作成しています。@<img>{forward} で説明したように、ルータは MAC アドレスを書き換えてから出力する必要があります。そのため、@<tt>{forward_action} は、送信元 MAC アドレスの書き換え、宛先 MAC アドレスの書き換え、該当するポートからの出力という三つのアクションを含む配列を作成します。
+
+//emlist{
+  def forward_action macda
+    [
+      ActionSetDlSrc.new( hwaddr.to_s ),
+      ActionSetDlDst.new( macda.to_s ),
+      ActionOutput.new( port )
+    ]
+  end
+//}
 
 == まとめ/参考文献
