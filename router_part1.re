@@ -348,19 +348,26 @@ packet_in ハンドラ中で受信パケットが IPv4 であると判断され�
 
 //emlist{
   def handle_ipv4( dpid, message )
-    if should_forward?( message )
+    if should_forward?( message )      # パケットを転送すべきかを判断する
       forward( dpid, message )
-    elsif message.icmpv4_echo_request?
+    elsif message.icmpv4_echo_request? # ICMP Echo リクエストパケットかを判断する 
       handle_icmpv4_echo_request( dpid, message )
     else
       # noop.
     end
   end
+//}
 
+@<tt>{handle_ipv4} ではまず、@<tt>{should_forward?} メソッドを用いて、パケットを転送すべきかどうかを判断します。転送すべきと判断された場合、@<tt>{forward} メソッドでパケットの転送を行います。
 
+//emlist{
   def should_forward?( message )
     not @interfaces.find_by_ipaddr( message.ipv4_daddr )
   end
 //}
+
+@<tt>{should_forward?} では、パケットの宛先 IPv4 アドレスを参照し、自身のインターフェイスに割り当てられているものと同じかどうかを調べます。宛先 IPv4 アドレスが自身に割り当てられたものでない場合、@<tt>{forward} メソッドを呼び出し、パケットを転送します。
+
+パケットの宛先が自身である場合、ルータが処理を行う必要があります。今回実装したシンプルルータでは、ICMP Echo リクエストに対する応答機能だけ実装しています。そのため @<tt>{PacketIn} クラスのメソッドである @<tt>{icmpv4_echo_request?} でパケット種別の判定を行い、ICMP Eco リクエストである場合のみ @<tt>{handle_icmpv4_echo_request} を呼び出し、応答を行います。
 
 == まとめ/参考文献
