@@ -270,10 +270,10 @@ end
 
 //emlist{
   def packet_in( dpid, message )
-    # ルータ宛てのパケットかを調べる
+    # 自身宛てのパケットかを調べる (処理 1)
     return if not @interfaces.ours?( message.in_port, message.macda )
 
-    # メッセージの種別ごとに処理を振り分け
+    # メッセージの種別ごとに処理を振り分け (処理 2)
     if message.arp_request?
       handle_arp_request( dpid, message )
     elsif message.arp_reply?
@@ -286,12 +286,9 @@ end
   end
 //}
 
-@<tt>{packet_in} は、以下二つの役割を果します。
+@<tt>{packet_in} は、受信パケットを処理すべきかの判断 (処理 1) を行い、メッセージ種別毎の処理への振り分け (処理 2) の二つの処理を行います。
 
- 1. 受信パケットを処理すべきかを判断
- 2. メッセージ種別を判別し、適切な処理を実行
-
-受信パケットを自身が処理すべきどうかの判断は、@<tt>{Interface} クラスの @<tt>{ours?} メソッドで行います。このメソッドは、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストであるか、もしくは受信ポート (@<tt>{port}) に割り当てられている MAC アドレスと同じである場合、自身が処理すべきとして、@<tt>{true} を返します。
+一つ目の処理である、受信パケットを自身が処理すべきどうかの判断は、@<tt>{Interface} クラスの @<tt>{ours?} メソッドで行います。このメソッドは、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストであるか、もしくは受信ポート (@<tt>{port}) に割り当てられている MAC アドレスと同じである場合、自身が処理すべきとして、@<tt>{true} を返します。
 
 //emlist{
   def ours? port, macda
@@ -304,7 +301,7 @@ end
   end
 //}
 
-メッセージ種別の判別には、Trema の @<tt>{PacketIn} クラスが持つメソッドを使います。
+二つ目の処理であるメッセージ種別の判別には、Trema の @<tt>{PacketIn} クラスに用意されている、パケット種別判定のためのメソッドを使います。さまざまなパケット種別を判定するためのメソッドが用意されていますが、上記の @<tt>{packet_in} ハンドラ中では、以下のメソッドを使っています。
 
 : @<tt>{arp_request?}
   受信パケットが ARP リクエストの場合、true を返します。
@@ -312,5 +309,58 @@ end
   受信パケットが ARP リプライの場合、true を返します。
 : @<tt>{ipv4?}
   受信パケットが IPv4 パケットの場合、true を返します。
+
+受信パケットが ARP リクエストであった場合、@<tt>{handle_arp_request} メソッドが呼ばれます。ARP リクエストに応答するために作成した ARP リプライメッセージを、Packet Out を用いて出力します。
+
+//emlist{
+  def handle_arp_request( dpid, message )
+    port = message.in_port
+    interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
+    if interface
+      packet = create_arp_reply( message, interface.hwaddr )
+      send_packet( dpid, packet, interface )
+    end
+  end
+//}
+
+受信パケットが ARP リプライであった場合、自身の ARP テーブルにその結果を格納します。
+
+//emlist{
+  def handle_arp_reply( dpid, message )
+    @arp_table.update( message.in_port, message.arp_spa, message.arp_sha )
+  end
+//}
+
+@<tt>{handle_arp_request} と @<tt>{handle_arp_reply} では、受信した ARP パケットに格納されている IP アドレスや MAC アドレスを取得するために、Trema の @<tt>{Packet In} クラスに用意されているアクセサメソッドを用いています。様々な種別のパケット中に格納されている値を取得するアクセサメソッドを用意していますが、上記では以下を用いています。
+
+: @<tt>{arp_tpa} 
+  ARP パケット中の宛先 IP アドレス
+: @<tt>{arp_tha}
+  ARP パケット中の宛先 MAC アドレス
+: @<tt>{arp_spa}
+  ARP パケット中の送信元 IP アドレス
+: @<tt>{arp_sha}
+  ARP パケット中の送信元 MAC アドレス
+
+=== IPv4 パケット受信時の処理
+
+packet_in ハンドラ中で受信パケットが IPv4 であると判断された場合、@<tt>{handle_ipv4} メソッドが呼び出されます。
+
+//emlist{
+  def handle_ipv4( dpid, message )
+    if should_forward?( message )
+      forward( dpid, message )
+    elsif message.icmpv4_echo_request?
+      handle_icmpv4_echo_request( dpid, message )
+    else
+      # noop.
+    end
+  end
+
+
+  def should_forward?( message )
+    not @interfaces.find_by_ipaddr( message.ipv4_daddr )
+  end
+//}
 
 == まとめ/参考文献
