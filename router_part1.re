@@ -169,29 +169,29 @@ class SimpleRouter < Controller
 
 
   def forward( dpid, message )
-    nexthop = resolve_next_hop( message )
+    next_hop = resolve_next_hop( message )
 
-    interface = @interfaces.find_by_prefix( nexthop )
+    interface = @interfaces.find_by_prefix( next_hop )
     if not interface or interface.port == message.in_port
       return
     end
 
-    arp_entry = @arp_table.lookup( nexthop )
+    arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
       action = create_forward_action_from( interface.port, arp_entry.hwaddr )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
-      handle_unresolved_packet dpid, message, interface, nexthop
+      handle_unresolved_packet dpid, message, interface, next_hop
     end
   end
 
 
   def resolve_next_hop( message )
     daddr = message.ipv4_daddr.value
-    nexthop = @routing_table.lookup( daddr )
-    if nexthop
-      nexthop
+    next_hop = @routing_table.lookup( daddr )
+    if next_hop
+      next_hop
     else
       daddr
     end
@@ -371,20 +371,20 @@ end
 
 //emlist{
   def forward( dpid, message )
-    nexthop = resolve_next_hop( message )
+    next_hop = resolve_next_hop( message )
 
-    interface = @interfaces.find_by_prefix( nexthop )
+    interface = @interfaces.find_by_prefix( next_hop )
     if not interface or interface.port == message.in_port
       return
     end
 
-    arp_entry = @arp_table.lookup( nexthop )
+    arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
       action = create_forward_action_from( interface.port, arp_entry.hwaddr )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
-      handle_unresolved_packet dpid, message, interface, nexthop
+      handle_unresolved_packet dpid, message, interface, next_hop
     end
   end
 //}
