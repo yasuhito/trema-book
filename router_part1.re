@@ -77,22 +77,18 @@ ARP を使って調べた MAC アドレスは、再利用するためにルー�
 == ソースコード
 
 //list[simple-router.rb][シンプルルータ (@<tt>{simple-router.rb}) のソースコード]{
-require "arptable"
-require "config"
+require "arp-table"
 require "interface"
-require "packet-queue"
+require "router-utils"
 require "routing-table"
-require "utils"
 
 
 class SimpleRouter < Controller
-  include Utils
-
-
-  add_timer_event :age_arp_table, 5, :periodic
+  include RouterUtils
 
 
   def start
+    load "router.conf"
     @interfaces = Interfaces.new( $interface )
     @arp_table = ARPTable.new
     @routing_table = RoutingTable.new( $route )
@@ -103,11 +99,11 @@ class SimpleRouter < Controller
     return if not @interfaces.ours?( message.in_port, message.macda )
 
     if message.arp_request?
-      handle_arp_request( dpid, message )
+      handle_arp_request dpid, message
     elsif message.arp_reply?
-      handle_arp_reply( dpid, message )
+      handle_arp_reply dpid, message
     elsif message.ipv4?
-      handle_ipv4( dpid, message )
+      handle_ipv4 dpid, message
     else
       # noop.
     end
@@ -118,25 +114,24 @@ class SimpleRouter < Controller
 
 
   def handle_arp_request( dpid, message )
-    port = message.in_port
-    interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
+    interface = @interfaces.find_by_port_and_ipaddr( message.in_port, message.arp_tpa )
     if interface
-      packet = create_arp_reply( message, interface.hwaddr )
-      send_packet( dpid, packet, interface )
+      arp_reply = create_arp_reply( message, interface.hwaddr )
+      send_packet dpid, arp_reply, interface
     end
   end
 
 
   def handle_arp_reply( dpid, message )
-    @arp_table.update( message.in_port, message.arp_spa, message.arp_sha )
+    @arp_table.update message.in_port, message.arp_spa, message.arp_sha
   end
 
 
   def handle_ipv4( dpid, message )
     if should_forward?( message )
-      forward( dpid, message )
+      forward dpid, message
     elsif message.icmpv4_echo_request?
-      handle_icmpv4_echo_request( dpid, message )
+      handle_icmpv4_echo_request dpid, message
     else
       # noop.
     end
@@ -153,10 +148,10 @@ class SimpleRouter < Controller
     saddr = message.ipv4_saddr.value
     arp_entry = @arp_table.lookup( saddr )
     if arp_entry
-      packet = create_icmpv4_reply( arp_entry, interface, message )
-      send_packet( dpid, packet, interface )
+      icmpv4_reply = create_icmpv4_reply( arp_entry, interface, message )
+      send_packet dpid, icmpv4_reply, interface
     else
-      handle_unresolved_packet( dpid, message, interface, saddr )
+      handle_unresolved_packet dpid, message, interface, saddr
     end
   end
 
@@ -172,10 +167,10 @@ class SimpleRouter < Controller
     arp_entry = @arp_table.lookup( nexthop )
     if arp_entry
       action = interface.forward_action( arp_entry.hwaddr )
-      flow_mod( dpid, message, action )
-      packet_out( dpid, message.data, action )
+      flow_mod dpid, message, action
+      packet_out dpid, message.data, action
     else
-      handle_unresolved_packet( dpid, message, interface, nexthop )
+      handle_unresolved_packet dpid, message, interface, nexthop
     end
   end
 
@@ -210,18 +205,13 @@ class SimpleRouter < Controller
 
 
   def send_packet( dpid, packet, interface )
-    packet_out( dpid, packet, ActionOutput.new( :port => interface.port ) )
+    packet_out dpid, packet, ActionOutput.new( interface.port )
   end
 
 
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
-    packet = create_arp_request( interface, ipaddr )
-    send_packet( dpid, packet, interface )
-  end
-
-
-  def age_arp_table
-    @arp_table.age
+    arp_request = create_arp_request( interface, ipaddr )
+    send_packet dpid, arp_request, interface
   end
 end
 //}
