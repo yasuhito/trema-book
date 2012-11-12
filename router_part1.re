@@ -250,9 +250,9 @@ end
   end
 //}
 
-==== 自分あてのパケットかを判定する
+==== 自分宛のパケットかを判定する
 
-ルータはいくつものネットワークにつながっているので、Packet In メッセージが上がってきたときには、まずそのパケットが自分あてかどうかを判断します (@<tt>{to_me?} メソッド)。もし自分あてでない場合にはパケットを破棄します。
+ルータはいくつものネットワークにつながっているので、Packet In メッセージが上がってきたときには、まずそのパケットが自分宛かどうかを判断します (@<tt>{to_me?} メソッド)。もし自分宛でない場合にはパケットを破棄します。
 
 //emlist{
   def to_me?( message )
@@ -265,11 +265,11 @@ end
   end
 //}
 
-この @<tt>{to_me?} メソッドの動作は次のようになっています。まず、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストである場合には自分あてと判断します。次に、宛先 MAC アドレスが受信ポート (@<tt>{message.in_port}) に割り当てられている MAC アドレスと同じである場合にも、自身あてと判断します。
+この @<tt>{to_me?} メソッドの動作は次のようになっています。まず、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストである場合には自分宛と判断します。次に、宛先 MAC アドレスが受信ポート (@<tt>{message.in_port}) に割り当てられている MAC アドレスと同じである場合にも、自身宛と判断します。
 
 ==== パケットの種類によって処理を切り替え
 
-自分あてのパケットだと分かった場合、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 のパケットの 3 種類です。@<tt>{PacketIn} クラスに用意されている次のメソッドを使って、パケットの種類によって処理を切り替えます。
+自分宛のパケットだと分かった場合、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 のパケットの 3 種類です。@<tt>{PacketIn} クラスに用意されている次のメソッドを使って、パケットの種類によって処理を切り替えます。
 
 : @<tt>{arp_request?}
   受信パケットが ARP リクエストの場合、@<tt>{true} を返す。
@@ -280,7 +280,7 @@ end
 
 ==== ARP リクエストのハンドル
 
-受信パケットが ARP リクエストであった場合、@<tt>{handle_arp_request} メソッドが呼ばれます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
+受信パケットが ARP リクエストであった場合、次の@<tt>{handle_arp_request} メソッドが呼ばれます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
 
 //emlist{
   def handle_arp_request( dpid, message )
@@ -312,23 +312,27 @@ end
 : @<tt>{arp_sha}
   ARP パケット中の送信元 MAC アドレスを返す
 
-=== IPv4 パケット受信時の処理
+==== IPv4 パケットのハンドル
 
-Packet In ハンドラで受信したパケットが IPv4 であった場合、次の @<tt>{handle_ipv4} メソッドが呼び出されます。
+受信パケットが IPv4 であった場合、@<tt>{handle_ipv4} メソッドが呼ばれます。ルータに届く IPv4 パケットには、次の 3 種類があり、それぞれによって処理を切り替えます。
+
+ 1. パケットを転送する場合。つまり、パケットが自分宛でなかった場合。
+ 2. パケットが自分宛だった場合。
+ 3. それ以外だった場合 (IPv6 など)。この場合はパケットを破棄します。
 
 //emlist{
   def handle_ipv4( dpid, message )
-    if should_forward?( message )      # パケットを転送すべきかを判断する
-      forward( dpid, message )
-    elsif message.icmpv4_echo_request? # ICMP Echo リクエストパケットかを判断する 
-      handle_icmpv4_echo_request( dpid, message )
+    if should_forward?( message )
+      forward dpid, message
+    elsif message.icmpv4_echo_request?
+      handle_icmpv4_echo_request dpid, message
     else
       # noop.
     end
   end
 //}
 
-@<tt>{handle_ipv4} ではまず、@<tt>{should_forward?} メソッドを用いて、パケットを転送すべきかどうかを判断します。転送すべきと判断された場合、@<tt>{forward} メソッドでパケットの転送を行います。
+パケットを転送するかどうかを判定するのが次の @<tt>{should_forward?} メソッドです。パケットを転送する場合とはつまり、パケットの宛先 IPv4 アドレスが、ルータのインターフェイスに割り当てらている IPv4 アドレスと異なる場合です。
 
 //emlist{
   def should_forward?( message )
@@ -336,11 +340,23 @@ Packet In ハンドラで受信したパケットが IPv4 であった場合、�
   end
 //}
 
-@<tt>{should_forward?} では、パケットの宛先 IPv4 アドレスを参照し、自身のインターフェイスに割り当てられているものと同じかどうかを調べます。宛先 IPv4 アドレスが自身に割り当てられたものでない場合、@<tt>{forward} メソッドを呼び出し、パケットを転送します。
+パケットの宛先がルータである場合、ルータ自身が応答する必要があります。今回実装したシンプルルータでは、ICMP Echo リクエスト (ping) に応答する機能だけ実装しています。詳細は省きますが、(☆ここ説明よろしくおねがいします☆)。
 
-パケットの宛先が自身である場合、ルータが処理を行う必要があります。今回実装したシンプルルータでは、ICMP Echo リクエストに対する応答機能だけ実装しています。そのため @<tt>{PacketIn} クラスのメソッドである @<tt>{icmpv4_echo_request?} でパケット種別の判定を行い、ICMP Echo リクエストである場合のみ @<tt>{handle_icmpv4_echo_request} を呼び出し、応答を行います。
+//emlist{
+  def handle_icmpv4_echo_request( dpid, message )
+    interface = @interfaces.find_by_port( message.in_port )
+    saddr = message.ipv4_saddr.value
+    arp_entry = @arp_table.lookup( saddr )
+    if arp_entry
+      icmpv4_reply = create_icmpv4_reply( arp_entry, interface, message )
+      send_packet dpid, icmpv4_reply, interface
+    else
+      handle_unresolved_packet dpid, message, interface, saddr
+    end
+  end
+//}
 
-=== パケットの転送
+=== パケットを転送する
 
 パケット転送の役目を担うのが、@<tt>{forward} メソッドです。
 
