@@ -1,4 +1,4 @@
-= ルータ (前編)
+= シンプルなルータ (前編)
 
 //lead{
 執筆中です
@@ -76,23 +76,21 @@ ARP を使って調べた MAC アドレスは、再利用するためにルー�
 
 == ソースコード
 
+シンプルルータはメインのソースコード (@<list>{simple-router.rb}) の他にいくつかのファイルからなります。紙面の都合上、以下ではメインのソースコードを中心に説明します。残りソースコードについては、Trema のサンプルディレクトリにあるソースコード (@<tt>{src/examples/router}) を参照してください。
+
 //list[simple-router.rb][シンプルルータ (@<tt>{simple-router.rb}) のソースコード]{
-require "arptable"
-require "config"
+require "arp-table"
 require "interface"
-require "packet-queue"
+require "router-utils"
 require "routing-table"
-require "utils"
 
 
 class SimpleRouter < Controller
-  include Utils
-
-
-  add_timer_event :age_arp_table, 5, :periodic
+  include RouterUtils
 
 
   def start
+    load "router.conf"
     @interfaces = Interfaces.new( $interface )
     @arp_table = ARPTable.new
     @routing_table = RoutingTable.new( $route )
@@ -100,14 +98,14 @@ class SimpleRouter < Controller
 
 
   def packet_in( dpid, message )
-    return if not @interfaces.ours?( message.in_port, message.macda )
+    return if not to_me?( message )
 
     if message.arp_request?
-      handle_arp_request( dpid, message )
+      handle_arp_request dpid, message
     elsif message.arp_reply?
-      handle_arp_reply( dpid, message )
+      handle_arp_reply dpid, message
     elsif message.ipv4?
-      handle_ipv4( dpid, message )
+      handle_ipv4 dpid, message
     else
       # noop.
     end
@@ -117,26 +115,35 @@ class SimpleRouter < Controller
   private
 
 
+  def to_me?( message )
+    return true if message.macda.broadcast?
+
+    interface = @interfaces.find_by_port( message.in_port )
+    if interface and interface.has?( message.macda )
+      return true
+    end
+  end
+
+
   def handle_arp_request( dpid, message )
-    port = message.in_port
-    interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
+    interface = @interfaces.find_by_port_and_ipaddr( message.in_port, message.arp_tpa )
     if interface
-      packet = create_arp_reply( message, interface.hwaddr )
-      send_packet( dpid, packet, interface )
+      arp_reply = create_arp_reply( message, interface.hwaddr )
+      send_packet dpid, arp_reply, interface
     end
   end
 
 
   def handle_arp_reply( dpid, message )
-    @arp_table.update( message.in_port, message.arp_spa, message.arp_sha )
+    @arp_table.update message.in_port, message.arp_spa, message.arp_sha
   end
 
 
   def handle_ipv4( dpid, message )
     if should_forward?( message )
-      forward( dpid, message )
+      forward dpid, message
     elsif message.icmpv4_echo_request?
-      handle_icmpv4_echo_request( dpid, message )
+      handle_icmpv4_echo_request dpid, message
     else
       # noop.
     end
@@ -153,10 +160,10 @@ class SimpleRouter < Controller
     saddr = message.ipv4_saddr.value
     arp_entry = @arp_table.lookup( saddr )
     if arp_entry
-      packet = create_icmpv4_reply( arp_entry, interface, message )
-      send_packet( dpid, packet, interface )
+      icmpv4_reply = create_icmpv4_reply( arp_entry, interface, message )
+      send_packet dpid, icmpv4_reply, interface
     else
-      handle_unresolved_packet( dpid, message, interface, saddr )
+      handle_unresolved_packet dpid, message, interface, saddr
     end
   end
 
@@ -172,10 +179,10 @@ class SimpleRouter < Controller
     arp_entry = @arp_table.lookup( nexthop )
     if arp_entry
       action = interface.forward_action( arp_entry.hwaddr )
-      flow_mod( dpid, message, action )
-      packet_out( dpid, message.data, action )
+      flow_mod dpid, message, action
+      packet_out dpid, message.data, action
     else
-      handle_unresolved_packet( dpid, message, interface, nexthop )
+      handle_unresolved_packet dpid, message, interface, nexthop
     end
   end
 
@@ -210,32 +217,27 @@ class SimpleRouter < Controller
 
 
   def send_packet( dpid, packet, interface )
-    packet_out( dpid, packet, ActionOutput.new( :port => interface.port ) )
+    packet_out dpid, packet, ActionOutput.new( interface.port )
   end
 
 
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
-    packet = create_arp_request( interface, ipaddr )
-    send_packet( dpid, packet, interface )
-  end
-
-
-  def age_arp_table
-    @arp_table.age
+    arp_request = create_arp_request( interface, ipaddr )
+    send_packet dpid, arp_request, interface
   end
 end
 //}
 
+それでは、シンプルルータのソースコードの重要な部分を見ていきましょう。
+
 === Packet In ハンドラ
 
-シンプルルータの Packet In ハンドラ (@<tt>{packet_in}) の中身を見ていきます。
+シンプルルータの動作の中心は Packet In ハンドラです。ルータはパケットを受け取って転送するのが仕事なので、メインのハンドラは次の @<tt>{packet_in} になります。
 
 //emlist{
   def packet_in( dpid, message )
-    # 自身宛てのパケットかを調べる (処理 1)
-    return if not @interfaces.ours?( message.in_port, message.macda )
+    return if not to_me?( message )
 
-    # メッセージの種別ごとに処理を振り分け (処理 2)
     if message.arp_request?
       handle_arp_request( dpid, message )
     elsif message.arp_reply?
@@ -248,31 +250,37 @@ end
   end
 //}
 
-@<tt>{packet_in} は、受信パケットを処理すべきかの判断 (処理 1) を行い、メッセージ種別毎の処理への振り分け (処理 2) の二つの処理を行います。
+==== 自分あてのパケットかを判定する
 
-一つ目の処理である、受信パケットを自身が処理すべきどうかの判断は、@<tt>{Interface} クラスの @<tt>{ours?} メソッドで行います。このメソッドは、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストであるか、もしくは受信ポート (@<tt>{port}) に割り当てられている MAC アドレスと同じである場合、自身が処理すべきとして、@<tt>{true} を返します。
+ルータはいくつものネットワークにつながっているので、Packet In メッセージが上がってきたときには、まずそのパケットが自分あてかどうかを判断します (@<tt>{to_me?} メソッド)。もし自分あてでない場合にはパケットを破棄します。
 
 //emlist{
-  def ours? port, macda
-    return true if macda.broadcast?
+  def to_me?( message )
+    return true if message.macda.broadcast?
 
-    interface = find_by_port( port )
-    if not interface.nil? and interface.has?( macda )
+    interface = @interfaces.find_by_port( message.in_port )
+    if interface and interface.has?( message.macda )
       return true
     end
   end
 //}
 
-二つ目の処理であるメッセージ種別の判別には、Trema の @<tt>{PacketIn} クラスに用意されている、パケット種別判定のためのメソッドを使います。さまざまなパケット種別を判定するためのメソッドが用意されていますが、上記の @<tt>{packet_in} ハンドラ中では、以下のメソッドを使っています。
+この @<tt>{to_me?} メソッドの動作は次のようになっています。まず、宛先 MAC アドレス (@<tt>{macda}) がブロードキャストである場合には自分あてと判断します。次に、宛先 MAC アドレスが受信ポート (@<tt>{message.in_port}) に割り当てられている MAC アドレスと同じである場合にも、自身あてと判断します。
+
+==== パケットの種類によって処理を切り替え
+
+自分あてのパケットだと分かった場合、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 のパケットの 3 種類です。@<tt>{PacketIn} クラスに用意されている次のメソッドを使って、パケットの種類によって処理を切り替えます。
 
 : @<tt>{arp_request?}
-  受信パケットが ARP リクエストの場合、true を返します。
+  受信パケットが ARP リクエストの場合、@<tt>{true} を返す。
 : @<tt>{arp_reply?}
-  受信パケットが ARP リプライの場合、true を返します。
+  受信パケットが ARP リプライの場合、@<tt>{true} を返す。
 : @<tt>{ipv4?}
-  受信パケットが IPv4 パケットの場合、true を返します。
+  受信パケットが IPv4 パケットの場合、@<tt>{true} を返す。
 
-受信パケットが ARP リクエストであった場合、@<tt>{handle_arp_request} メソッドが呼ばれます。ARP リクエストに応答するために作成した ARP リプライメッセージを、Packet Out を用いて出力します。
+==== ARP リクエストのハンドル
+
+受信パケットが ARP リクエストであった場合、@<tt>{handle_arp_request} メソッドが呼ばれます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
 
 //emlist{
   def handle_arp_request( dpid, message )
@@ -280,33 +288,33 @@ end
     interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
     if interface
       packet = create_arp_reply( message, interface.hwaddr )
-      send_packet( dpid, packet, interface )
+      send_packet dpid, packet, interface
     end
   end
 //}
 
-受信パケットが ARP リプライであった場合、自身の ARP テーブルにその結果を格納します。
+なお、このハンドラ中で使っている @<tt>{message.arp_tpa} は @<tt>{PacketIn} クラスで定義されたメソッドで、ARP パケット中の宛先 IP アドレスを返します。
+
+==== ARP リプライのハンドル
+
+受信パケットが ARP リプライであった場合、ARP テーブル (@<tt>{@arp_table}) に MAC アドレスを格納します。
 
 //emlist{
   def handle_arp_reply( dpid, message )
-    @arp_table.update( message.in_port, message.arp_spa, message.arp_sha )
+    @arp_table.update message.in_port, message.arp_spa, message.arp_sha
   end
 //}
 
-@<tt>{handle_arp_request} と @<tt>{handle_arp_reply} では、受信した ARP パケットに格納されている IP アドレスや MAC アドレスを取得するために、Trema の @<tt>{Packet In} クラスに用意されているアクセサメソッドを用いています。様々な種別のパケット中に格納されている値を取得するアクセサメソッドを用意していますが、上記では以下を用いています。
+なお、ここでも同様に @<tt>{PacketIn} クラスに定義された以下のメソッドを使って ARP パケットからさまざまな情報を取り出しています。
 
-: @<tt>{arp_tpa} 
-  ARP パケット中の宛先 IP アドレス
-: @<tt>{arp_tha}
-  ARP パケット中の宛先 MAC アドレス
 : @<tt>{arp_spa}
-  ARP パケット中の送信元 IP アドレス
+  ARP パケット中の送信元 IP アドレスを返す
 : @<tt>{arp_sha}
-  ARP パケット中の送信元 MAC アドレス
+  ARP パケット中の送信元 MAC アドレスを返す
 
 === IPv4 パケット受信時の処理
 
-packet_in ハンドラ中で受信パケットが IPv4 であると判断された場合、@<tt>{handle_ipv4} メソッドが呼び出されます。
+Packet In ハンドラで受信したパケットが IPv4 であった場合、次の @<tt>{handle_ipv4} メソッドが呼び出されます。
 
 //emlist{
   def handle_ipv4( dpid, message )
