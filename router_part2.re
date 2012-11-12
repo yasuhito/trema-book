@@ -4,6 +4,32 @@
 執筆中です
 //}
 
+== ルータの動作 (続き)
+
+=== 複数の宛先ホストをまとめた経路を作る
+
+経路表は、ルータの転送動作にとって欠かせない存在です。ルータの動作を理解するために、もう少し詳しく見ていきましょう。
+
+前章では、次転送先を宛先のホスト毎に決めていました。しかし、これでは、ホストが多いネットワークでは、経路表のエントリ数が膨大になってしまいます。そのため、実際の経路表では、同じ L2 ネットワーク上にあるホストをまとめてひとつの宛先として指定します。この時、宛先として使用するのがネットワークアドレスとネットマスク長です。
+
+//image[router_network][同じ L2 ネットワーク上にあるホストを一つの宛先としてまとめる]
+
+例えば、@<img>{router_network} では、ルータ B の右側のネットワークは、ネットワークアドレスが 192.168.1.0、ネットマスク長が 24 であるとします。このネットワーク中にあるホストには、ネットワークアドレスと上位 24 ビットが同じとなるように IP アドレスを割り当てます。例えば、ホスト X の IP アドレスは 192.168.1.1 ですが、ネットワークアドレス 192.168.1.0 と上位 24 ビット分が同じであることがわかります。ホスト Y, Z についても同様です。
+
+このようにアドレスを振ることで、ルータ A の経路表は、@<img>{router_network} のようにシンプルに書くことができます。この時、例えばホスト X 宛のパケットを受け取ったルータ A は、次のように動作します。ルータ A の経路表には宛先 192.168.1.0/24 というエントリがあります。パケットは、宛先が 192.168.1.1 であるので、上位 24 ビット分を比較すると、このエントリに該当することがわかります。その結果、ルータ A は次にルータ B にパケットを転送すればいいことがわかります。ホスト Y, Z 宛も同様な処理できるため、このエントリ一つで複数の宛先をカバーできます。
+
+=== 宛先ホストがルータと直接つながっているかを調べる
+
+@<img>{router_network} では、ルータが宛先ホストに直接接続していない場合について説明しましたが、その判断はどのように行なっているのでしょうか？
+
+ルータは、その判断のために、自身のインターフェイスに割り当てられた IP アドレスを使います。そのため、ルータのインターフェイスには、ネットワーク中のホストとネットワークアドレスが同じになるように、IP アドレスを割り当てる必要があります。例えば、@<img>{router_address} で、ルータ B のインターフェイスには、接続するネットワーク中の各ホストの IP アドレスと同じネットワークアドレス 192.168.1.0/24 になるよう、アドレス 192.168.1.254 を割り当てています。
+
+//image[router_address][ルータのインターフェイスには、ネットワーク内のホストとネットワークアドレスが同じとなるよう、IP アドレスを割り当てる]
+
+@<img>{onlink} のネットワーク上でのホスト X 宛のパケットについて考えてみます。
+
+//image[onlink][ルータは、インターフェイスに割り当てられているアドレスを見て、宛先ホストが直接接続しているかの判断する]
+
 == ソースコード
 
 === ルーティングテーブルの実装
@@ -47,162 +73,6 @@ class RoutingTable
       return entry if entry
     end
     nil
-  end
-end
-//}
-
-=== ARP テーブルの実装
-
-//list[arptable.rb][ARP テーブル (@<tt>{arptable.rb}) のソースコード]{
-class ARPEntry
-  include Trema::Logger
-
-
-  attr_reader :port
-  attr_reader :hwaddr
-  attr_writer :age_max
-
-
-  def initialize port, hwaddr, age_max
-    @port = port
-    @hwaddr = hwaddr
-    @age_max = age_max
-    @last_updated = Time.now
-    info "New entry: MAC addr = #{ @hwaddr.to_s }, port = #{ @port }"
-  end
-
-
-  def update port, hwaddr
-    @port = port
-    @hwaddr = hwaddr
-    @last_updated = Time.now
-    info "Update entry: MAC addr = #{ @hwaddr.to_s }, port = #{ @port }"
-  end
-
-
-  def aged_out?
-    aged_out = Time.now - @last_updated > @age_max
-    info "Age out: An ARP entry (MAC address = #{ @hwaddr.to_s }, port number = #{ @port }) has been aged-out" if aged_out
-    aged_out
-  end
-end
-
-
-class ARPTable
-  DEFAULT_AGE_MAX = 300
-
-
-  def initialize
-    @db = {}
-  end
-
-
-  def update port, ipaddr, hwaddr
-    entry = @db[ ipaddr.to_i ]
-    if entry
-      entry.update( port, hwaddr )
-    else
-      new_entry = ARPEntry.new( port, hwaddr, DEFAULT_AGE_MAX )
-      @db[ ipaddr.to_i ] = new_entry
-    end
-  end
-
-
-  def lookup ipaddr
-    @db[ ipaddr.to_i ]
-  end
-
-
-  def age
-    @db.delete_if do | ipaddr, entry |
-      entry.aged_out?
-    end
-  end
-end
-//}
-
-=== Interface クラス
-
-//list[interface.rb][Interface クラス (@<tt>{interface.rb}) のソースコード]{
-require "arptable"
-require "routing-table"
-
-
-class Interface
-  attr_reader :hwaddr
-  attr_reader :ipaddr
-  attr_reader :prefixlen
-  attr_reader :port
-
-
-  def initialize options
-    @port = options[ :port ]
-    @hwaddr = Mac.new( options[ :hwaddr ] )
-    @ipaddr = IPAddr.new( options[ :ipaddr ] )
-    @prefixlen = options[ :prefixlen ]
-  end
-
-  
-  def has? mac
-    mac == hwaddr
-  end
-
-
-  def forward_action macda
-    [
-      ActionSetDlSrc.new( hwaddr.to_s ),
-      ActionSetDlDst.new( macda.to_s ),
-      ActionOutput.new( port )
-    ]
-  end
-end
-
-
-class Interfaces
-  def initialize interfaces = []
-    @list = []
-    interfaces.each do | each |
-      @list << Interface.new( each )
-    end
-  end
-
-  
-  def find_by_port port
-    @list.find do | each |
-      each.port == port
-    end
-  end
-
-
-  def find_by_ipaddr ipaddr
-    @list.find do | each |
-      each.ipaddr == ipaddr
-    end
-  end
-
-
-  def find_by_prefix ipaddr
-    @list.find do | each |
-      prefixlen = each.prefixlen
-      each.ipaddr.mask( prefixlen ) == ipaddr.mask( prefixlen )
-    end
-  end
-
-
-  def find_by_port_and_ipaddr port, ipaddr
-    @list.find do | each |
-      each.port == port and each.ipaddr == ipaddr
-    end
-  end
-
-
-  def ours? port, macda
-    return true if macda.broadcast?
-
-    interface = find_by_port( port )
-    if not interface.nil? and interface.has?( macda )
-      return true
-    end
   end
 end
 //}
