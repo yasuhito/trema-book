@@ -114,9 +114,7 @@ class SimpleRouter < Controller
   end
 
 
-  #######
   private
-  #######
 
 
   def handle_arp_request( dpid, message )
