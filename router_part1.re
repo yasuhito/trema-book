@@ -169,7 +169,7 @@ class SimpleRouter < Controller
 
 
   def forward( dpid, message )
-    nexthop = resolve_nexthop( message )
+    nexthop = resolve_next_hop( message )
 
     interface = @interfaces.find_by_prefix( nexthop )
     if not interface or interface.port == message.in_port
@@ -178,7 +178,7 @@ class SimpleRouter < Controller
 
     arp_entry = @arp_table.lookup( nexthop )
     if arp_entry
-      action = interface.forward_action( arp_entry.hwaddr )
+      action = create_forward_action_from( interface.port, arp_entry.hwaddr )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
@@ -187,7 +187,7 @@ class SimpleRouter < Controller
   end
 
 
-  def resolve_nexthop( message )
+  def resolve_next_hop( message )
     daddr = message.ipv4_daddr.value
     nexthop = @routing_table.lookup( daddr )
     if nexthop
@@ -224,6 +224,15 @@ class SimpleRouter < Controller
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
     arp_request = create_arp_request( interface, ipaddr )
     send_packet dpid, arp_request, interface
+  end
+
+
+  def create_forward_action_from port, macda
+    [
+      SetEthSrcAddr.new( hwaddr.to_s ),
+      SetEthDstAddr.new( macda.to_s ),
+      SendOutPort.new( port )
+    ]
   end
 end
 //}
@@ -332,7 +341,7 @@ end
   end
 //}
 
-パケットを転送するかどうかを判定するのが次の @<tt>{should_forward?} メソッドです。パケットを転送する場合とはつまり、パケットの宛先 IPv4 アドレスが、ルータのインターフェイスに割り当てらている IPv4 アドレスと異なる場合です。
+パケットを転送するかどうかを判定するのが次の @<tt>{should_forward?} メソッドです。パケットを転送する場合とはつまり、パケットの宛先 IPv4 アドレスが、ルータのインタフェースに割り当てらている IPv4 アドレスと異なる場合です。
 
 //emlist{
   def should_forward?( message )
@@ -356,47 +365,50 @@ end
   end
 //}
 
-=== パケットを転送する
+=== パケットを書き換えて転送する
 
-パケット転送の役目を担うのが、@<tt>{forward} メソッドです。
+さて、いよいよルータの動作の核心、パケットを書き換えて転送する部分です。
 
 //emlist{
   def forward( dpid, message )
-    # 1. ルーティングテーブルを参照し、次転送先を決定する
-    nexthop = resolve_nexthop( message )
+    nexthop = resolve_next_hop( message )
 
-    # 2. 出力インターフェイスを決定する
     interface = @interfaces.find_by_prefix( nexthop )
     if not interface or interface.port == message.in_port
       return
     end
 
-    # 3. ARP テーブルを検索する
     arp_entry = @arp_table.lookup( nexthop )
     if arp_entry
-      # 4. 転送用のフローエントリを設定し、受信パケットを Packet Out する
-      action = interface.forward_action( arp_entry.hwaddr )
-      flow_mod( dpid, message, action )
-      packet_out( dpid, message.data, action )
+      action = create_forward_action_from( interface.port, arp_entry.hwaddr )
+      flow_mod dpid, message, action
+      packet_out dpid, message.data, action
     else
-      # 5. MAC アドレスを問い合わせるための ARP リクエストを出す
-      handle_unresolved_packet( dpid, message, interface, nexthop )
+      handle_unresolved_packet dpid, message, interface, nexthop
     end
   end
 //}
 
-このメソッドでは、主に以下の 5 つの処理を行なっています。
+この @<tt>{forward} メソッドは、次の 5 つの処理を行ないます。
 
- 1. ルーティングテーブルを参照し、次転送先を決定する
- 2. 次転送先に送るための、出力インターフェイスを決定する
- 3. ARP テーブルを検索する
- 4. 3 で ARP エントリが見つかった場合、転送用のフローエントリを設定し、受信パケットを Packet Out する
- 5. 3 で ARP エントリが見つからなかった場合、MAC アドレスを問い合わせるための ARP リクエストを作り、Packet Out する
+ 1. ルーティングテーブルを参照し、次の転送先を決める
+ 2. 次の転送先に送るための、出力インタフェースを決める
+ 3. インタフェースがみつかった場合、ARP テーブルから宛先 MAC アドレスを探す
+ 4. MAC アドレスが見つかった場合、転送用のフローエントリを書き込み、受信パケットを Packet Out する
+ 5. MAC アドレスが見つからなかった場合、MAC アドレスを問い合わせるための ARP リクエストを作り、Packet Out する
 
-4 の処理では、@<tt>{Interface} クラスの @<tt>{forward_action} メソッドを用いて、フローエントリのアクションを作成しています。@<img>{forward} で説明したように、ルータは MAC アドレスを書き換えてから出力する必要があります。そのため、@<tt>{forward_action} は、送信元 MAC アドレスの書き換え、宛先 MAC アドレスの書き換え、該当するポートからの出力という三つのアクションを含む配列を作成します。
+このうち重要なのは 1 と 4 の処理です。
+
+==== ルーティングテーブルから次の転送先を決める
+
+(☆resolve_next_hop☆の説明おねがいします。)
+
+==== Flow Mod と Packet Out
+
+ARP テーブルから宛先の MAC アドレスが分かると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。@<img>{forward} で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。@<tt>{create_forward_action_from} メソッドはこのためのヘルパメソッドで、送信元 MAC アドレスの書き換え、宛先 MAC アドレスの書き換え、該当するポートからの出力という三つのアクションを含む次の配列を作ります。このアクションリストは Flow Mod と Packet Out メッセージの送信に使われます。
 
 //emlist{
-  def forward_action macda
+  def create_forward_action_from port, macda
     [
       SetEthSrcAddr.new( hwaddr.to_s ),
       SetEthDstAddr.new( macda.to_s ),
@@ -405,4 +417,4 @@ end
   end
 //}
 
-== まとめ/参考文献
+== まとめ
