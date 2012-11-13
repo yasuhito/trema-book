@@ -20,9 +20,9 @@
  2. コンピュータサイエンスの名門、カーネギーメロン大学にはコーク・マシンという変わったコーラ自販機があり、UNIX コマンド一発でコーラの冷え具合を確認できるようになっています@<fn>{coke_machine}。遠くの自販機まで行って@<bou>{ぬるい}コーラをつかまされないようにする工夫です。
  3. RFC で標準化されているコーヒーポットプロトコルでは、遠隔地にあるコーヒーポットのコーヒーの量を監視したり、コーヒーを自動的にいれたりするための半分冗談のインターフェースを定義しています@<fn>{rfc2324}。本当に実装してしまった人もいたそうですから驚きです。
 
-//footnote[xpizza][MIT の @<tt>{xpizza} コマンドのマニュアル: @<tt>{http://stuff.mit.edu/afs/sipb/project/lnf/other/CONTRIB/ai-info}]
-//footnote[coke_machine][カーネギーメロン大のコーク・マシンのサイト: @<tt>{http://www.cs.cmu.edu/~coke/}]
-//footnote[rfc2324][RFC 2324: http://www.ietf.org/rfc/rfc2324.txt]
+//footnote[xpizza][MIT の @<tt>{xpizza} コマンドのマニュアル: @<href>{http://stuff.mit.edu/afs/sipb/project/lnf/other/CONTRIB/ai-info}]
+//footnote[coke_machine][カーネギーメロン大のコーク・マシンのサイト: @<href>{http://www.cs.cmu.edu/~coke/}]
+//footnote[rfc2324][RFC 2324: @<href>{http://www.ietf.org/rfc/rfc2324.txt}]
 
 こうした「ソフトウェアで楽をする」ハックのうち、もっとも大規模な例が最新鋭のデータセンターです。クラウドサービスの裏で動くデータセンターは極めて少人数のエンジニアが管理しており、大部分の管理作業をソフトウェアによって極限まで自動化している、という記事を読んだことがある人も多いでしょう。このようにピザやコーラ、コーヒーのようなお遊びから、データセンターのように一筋縄ではいかない相手まで、ソフトウェアで「モノ」を思いどおりにコントロールするのはもっとも楽しく、そして実際に役に立つハックの一種です。
 
@@ -185,7 +185,7 @@ OpenFlow スイッチが安くなり、コモディティ化が進むとさま�
 
 また、ポート数密度や性能を気にしなければ、OpenFlow スイッチをソフトウェアで実現するという選択肢もあります。実際すでに Open vSwitch@<fn>{openvswitch} をはじめとしたさまざまなソフトウェア実装がそろっています。
 
-//footnote[openvswitch][@<tt>{http://openvswitch.org/}]
+//footnote[openvswitch][@<href>{http://openvswitch.org/}]
 
 === ソフトウェア開発のテクニックやツールが使える
 
