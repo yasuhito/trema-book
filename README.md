@@ -1,6 +1,6 @@
 # これは何？
 
-2013 年初頭に技術評論社から刊行予定の「OpenFlow 実践入門」の原稿データです。以下の手順で自分で PDF や epub を作って読むことができます。
+2013 年初頭に技術評論社から刊行予定の「OpenFlow 実践入門」の原稿データです。以下の手順で自分で PDF や epub、mobi を作って読むことができます。
 ただし生成できるデータは「素人仕事」なので、プロが組版したきれいな本が欲しい人はぜひ本屋さんで買ってください。
 
 
@@ -13,12 +13,13 @@
  3. TeX Live 2012 をインストール: http://oku.edu.mie-u.ac.jp/~okumura/texwiki/?Linux%2FUbuntu#hf3fd9de
 
 
-# PDF や epub を作ろう
+# PDF や epub、mobi を作ろう
 
 rake コマンド一発でできます。
 
  * "rake pdf" で trema.pdf ができます。
  * "rake epub" で trema.epub ができます。
+ * "rake mobi" で trema.mobi ができます (要 kindleGen)。
 
 
 # 「作ってみた」レポート

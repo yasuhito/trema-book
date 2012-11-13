@@ -12,9 +12,14 @@ namespace :clean do
   task :epub do
     sh "rm -f trema.epub"
   end
+
+
+  task :mobi do
+    sh "rm -f trema.mobi"
+  end
 end
 
-task :clean => [ "clean:pdf", "clean:epub" ]
+task :clean => [ "clean:pdf", "clean:epub", "clean:mobi" ]
 
 
 desc "PDF を生成"
@@ -26,6 +31,15 @@ end
 desc "epub を生成"
 task :epub => "clean:epub" do
   sh "review-epubmaker trema.yaml"
+end
+
+
+desc "mobi を生成"
+task :mobi => [ :epub, "clean:mobi" ] do
+  if `which kindleGen`.empty?
+    raise "kindleGen is not installed!"
+  end
+  sh "KindleGen trema.epub" rescue nil
 end
 
 
