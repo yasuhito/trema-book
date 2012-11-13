@@ -182,7 +182,7 @@ class SimpleRouter < Controller
 
     arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
-      action = create_forward_action_from( interface.port, arp_entry.hwaddr )
+      action = create_action_from( interface.hwaddr, arp_entry.hwaddr, interface.port )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
@@ -230,9 +230,9 @@ class SimpleRouter < Controller
   end
 
 
-  def create_forward_action_from port, macda
+  def create_action_from( macsa, macda, port )
     [
-      SetEthSrcAddr.new( hwaddr ),
+      SetEthSrcAddr.new( macsa ),
       SetEthDstAddr.new( macda ),
       SendOutPort.new( port )
     ]
@@ -383,7 +383,7 @@ end
 
     arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
-      action = create_forward_action_from( interface.port, arp_entry.hwaddr )
+      action = create_action_from( interface.port, arp_entry.hwaddr )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
@@ -408,12 +408,12 @@ end
 
 ==== パケットの書き換えと転送 (Flow Mod と Packet Out)
 
-ARP テーブルから宛先の MAC アドレスが分かると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。@<img>{forward} で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。@<tt>{create_forward_action_from} メソッドはこのためのヘルパメソッドで、送信元 MAC アドレスの書き換え、宛先 MAC アドレスの書き換え、該当するポートからの出力という三つのアクションを含む次の配列を作ります。このアクションリストは Flow Mod と Packet Out メッセージの送信に使われます。
+ARP テーブルから宛先の MAC アドレスが分かると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。@<img>{forward} で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。@<tt>{create_action_from} メソッドはこのためのヘルパメソッドで、送信元 MAC アドレスの書き換え、宛先 MAC アドレスの書き換え、該当するポートからの出力という三つのアクションを含む次の配列を作ります。このアクションリストは Flow Mod と Packet Out メッセージの送信に使われます。
 
 //emlist{
-  def create_forward_action_from port, macda
+  def create_action_from( macsa, macda, port )
     [
-      SetEthSrcAddr.new( hwaddr ),
+      SetEthSrcAddr.new( macsa ),
       SetEthDstAddr.new( macda ),
       SendOutPort.new( port )
     ]
