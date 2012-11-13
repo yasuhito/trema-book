@@ -18,10 +18,6 @@
 
 このようにアドレスを振ることで、ルータ A の経路表は、@<img>{router_network} のようにシンプルに書くことができます。この時、例えばホスト X 宛のパケットを受け取ったルータ A は、次のように動作します。ルータ A の経路表には宛先 192.168.1.0/24 というエントリがあります。パケットは、宛先が 192.168.1.1 であるので、上位 24 ビット分を比較すると、このエントリに該当することがわかります。その結果、ルータ A は次にルータ B にパケットを転送すればいいことがわかります。ホスト Y, Z 宛も同様な処理できるため、このエントリ一つで複数の宛先をカバーできます。
 
-=== ロンゲストプレフィックスマッチ
-
-=== デフォルトルート
-
 === 宛先ホストがルータと直接つながっているかを調べる
 
 @<img>{router_network} では、ルータが宛先ホストに直接接続していない場合について説明しましたが、その判断はどのように行なっているのでしょうか？
@@ -34,7 +30,54 @@
 
 //image[onlink][ルータは、インターフェイスに割り当てられているアドレスを見て、宛先ホストが直接接続しているかの判断する]
 
+=== 経路をまとめる
+
+//image[aggregate][次転送先が同じ経路をまとめる]
+
+=== ロンゲストマッチ
+
+//image[longest_match][マスク長が一番長い経路を選択する]
+
+=== デフォルトルート
+
+//image[default_route][どの経路にもマッチしなかった場合、デフォルトルートを使う]
+
 == ソースコード
+
+=== 転送部(再録)
+
+//emlist{
+  def forward( dpid, message )
+    next_hop = resolve_next_hop( message.ipv4_daddr )
+
+    interface = @interfaces.find_by_prefix( next_hop )
+    if not interface or interface.port == message.in_port
+      return
+    end
+
+    arp_entry = @arp_table.lookup( next_hop )
+    if arp_entry
+      action = create_action_from( interface.hwaddr, arp_entry.hwaddr, interface.port )
+      flow_mod dpid, message, action
+      packet_out dpid, message.data, action
+    else
+      handle_unresolved_packet dpid, message, interface, next_hop
+    end
+  end
+//}
+
+
+
+//emlist{
+  def resolve_next_hop( daddr )
+    next_hop = @routing_table.lookup( daddr.value )
+    if next_hop
+      next_hop
+    else
+      daddr.value
+    end
+  end
+//}
 
 === ルーティングテーブルの実装
 
@@ -80,6 +123,40 @@ class RoutingTable
   end
 end
 //}
+
+=== コンフィグ
+
+//emlist{
+$interface = [
+  { 
+    :port => 3, 
+    :hwaddr => "54:00:00:01:01:01",
+    :ipaddr => "192.168.11.1",
+    :prefixlen => 24
+  }, 
+  {
+    :port => 2,
+    :hwaddr => "54:00:00:02:02:02",
+    :ipaddr => "192.168.12.1",
+    :prefixlen => 24
+  },
+  { 
+    :port => 1, 
+    :hwaddr => "54:00:00:04:04:04",
+    :ipaddr => "192.168.13.1",
+    :prefixlen => 24
+  } 
+]
+
+$route = [
+  {
+    :destination => "192.168.14.0", 
+    :prefixlen => 24, 
+    :gateway => "192.168.13.2" 
+  }
+]
+//}
+
 
 == 実行してみよう
 
