@@ -126,7 +126,7 @@ class SimpleRouter < Controller
     interface = @interfaces.find_by_port_and_ipaddr( message.in_port, message.arp_tpa )
     if interface
       arp_reply = create_arp_reply_from( message, interface.hwaddr )
-      send_packet dpid, arp_reply, interface
+      packet_out dpid, arp_reply, SendOutPort.new( interface.port )
     end
   end
 
@@ -158,7 +158,7 @@ class SimpleRouter < Controller
     arp_entry = @arp_table.lookup( saddr )
     if arp_entry
       icmpv4_reply = create_icmpv4_reply( arp_entry, interface, message )
-      send_packet dpid, icmpv4_reply, interface
+      packet_out dpid, icmpv4_reply, SendOutPort.new( interface.port )
     else
       handle_unresolved_packet dpid, message, interface, saddr
     end
@@ -212,14 +212,9 @@ class SimpleRouter < Controller
   end
 
 
-  def send_packet( dpid, packet, interface )
-    packet_out dpid, packet, ActionOutput.new( interface.port )
-  end
-
-
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
     arp_request = create_arp_request_from( interface, ipaddr )
-    send_packet dpid, arp_request, interface
+    packet_out dpid, arp_request, SendOutPort.new( interface.port )
   end
 
 
@@ -292,8 +287,8 @@ end
     port = message.in_port
     interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
     if interface
-      packet = create_arp_reply_from( message, interface.hwaddr )
-      send_packet dpid, packet, interface
+      arp_reply = create_arp_reply_from( message, interface.hwaddr )
+      packet_out dpid, arp_reply, SendOutPort.new( interface.port )
     end
   end
 //}
@@ -356,7 +351,7 @@ end
     arp_entry = @arp_table.lookup( saddr )
     if arp_entry
       icmpv4_reply = create_icmpv4_reply( arp_entry, interface, message )
-      send_packet dpid, icmpv4_reply, interface
+      packet_out dpid, icmpv4_reply, SendOutPort.new( interface.port )
     else
       handle_unresolved_packet dpid, message, interface, saddr
     end
