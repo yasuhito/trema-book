@@ -103,7 +103,7 @@ class SimpleRouter < Controller
     if message.arp_request?
       handle_arp_request dpid, message
     elsif message.arp_reply?
-      handle_arp_reply dpid, message
+      handle_arp_reply message
     elsif message.ipv4?
       handle_ipv4 dpid, message
     else
@@ -128,13 +128,13 @@ class SimpleRouter < Controller
   def handle_arp_request( dpid, message )
     interface = @interfaces.find_by_port_and_ipaddr( message.in_port, message.arp_tpa )
     if interface
-      arp_reply = create_arp_reply( message, interface.hwaddr )
+      arp_reply = create_arp_reply_from( message, interface.hwaddr )
       send_packet dpid, arp_reply, interface
     end
   end
 
 
-  def handle_arp_reply( dpid, message )
+  def handle_arp_reply( message )
     @arp_table.update message.in_port, message.arp_spa, message.arp_sha
   end
 
@@ -169,7 +169,7 @@ class SimpleRouter < Controller
 
 
   def forward( dpid, message )
-    next_hop = resolve_next_hop( message )
+    next_hop = resolve_next_hop( message.ipv4_daddr )
 
     interface = @interfaces.find_by_prefix( next_hop )
     if not interface or interface.port == message.in_port
@@ -187,13 +187,12 @@ class SimpleRouter < Controller
   end
 
 
-  def resolve_next_hop( message )
-    daddr = message.ipv4_daddr.value
-    next_hop = @routing_table.lookup( daddr )
+  def resolve_next_hop( daddr )
+    next_hop = @routing_table.lookup( daddr.value )
     if next_hop
       next_hop
     else
-      daddr
+      daddr.value
     end
   end
 
@@ -222,15 +221,15 @@ class SimpleRouter < Controller
 
 
   def handle_unresolved_packet( dpid, message, interface, ipaddr )
-    arp_request = create_arp_request( interface, ipaddr )
+    arp_request = create_arp_request_from( interface, ipaddr )
     send_packet dpid, arp_request, interface
   end
 
 
   def create_forward_action_from port, macda
     [
-      SetEthSrcAddr.new( hwaddr.to_s ),
-      SetEthDstAddr.new( macda.to_s ),
+      SetEthSrcAddr.new( hwaddr ),
+      SetEthDstAddr.new( macda ),
       SendOutPort.new( port )
     ]
   end
@@ -250,7 +249,7 @@ end
     if message.arp_request?
       handle_arp_request( dpid, message )
     elsif message.arp_reply?
-      handle_arp_reply( dpid, message )
+      handle_arp_reply message
     elsif message.ipv4?
       handle_ipv4( dpid, message )
     else
@@ -296,7 +295,7 @@ end
     port = message.in_port
     interface = @interfaces.find_by_port_and_ipaddr( port, message.arp_tpa )
     if interface
-      packet = create_arp_reply( message, interface.hwaddr )
+      packet = create_arp_reply_from( message, interface.hwaddr )
       send_packet dpid, packet, interface
     end
   end
@@ -309,7 +308,7 @@ end
 受信パケットが ARP リプライであった場合、ARP テーブル (@<tt>{@arp_table}) に MAC アドレスを格納します。
 
 //emlist{
-  def handle_arp_reply( dpid, message )
+  def handle_arp_reply( message )
     @arp_table.update message.in_port, message.arp_spa, message.arp_sha
   end
 //}
@@ -371,7 +370,7 @@ end
 
 //emlist{
   def forward( dpid, message )
-    next_hop = resolve_next_hop( message )
+    next_hop = resolve_next_hop( message.ipv4_daddr )
 
     interface = @interfaces.find_by_prefix( next_hop )
     if not interface or interface.port == message.in_port
@@ -410,8 +409,8 @@ ARP テーブルから宛先の MAC アドレスが分かると、パケット�
 //emlist{
   def create_forward_action_from port, macda
     [
-      SetEthSrcAddr.new( hwaddr.to_s ),
-      SetEthDstAddr.new( macda.to_s ),
+      SetEthSrcAddr.new( hwaddr ),
+      SetEthDstAddr.new( macda ),
       SendOutPort.new( port )
     ]
   end
