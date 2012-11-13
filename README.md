@@ -10,7 +10,7 @@
 
  1. Ruby 環境と rake をインストール
  2. review (組版ソフト) の最新版をインストール: https://github.com/kmuto/review
- 3. TeX Live 2012 をインストール: http://oku.edu.mie-u.ac.jp/~okumura/texwiki/?Linux%2FUbuntu#hf3fd9de
+ 3. TeX Live 2012 をインストール
 
 
 # PDF や epub、mobi を作ろう
