@@ -8,7 +8,7 @@
 
 新しく Web サービスを立ち上げるには、今や Ruby on Rails@<fn>{rails} などの Web アプリケーションフレームワークが不可欠です。もしもフレームワークの助けを借りずに、フルスクラッチで Web サイトを構築しなければならないとしたら。何十倍ものコーディングが発生し、しかもそのほとんどは車輪の再発明に終わるでしょう。効率的に Web サイトを作りたいプログラマ向けに、書店の技術書コーナーにはさまざまなフレームワークの本があふれかえっています。こうしたフレームワークを使って Web サービスを構築することは、すでに常識なのです。
 
-//footnote[rails][@<tt>{http://rubyonrails.org/}]
+//footnote[rails][@<href>{http://rubyonrails.org/}]
 
 OpenFlow コントローラもフルスクラッチで作るのは大変です。OpenFlow の標準仕様は C で書いてあるので、まずは C が読めることが必須です。仕様が理解できたら、開発に使うプログラミング言語向けにライブラリを書き、その上にコントローラを構築し…考えただけでひと仕事です。動作テストのためのツール類も自分で準備しなければなりません。
 
@@ -31,7 +31,7 @@ Floodlight	Java			Big Switch Networks Inc.					Apache
 
 Trema は Ruby 用の OpenFlow コントローラフレームワークです (@<img>{trema})。GPL バージョン 2 ライセンスのフリーソフトウェアです。
 
-//image[trema][Trema のサイト (@<tt>{http://trema.github.com/trema})]
+//image[trema][Trema のサイト (@<href>{http://trema.github.com/trema})]
 
 ターゲット言語が Ruby であることからもわかるとおり、Trema の最大の特長は実行速度よりも開発効率に重きを置いていることです。たとえば、Trema を使うと他のフレームワークに比べて大幅に短いコードでコントローラを実装できます。@<list>{trema_hub} は Trema で書いたコントローラの一例ですが、たった 14 行のコードだけでハブとして動作する完全なコントローラが書けます。
 
@@ -58,7 +58,7 @@ end
 
 NOX は OpenFlow の生まれ故郷スタンフォード大で開発されたもっとも古いフレームワークで、C++ に対応しています (@<img>{nox})。ライセンスは GPL バージョン 3 のフリーソフトウェアです。
 
-//image[nox][NOX のサイト (@<tt>{http://www.noxrepo.org/nox/about-nox/})]
+//image[nox][NOX のサイト (@<href>{http://www.noxrepo.org/nox/about-nox/})]
 
 NOX の長所はユーザ層の厚さです。OpenFlow の登場直後から開発しており、メーリングリストでは OpenFlow 仕様を作った研究者本人など、SDN の主要な関係者が活発に議論しています。また歴史が古いため、Web で情報を集めやすいという利点もあります。
 
@@ -166,7 +166,7 @@ REGISTER_COMPONENT(container::Simple_component_factory<Hub>, Hub);
 
 POX は NOX から派生したプロジェクトで、Python でのコントローラ開発に対応したフレームワークです (@<img>{pox})。ライセンスは GPL バージョン 3 のフリーソフトウェアです。
 
-//image[pox][POX のサイト (@<tt>{http://www.noxrepo.org/pox/about-pox/})]
+//image[pox][POX のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})]
 
 POX の特長は実装が Pure Python であるため、Linux, Mac, Windows のいずれでも OS を問わず動作することです。まだまだ若いプロジェクトであるためサンプルアプリケーションの数は少ないものの、Python プログラマには注目のプロジェクトです。
 
@@ -215,7 +215,7 @@ def launch ():
 
 Floodlight は Java 用のフレームワークです (@<img>{floodlight})。ライセンスは Apache のフリーソフトウェアです。
 
-//image[floodlight][Floodlight のサイト (@<tt>{http://www.noxrepo.org/pox/about-pox/})]
+//image[floodlight][Floodlight のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})]
 
 Floodlight の特長はずばり、プログラマ人口の多い Java を採用していることです。最近は大学のカリキュラムで最初に Java を学ぶことが多いため、大部分の人にとって最もとっつきやすいでしょう。また実装が Pure Java であるため、POX と同じく OS を問わず動作するという利点もあります。
 
