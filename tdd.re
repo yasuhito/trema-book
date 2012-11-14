@@ -40,7 +40,7 @@ A. テストファーストはテスト駆動開発のステップの一部な�
 
 テスト駆動開発の第一人者、ケントベックは @<tt>{stackoverflow.com} の「どれだけ深くテストをすればいいか？」というトピック@<fn>{stackoverflow}に次の投稿をしています。
 
-//footnote[stackoverflow][@<tt>{http://stackoverflow.com/questions/153234/how-deep-are-your-unit-tests}]
+//footnote[stackoverflow][@<href>{http://stackoverflow.com/questions/153234/how-deep-are-your-unit-tests}]
 
 #@warn(訳が正しいかチェック)
 //quote{
@@ -49,7 +49,7 @@ A. テストファーストはテスト駆動開発のステップの一部な�
 
 Ruby on Rails の作者として有名な DHH は、彼の勤める 37signals のブログで次のように語っています@<fn>{37signals_blog}。
 
-//footnote[37signals_blog][@<tt>{http://37signals.com/svn/posts/3159-testing-like-the-tsa}]
+//footnote[37signals_blog][@<href>{http://37signals.com/svn/posts/3159-testing-like-the-tsa}]
 
 #@warn(訳が正しいかチェック)
 //quote{
@@ -494,20 +494,20 @@ Trema のサンプルディレクトリ (@<tt>{src/examples}) の下にはテス
 : テスト駆動開発入門 (ケント・ベック著、ピアソン・エデュケーション)
   ケント・ベック自身によるバイブルです。もったいないことに日本語版の訳がまずく、意味の通らないところがたくさんあります。私たちは仲間との勉強会に原著を使いましたが、わかりやすい英語だったので問題ありませんでした。
 
-: stackoverflow (@<tt>{http://stackoverflow.com/})
+: stackoverflow (@<href>{http://stackoverflow.com/})
   私はテストに限らずプログラミングでわからないことがあると、この Q&A サイトを検索します。ユーザーは役に立つ回答には点数をつけることができ、またケント・ベックなど有名人が回答してくれることが多いので、質の高い回答がそろっています。この章で紹介したケント・ベックの投稿にはなんと 200 ポイント以上の点数がついていました!
 
-: Signal vs. Noise (@<tt>{http://37signals.com/svn})
+: Signal vs. Noise (@<href>{http://37signals.com/svn})
   Ruby on Rails を作った小さな会社 37signals のブログです。この章で紹介した DHH のテスト論など、有名ハッカーの生の声が読めます。記事それぞれが非常に刺激的で (一部) 過激な意見にみちあふれています。
 
 : リファクタリング (マーチン・ファウラー著、ピアソン・エデュケーション)
   この本の最大の功績は、コードのまずい兆候 (重複するコードがあるとか、長すぎるメソッドなど) を「コードの臭い」と表現したことです。粗相をした赤ちゃんのおむつのように臭うコードには改善が必要で、この本にはそのためのレシピがそろっています。この本は Java ですが、Ruby 版 (リファクタリング: Ruby エディション、Jay Fields ら著、ASCII) もあります。
 
-: reek (@<tt>{https://github.com/troessner/reek})
+: reek (@<href>{https://github.com/troessner/reek})
   「コードの臭い」を検知する能力はプログラマの美意識にいくらか依存しますが、ソフトウェアで客観的に検知できるとしたらすばらしいと思いませんか。reek は Ruby コードの臭いを自動的に検知して改善すべき場所を教えてくれる便利なツールです。次に採り上げる flog, flay とともに、この本のサンプルコードを書く際にとてもお世話になりました。
 
-: flog (@<tt>{http://ruby.sadi.st/Flog.html})
+: flog (@<href>{http://ruby.sadi.st/Flog.html})
   「Ruby サディストのためのツール」と銘打ったこのツールは、すべてのメソッドがどのくらい複雑かを客観的なポイントで表示してくれます (大きいほど複雑でテストしづらい)。Trema のコードでは目安としてこれが 10 ポイントをこえないようにしています。
 
-:flay (@<tt>{http://ruby.sadi.st/Flay.html})
+:flay (@<href>{http://ruby.sadi.st/Flay.html})
   この「Ruby サディストのためのツール その2」は、重複するコードを探して容赦なく指摘してくれます。DRY を目指すならこのツールを使って重複を完璧になくすべきです。
