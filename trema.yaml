@@ -48,7 +48,7 @@ texstyle: ruby
 texdocumentclass: ["jsbook", "a5"]
 
 # 目次として抽出するレベル
-toclevel: 3
+toclevel: 2
 
 # セクション番号を表示するレベル
 secnolevel: 2
