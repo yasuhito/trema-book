@@ -92,7 +92,7 @@ Switch Daemon の重要な仕事として、OpenFlow メッセージの検査が
 @<em>{友太郎} 「Switch Manager と Switch Daemon プロセスでの役割分担とか、スイッチごとに Switch Daemon プロセスが起動するところなど、いかにも UNIX っぽいですね。」@<br>{}
 @<em>{取間先生} 「うむ。そうしたほうがひとつひとつのデーモンが単純化できて、実装も簡単になるからな」@<br>{}
 @<em>{友太郎} 「送信するメッセージを厳密にチェックするのはいいと思うんですが、受信もチェックするのってやりすぎではないですか？ほら、"送信するものに関しては厳密に、受信するものに関しては寛容に@<fn>{postel}" って言うじゃないですか」@<br>{}
-@<em>{取間先生} 「受信メッセージのチェックをあまり寛容にしすぎると、後々とんでもないことが起こるのじゃ。Trema の開発者が言っておったが、昔あるネットワーク機器の開発でそれをやって相互接続テストでひどい目に遭ったそうじゃよ。それに、Trema は受信メッセージもちゃんとチェックするようにしたおかげで、実際に助かったことがたくさんあったのじゃ。たとえば OpenFlow の標準的なベンチマークツール cbench (@<tt>{http://www.openflow.org/wk/index.php/Oflops}) のバグ発見に Trema が一役買ったそうじゃ。」@<br>{}
+@<em>{取間先生} 「受信メッセージのチェックをあまり寛容にしすぎると、後々とんでもないことが起こるのじゃ。Trema の開発者が言っておったが、昔あるネットワーク機器の開発でそれをやって相互接続テストでひどい目に遭ったそうじゃよ。それに、Trema は受信メッセージもちゃんとチェックするようにしたおかげで、実際に助かったことがたくさんあったのじゃ。たとえば OpenFlow の標準的なベンチマークツール Cbench (@<href>{http://www.openflow.org/wk/index.php/Oflops}) のバグ発見に Trema が一役買ったそうじゃ。」@<br>{}
 @<em>{友太郎} 「へえー! すごいですね!」
 
 //footnote[postel][TCP を規定した RFC 793 において、ジョン・ポステルが "相互運用性を確保するために TCP の実装が持つべき性質" として要約した、いわゆる@<ruby>{堅牢,けんろう}さ原則のこと。]
@@ -128,7 +128,7 @@ Switch Daemon のもうひとつの重要な役割がスイッチの仮想化で
 
 === 仮想スイッチ
 
-仮想スイッチの実体は、フリーの OpenFlow スイッチ実装である Open vSwitch (@<tt>{http://openvswitch.org/}) です。@<tt>{trema run} コマンドに与えられた仮想ネットワーク設定ファイル中の仮想スイッチ定義 (@<list>{vswitch}) に従って、Trema はスイッチプロセスを必要な数だけ起動します。
+仮想スイッチの実体は、フリーの OpenFlow スイッチ実装である Open vSwitch (@<href>{http://openvswitch.org/}) です。@<tt>{trema run} コマンドに与えられた仮想ネットワーク設定ファイル中の仮想スイッチ定義 (@<list>{vswitch}) に従って、Trema はスイッチプロセスを必要な数だけ起動します。
 
 //list[vswitch][仮想ネットワーク設定ファイル中の仮想スイッチ定義例]{
 vswitch("lsw") {
@@ -377,7 +377,7 @@ Trema のモジュール間で交換される OpenFlow メッセージを解析�
 
 == Trema Apps
 
-Trema Apps (@<tt>{http://github.com/trema/apps}) は、Trema を使った実用的・実験的な少し大きめのアプリケーションを集めたリポジトリです。Trema 本体と同様に GitHub 上で公開されており、次の手順でダウンロードできます。
+Trema Apps (@<href>{http://github.com/trema/apps}) は、Trema を使った実用的・実験的な少し大きめのアプリケーションを集めたリポジトリです。Trema 本体と同様に GitHub 上で公開されており、次の手順でダウンロードできます。
 
 //cmd{
 % git clone https://github.com/trema/apps.git
@@ -399,7 +399,7 @@ OpenFlow ネットワーク全体を独立したスライスに分割し、複�
 
 === memcached 版ラーニングスイッチ
 
-サンプルプログラムのラーニングスイッチ (@<chap>{learning_switch}) と同じ機能を持ちますが、FDB の実装に memcached (@<tt>{http://memcached.org/}) を用いています。Ruby のmemcached ライブラリを使うことで、オリジナルのラーニングスイッチにほとんど変更を加えずに memcached 対応できているところがポイントです。また、マルチラーニングスイッチ (@<chap>{openflow_framework_trema}) の memcached 版もあります。
+サンプルプログラムのラーニングスイッチ (@<chap>{learning_switch}) と同じ機能を持ちますが、FDB の実装に memcached (@<href>{http://memcached.org/}) を用いています。Ruby のmemcached ライブラリを使うことで、オリジナルのラーニングスイッチにほとんど変更を加えずに memcached 対応できているところがポイントです。また、マルチラーニングスイッチ (@<chap>{openflow_framework_trema}) の memcached 版もあります。
 
 === シンプルマルチキャスト
 
