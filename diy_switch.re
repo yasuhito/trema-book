@@ -25,13 +25,13 @@ P 社		32 万円〜
 
 そんな中、事件は 2012 年の春に起きました。"自宅ラック派" エンジニアの一人、@SRCHACK.ORG 氏@<fn>{srchack}が二千円で買える家庭用無線 LAN ルーター (@<img>{akihabara}) をハックし、OpenFlow スイッチに改造するツール一式を公開したのです。これは劇的な出来事で、OpenFlow を試したいけどもスイッチが高くてどうしようか迷っている人々を電器店に走らせるきっかけとなりました。さらに同氏とその仲間達は秋葉原にて「無線 LAN ルーターを OpenFlow 化して、Trema と接続してみよう」勉強会を開催し、集まった一人ひとりに OpenFlow スイッチ自作法を伝授したのです。これらの情報は Twitter でも公開され、日本各地からの OpenFlow スイッチ自作レポートが続々と集まりはじめました。
 
-//footnote[srchack][@<tt>{http://www.srchack.org/}]
+//footnote[srchack][@<href>{http://www.srchack.org/}]
 
 //image[akihabara][OpenFlow 改造が可能な家庭用無線 LAN ルーター。もちろん秋葉原などでこのように普通に売っている]
 
 2012 年の夏にはこの動きがさらに広がりを見せます。幕張で開催されるネットワーク業界の最大の展示会、Interop Tokyo 2012 の併催イベント、オープンルーター・コンペティション@<fn>{orc}に、@SRCHACK.ORG 氏による自作 OpenFlow スイッチプロジェクトが参戦したのです。このオープンルーター・コンペティションとは、次世代のネットワーク技術者の発掘を目的としたコンテストで「ソフトウエア、ハードウエアに関わらずまったく新しいルーターを改良、または創造する」という課題で競われます。最終審査会では予選を突破した 10 チームがそれぞれのルーターを持ち寄りましたが、@SRCHACK.ORG 氏の自作 OpenFlow スイッチによるメッシュネットワーク (@<img>{orc_srchack}) が見事準グランプリを勝ち取りました。Interop のような業界が注目する場で受賞したことによって、OpenFlow スイッチの自作がますます注目を集めることになったのです。
 
-//footnote[orc][@<tt>{http://www.interop.jp/2012/orc/}]
+//footnote[orc][@<href>{http://www.interop.jp/2012/orc/}]
 
 //image[orc_srchack][オープンルーター・コンペティション会場での @SRCHACK.ORG 氏による自作 OpenFlow スイッチを使ったメッシュネットワーク][scale=0.12]
 
@@ -76,7 +76,7 @@ WZR-HP-AG300H	Buffalo		約六千円
 
 === ファームウエアの入手と準備
 
-ファームウエアを公開している @SRCHACK.ORG 氏のサイト (@<tt>{http://openflow.inthebox.info/}) から、手持ちの無線 LAN ルーターに対応するファームウエアをダウンロードしてください。いくつかのバージョンの OpenFlow プロトコルに対応したファームウエアが用意されていますが、動作確認のためには Trema が対応しておりコントローラ実装も豊富な OpenFlow 1.0 用ファームウエアが良いでしょう。
+ファームウエアを公開している @SRCHACK.ORG 氏のサイト (@<href>{http://openflow.inthebox.info/}) から、手持ちの無線 LAN ルーターに対応するファームウエアをダウンロードしてください。いくつかのバージョンの OpenFlow プロトコルに対応したファームウエアが用意されていますが、動作確認のためには Trema が対応しておりコントローラ実装も豊富な OpenFlow 1.0 用ファームウエアが良いでしょう。
 
 次にファームウエアをルーターに書き込むために、ファームウエアをダウンロードしたホストを無線 LAN ルーターに接続します。ホストは無線 LAN ルーターの LAN 側ポートに接続してください (@<img>{firmware_update_setup})。4 つある LAN 側ポートのどれかに接続すれば、無線 LAN ルーターの DHCP サーバー機能によりホストに自動的に IP アドレスが割り当てられます。これで準備はおしまいです。
 
@@ -136,8 +136,8 @@ root@OpenWrt:/#
 
 #@warn(もし正式なドキュメントが @SRCHACK.ORG さんから公開されれば、そちらの URL と差し替える)
 
- * @<tt>{http://www.srchack.org/article.php?story=20120324231158246}
- * @<tt>{http://www.srchack.org/article.php?story=20120322001904501}
+ * @<href>{http://www.srchack.org/article.php?story=20120324231158246}
+ * @<href>{http://www.srchack.org/article.php?story=20120322001904501}
 
 == Trema とつないでみよう
 
@@ -279,7 +279,7 @@ controller% trema run ./apps/flow_dumper/flow-dumper.rb
 : ポートごとのステータスを取ることができない
   自作 OpenFlow スイッチでは 1 つのインターフェースが仮想的に 4 ポートに分かれていますが、実質的にはこれらは 1 つのポートです。このため、@<chap>{routing_switch}で紹介した Trema Apps の Topology など、個々のポートの UP や DOWN 情報を使うアプリケーションは一部正しく動作しません。また内部的にタグ付き VLAN を使っているため、タグ付き VLAN のパケットが入ってきたときの挙動も未検証です。
 
-自作 OpenFlow 用ファームウエアはオープンに開発が行われています (@<tt>{http://openflow.inthebox.info/})。もし新しい不具合や改善方法をみつけた方はぜひフィードバックを送ってください。
+自作 OpenFlow 用ファームウエアはオープンに開発が行われています (@<href>{http://openflow.inthebox.info/})。もし新しい不具合や改善方法をみつけた方はぜひフィードバックを送ってください。
 
 == まとめ
 
@@ -288,20 +288,20 @@ controller% trema run ./apps/flow_dumper/flow-dumper.rb
  * @SRCHACK.ORG 氏公開の OpenWRT ベースのファームウエアを使うと、一部の無線 LAN ルーターを OpenFlow スイッチに改造できます。
  * @<tt>{show-switch-features.rb} コマンドを使うと、スイッチの詳細情報を表示できます。
  * @<tt>{flow-dumper.rb} コマンドを使うと、実際に設定されているフローの中身を確認できます。
- * 自作 OpenFlow スイッチにはいくつかの機能的な制限や未検証な動作があります。開発サイト @<tt>{http://openflow.inthebox.info/} にフィードバックをして改善していきましょう。
+ * 自作 OpenFlow スイッチにはいくつかの機能的な制限や未検証な動作があります。開発サイト @<href>{http://openflow.inthebox.info/} にフィードバックをして改善していきましょう。
  
 さあ、これであなたも OpenFlow スイッチのオーナーです。今まで紹介してきた Trema のコントローラを動かしていろいろ実験してみましょう。お金に余裕があれば複数台買ってより大きなネットワークを作ることも可能です。
 
 == 参考文献
 
-: OpenWRT (@<tt>{https://openwrt.org/})
-  無線 LAN ルーター用のフリーなファームウエアを提供する Linux ディストリビューションで、数十名のハッカーから成る OpenWRT Project (@<tt>{https://dev.openwrt.org/wiki/people}) が開発しています。OpenWRT はメーカー純正ファームウエアと異なり、普通の Linux ディストリビューションの感覚でソフトウエアをパッケージ単位でルーターに追加・削除できます。
+: OpenWRT (@<href>{https://openwrt.org/})
+  無線 LAN ルーター用のフリーなファームウエアを提供する Linux ディストリビューションで、数十名のハッカーから成る OpenWRT Project (@<href>{https://dev.openwrt.org/wiki/people}) が開発しています。OpenWRT はメーカー純正ファームウエアと異なり、普通の Linux ディストリビューションの感覚でソフトウエアをパッケージ単位でルーターに追加・削除できます。
 
-: 自作 OpenFlow スイッチ用ファームウエア (@<tt>{http://openflow.inthebox.info/})
+: 自作 OpenFlow スイッチ用ファームウエア (@<href>{http://openflow.inthebox.info/})
   日本国内で比較的入手のしやすい、Buffalo の無線 LAN ルーター WHR-G301N と WZR-HP-AG300H に対応した OpenFlow 化ファームウエアの配布サイトです。ファームウエアやドキュメント一式に加えソースコードも公開されていますので、腕に覚えのある方はぜひ開発に参加してみてください。
 
-: @SRCHACK.ORG 氏のブログ (@<tt>{http://www.srchack.org/})
+: @SRCHACK.ORG 氏のブログ (@<href>{http://www.srchack.org/})
   今回紹介した自作 OpenFlow スイッチ界の中心人物 @SRCHACK.ORG 氏のブログです。OpenFlow 対応ファームウエアを無線 LAN ルーター上で動作させるまでの試行錯誤や、自宅でサーバーラックを運用する "自宅ラック友の会" の活動の様子などをブログ形式で紹介しています。
 
-: オープンルーター・コンペティションまとめ (@<tt>{https://sites.google.com/site/orcmatome/})
+: オープンルーター・コンペティションまとめ (@<href>{https://sites.google.com/site/orcmatome/})
   Interop Tokyo 2012 併催のオープンルーター・コンペティションでは、計 10 チームからのさまざまなアイデアでの参戦がありました。このうち 4 チームが OpenFlow を活用したアイデアで、この 4 チームすべてが実装に Trema を使っていました。筆者の一人が運営するこのまとめサイトには、参加各チームのスライドやソースコードへのリンクがあります。
