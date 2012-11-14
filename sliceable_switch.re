@@ -353,7 +353,7 @@ Content:
 
 === REST API 一覧
 
-REST API は今回紹介した以外にもいくつかの便利な API を提供しています (@<table>{API})。JSON ファイルの書式などこの API の詳しい仕様は @<tt>{https://github.com/trema/apps/wiki} で公開していますので、本格的に使いたい人はこちらも参照してください。
+REST API は今回紹介した以外にもいくつかの便利な API を提供しています (@<table>{API})。JSON ファイルの書式などこの API の詳しい仕様は @<href>{https://github.com/trema/apps/wiki} で公開していますので、本格的に使いたい人はこちらも参照してください。
 
 //table[API][REST API 一覧]{
 動作						Method	URI
@@ -379,8 +379,8 @@ REST API は今回紹介した以外にもいくつかの便利な API を提供
 
 OpenStack Quantum の詳細やセットアップ方法は本書の範囲を超えるので省きますが、利用に必要なすべての情報がまとまった Web サイトを紹介しておきます。
 
- * OpenStack プラグインのページ: @<tt>{https://github.com/nec-openstack/quantum-openflow-plugin}
- * OpenStack のプラグイン解説ページ: @<tt>{http://wiki.openstack.org/Quantum-NEC-OpenFlow-Plugin}
+ * OpenStack プラグインのページ: @<href>{https://github.com/nec-openstack/quantum-openflow-plugin}
+ * OpenStack のプラグイン解説ページ: @<href>{http://wiki.openstack.org/Quantum-NEC-OpenFlow-Plugin}
 
 == まとめ
 
