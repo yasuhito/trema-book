@@ -45,10 +45,10 @@ stylesheet: trema.css
 texstyle: ruby
 
 # LaTeX用のdocumentclassを指定する
-texdocumentclass: ["jsbook", "a5"]
+texdocumentclass: ["jsbook", "a4j"]
 
 # 目次として抽出するレベル
-toclevel: 3
+toclevel: 2
 
 # セクション番号を表示するレベル
 secnolevel: 2
