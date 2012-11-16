@@ -206,7 +206,7 @@ host2% sudo ifconfig eth0 192.168.2.2/24
 host2% sudo route add -net default gw 192.168.2.1
 //}
 
-シンプルルータ用のサーバ上では、仮想ネットワーク機能を使って仮想スイッチを一台起動します。次の設定ファイルを@<tt>{simple-router.conf}として用意してください。
+シンプルルータ用のサーバ上では、仮想ネットワーク機能を使って仮想スイッチを一台起動します。次の設定ファイルを@<tt>{simple_router_network.conf}として用意してください。
 
 //emlist{
 vswitch("switch") {
@@ -220,7 +220,7 @@ link "switch", "eth1"
 この設定ファイルを指定し@<tt>{trema run}で@<tt>{simple-router.rb}を実行すれば、シンプルルータが起動します。
 
 //cmd{
-% trema run ./simple-router.rb -c ./simple-router.conf
+% trema run ./simple-router.rb -c ./simple_router_network.conf
 //}
 
 === pingで動作を確認する
