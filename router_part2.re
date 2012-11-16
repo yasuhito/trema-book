@@ -112,7 +112,7 @@
 
 次にルーティングテーブルのソースコードを見ていきます。
 
-//list[routing-table.rb][ルーティングテーブルのソースコード]{
+//list[routing-table.rb][ルーティングテーブル (@<tt>{routing-table.rb}) のソースコード]{
 require "ipaddr"
 
 
@@ -161,7 +161,7 @@ end
 
 === コンフィグ
 
-//emlist{
+//list[simple_router.conf][シンプルルータのコンフィグ (@<tt>{simple_router.conf})]{
 $interface = [
   {
     :port => 2,
