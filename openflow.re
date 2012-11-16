@@ -4,6 +4,8 @@
 OpenFlow の概念が分かったところでもう少し細かい仕様に進みましょう。ここでは実用重視で OpenFlow 仕様のポイントとよく使う用語を押さえます。
 //}
 
+== OpenFlow の標準仕様
+
 OpenFlow は早くから標準化を重視してきました。2008 年にスタンフォード大学を中心とする OpenFlow スイッチコンソーシアムが標準化を開始し、バージョン 1.0 と 1.1 の仕様をリリースしました。その後、2011 年に Google や Facebook などのクラウド系企業が中心となり Software Defined Network 技術の推進を目的とした非営利団体 Open Networking Foundation (ONF) を設立し、それ以降の標準化を行っています。
 
 この OpenFlow 標準仕様が主に定義するのは次の 2 つです。
