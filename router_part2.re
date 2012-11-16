@@ -163,6 +163,8 @@ end
 
 === コンフィグ
 
+ルータが動作するためには、インターフェイスへのアドレス設定とルーティングテーブルを設定する必要があります。シンプルルータでは、これらの設定を @<tt>{simple_router.conf} に記述します(@<list>{simple_router.conf})。
+
 //list[simple_router.conf][シンプルルータのコンフィグ (@<tt>{simple_router.conf})]{
 $interface = [
   {
@@ -187,6 +189,10 @@ $route = [
   }
 ]
 //}
+
+インターフェイスの設定では、そのインターフェイスの MAC アドレス (@<tt>{:hwaddr})、IP アドレス (@<tt>{:ipaddr})、ネットマスク長 (@<tt>{:masklen}) と、このインターフェイスが OpenFlow スイッチのどのポート (@<tt>{:port}) に対応しているかを指定します。
+
+ルーティングテーブルの設定では、宛先 (@<tt>{destination})、ネットマスク長 (@<tt>{masklen}) と次の転送先 (@<tt>{nexthop}) を指定します。
 
 == 実行してみよう
 
