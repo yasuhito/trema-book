@@ -87,7 +87,7 @@ class SimpleRouter < Controller
 
 
   def start
-    load "router.conf"
+    load "simple_router.conf"
     @interfaces = Interfaces.new( $interface )
     @arp_table = ARPTable.new
     @routing_table = RoutingTable.new( $route )
