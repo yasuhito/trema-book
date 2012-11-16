@@ -110,6 +110,8 @@
 
 === ルーティングテーブルの実装
 
+次にルーティングテーブルのソースコードを見ていきます。
+
 //list[routing-table.rb][ルーティングテーブルのソースコード]{
 require "ipaddr"
 
@@ -128,24 +130,24 @@ class RoutingTable
 
   def add options
     dest = IPAddr.new( options[ :destination ] )
-    prefixlen = options[ :prefixlen ]
-    prefix = dest.mask( prefixlen )
-    @db[ prefixlen ][ prefix.to_i ] = IPAddr.new( options[ :gateway ] )
+    masklen = options[ :masklen ]
+    prefix = dest.mask( masklen )
+    @db[ masklen ][ prefix.to_i ] = IPAddr.new( options[ :nexthop ] )
   end
 
 
   def delete options
     dest = IPAddr.new( options[ :destination ] )
-    prefixlen = options[ :prefixlen ]
-    prefix = dest.mask( prefixlen )
-    @db[ prefixlen ].delete( prefix.to_i )
+    masklen = options[ :masklen ]
+    prefix = dest.mask( masklen )
+    @db[ masklen ].delete( prefix.to_i )
   end
 
 
   def lookup dest
-    ( 0..ADDR_LEN ).reverse_each do | prefixlen |
-      prefix = dest.mask( prefixlen )
-      entry = @db[ prefixlen ][ prefix.to_i ]
+    ( 0..ADDR_LEN ).reverse_each do | masklen |
+      prefix = dest.mask( masklen )
+      entry = @db[ masklen ][ prefix.to_i ]
       return entry if entry
     end
     nil
@@ -161,21 +163,21 @@ $interface = [
     :port => 2,
     :hwaddr => "00:00:00:01:00:01",
     :ipaddr => "192.168.1.1",
-    :prefixlen => 24
+    :masklen => 24
   },
   { 
     :port => 1, 
     :hwaddr => "00:00:00:01:00:02",
     :ipaddr => "192.168.2.1",
-    :prefixlen => 24
+    :masklen => 24
   } 
 ]
 
 $route = [
   {
     :destination => "0.0.0.0", 
-    :prefixlen => 0, 
-    :gateway => "192.168.1.2" 
+    :masklen => 0, 
+    :nexthop => "192.168.1.2" 
   }
 ]
 //}
