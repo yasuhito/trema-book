@@ -309,7 +309,7 @@ send_flow_mod_add( datapath_id, options )
 
 === マッチングルール
 
-マッチングルールには、@<tt>{:in_port} 以外にも@<chap>{openflow}で紹介した次の 12 種類の条件を指定できます。
+マッチングルールには、@<tt>{:in_port} 以外にも@<chap>{openflow_spec}で紹介した次の 12 種類の条件を指定できます。
 
 #@warn(アクションに関係するクラスの名前に合わせて、以下のオプション名も変更)
 
@@ -342,12 +342,12 @@ send_flow_mod_add( datapath_id, options )
 
 === アクション
 
-アクションには、@<tt>{SendOutPort} 以外にも@<chap>{openflow}で紹介した次の 12 種類のアクションを指定できます。
+アクションには、@<tt>{SendOutPort} 以外にも@<chap>{openflow_spec}で紹介した次の 12 種類のアクションを指定できます。
 
 #@warn(enqueue とかのは？)
 
 : SendOutPort
-  指定したスイッチのポートにパケットを出力します。ポートにはポート番号か、または OpenFlow で規定されている論理ポート (→ @<chap>{openflow}) を指定できます。
+  指定したスイッチのポートにパケットを出力します。ポートにはポート番号か、または OpenFlow で規定されている論理ポート (→ @<chap>{openflow_spec}) を指定できます。
 : SetEthSrcAddr
   送信元 MAC アドレスを指定した値に書き換えます。
 : SetEthDstAddr
