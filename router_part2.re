@@ -80,7 +80,7 @@
   end
 //}
 
-宛先アドレス (@<tt>{message.ipv4_daddr} に対する次転送先の決定は、@<tt>{resolve_next_hop} メソッドで行なっています。このメソッドは、以下のように定義されています。
+宛先アドレス (@<tt>{message.ipv4_daddr}) に対する次転送先の決定は、@<tt>{resolve_next_hop} メソッドで行なっています。このメソッドは、以下のように定義されています。
 
 //emlist{
   def resolve_next_hop( daddr )
