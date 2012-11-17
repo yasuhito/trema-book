@@ -1,2 +1,12 @@
 \renewcommand{\reviewappendix}[0]{%
-  \backmatter}
+  \if@openright\cleardoublepage\else\clearpage\fi
+  \thispagestyle{empty}
+  \refstepcounter{part}
+  \addcontentsline{toc}{part}{おわりに\hspace{1zw}}
+  \vspace*{2\Cvs}
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \Huge \headfont おわりに\par\nobreak
+    \vskip 3\Cvs}
+}
