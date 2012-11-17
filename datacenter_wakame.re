@@ -47,6 +47,8 @@ Wakame-VDC は、@<chap>{sliceable_switch} とは異なり、OpenFlow 未対応�
 
 //image[arp_block][同じユーザのホストにだけ ARP を届ける]
 
+//image[translate][ARP リクエストは、宛先を書き換えて、別のホストへと届けられる]
+
 Wakame-VDCは、エッジスイッチにOpen vSwitch (OVS)を利用しています。一つの例として、ARPがどのように届くのかを順を追って説明していきます。
 
 （紙芝居）
