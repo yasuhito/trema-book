@@ -12,16 +12,21 @@ IaaS のネットワーク仮想化には OpenFlow が適しています。(理�
 
 == Wakame-VDC
 
-Trema を利用した本格的な IaaS プラットフォームが、Wakame-VDC です。すでに九州電力など多くの企業のプライベートクラウド構築基盤として実績がある上、なんとすべてがオープンソースとして公開されています。
+Tremaを利用した本格的なIaaSプラットフォームが、Wakame-VDCです。Tremaと同じくgithub上でオープンに開発しており、ライセンスはLGPLv3のフリーソフトウェアです。開発は22企業・団体が所属する任意団体、Wakame Software Foundation (WSF)が行っています。
 
-Wakame-VDC は、IaaS 型のクラウド構築基盤ソフトウェアです。オープンソースライセンスである LGPL v3 に基づき公開されています。開発は任意団体である Wakame Software Foundation (WSF) が行っています。2009 年 4 月に株式会社あくしゅによって、Ruby で書かれた最初のコードがコミットされて以来、2012 年 9 月現在で計 22 企業・団体が所属し、今もなお積極的に開発が継続されています。Wakame-VDC も開発者を募集しております。気軽にパッチを送ってください。Github なら、Pull Request と言うスタイルで、それを支援してくれます。
-
-Wakame-VDC の情報は次の URL から入手できます。
+Wakame-VDCの情報は次のURLから入手できます。
 
  * Wakame-VDC開発リポジトリ: @<href>{https://github.com/axsh/wakame-vdc}
- * Wiki ドキュメント: @<href>{http://wakame.jp/wiki/}
+ * Wikiドキュメント: @<href>{http://wakame.jp/wiki/}
+ * Wakame Software Foundation: @<href>{http://wakame.jp/document/175/}
 
-== エッジスイッチによるネットワーク仮想化
+Wakame-VDCの特長は、九州電力など多くの企業のプライベートクラウド構築基盤として実績がある、商用ソフトウェアであるということです。基本的なIaaSの機能である、ネットワーク、ホストおよびストレージの仮想化と管理機能はもちろん、Ruby on Railsを使った便利なWebインタフェースも提供します(@<img>{wakame_screenshot})。
+
+//image[wakame_screenshot][Wakame-VDCのWebインタフェース][width=13cm]
+
+Wakame-VDCはアーキテクチャ的にもユニークな点があります。普通のTremaアプリケーションでは、ひとつのコントローラプロセスがたくさんのOpenFlowスイッチを制御するという集中制御になっていました。Wakame-VDCでは、Tremaで書いたコントローラをIaaSを提供する物理ホストに分散配置し、これらをひとつのマネージャプロセスが制御するというアーキテクチャになっています。Wakame-VDCも集中制御であることには変わりませんが、その下では分散したTremaがネットワークを仮想化します。これを集中制御によるネットワーク仮想化と対比して、エッジによるネットワーク仮想化と呼びます。
+
+== エッジによるネットワーク仮想化
 
 仮想ネットワークとはひとことで言うと、スライス間でのトラフィックの分離でした(@<chap>{sliceable_switch})。つまり、同じスライスにつながるホスト同士は通信を許可し、異なるスライスにつながるホスト同士での通信は遮断することで、実ネットワークをたくさんのユーザで安全に共有します。
 
