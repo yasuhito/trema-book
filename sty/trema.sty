@@ -1,3 +1,13 @@
+\newcommand{\tmpsection}[1]{}
+\let\tmpsection=\section
+\renewcommand{\section}[1]{%
+  \tmpsection{#1}
+  \vskip-2mm
+  \hrule
+  \vskip1zh
+}
+
+
 \renewenvironment{reviewcolumn}{%
      \begin{screen}
    }{%
@@ -6,10 +16,11 @@
 
 
 \renewcommand{\reviewcolumnhead}[2]{%
-  {\noindent\large\textbf{#2}\vskip0mm\hrule}\vskip1zh
+  {\noindent\large\headfont{#2}\vskip0mm\hrule}\vskip1zh
 }
 
 
+\makeatletter
 \renewcommand{\reviewappendix}[0]{%
   \if@openright\cleardoublepage\else\clearpage\fi
   \thispagestyle{empty}
@@ -22,3 +33,4 @@
     \Huge \headfont おわりに\par\nobreak
     \vskip 3\Cvs}
 }
+\makeatother

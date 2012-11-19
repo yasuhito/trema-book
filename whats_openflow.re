@@ -4,7 +4,7 @@
 ネットニュースをにぎわせている OpenFlow って何でしょうか？一体どんな仕組みで何がうれしいのでしょうか？本章を読むと、難しいネットワーク用語を知らなくても、身近なたとえ話ですっきりと理解できます。
 //}
 
-//indepimage[incredible_machine][][width=10cm]
+//indepimage[incredible_machine][][width=8cm]
 
 == ソフトウェアで思いどおりにコントロールする
 
