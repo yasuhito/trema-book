@@ -42,7 +42,7 @@ coverfile: _cover.html
 stylesheet: trema.css
 
 # LaTeX用のスタイルファイル(styディレクトリ以下に置くこと)
-texstyle: owarini,ruby
+texstyle: trema,ruby
 
 # LaTeX用のdocumentclassを指定する
 texdocumentclass: ["jsbook", "a4j"]

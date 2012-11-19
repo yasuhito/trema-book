@@ -1,3 +1,15 @@
+\renewenvironment{reviewcolumn}{%
+     \begin{screen}
+   }{%
+      \end{screen}
+  \vspace{2zw}}
+
+
+\renewcommand{\reviewcolumnhead}[2]{%
+  {\noindent\large\textbf{#2}\vskip0mm\hrule}\vskip1zh
+}
+
+
 \renewcommand{\reviewappendix}[0]{%
   \if@openright\cleardoublepage\else\clearpage\fi
   \thispagestyle{empty}
