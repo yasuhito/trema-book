@@ -31,7 +31,7 @@ Floodlight	Java			Big Switch Networks Inc.					Apache
 
 Trema は Ruby 用の OpenFlow コントローラフレームワークです (@<img>{trema})。GPL バージョン 2 ライセンスのフリーソフトウェアです。
 
-//image[trema][Trema のサイト (@<href>{http://trema.github.com/trema})]
+//image[trema][Trema のサイト (@<href>{http://trema.github.com/trema})][width=12cm]
 
 ターゲット言語が Ruby であることからもわかるとおり、Trema の最大の特長は実行速度よりも開発効率に重きを置いていることです。たとえば、Trema を使うと他のフレームワークに比べて大幅に短いコードでコントローラを実装できます。@<list>{trema_hub} は Trema で書いたコントローラの一例ですが、たった 14 行のコードだけでハブとして動作する完全なコントローラが書けます。
 
@@ -58,7 +58,7 @@ end
 
 NOX は OpenFlow の生まれ故郷スタンフォード大で開発されたもっとも古いフレームワークで、C++ に対応しています (@<img>{nox})。ライセンスは GPL バージョン 3 のフリーソフトウェアです。
 
-//image[nox][NOX のサイト (@<href>{http://www.noxrepo.org/nox/about-nox/})]
+//image[nox][NOX のサイト (@<href>{http://www.noxrepo.org/nox/about-nox/})][width=12cm]
 
 NOX の長所はユーザ層の厚さです。OpenFlow の登場直後から開発しており、メーリングリストでは OpenFlow 仕様を作った研究者本人など、SDN の主要な関係者が活発に議論しています。また歴史が古いため、Web で情報を集めやすいという利点もあります。
 
@@ -166,7 +166,7 @@ REGISTER_COMPONENT(container::Simple_component_factory<Hub>, Hub);
 
 POX は NOX から派生したプロジェクトで、Python でのコントローラ開発に対応したフレームワークです (@<img>{pox})。ライセンスは GPL バージョン 3 のフリーソフトウェアです。
 
-//image[pox][POX のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})]
+//image[pox][POX のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
 
 POX の特長は実装が Pure Python であるため、Linux, Mac, Windows のいずれでも OS を問わず動作することです。まだまだ若いプロジェクトであるためサンプルアプリケーションの数は少ないものの、Python プログラマには注目のプロジェクトです。
 
@@ -215,7 +215,7 @@ def launch ():
 
 Floodlight は Java 用のフレームワークです (@<img>{floodlight})。ライセンスは Apache のフリーソフトウェアです。
 
-//image[floodlight][Floodlight のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})]
+//image[floodlight][Floodlight のサイト (@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
 
 Floodlight の特長はずばり、プログラマ人口の多い Java を採用していることです。最近は大学のカリキュラムで最初に Java を学ぶことが多いため、大部分の人にとって最もとっつきやすいでしょう。また実装が Pure Java であるため、POX と同じく OS を問わず動作するという利点もあります。
 
@@ -356,7 +356,7 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
 
 このことは、今まで見てきたハブ実装のコード行数を比べても明らかです (@<img>{comparison})。
 
-//image[comparison][主なフレームワークでハブを実装したときのコード行数を比較]
+//image[comparison][主なフレームワークでハブを実装したときのコード行数を比較][width=12cm]
 
 //noindent
 Trema (Ruby) や POX (Python) などスクリプティング言語を採用するフレームワークでは短い行数で実装できていますが、NOX (C++) や Floodlight (Java) など従来の言語を採用するフレームワークでは一気に行数がはねあがっています。とくに、最も短い Trema (14 行) と最も長い Floodlight (111 行) を比べるとその差は 8 倍にもなります。単純には言えませんが、行数だけで見ると Trema は Floodlight の 1/8 の労力で同じ機能を実装できるのです。
