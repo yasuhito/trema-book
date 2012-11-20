@@ -28,11 +28,20 @@
      \begin{screen}
    }{%
       \end{screen}
-  \vspace{2zw}}
-
+  \vspace{2zw}
+}
 
 \renewcommand{\reviewcolumnhead}[2]{%
   {\noindent\large\headfont{#2}\vskip0mm{\color[gray]{.1}\hrule}}\vskip1zh
+}
+
+
+\renewcommand{\figurename}{{\color[gray]{.6}▲}図}
+\renewcommand{\tablename}{{\color[gray]{.6}▲}表}
+\newcommand{\tmpcaption}[1]{}
+\let\tmpcaption=\caption
+\renewcommand{\caption}[1]{%
+  \headfont{\textbf{\tmpcaption{#1}}}
 }
 
 
