@@ -203,7 +203,7 @@ Port no: 65534(0xfffe:Local)(Port up)
 
 === ラーニングスイッチの起動
 
-スイッチの構成がわかったところで、いよいよラーニングスイッチを起動して OpenFlow スイッチとして動かしてみます。先ほど起動した @<tt>{show-switch-features.rb} を Ctrl+C で停止し、次のようにラーニングスイッチを起動します。
+スイッチの構成がわかったところで、いよいよラーニングスイッチを起動して OpenFlow スイッチとして動かしてみます。次のようにラーニングスイッチを起動します。
 
 //cmd{
 controller% trema run ./learning-switch.rb -d
