@@ -8,6 +8,15 @@
 }
 
 
+\newcommand{\tmpsubsection}[1]{}
+\let\tmpsubsection=\subsection
+\renewcommand{\subsection}[2]{%
+  \tmpsubsection{#2}
+  \vskip-6mm
+  \noindent{{\color[gray]{.6}\dotfill}}
+}
+
+
 \newcommand{\tmpsubsubsection}[1]{}
 \let\tmpsubsubsection=\subsubsection
 \renewcommand{\subsubsection}[2]{%
