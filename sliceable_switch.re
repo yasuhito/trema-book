@@ -194,16 +194,18 @@ A MAC-based binding is added successfully.
 
 //cmd{
 % trema send_packet --source host1 --dest host2
-% trema show_stats host2 --rx
+% trema send_packet --source host2 --dest host1
+% trema show_stats host1 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
-192.168.0.2,1,192.168.0.1,1,1,50
+192.168.0.1,1,192.168.0.2,1,1,50
 //}
 
 異なるスライス間での通信はどうでしょう。これも次のように簡単にテストできます。
 
 //cmd{
 % trema send_packet --source host1 --dest host4
-% trema show_stats host4 --rx
+% trema send_packet --source host4 --dest host1
+% trema show_stats host1 --rx
 ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 //}
 
@@ -269,7 +271,7 @@ REST API 経由でスライスを作るには、スライスの情報を書い�
 //list[slice.json][slice.json]{
 {
   "id" : "slice_yutaro",
-  "description" : "Yutaro's Network"
+  "description" : "Yutaro Network"
 }
 //}
 
@@ -285,7 +287,7 @@ REST API 経由でスライスを作るには、スライスの情報を書い�
 //cmd{
 Status: 202 Accepted
 Content:
-{"id":"slice_yutaro","description":"Yutaro's Network"}
+{"id":"slice_yutaro","description":"Yutaro Network"}
 //}
 
 === スライスにホストを追加する
@@ -347,7 +349,7 @@ Content:
       "port" : 33
     }
   ],
-  "description" : "Yutaro's Network"
+  "description" : "Yutaro Network"
 }
 //}
 
