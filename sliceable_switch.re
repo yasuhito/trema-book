@@ -14,7 +14,7 @@
 
 スライスとはひとつの物理ネットワークを論理的なネットワークに分割することで、たくさんのユーザが独立した専用ネットワークを使えるようにするものです (@<img>{slice})。たとえば IaaS のようなたくさんのユーザをなるべく少ない台数の物理サーバに集約するシステムでは、物理サーバを仮想マシンで、またネットワークをスライスで分割することでそれぞれのユーザに仮想的な専用環境 （仮想マシン + 仮想ネットワーク）を提供します。
 
-//image[slice][スライスとはひとつの物理ネットワークをいくつかの独立した仮想ネットワークに分割したもの][scale=0.5]
+//image[slice][スライスとはひとつの物理ネットワークをいくつかの独立した仮想ネットワークに分割したもの][width=12cm]
 
 スライスを実現する代表的な技術として VLAN があります。VLAN はスイッチをポート単位や MAC アドレス単位でスライスに分割できます。また VLAN タグと呼ばれる ID をパケットにつけることでスイッチをまたがったスライスも作れます。
 
@@ -28,7 +28,7 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
 
 スライス機能つきスイッチが、どのようにネットワークを仮想化するかを見てみましょう。
 
-//image[sliceable_switch_overview][スライス機能つきスイッチが作るスライス (仮想ネットワーク)][scale=0.5]
+//image[sliceable_switch_overview][スライス機能つきスイッチが作るスライス (仮想ネットワーク)][width=12cm]
 
 //noindent
 @<img>{sliceable_switch_overview} は、3 つの OpenFlow スイッチから成るネットワークを 2 つのスライスに分割した例です。スライスごとにひとつの仮想スイッチが作られ、スライスに属するすべてのホストはこの仮想スイッチに接続します。それぞれの仮想スイッチは独立しているので、同じスライス内のホスト同士はパケットをやりとりできますが，スライスをまたがったパケットのやりとりはできません。
@@ -39,7 +39,7 @@ OpenFlow によるスライス実装のひとつが「スライス機能つき�
 
 実はこのスライス機能は、@<chap>{routing_switch} で説明したルーティングスイッチへのほんの少しの機能追加だけで実現しています。コントローラと OpenFlow スイッチの視点で見ると、スライス機能つきスイッチは次のように動作します (@<img>{sliceable_switch_internals})。
 
-//image[sliceable_switch_internals][スライス機能つきスイッチの動作][scale=0.5]
+//image[sliceable_switch_internals][スライス機能つきスイッチの動作][width=12cm]
 
  1. パケットの道順を指定するためのトポロジ情報を収集します。
  2. スイッチが受信したパケットを Packet In メッセージで受け取ります。
@@ -89,7 +89,7 @@ A filter entry is added successfully.
 
 それでは、スライス機能つきスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、@<img>{sliceable_switch_network} のネットワークを作ります。
 
-//image[sliceable_switch_network][スイッチ 1 台、ホスト 4 台からなるネットワーク][scale=0.5]
+//image[sliceable_switch_network][スイッチ 1 台、ホスト 4 台からなるネットワーク][width=12cm]
 
 設定ファイルは@<list>{network.conf}のようになります。
 
@@ -156,7 +156,7 @@ filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
 
 Trema Apps の @<tt>{sliceable_switch} ディレクトリには、スライスを作成するコマンド @<tt>{slice} が用意されています。このコマンドを使って@<img>{creating_slices}のような 2 枚のスライス @<tt>{slice1, slice2} を作ってみましょう。
 
-//image[creating_slices][スライスを 2 枚作る][scale=0.5]
+//image[creating_slices][スライスを 2 枚作る][width=8cm]
 
 //cmd{
 % cd apps/sliceable_switch
@@ -218,7 +218,7 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 
 スライス機能つきスイッチの REST API は、Apache 上で動作する CGI として実現しています (@<img>{rest_overview})。クラウド構築ミドルウェアなどから HTTP でアクセスすると、スライスの変更をスライス DB へと反映し、スライス機能つきスイッチはこの内容を実際のスライス構成に反映します。
 
-//image[rest_overview][スライス機能つきスイッチの REST API 構成][scale=0.5]
+//image[rest_overview][スライス機能つきスイッチの REST API 構成][height=8cm]
 
 //noindent
 では、さっそく REST API をセットアップして使ってみましょう。
