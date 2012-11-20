@@ -8,6 +8,13 @@
 }
 
 
+\newcommand{\tmpsubsubsection}[1]{}
+\let\tmpsubsubsection=\subsubsection
+\renewcommand{\subsubsection}[2]{%
+  \tmpsubsubsection{{\color[gray]{.6}●}#2}
+}
+
+
 \renewenvironment{reviewcolumn}{%
      \begin{screen}
    }{%
