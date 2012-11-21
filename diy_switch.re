@@ -62,7 +62,7 @@ WZR-HP-AG300H	Buffalo		約 6,000 円
 
 2012 年は OpenFlow 元年ということもありベンダ各社が OpenFlow 対応スイッチを展示していましたが、多くのブースで OpenFlow スイッチと接続した Trema を見ることができました。すでに日本国内では、Trema は OpenFlow コントローラを作る上でのデファクトスタンダードとなっているようです。
 
-また、Interop の華である Shownet の OpenFlow ネットワークでも Trema が活躍しました。Shownet とは Interop 開催中に構築されるネットワークインフラで、各社の最新のネットワーク機器を接続したショーケースとしての顔も持っています。Shownet の OpenFlow ネットワークでは多種多様なベンダーの OpenFlow スイッチを相互接続する必要があったのですが、「正しい」OpenFlow プロトコルをしゃべることで定評のある Trema がコントローラ開発プラットフォームに選ばれました。こうして開発された情報通信研究機構 (NICT) による RISE Controller は、グランプリである "Best of Show Award" を受賞しました (@<img>{trema_interop})。
+また、Interop の華である Shownet の OpenFlow ネットワークでも Trema が活躍しました。Shownet とは Interop 開催中に構築されるネットワークインフラで、各社の最新のネットワーク機器を接続したショーケースとしての顔も持っています。Shownet の OpenFlow ネットワークでは多種多様なベンダの OpenFlow スイッチを相互接続する必要があったのですが、「正しい」OpenFlow プロトコルをしゃべることで定評のある Trema がコントローラ開発プラットフォームに選ばれました。こうして開発された情報通信研究機構 (NICT) による RISE Controller は、グランプリである "Best of Show Award" を受賞しました (@<img>{trema_interop})。
 
 //image[trema_interop][Interop で Best of Show Award を受賞した Trema ベースの RISE Controller。各ベンダの OpenFlow スイッチとの相互接続で大活躍した (提供 : NICT 石井秀治氏)][scale=0.6]
 
@@ -199,7 +199,7 @@ Port no: 65534(0xfffe:Local)(Port up)
   Port name: tap0
 //}
 
-出力の最初の 3 行により、ルータ内で起動している OpenFlow スイッチの実装は、スタンフォード大学で作成されたソフトウェアレファレンススイッチのバージョン 1.0.0 であることが分かります。また、@<tt>{eth0.1} から @<tt>{eth0.4} までの OpenFlow 用ポート 4 つと、ローカルポート @<tt>{tap0} が定義されていることがわかります。なお@<chap>{openflow_spec}でも触れましたがこのローカルポート @<tt>{tap0} は特殊な用途向けですのでユーザーが普段使うことはありません。
+出力の最初の 3 行により、ルータ内で起動している OpenFlow スイッチの実装は、スタンフォード大学で作成されたソフトウェアレファレンススイッチのバージョン 1.0.0 であることが分かります。また、@<tt>{eth0.1} から @<tt>{eth0.4} までの OpenFlow 用ポート 4 つと、ローカルポート @<tt>{tap0} が定義されていることがわかります。なお@<chap>{openflow_spec}でも触れましたがこのローカルポート @<tt>{tap0} は特殊な用途向けですのでユーザが普段使うことはありません。
 
 === ラーニングスイッチの起動
 
@@ -260,7 +260,7 @@ ICMP パケットのプロトコル番号は 1 なので、@<tt>{nw_proto=1} の
 : ポートごとのステータスを取ることができない
   自作 OpenFlow スイッチでは 1 つのインターフェースが仮想的に 4 ポートに分かれていますが、実質的にはこれらは 1 つのポートです。このため、@<chap>{routing_switch}で紹介した Trema Apps の Topology など、個々のポートの UP や DOWN 情報を使うアプリケーションは一部正しく動作しません。また内部的にタグ付き VLAN を使っているため、タグ付き VLAN のパケットが入ってきたときの挙動も未検証です。
 
-自作 OpenFlow 用ファームウェアはオープンに開発が行われています (@<href>{http://openflow.inthebox.info/})。もし新しい不具合や改善方法をみつけた方はぜひフィードバックを送ってください。
+自作 OpenFlow 用ファームウェアはオープンに開発が行われています (@<href>{http://openflow.inthebox.info/})。もし新しい不具合や改善方法をみつけた場合は、ぜひフィードバックを送ってください。
 
 == まとめ
 
