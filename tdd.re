@@ -264,6 +264,7 @@ describe RepeaterHub do
       vhost( "host3" ).stats( :rx ).should have( 1 ).packets
     }
   end
+end
 //}
 
 今度は実行結果が次のように変わり、エラーが出なくなります。
