@@ -53,7 +53,7 @@ OpenFlow によるスライス実装のひとつが「スライス機能付き�
 
 == 実行してみよう
 
-ではスライス機能付きスイッチを使ってネットワーク仮想化を実際に試してみましょう。スライス機能スイッチもルーティングスイッチと同じく Trema Apps の一部として GitHub で公開されています。まだ Trema Apps のソースコードを取得していない人は、次のようにダウンロードしてください。
+ではスライス機能付きスイッチを使ってネットワーク仮想化を実際に試してみましょう。スライス機能付きスイッチもルーティングスイッチと同じく Trema Apps の一部として GitHub で公開されています。まだ Trema Apps のソースコードを取得していない人は、次のようにダウンロードしてください。
 
 //cmd{
 % git clone https://github.com/trema/apps.git
@@ -69,8 +69,8 @@ OpenFlow によるスライス実装のひとつが「スライス機能付き�
 これらの 4 つをセットアップするには、ダウンロードした Trema Apps の @<tt>{topology}, @<tt>{flow_manager}、そして @<tt>{sliceable_switch} を次のようにコンパイルしてください。
 
 //cmd{
-% (cd ./apps/topology/; make)
-% (cd ./apps/flow_manager/; make)
+% (cd ./apps/topology; make)
+% (cd ./apps/flow_manager; make)
 % (cd ./apps/sliceable_switch; make)
 //}
 
@@ -180,7 +180,7 @@ A MAC-based binding is added successfully.
 //}
 
 //noindent
-とても簡単にスライスを作れました。それではさっそくきちんとネットワークが分割できているか確認してみましょう。
+とても簡単にスライスを作れました。それではネットワークがきちんと分割できているか確認してみましょう。
 
 === スライスによるネットワーク分割を確認する
 
@@ -264,6 +264,8 @@ filter.db  slice.db
 Filter.pm  Slice.pm  config.cgi
 //}
 
+REST API を使う場合スライスデータベース (@<tt>{slice.db,filter.db}) の格納場所が変わりますので、スライス機能付きスイッチを起動する際に @<list>{network.conf} の該当箇所を書き換えてください。
+
 === REST API でスライスを作る
 
 REST API 経由でスライスを作るには、スライスの情報を書いた JSON 形式のファイルを作り、これを HTTP で REST API の CGI に送ってやります。たとえば @<tt>{slice_yutaro} という名前のスライスを作るには、次の内容のファイル (@<list>{slice.json}) を用意します。
@@ -275,14 +277,14 @@ REST API 経由でスライスを作るには、スライスの情報を書い�
 }
 //}
 
-次にこの JSON 形式のファイルを @<tt>{/networks} という URI に POST メソッドで送ります。Trema/Apps の @<tt>{sliceable_switch/test/rest_if/} ディレクトリには @<tt>{httpc} という簡単な HTTP クライアントが用意されていますので、これを使ってみましょう。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行します。
+次にこの JSON 形式のファイルを @<tt>{/networks} という URI に POST メソッドで送ります。Trema/Apps の @<tt>{sliceable_switch/test/rest_if/} ディレクトリに @<tt>{httpc} という簡単な HTTP クライアントがあるので、これを使ってみましょう。Apache の待ち受けポートは 8888 に設定されていますので、以下のように実行します。
 
 //cmd{
 % cd ./test/rest_if
 % ./httpc POST http://127.0.0.1:8888/networks ./slice.json
 //}
 
-実行すると次のように実行結果と作成したスライスの情報が表示されます。
+実行すると次のように作成したスライスの情報が表示されます。
 
 //cmd{
 Status: 202 Accepted
@@ -390,7 +392,7 @@ OpenStack Quantum の詳細やセットアップ方法は本書の範囲を超�
 
 Hello Trema から始めた Trema プログラミングも、いつの間にか本格的なクラウドを作れるまでになりました!
 
- * ネットワークを仮想的なスライスに分割して使える、スライス機能付きスイッチがどのように動作するかを見てきました。また実際に動作させ、同一のスライス内のみ通信が許可される仕組みを学びました。
- * スライス機能付きスイッチを利用するための REST API を使って、スライスを設定する方法を学びました。
+ * ネットワークを仮想に分割して使えるスライス機能付きスイッチを動作させ、同一のスライス内のみ通信が許可される仕組みを理解
+ * REST API を使えば、クラウド構築ミドルウェアからスライスが設定できる
 
 次章では Trema を使った商用 IaaS の一つである Wakame-vdc のアーキテクチャを紹介します。本章で解説したスライス機能付きスイッチとはまったく異なる「分散 Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
