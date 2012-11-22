@@ -123,7 +123,9 @@ class SimpleRouter < Controller
 
 
   def handle_arp_request( dpid, message )
-    interface = @interfaces.find_by_port_and_ipaddr( message.in_port, message.arp_tpa )
+    port = message.in_port
+    daddr = message.arp_tpa
+    interface = @interfaces.find_by_port_and_ipaddr( port, daddr )
     if interface
       arp_reply = create_arp_reply_from( message, interface.hwaddr )
       packet_out dpid, arp_reply, SendOutPort.new( interface.port )
@@ -175,7 +177,9 @@ class SimpleRouter < Controller
 
     arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
-      action = create_action_from( interface.hwaddr, arp_entry.hwaddr, interface.port )
+      macsa = interface.hwaddr
+      macda = arp_entry.hwaddr
+      action = create_action_from( macsa, macda, interface.port )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
@@ -374,7 +378,9 @@ end
 
     arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
-      action = create_action_from( interface.port, arp_entry.hwaddr )
+      macsa = interface.hwaddr
+      macda = arp_entry.hwaddr
+      action = create_action_from( macsa, macda, interface.port )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
