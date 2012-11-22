@@ -54,11 +54,11 @@
 
 @<img>{default_route} 中のように、インターネットとは別にネットワーク (172.16.3.0/24) があっても、デフォルトルートを使うことに問題はありません。172.16.3.0/24 宛のパケットがルータ A に届いた場合、ルータはロンゲストマッチからルータ C へのエントリを選択します。それ以外のパケットは、デフォルトルートによってルータ B へ転送し、インターネットへと送ります。
 
-== ソースコード
+== RoutingTable のソースコード
 
 === パケットを書き換えて転送する(再)
 
-パケットの書き換えと転送を行う @<tt>{forward} メソッドをもう一度見ていきましょう。@<chap>{router_part1} で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
+@<tt>{RoutingTable} のソースコードを見る前に、パケットの書き換えと転送を行う @<tt>{forward} メソッドをもう一度見ていきましょう。@<chap>{router_part1} で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
 
 //emlist{
   def forward( dpid, message )
@@ -71,7 +71,9 @@
 
     arp_entry = @arp_table.lookup( next_hop )
     if arp_entry
-      action = create_action_from( interface.hwaddr, arp_entry.hwaddr, interface.port )
+      macsa = interface.hwaddr
+      macda = arp_entry.hwaddr
+      action = create_action_from( macsa, macda, interface.port )
       flow_mod dpid, message, action
       packet_out dpid, message.data, action
     else
