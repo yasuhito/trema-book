@@ -91,62 +91,10 @@ A filter entry is added successfully.
 
 //image[sliceable_switch_network][スイッチ 1 台、ホスト 4 台からなるネットワーク][width=12cm]
 
-設定ファイルは@<list>{network.conf}のようになります。
-
-//list[network.conf][network.conf]{
-vswitch {
-  datapath_id "0x1"
-}
-
-vhost ("host1") {
-  ip "192.168.0.1"
-  netmask "255.255.0.0"
-  mac "00:00:00:01:00:01"
-}
-vhost ("host2") {
-  ip "192.168.0.2"
-  netmask "255.255.0.0"
-  mac "00:00:00:01:00:02"
-}
-vhost ("host3") {
-  ip "192.168.0.3"
-  netmask "255.255.0.0"
-  mac "00:00:00:01:00:03"
-}
-vhost ("host4") {
-  ip "192.168.0.4"
-  netmask "255.255.0.0"
-  mac "00:00:00:01:00:04"
-}
-
-link "0x1", "host1"
-link "0x1", "host2"
-link "0x1", "host3"
-link "0x1", "host4"
-
-
-run {
-  path "./apps/topology/topology"
-}
-run {
-  path "./apps/topology/topology_discovery"
-}
-run {
-  path "./apps/flow_manager/flow_manager"
-}
-run {
-  path "./apps/sliceable_switch/sliceable_switch"
-  options "-s", "./apps/sliceable_switch/slice.db", "-a", "./apps/sliceable_switch/filter.db"
-}
-
-event :port_status => "topology", :packet_in => "filter", :state_notify => "topology"
-filter :lldp => "topology_discovery", :packet_in => "sliceable_switch"
-//}
-
-スライス機能付きスイッチを起動するには、次のように @<tt>{sudo} を使って root 権限で起動してください。
+GitHub から取得したソースコードの中に含まれている設定ファイル (@<tt>{sample.conf}) を使えば、@<img>{sliceable_switch_network} の構成を実現できます。次のように @<tt>{sudo} を使って root 権限で、スライス機能付きスイッチを起動してください。
 
 //cmd{
-% sudo trema run -c ./network.conf
+% sudo trema run -c ./apps/sliceable_switch/sample.conf
 //}
 
 //noindent
@@ -264,7 +212,12 @@ filter.db  slice.db
 Filter.pm  Slice.pm  config.cgi
 //}
 
-REST API を使う場合スライスデータベース (@<tt>{slice.db,filter.db}) の格納場所が変わりますので、スライス機能付きスイッチを起動する際に @<list>{network.conf} の該当箇所を書き換えてください。
+REST API を使う場合には、設定ファイル @<tt>{sample_rest.conf} を使って、スライス機能付きスイッチを起動します。
+
+//cmd{
+% cd ../..
+% sudo trema run -c ./apps/sliceable_switch/sample_rest.conf
+//}
 
 === REST API でスライスを作る
 
