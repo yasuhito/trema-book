@@ -52,6 +52,8 @@ Wakame-VDCはどのようにして、OpenFlowに対応していない普通の�
 
 //image[arp_entangle][普通のスイッチをそのまま IaaS に使うと、ARPリプライが混乱する][width=12cm]
 
+Wakame-VDCは、エッジスイッチの制御で、この課題を解決しています。
+
 === エッジスイッチでARPを制御する
 
 Wakame-VDCでは、エッジスイッチを使い、同じユーザのVM間でのみARPリクエストが届くように制御します(@<img>{arp_block})。他のユーザが使っているVMにARPリクエストが届かないように、そのVMと接続するポートでARPリクエストを破棄します。
