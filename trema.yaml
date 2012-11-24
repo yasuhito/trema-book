@@ -48,7 +48,7 @@ texstyle: ruby,trema
 texdocumentclass: ["jsbook", "a4j"]
 
 # 目次として抽出するレベル
-toclevel: 2
+toclevel: 1
 
 # セクション番号を表示するレベル
 secnolevel: 2
