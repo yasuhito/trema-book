@@ -4,6 +4,8 @@
 OpenFlow の概念が分かったところでもう少し細かい仕様に進みましょう。ここでは実用重視で OpenFlow 仕様のポイントとよく使う用語を押さえます。
 //}
 
+//indepimage[torema][][width=10cm]
+
 == OpenFlow の標準仕様
 
 OpenFlow標準仕様が主に定義するのは次の 2 つです。
