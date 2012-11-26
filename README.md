@@ -1,5 +1,7 @@
 # これは何？
 
+![カバー](https://raw.github.com/yasuhito/trema-book/master/cover.png "本のカバー")
+
  * 書名: クラウド時代のネットワーク技術 OpenFlow実践入門 (SoftwareDesign plusシリーズ)
  * 著者: 高宮安仁、鈴木一哉
  * 体裁: A5版、328ページ
