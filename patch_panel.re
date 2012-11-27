@@ -4,7 +4,7 @@
 日々のネットワーク管理に役立ち、さらに SDN の入門にもなるのがこの OpenFlow で作るパッチパネルです。その上ソースコードも簡単とくれば、試さない手はありません。
 //}
 
-//indepimage[cables][][width=10cm]
+//indepimage[cables][][width=12cm]
 
 == 便利なインテリジェント・パッチパネル
 

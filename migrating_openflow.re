@@ -4,7 +4,7 @@
 あとは実践あるのみ!今までの知識を総動員し、自宅や職場のネットワークをOpenFlow化していろいろ実験してみましょう。
 //}
 
-//indepimage[bicycle][][width=10cm]
+//indepimage[bicycle][][width=12cm]
 
 == どんどん規模を広げていこう
 
