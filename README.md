@@ -6,7 +6,7 @@ http://www.amazon.co.jp/dp/4774154652/ref=cm_sw_r_tw_dp_0SlTqb1NGYDN9
 
  * 書名: クラウド時代のネットワーク技術 OpenFlow実践入門 (SoftwareDesign plusシリーズ)
  * 著者: 高宮安仁、鈴木一哉
- * 体裁: A5版、328ページ
+ * 体裁: A5版、336ページ
  * 発売日: 2012/12/26
  * 価格: 3,360円 (本体3,200円)
  * 発行: 技術評論社
