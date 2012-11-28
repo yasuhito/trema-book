@@ -147,7 +147,7 @@ LLDP によるリンク発見を OpenFlow で実現する方法を見ていき�
 Trema Apps の @<tt>{topology} ディレクトリには、検出したトポロジを表示するコマンド @<tt>{show_topology} が用意されています。以下のように実行すると、検出したトポロジを仮想ネットワーク設定ファイルと同じフォーマットで出力します。
 
 //cmd{
-% ./apps/topology/show_topology -D
+% trema run ./apps/topology/show_topology
 vswitch {
   datapath_id "0x1"
 }
@@ -172,11 +172,11 @@ link "0x3", "0x1"
 link "0x4", "0x2"
 //}
 
-ルーティングスイッチの起動時に指定した設定ファイル (@<tt>{routing_switch_fullmesh.conf}) と比較すると、スイッチ間のリンクがうまく検出できていることがわかります。しかし、仮想ホストとスイッチ間のリンクは検出できていません。LLDP と OpenFlow によるトポロジ検出は、あくまでスイッチ間のリンクを検出する仕組みだからです。
+@<img>{fullmesh} と比較すると、スイッチ間のリンクがうまく検出できていることがわかります。しかし、仮想ホストとスイッチ間のリンクは検出できていません。LLDP と OpenFlow によるトポロジ検出は、あくまでスイッチ間のリンクを検出する仕組みだからです。
 
 === 最短パスを通すフローエントリを確認する
    
-次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、host1 から host2 へとパケットを送っただけではフローエントリは設定されません。そこで次のように両方向でパケットを送った段階でフローエントリが設定されます。
+次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行なっていないので、host1 から host2 へとパケットを送っただけではフローエントリは設定されません。次のように両方向でパケットを送った段階でフローエントリが設定されます。
 
 //cmd{
 % trema send_packets --source host1 --dest host2
@@ -188,16 +188,18 @@ link "0x4", "0x2"
 //cmd{
 % trema dump_flows 0x1
 NXST_FLOW reply (xid=0x4):
- cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0, idle_timeout=62, \
- ...	     		   	    		 	    		     \
- dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
- nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
+ cookie=0x3, duration=41s, table=0, n_packets=0, n_bytes=0,	\
+ ...	     		   	    		 	        \
+ dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,		\
+ nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=1,	\
+ tp_dst=1 actions=output:3
 % ./trema dump_flows 0x2
 NXST_FLOW reply (xid=0x4):
- cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0, idle_timeout=61, \
- ...	     		   	    		 	    		     \
- dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,nw_src=192.168.0.2,	     \
- nw_dst=192.168.0.1,nw_tos=0,tp_src=1,tp_dst=1 actions=output:3
+ cookie=0x3, duration=42s, table=0, n_packets=0, n_bytes=0,	\
+ ...	     		   	    		 	    	\
+ dl_src=00:00:00:01:00:02,dl_dst=00:00:00:01:00:01,		\
+ nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=1,	\
+ tp_dst=1 actions=output:3
 //}
 
 //noindent
