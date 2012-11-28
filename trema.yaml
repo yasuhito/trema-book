@@ -11,7 +11,7 @@ bookname: trema
 booktitle: 新ネットワーク制御技術 OpenFlow 実践入門
 
 # 著者
-aut: 高宮 安仁, 鈴木 一哉
+aut: 高宮 安仁、鈴木 一哉
 # 以下はオプション
 # prt: 出版社
 # asn: Associated name
@@ -19,7 +19,7 @@ aut: 高宮 安仁, 鈴木 一哉
 # clb: 貢献者
 # edt: 編集者
 # dsr: デザイナ
-# ill: イラストレータ
+ill: 高宮 優子、高宮 安仁
 # pht: 撮影者
 # trl: 翻訳者
 # date: 刊行日
