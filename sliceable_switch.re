@@ -179,7 +179,7 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 % sudo apt-get install apache2-mpm-prefork libjson-perl
 //}
 
-次は CGI の動作に必要な Apache の設定です。必要な設定ファイルなどはすべて Trema/Apps の @<tt>{sliceable_switch} ディレクトリに入っていますので、以下の手順でコピーし Apache の設定に反映してください。
+次は CGI の動作に必要な Apache の設定です。必要な設定ファイルなどはすべて Trema Apps の @<tt>{sliceable_switch} ディレクトリに入っていますので、以下の手順でコピーし Apache の設定に反映してください。
 
 //cmd{
 % cd apps/sliceable_switch
@@ -230,7 +230,7 @@ REST API 経由でスライスを作るには、スライスの情報を書い�
 }
 //}
 
-次にこの JSON 形式のファイルを @<tt>{/networks} という URI に POST メソッドで送ります。Trema/Apps の @<tt>{sliceable_switch/test/rest_if/} ディレクトリに @<tt>{httpc} という簡単な HTTP クライアントがあるので、これを使ってみましょう。Apache の待ち受けポートは 8888 に設定してあるので、以下のように実行します。
+次にこの JSON 形式のファイルを @<tt>{/networks} という URI に POST メソッドで送ります。Trema Apps の @<tt>{sliceable_switch/test/rest_if/} ディレクトリに @<tt>{httpc} という簡単な HTTP クライアントがあるので、これを使ってみましょう。Apache の待ち受けポートは 8888 に設定してあるので、以下のように実行します。
 
 //cmd{
 % cd ./test/rest_if
