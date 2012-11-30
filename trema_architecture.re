@@ -338,7 +338,7 @@ Trema のモジュール間で交換される OpenFlow メッセージを解析�
 % patch < [trema ディレクトリ]/vendor/packet-openflow.patch
 % cd ..
 % make
-% cp openflow/pcacket-openflow.so ~/.wireshark/plugins
+% cp openflow/packet-openflow.so ~/.wireshark/plugins
 //}
 
 ==== 実行してみよう
