@@ -2,7 +2,7 @@
 
 ### ご購入はこちらから
 
- * Amazon: http://www.amazon.co.jp/dp/4774154652/ref=cm_sw_r_tw_dp_0SlTqb1NGYDN9
+ * Amazon: http://www.amazon.co.jp/dp/4774154652/
  * サポートサイト: http://yasuhito.github.com/trema-book/
 
 
