@@ -7,59 +7,71 @@ task :mobi => "ja:mobi"
 task :clean => "ja:clean"
 
 
-namespace :ja do
-  namespace :clean do
-    task :pdf do
-      sh "rm -f ./ja/trema.pdf"
-    end
-
-
-    task :epub do
-      sh "rm -f ./ja/trema.epub"
-    end
-
-
-    task :mobi do
-      sh "rm -f ./ja/trema.mobi"
-    end
-  end
-
-  task :clean => [ "ja:clean:pdf", "ja:clean:epub", "ja:clean:mobi" ]
-
-
-  desc "PDF を生成"
+def add_pdf_task lang, description
+  desc description
   task :pdf => "clean:pdf" do
-    cd "ja" do
+    cd lang do
       sh "review-pdfmaker trema.yaml"
     end
   end
 
+  namespace :clean do
+    task :pdf do
+      sh "rm -f ./#{ lang }/trema.pdf"
+    end
+  end
+  task :clean => "#{ lang }:clean:pdf"
+end
 
-  desc "epub を生成"
+
+def add_epub_task lang, description
+  desc description
   task :epub => "clean:epub" do
-    cd "ja" do
+    cd lang do
       sh "review-epubmaker trema.yaml"
     end
   end
 
+  namespace :clean do
+    task :epub do
+      sh "rm -f ./#{ lang }/trema.epub"
+    end
+  end
+  task :clean => "#{ lang }:clean:epub"
+end
 
-  desc "mobi を生成"
+
+def add_mobi_task lang, description
+  desc description
   task :mobi => [ :epub, "clean:mobi" ] do
     if `which kindleGen`.empty?
       raise "kindleGen is not installed!"
     end
-    cd "ja" do
+    cd lang do
       sh "KindleGen trema.epub" rescue nil
     end
   end
 
-
-  desc "章ごとのページ数などを表示"
-  task :vol do
-    cd "ja" do
-      sh "review-vol trema.yaml"
+  namespace :clean do
+    task :mobi do
+      sh "rm -f ./#{ lang }/trema.mobi"
     end
   end
+  task :clean => "#{ lang }:clean:mobi"
+end
+
+
+namespace :ja do
+  add_pdf_task "ja", "PDF を生成"
+  add_epub_task "ja", "epub を生成"
+  add_mobi_task "ja", "mobi を生成"
+end
+
+
+namespace :en do
+  add_pdf_task "en", "Generates PDF"
+  add_epub_task "en", "Generates epub"
+  add_mobi_task "en", "Generates mobi"
 end
 
 

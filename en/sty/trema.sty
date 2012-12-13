@@ -1,0 +1,61 @@
+\newcommand{\tmpsection}[1]{}
+\let\tmpsection=\section
+\renewcommand{\section}[1]{%
+  \tmpsection{#1}
+  \vskip-2mm
+  {\color[gray]{.1}\hrule}
+  \vskip1zh
+}
+
+
+\newcommand{\tmpsubsection}[1]{}
+\let\tmpsubsection=\subsection
+\renewcommand{\subsection}[2]{%
+  \tmpsubsection{#2}
+  \vskip-6mm
+  \noindent{{\color[gray]{.6}\dotfill}}
+}
+
+
+\newcommand{\tmpsubsubsection}[1]{}
+\let\tmpsubsubsection=\subsubsection
+\renewcommand{\subsubsection}[2]{%
+  \tmpsubsubsection{{\color[gray]{.6}●}#2}
+}
+
+
+%% \renewenvironment{reviewcolumn}{%
+%%      \begin{screen}
+%%    }{%
+%%       \end{screen}
+%%   \vspace{2zw}
+%% }
+
+\renewcommand{\reviewcolumnhead}[2]{%
+  {\noindent\large\headfont{#2}\vskip0mm{\color[gray]{.1}\hrule}}\vskip1zh
+}
+
+
+\renewcommand{\figurename}{{\color[gray]{.6}▲}図}
+\renewcommand{\tablename}{{\color[gray]{.6}▲}表}
+\newcommand{\tmpcaption}[1]{}
+\let\tmpcaption=\caption
+\renewcommand{\caption}[1]{%
+  \headfont{\textbf{\tmpcaption{#1}}}
+}
+
+
+\makeatletter
+\renewcommand{\reviewappendix}[0]{%
+  \if@openright\cleardoublepage\else\clearpage\fi
+  \thispagestyle{empty}
+  \refstepcounter{part}
+  \addcontentsline{toc}{part}{おわりに\hspace{1zw}}
+  \vspace*{2\Cvs}
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \Huge \headfont おわりに\par\nobreak
+    \vskip 3\Cvs}
+}
+\makeatother
