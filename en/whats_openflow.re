@@ -1,176 +1,179 @@
 = What's OpenFlow?
 
 //lead{
-OpenFlow - one of the hottest topic recently - how is it structured and what are the advantages? We'll be using familiar examples rather than using difficult network related jargons to explain what it is.
+OpenFlow - one of the hottest topic nowadays - how is it structured and what are the advantages? We'll be using familiar examples rather than using difficult network related jargons to explain what it is.
 //}
 
 //indepimage[incredible_machine][][width=8cm]
 
-== Control as you wish by software
+== Control as you wish, by software
 
 //quote{
-Laziness: The quality that makes you go to great effort to reduce overall energy expenditure. It makes you write labor-saving programs that other people will find useful, and document what you wrote so you don't have to answer so many questions about it. Hence, the first great virtue of a programmer. Also hence, this book. - Programming Perl by Larry Wall et al. O'Reilly//}
+Laziness: The quality that makes you go to great effort to reduce overall energy expenditure. It makes you write labor-saving programs that other people will find useful, and document what you wrote so you don't have to answer so many questions about it. Hence, the first great virtue of a programmer. Also hence, this book. - Programming Perl by Larry Wall et al. O'Reilly
+//}
 
-優れたプログラマが持つハッカー気質の1つに「無精」があります。大好きなコンピュータの前から一時も離れずに、どうやってジャンクフードを手に入れるか……普通の人からするとただの横着に見えるかもしれませんが、ハッカー達にとってそれはいつでも大きな問題でした。
+Laziness is one of the most important hacker characteristics of a skilled programmer. Mulling over how to get a bag of potato chips without ever leaving the beloved computer might seem like a indolence from ordinary people but it really is a serious matter from the hacker's point of view.
 
-ソフトウェアによる横着はハッカーが最も創造性を発揮する分野の一つです。次の3つの話は、いずれもただ横着のためだけに高い技術力を駆使したというすごい例です。
+Being lazy by utilizing the software is one area that hackers most specializes in, to exert their creativeness. The following three stories are great examples that utilize high technical capabilities simply because of laziness.
 
- 1. ハッカーの巣窟として有名なMITのAIラボにはかつて、コンピュータからオンラインでピザを注文できるUNIXコマンドが存在しました@<fn>{xpizza}。ハックしていて腹が減ったらコマンドをたたいてピザを取る、なんとも横着です。
- 2. コンピュータサイエンスの名門、カーネギーメロン大学にはコーク・マシンという変わったコーラ自販機があり、UNIXコマンド一発でコーラの冷え具合を確認できるようになっています@<fn>{coke_machine}。遠くの自販機まで行って@<bou>{ぬるい}コーラをつかまされないための工夫です。
- 3. RFC（Request For Comment）で標準化されているコーヒーポットプロトコルでは、遠隔地にあるコーヒーポットのコーヒーの量を監視したり、コーヒーを自動的にいれたりするための半分冗談のインターフェースを定義しています@<fn>{rfc2324}。本当に実装してしまった人もいたそうですから驚きです。
+ 1. There was a UNIX command in the MIT's AI laboratory (popular for being the hackers' haven), to order pizza online from the computer@<fn>{xpizza}. Order a box of pizza by typing a command when you get hungry from all the hacking you've done. Now how lazy is that?
+ 2. In the renowned Computer Science Department of Carnegie Mellon University, there's a eccentric vending machine called 'Coke Machine'@<fn>{coke_machine}. It lets you check how cold the coke is, by using a single UNIX command. Not surprisingly, it's to save you the pain of going all the way to the vending machine and get a lukewarm can of coke.
+ 3. The Hyper Text Coffee Pot Control Protocol is specified in RFC 2324@<fn>{rfc2324}. The interface for remotely monitoring the amount of coffee in the pot and automatically brewing the coffee is defined. It's an April Fools' Day RFC so the whole thing is supposed be a joke but it's surprising that someone had actually implemented it.
 
-//footnote[xpizza][MITの@<tt>{xpizza}コマンドのマニュアル：@<href>{http://stuff.mit.edu/afs/sipb/project/lnf/other/CONTRIB/ai-info}]
-//footnote[coke_machine][カーネギーメロン大のコーク・マシンのサイト：@<href>{http://www.cs.cmu.edu/~coke/}]
-//footnote[rfc2324][RFC 2324：@<href>{http://www.ietf.org/rfc/rfc2324.txt}]
+//footnote[xpizza][MITの@<tt>{xpizza} command manual: @<href>{http://stuff.mit.edu/afs/sipb/project/lnf/other/CONTRIB/ai-info}]
+//footnote[coke_machine][Carnegie Mellon Computer Science Department Coke machine: @<href>{http://www.cs.cmu.edu/~coke/}]
+//footnote[rfc2324][RFC 2324: @<href>{http://www.ietf.org/rfc/rfc2324.txt}]
 
-こうした「ソフトウェアで楽をする」ハックのうち、もっとも大規模な例が最新鋭のデータセンターです。クラウドサービスの裏で動くデータセンターは極めて少人数のエンジニアが運用しており、大部分の管理作業をソフトウェアによって極限まで自動化している、という記事を読んだことがある人も多いでしょう。このようにピザやコーラ、コーヒーのようなお遊びから、データセンターのように一筋縄ではいかない相手まで、ソフトウェアで「モノ」を思いどおりにコントロールするのは何よりも楽しく、そして実際に役に立つハックの一種です。
+The largest-scaled example of these 'have/hack fun using software' is the state-of-art data center. I'm sure a lot of the readers have heard that the data centers supporting the cloud services are operated by only few engineers and most management process is automated to the utmost limit by the software. From the recreational activities involving pizza, coke, and coffee to the data center which is rather tricky, controlling 'something' just as you wish by software is diverting than anything and actually a worthwhile hack.
 
-== SDN：ネットワークをソフトウェアで制御しよう
+== SDN: Let's control the network with software!
 
 その中でもネットワークをハックする技術の1つが、本書で取り上げるOpenFlowです。簡単に言えば、OpenFlowはネットワークスイッチの動作を制御するための標準プロトコルの1つです。OpenFlowを使えばスイッチ1つひとつの動作をソフトウェアから自由に書き換えられるので、究極的にはネットワーク全体の動作をソースコードとして記述できます。これをSoftware Defined Networking（SDN、ソフトウェアで定義されるネットワーク）と呼び、OpenFlowはSDNを実現する代表的な技術として注目を集めています。
 
 OpenFlowの登場によって、これからはネットワークもプログラミングの対象になります。「いまだにネットワークを手で管理してるの？そんなのソフトウェアで横着しようぜ！」こんな声が聞こえてきそうです。たしかに、今までネットワーク管理と言えば専門のオペレータ達による手作業がメインでした。横着できる部分はたくさんあるはずです。
 
-ハッカーに負けない創造性とOpenFlowのプログラマブルな特性が組み合わされば、次のような「究極の自動化」も夢ではなくなります。
+When the creativity as strong as the hackers and the programmable characteristics of the OpenFlow are combined, the following 'ultimate automation' wouldn't feel like a fantasy anymore.
 
- * 障害やトラフィック情報など、あらゆる情報を収集し集中管理できるネットワーク
- * ユーザやアプリケーションの追加・削除に応じて、自動的に構成を変更するネットワーク
- * 追加投資をしなくても、既存のインフラを目一杯まで使えるように最適化するネットワーク
+ * A network with a centralized control system by utilizing all sorts of collected data such as faults and traffic information
+ * A network that can automatically change the architecture depending on the user or application addition/deletion
+ * A network that can optimize the utilization of conventional infrastructure without extra investment 
 
-本書はこれらすべてのトピックを扱います。自宅や職場のような中小規模ネットワークからデータセンターのような超大規模ネットワークまで、具体的なOpenFlowの適用例を見ながら「OpenFlowってどんなもので、具体的に何に使えるのだろう？」という素朴な疑問に答えます。また「さっそくOpenFlowを使ってすごいネットワークを作ってみたい!」というプログラマ向けには、実際に動かせる実用的なコードをたくさん載せました。
+All three topics will be dealt in this book. We'll be looking at some specific adaptation examples of OpenFlow - from the small and medium-sized network such as home and work to the very-large-scaled data center's network - and answer simple questions such as 'What's OpenFlow and where would it come in handy?'. In addition, for those of you programmers who's thinking 'I want to create a brilliant network with this OpenFlow right away!', we have a lot of practical codes that you can actually run.
 
-本書を読み進めるにあたって、ネットワークやプログラミングの深い知識は不要です。基本から1つひとつ説明しますので、ネットワークの専門家はもちろん、プログラマやシステムエンジニア、そして営業職や管理職などなどOpenFlowに興味を持つ方であれば誰でもすんなり理解できるように構成してあります。ではさっそく、OpenFlowの仕組みを理解しましょう。
+You don't need to have an in-depth knowledge on the computer network or programming when you read this book. We'll be explaining one-by-one from the basics and the book is organized for almost anyone - network professionals, programmers, system engineers, sales people and managers - to understand right away if you have an interest in the OpenFlow. Let's begin by understanding the mechanisms of the OpenFlow!
 
-== OpenFlowの仕組み
+== Mechanism of the OpenFlow
 
-OpenFlowの仕組みを説明するために、ここからちょっとした@<bou>{たとえ}話をします。みなさんもきっと利用したことがあると思いますが、よくあるカスタマーサポートを思い浮かべてください。そう、テレビとかパソコンの調子が悪くなったときに、フリーダイヤルで相談するアレです。それって、どこがOpenFlowと関係あるのでしょう？
+To explain the mechanism of the OpenFlow, we'll be using a little allegory. You've probably used the method before but think of a customer support center. Yes, it's that place with a toll-free number where you call when your TV or computer starts acting weird. Okay but how's that related to the OpenFlow?
 
-実はOpenFlowの基本的な仕組みはカスタマーサポートにとても良く似ているのです。これからお話しする2つのストーリーが分かれば、OpenFlowの95%を理解できたも同然です。それではさっそく、このストーリーの主人公の@<ruby>{友太郎,ゆうたろう}君と、カスタマーサポートセンターで働く青井さん、そして上司の宮坂主任の3人に登場してもらいましょう。
+Actually the basic mechanism of the OpenFlow is very similar to that of the customer support center. If you can understand the following two stories, it would be virtually the same as understanding the OpenFlow about 95%. So let's welcome three people in the stories; the main actor Yutaro, customer support center's Ms. Aoi, and her boss Mr. Miyasaka!
 
-=== ストーリー1：エアコンが壊れた
+=== Story 1：Aww my AC isn't working
 
-今年もエアコンの活躍する季節がやってきました。ところが友太郎君のエアコンはどうにも調子が良くありません。そこで取扱説明書に載っていたカスタマーサポートに電話することにしました。自動音声に従って問題ありそうな項目をすべてチェックしてみましたが、いっこうに解決しません。結局、自動音声はあきらめて電話オペレータに相談することになりました。
+It's that time of the year when you're glad that you have your AC. However, something seems to be wrong with Yutaro's AC so he decides to dial the customer support center's number listed on the instructions handbook. 
+He checks every item in doubt suggested by the automatic support voice but to no avail. In the end, he gives up and decides to consult the operator.
 
-「はい、こちらカスタマーサポートセンターです。担当はわたくし青井がうけたまわります。ご用件は何でしょうか？」
+"Hello, customer support center's Aoi. How may I help you?"
 
-青井さんはヨーヨーダイン・エアコン社で働く電話オペレータです。お客さんから不具合の症状を聞き出し、問題を解決できる適切なエンジニアに電話をつなぐのが仕事です（@<img>{yoyodyne_support}）。
+Ms.Aoi is a telephone operator working for Yoyodyne Air Conditioner. Her job is to transfer the call from the customer with an AC problem to the engineer. (@<img>{yoyodyne_support})。
 
-//image[yoyodyne_support][電話オペレータはお客さんからの問い合わせを適切なエンジニアへ転送][width=12cm]
+//image[yoyodyne_support][Telephone operator transfers the inquiries from the customer to the appropriate engineer][width=12cm]
 
-「なんだかリモコンの調子が悪いんです。温度表示がずっと点滅しているんですけど、どうしたら直りますか?」
+"Something is wrong with my AC remote control. The temperature screen keeps blinking - how do I make this stop?"
 
-青井さんは手元の対応マニュアルを開きます（@<table>{manual1}）。対応マニュアルには故障の箇所と、それを直せるエンジニアの内線番号が書かれています。続く数字はそれぞれの問い合わせ件数です。
+Ms. Aoi reaches for the manual by her side and opens it (@<table>{manual1}). In the manual, source of malfunction and the extension number of engineer who can fix the problem is written. The following figures are the number of inquiries for each malfunction.
 
-//table[manual1][電話オペレータ用対応マニュアル]{
-故障の箇所			担当エンジニアの内線番号	問い合わせ件数
+//table[manual1][Manual book for telephone operators]{
+Source of malfunction		Extension of engineer in charge		Number of inquiries
 ------------------------------------------------------------------
-リモコン			555-2222					8件
-エアコン本体		555-4444					6件
-室外機				555-3333					4件
+Remote control			555-2222					8 cases
+Interior evaporating unit		555-4444					6 cases
+Exterior condensing unit				555-3333					4 cases
 //}
 
-ちょうどマニュアルの先頭に探していた項目がみつかりました。
+The entry was conveniently listed right on the top of the manual.
 
-「ご不便をおかけしました。担当のエンジニアにただいまおつなぎいたします」
+"I'm sorry for your inconvenience. I'll forward you to the engineer in charge right away."
 
-電話の転送を終えると、青井さんはリモコン故障の問い合わせ件数を8件から9件にアップデートしました（@<table>{manual2}）。
+When the transfer is done, Ms. Aoi updates the number of inquiries on remote control from 8 to 9 (@<table>{manual2}).
 
-//table[manual2][問い合わせ件数をアップデートする]{
-故障の箇所			担当エンジニアの内線番号	問い合わせ件数
+//table[manual2][Updating the number of cases]{
+Source of Malfunction		Extension of engineer in charge	 Number of inqueries
 ------------------------------------------------------------------
-リモコン			555-2222					@<em>{9件}
-エアコン本体		555-4444					6件
-室外機				555-3333					4件
+Remote control			555-2222					@<em>{9 cases}
+Interior evaporating unit		555-4444					6 cases
+Exterior condensing unit				555-3333					4 cases
 //}
 
 //noindent
-こうすることでどんな故障の問い合わせが多いかを社内にフィードバックできます。たとえば開発部署は次の製品開発にこの情報を生かせるというわけです。
+This way, Ms.Aoi can report how many cases there were for each malfunction and have the development department make use of this feedback for the next product. 
 
-==== これをOpenFlowに置換えると…
+==== The story in the OpenFlow world
 
-OpenFlowの世界では、パケットを送信するホストがお客さんの友太郎君、パケットを転送するOpenFlowスイッチが電話オペレータの青井さんに対応します（@<img>{openflow_host_switch}）。ホストがパケットを送ると、OpenFlowスイッチはパケットの中身に応じてパケットを適切な宛先に転送します。これはちょうど、青井さんが友太郎君からの問い合わせ内容に応じて適切な担当エンジニアに電話を転送するのと同じです。
+In the realm of the OpenFlow, the source host of the packet and the OpenFlow switch that forwards the packet are, customer Yutaro and telephone operator Ms.Aoi, respectively（@<img>{openflow_host_switch}）. When the host sends packets, the OpenFlow switch forwards the packets to the appropriate destination according to the content of the packets. This is just like Ms. Aoi forwarding the call to the engineer in charge according to the inquiries that Yutaro made.
 
-//image[openflow_host_switch][OpenFlowではホストがお客さん、スイッチが電話オペレータ、そしてフローテーブルがマニュアルに対応][width=12cm]
+//image[openflow_host_switch][Host = customer, switch = telephone operator, and flow table = manual][width=12cm]
 
-OpenFlowスイッチは、その動作が「マニュアル化」されています。カスタマーサポートの例では、青井さんはマニュアルから転送先の番号を調べました。OpenFlowスイッチは、パケットの転送先をスイッチ内のフローテーブルと呼ばれるデータベースを参照して決めます。青井さんの業務がすべてマニュアル化されているのと同じく、OpenFlowスイッチの動作はすべてこのフローテーブルの中身によって決まります。
+In an OpenFlow switch, this transactions are in a "manual". In the example of the customer support, Ms. Aoi looked up the extension line information in the manual. In an OpenFlow switch, the decision where to forward the packets are made by looking up the database in the switch called flow table. As everything that Ms. Aoi does are manualized, everything that OpenFlow switch does is determined by the content of this flow table.
 
-==== 転送情報を管理するフローテーブル
+==== Flow table, where forwarding information is managed
 
-フローテーブルには、「こういうパケットが届いたら、ポートｘ番に転送する」というルールがいくつか記録されています。このルールをフローエントリと呼びます。フローエントリはちょうど「リモコンの故障に関する問い合わせが来たら、内線555-2222に転送する」といったマニュアルの各項目に対応します。
+In a flow table, several rules such as 'When this kind of packet arrives, forward it to the port x' are stored. These rules are called flow entries. Flow entries correspond to items in the manual book for instance, 'When there's an inquiry on the malfunctioning remote control, forward to extension 555-2222'.
 
-実際のフローテーブルの例を見てみましょう。@<table>{story1_openflow}はあるスイッチのフローテーブルで、各行が1つひとつのフローエントリに対応します。フローエントリはマッチングルール、アクション、そして統計情報の3つの要素から成ります。
+Let's take a look at an example of a actual flow table. In Table @<table>{story1_openflow}, each entry corresponds to a flow entry composed of three elements; matching rule, action, and statistics.
 
-//table[story1_openflow][フローテーブルとフローエントリの例]{
-マッチングルール						アクション			統計情報
+//table[story1_openflow][Example of flow table and flow entry]{
+Matching rule						Action			Statistics
 -------------------------------------------------------------------------------
-送信元IPアドレスが192.168.1.100			ポート8番に転送		80パケット
-宛先IPアドレスが192.168.10.92			ポート10番に転送	14パケット
-送信元MACアドレスが00:50:56:c0:00:08	ポート1番に転送		24パケット
+Source IP address: 192.168.1.100			Forward to Port 8		80 packets
+Destination IP address: 192.168.10.92			Forward to Port 10	14 packets
+Source MAC address: 00:50:56:c0:00:08	Forward to Port 1		24 packets
 //}
 
-: マッチングルール
-  マッチングルールは届いたパケットをどう処理するかをフローテーブルから探す「条件」として使われます。たとえば「リモコンの調子がおかしい」という問い合わせから転送先を決めたように、パケットの特徴に合うマッチングルールから処理方法、つまりアクションを決めます。
+: Matching rule
+Matching rule is used as a 'condition' to find out how the arrived packet should be processed from the flow table. As the forwarding destination was chosen based on the inquiry on 'something is wrong with the remote control', the process method, i.e. the action, is determined based on the matching rule that fits the trait of the packet.
 
-: アクション
-  アクションは届いたパケットをどう扱うかという「処理方法」にあたります。たとえば「内線555-4444に転送」と同じく、アクションには「スイッチのポート8番に転送」などと指定します。なお、アクションでは単純な転送だけでなくパケットの書き換えや破棄などもできます。
+: Action
+Action corresponds to a 'process method', that is, how to handle the arrived packet. As 'Transfer to extension 555-4444', the action is something like 'Forward to port number 8 of the switch'. 
+However, action isn't limited to simple forwarding. It can be about rewriting or dropping the packet.
 
-: 統計情報
-  統計情報はフローエントリごとのパケット処理量の記録です。たとえば「リモコン関連の問い合わせ数は9件」とマニュアルに記録したように、「このフローエントリに従って転送したパケットは80個」などといった情報が書き込まれます。
+: Statistics
+Statistics is a recording of how many packets were processed for each flow entry. As '9 inquiries were related to the remote control' was noted in the manual, information such as '80 packets were forwarded based on this flow entry' is stored.
 
-いかがでしょうか？カスタマーサポートとOpenFlowは驚くほどよく似ていることがわかると思います。実はOpenFlowはとても単純で理解しやすい仕組みなのです。
+What did you think of that? Isn't the example of customer support center and the OpenFlow really similar? The mechanism of the OpenFlow is very simple and easily comprehensible.
 
-=== ストーリー2：またエアコンが故障
+=== Story 2：The AC isn't working again!
 
-エアコンもしばらくは順調でしたが、1か月後また調子が悪くなってしまいました。友太郎君はふたたびカスタマーサポートへダイヤルします。
+The AC was working okay for a while but a month later, it's acting weird again. Yutaro dials the customer center once again.
 
-「エアコンの排水ホースがすぐに詰まっちゃうんです」
+"The drain hose gets clogged really easily"
 
-青井さんはいつものように手元の対応マニュアルを調べましたが、困ったことに排水ホースの項目は載っていません。どうやらまったく新しい不具合のようです。
+Ms. Aoi flips through the manual pages but there aren't any sections on the drain hose! Apparently, it seems to be a whole new kind of problem.
 
-「すみませんが少々お待ちください。対応可能なエンジニアがいるかどうか確認いたします」
+"I'm sorry sir, could you hold on for a moment? I'll see if I can reach the engineer who can guide you"
 
-そして電話口には録音された"しばらくお待ちください"のメッセージとどこか軽快な音楽が流れはじめました。
+Then there's the moment of waiting with please-hold-on-message and a pleasant background music.
 
-//image[yoyodyne_support_miyasaka][対応マニュアルに対処法が見つからなかった場合、上司に聞く][width=12cm]
+//image[yoyodyne_support_miyasaka][When you can't find what you're looking for in the manual, ask the boss][width=12cm]
 
-こういう時、青井さんがいつも頼るのは上司の宮坂主任です(@<img>{yoyodyne_support_miyasaka})。
+At a time like this, it's Mr. Miyasaka who Ms. Aoi always leans to (@<img>{yoyodyne_support_miyasaka}). 
 
-「宮坂さん、排水ホースについての問い合わせが来ているのですが、誰につなげばよいですか?」
+"Mr.Miyasaka, there's an inquiry on the drain hose. To whom should I forward the call to?"
 
-「それだったら山本君が適任だ」
+"Oh, in that case, Mr. Yamamoto should be the perfect person to ask"
 
-転送先が分かった青井さんは友太郎君の待つ電話に戻ります。
+Ms. Aoi returns to the call with the information. 
 
-「大変お待たせいたしました。担当のエンジニアに転送いたします」
+"Thanks for waiting, I'll forward your call to the engineer in charge"
 
-一度目の問い合わせと比べてかなり時間がかかってしまいましたが、これでようやく一件落着です。さらに青井さんは、宮坂主任から教わった山本君の内線番号をマニュアルに追加します（@<table>{manual3}）。次からの同じ問い合わせにすばやく答えられるようにするためです。
+This took more time compared to the very first inquiry on the remote control but at last the case is closed. Furthermore Ms. Aoi adds the number of Mr. Yamamoto's extension number informed by Mr. Miyasaka in the manual(@<table>{manual3}). When there's an inquiry on the duct hose in the future she can answer quickly on the matter. 
 
-//table[manual3][マニュアルに新しい症状と転送先を追加してアップデート]{
-故障の箇所				担当エンジニアの内線番号		問い合わせ件数
+//table[manual3][Updates the manual by adding a new source of malfunction and the contact information]{
+Source of Malfunction				Extension of engineer in charge		Number of inquiries
 ----------------------------------------------------------------------
-リモコン				555-2222						9件
-エアコン本体			555-4444						6件
-室外機					555-3333						4件
-@<em>{排水ホース}		@<em>{555-5555}					@<em>{1件}
+Remote control				555-2222						9 cases
+Interior evaporating unit			555-4444						6 cases
+Exterior condensing unit					555-3333						4 cases
+@<em>{Duct hose}		@<em>{555-5555}					@<em>{1 case}
 //}
 
-==== これをOpenFlowに置換えると…
+==== The story in the OpenFlow world
 
-OpenFlowでこの上司にあたるのがコントローラと呼ばれるソフトウェアです（@<img>{openflow_host_switch_controller}）。OpenFlowでネットワークをプログラミングする場合、プログラマが書くのはこのコントローラの部分です。頭脳であるコントローラをソフトウェアとして記述することで、ネットワークを自由自在に制御できるというわけです。
+In OpenFlow, the boss is a software called 'controller' (@<img>{openflow_host_switch_controller}). When programming network with OpenFlow, it's the controller part that the programmers write. You can control the network freely by coding the controller inside your brain to a software.
 
-//image[openflow_host_switch_controller][フローテーブルにパケットのエントリが見つからなかった場合、コントローラに問い合わせる][width=12cm]
+//image[openflow_host_switch_controller][When the packet entry is not in the flow table, ask the controller][width=12cm]
 
-フローテーブルに載っているパケットはスイッチが高速に転送してくれますが、フローテーブルに載っておらずスイッチ側でどう処理してよいかわからないパケットが届くこともあります。この場合スイッチはこのパケットをコントローラに上げて「このパケットはどうすればよいですか？」と指示をあおぎます。コントローラはこのパケットの中身を調べ、どうすべきかという指示、つまりフローエントリをフローテーブルに書き込んでやります。
+The packets specified in the flow table are forwarded by the switch at speed but there are packets without such instructions, making the switch lost in the dark. In this case, the switch asks the controller what to do with the packet. The controller inspects the content of the packet and gives an instruction what to do, i.e. writes the flow entry in the flow table. 
 
-このようにフローテーブルに載っていないパケットが届くと、コントローラへの問い合わせが発生するのでパケット転送がとても遅くなります。しかし、スイッチの起動時にコントローラが必要なフローエントリをあらかじめ書き込んでおくようにしておけば、スイッチ側だけで素早く処理できます。
+When the packet that doesn't have any forwarding information in the flow table arrives, the forwarding speed becomes slow since the switch has to ask the controller. However, the process is fast just with the switch if the controller writes the necessary flow entries in advance when the switch starts up.
 
-=====[column] @<ruby>{友太郎,ゆうたろう}の質問：コントローラへの問い合わせはどのくらい遅い？
+=====[column] Question from Yutaro: How slow is querying the controller?
 
-フローテーブルを使わずに、毎回コントローラが指示を出すとどうなるでしょうか？結果は、何倍も遅くなります。試しに手元の環境で簡単なプログラムを書き、ソフトウェアスイッチで転送する場合とコントローラですべて処理する場合を比べてみたところ、性能に5倍もの差が出ました。もちろんこれはおおざっぱな値ですが、数倍は遅くなるという目安になります。また今回の実験はソフトウェアスイッチでしたが、ハードウェアスイッチを使うとこの差はさらに広がります。
+What happens if the controller gives out instructions every time without using the flow table? The answer - a LOT slower, like several manyfold. To test, we wrote a short program in our testing environment and compared forwarding by the software switch and processing everything by the controller. Guess what, 5 times slower!! Of course this is just a rough estimation but it should give you an rough idea about how slow it gets. In addition, if a hardware switch was used instead of the software switch in the comparison, the difference would have been larger.  
 
 =====[/column]
 
-== OpenFlow のうれしさ
+== The Joy of OpenFlow
 
 OpenFlowの仕組みの大枠は理解できたと思います。それでは最も肝心な部分、「OpenFlowって何がうれしいの？」を掘り下げてみましょう。
 
@@ -194,22 +197,21 @@ OpenFlowでもすべてのトラフィック情報はコントローラに上が
  * コントローラのユニットテストや受け入れテストを書くことで、ネットワーク全体を自動的にテストできる。テスト結果の出力は、そのまま仕様書の一部になる。ExcelやWordで書いた仕様書を別個に管理する必要はない
  * コントローラのソースコードや関連データをgitなどのバージョン管理ツールで管理すれば、ネットワーク全体のバージョン管理やバージョン間の差分のチェック、および巻き戻しも可能だろう
 
-====[column] @<ruby>{取間,とれま}先生曰く：OpenFlowは回転ずし！？
+====[column] Mr. Trema says：OpenFlow is a conveyor belt sushi!?
 
-従来のルータやスイッチは、ベンダが提供する機能をそのまま使うしかありませんでした。たとえば、100個ある機能のうち本当に使いたい機能は10個だけだったとしても、100機能つきのルータを買うしかありません。これではある意味、フルコースしか頼めないフレンチレストランのようなものです。一部の機能しか利用していないのに障害ポイントが無数にあるので、切り分けやデバッグが難航することもままあります。
-
-OpenFlowは回転ずしです。フランス料理の味に近づけるのは大変ですが、必要な機能だけをチョイスしてがんばって実装すれば、思い通りの機器が手に入るのです。
+Conventional routers and switches demands you to use their vendor-defined functions. For example, even when you want to use only 10 functions, you have to buy the router that comes with 100 pre-defined features. This is like going to a French restaurant where you can only order full course cuisine! Even if you are using only a few features, there are millions of point of failures and it isn't always easy to pinpoint the cause or debug.
+OpenFlow is like a conveyor belt sushi. It might be difficult to mimic a dish from a fancy French restaurant but if you choose only the necessary functions and implement, you might end up with something just as you intended. 
 
 ====[/column]
 
-== OpenFlowで気をつけること
+== Some things you should be careful about OpenFlow
 
-もちろん、OpenFlowでもうれしいことばかりではありません。コントローラで制御を一手に引き受けるというモデルになっているため、スイッチの台数が増えたときのスケーラビリティに気をつける必要があります。もし、フローテーブルに載っていないパケットが一気にコントローラへ到着すると、最悪の場合コントローラが停止してしまいます。
+Of course, not everything about OpenFlow is wonderful.コントローラで制御を一手に引き受けるというモデルになっているため、スイッチの台数が増えたときのスケーラビリティに気をつける必要があります。もし、フローテーブルに載っていないパケットが一気にコントローラへ到着すると、最悪の場合コントローラが停止してしまいます。
 
 そこで、OpenFlowの使いどころやフローテーブルの残り容量には特に注意する必要があります。たとえばOpenFlowスイッチをインターネットのような多種多様のパケットが流れる環境につなげると、すぐにコントローラへの問い合わせが殺到しフローテーブルがいっぱいになって破綻してしまいます。しかしデータセンターなどの閉じた環境では、トラフィックの特徴や流れるパケットの種類はあらかじめ見当を付けておけます。そこで最低限のパケットのみがコントローラへ上がってくるようにうまくネットワークとフローエントリを設計することで、スイッチが増えてもスケールさせることができます。
 
-== まとめ
+== Wrap-up
 
 本章ではSDNを実現するための部品であるOpenFlowを解説しました。OpenFlowはフローテーブルを持つスイッチと、フローテーブルの内容を集中制御するソフトウェアであるコントローラから成ります。ネットワークの制御をソフトウェア化することによって、自動化やさまざまなシステムとの連携、トラフィック制御のしやすさ、ソフトウェア技術の応用などなどさまざまな恩恵があります。
 
-次章では、具体的なOpenFlowの使いどころをいくつか見ていきましょう。
+In the next section, we'll be covering some specific use cases of OpenFlow.
