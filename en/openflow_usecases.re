@@ -1,126 +1,127 @@
 = OpenFlow use case
 
 //lead{
-OpenFlowは一見何にでも使えそうですが、本当にそうでしょうか？OpenFlowがぴったりとはまる使いみちを考えてみましょう。
+OpenFlow seems all-purpose at a glance, but is that true? Let's think about the situations where it would fit perfectly well.
 //}
 
 //indepimage[pipeline][][width=10cm]
 
-== OpenFlow はアカデミア出身
+== Academia-born OpenFlow
 
-OpenFlowスイッチには「コントローラさえ書けばどんなネットワーク機器にも化けられる」という特長があります。乱暴に言うと、スイッチのような単純な機器はもちろん、ルータやロードバランサ、ファイアウォールやNATなど複雑な機器も、コントローラの実装をがんばれば実現できてしまいます。もちろん、専用機と同じ機能をすべて実装するのは大変ですし、機能の一部をソフトウェアとして実装することになるので実装が悪いと性能は落ちます。しかし、ソフトウェア次第で何でもできることに変わりはありません。
+OpenFlow switches can turn into any kind of networking devices as long as there's a programmed controller. Roughly speaking, as long as the controller is implemented, the OpenFlow switches can be anything from simple devices such as regular switches, to a bit more complicated equipments such as routers, load balancers, firewalls, and NATs. Of course, not all feature of the dedicated machines can be implemented and the performance might degrade with a poor implementation since parts of the features are implemented as a software. However, it still doesn't change the fact that anything is possible depending on the software.
 
-この何でもできるという特長は、もともとは大学や研究所などアカデミアからのニーズによって生まれたものでした。今までのスイッチやルータにとらわれない、まったく新しいインターネットを研究したい。でもすでにあるスイッチやルータのファームウェアを改造するのは大変だ。そうかといって一からハードウェアは作りたくないし……大規模な仮想ネットワーク上で実験してもいいけれど、それだと実際のインターネット環境とあまりにも違いすぎる。こうしたジレンマを解消するために考え出されたのがOpenFlowだったわけです。
+This 'anything is possible' feature was originally born by the needs of academic background such as universities and laboratories. 'I want to do a research on a whole new network, free from the limitations of the conventional switches and routers. But remodeling the firmware of switches and routers sounds too hard. I don't want to make a new hardware from the scratch… A large-scaled virtual network is okay for a testbed but it's too different from the real Internet'. OpenFlow was devised to solve these kinds of dilemmas.
 
-== なぜOpenFlowが注目されているのか？
+== Why is OpenFlow attracting attention?
 
-では、インターネットの研究用だったOpenFlowが巨大データセンターに代表される産業界でも注目されるようになったのはなぜでしょうか？
+So, why did OpenFlow -- originally used for researching Internet -- start attracting attention from the industries represented by the enormous data centers?
 
-データセンターで最も重視されるのはスループット（単位時間あたりの処理能力）とコストです。Googleなどの巨大データセンターでは、世界中から届くたくさんのリクエストを短時間でさばくために（つまり、スループットを上げるために）物理的にたくさんのスイッチやサーバをそろえる必要があります。もし1台1台の価格が高いと、ハードウェア代だけでコストが膨大になってしまいます。そのため、秋葉原でも買えるコモディティ（普及品）から構成される安いハードウェアを使います。
+Two things that matter the most to data centers are throughput (processing ability per a unit time) and cost. Gigantic data centers such as Google need to equip a lot of switches and servers in order to process the endless requests from all over the world in a short time, i.e., to achieve a higher throughput. If these equipments are expensive, the total cost would be humongous just by the hardware expense. Therefore, they use an inexpensive hardware assembled with the commodity components that even you can get from the Akihabara (famous electronics district in Tokyo). 
 
-データセンターの信頼性はハードウェアではなくソフトウェアでカバーします。巨大データセンターではとにかく大量のサーバやスイッチを使うため、個々のハードウェアの信頼性はそれほど重視しません。数十万台のサーバがある環境では、そもそもすべてが故障なしに動き続けることはまったく期待できないからです。そのかわり、上位のソフトウェア層で信頼性を担保します。死活監視や冗長化、障害からの自動復旧など信頼性にかかわる部分はすべてミドルウェアとして実装するのです。
+The reliability of data centers is guaranteed by the software rather than the hardware. Since massive amounts of servers and switches are used in large-scaled data centers, the reliability of individual hardwares is ignored. In an environment where there are hundreds of thousands of servers, no one expects all those machines to keep working without any problems in the first place. Instead, the reliability is guaranteed from the upper software layer. Everything that's related to making the system trustworthy -- monitoring, assuring redundancy, managing faults, and recovering automatically -- is implemented as a middleware. 
 
-OpenFlowはこのデータセンターのモデルにうまくマッチしています。OpenFlowは制御を行うソフトウェアであるコントローラと、その命令に従うだけのハードウェアであるOpenFlowスイッチにきれいに分離できます。これは、データセンターのモデル--全体を制御し信頼性を確保するミドルウェアと、大量のコモディティハードウェア--と似ています。コントローラはソフトウェアとして実装するので、死活監視や冗長化、自動復旧などで信頼性を担保するデータセンターのミドルウェアと容易に連携できます。ネットワークとアプリケーションがそれぞれ独立して信頼性を確保するよりも無駄が少なく、高い信頼性を実現できます。
+OpenFlow fits well to this data center model. It decouples the software and the hardware; controller part that does the controlling and the OpenFlow switch part that only follows the instructions. This is similar to the data center model; a middleware guaranteeing the reliability by controlling the whole system, and a lot of commodity hardwares that are controlled. The collaboration with data center's middleware -- which guarantees the reliability by monitoring, assuring redundancy, recovering automatically -- is convenient since the controller is implemented as a software. It's more cost efficient and highly reliable than network and application individually guaranteeing the reliability. 
 
-そして何よりも、データセンターはOpenFlowのような新しい技術を採用しやすいプラットフォームです。データセンターの増設は、サーバ単位ではなく、フロア単位もしくは建物単位と、大きなまとまった単位で行います。そのため、既存部分との相互接続性を気にする必要は少なく、独自の新技術を導入しやすいのです。
+Above all, data center is a platform where new technologies such as OpenFlow can be easily adopted. Data centers are expanded in large units by the floors or buildings rather than by the servers. Hence, a unique new technology can be introduced without having to worry about the mutual connectivity with the conventional system.
 
-このように「ソフトウェアによる制御部とハードウェアがきれいに分離しており、既存ミドルウェアとの連携が容易」というOpenFlowの設計が、たまたまデータセンターにマッチした、これがOpenFlowに注目が集まる理由です。
+As it happens, this OpenFlow's architecture of 'the software controller and the hardware is nicely decoupled and the collaboration with the conventional middleware is convenient' matches that of the data center. This is why OpenFlow is getting attention. 
 
-== ユースケースあれこれ
+== All that use cases
 
-ここでは、スイッチやルータなど基本的なネットワーク部品をOpenFlowで実装する方法をみていきます。その前に、OpenFlowでできることをさらに詳しく見ていきましょう。
+Here we'll be covering some of the ways to implement the fundamental networking devices such as switches and routers. But before we go on, let's look at what OpenFlow can do in more detail.
 
-「OpenFlowでできることは何か？」という質問を言いかえると、「フローテーブルでできることは何か？」になります。OpenFlowスイッチがフローテーブルに従って次々とパケットを転送する様子は、筆者が小学生のころよく楽しんだ水道管ゲームを思い出させます。これは水道管のバルブから蛇口まで、さまざまな形の水道管のカードをならべて水を届けるというゲームです。フローテーブルでできることはこれによく似ています。できることは基本的には次の4つです。
+Rephrasing the question 'What can I do with the OpenFlow?' would be 'What can I do with the flow table?'. OpenFlow switch forwarding packets one after another according to the flow table remind the authors of the Waterworks game that we used to play in the grade school. It's a game where you lay out cards of water pipes in different shapes to deliver the water from the valve to the tap. What you can do with the flow table well resembles this game. The four basic functions follow.
 
- 1. パケットを転送する
- 2. 流量を調べる
- 3. 書き換える
- 4. 分岐する
+ 1. Forward packets
+ 2. Check flow rate 
+ 3. Rewrite
+ 4. Branch
 
-これがすべてです。パケットを指定したスイッチポートから出力することで転送する。転送されたパケットの量を調べる。パケットを書き換える。パケットを複製して複数のスイッチポートから出力する。これらを自由に組み合わせて、さまざまなタイプのネットワークを作れます。
+This is everything. Forward the packets by outputting the packet from the designated switch port. Check the flow rate of the forwarded packets. Rewrite the packets. Replicate the packets and output them from the switch ports. By combining these functions freely, you can create various types of networks. 
 
-それではいよいよ実際のユースケースを見ていきましょう。上の4種類のカードをどのように組み合わせて実現しているかというところに注目してください。
+Let us finally move on to the actual use cases. Notice what kind of combination with the above 4 cards is used to realize each case.
 
-=== スイッチ
+=== Switch
 
-「パケットを転送する」を使うと、最もシンプルなスイッチをOpenFlowで実現できます（@<img>{switch}）。スイッチは届いたパケットの宛先のMACアドレスを見て、そのMACアドレスを持つホストがつながるポートへとパケットを転送します。
+Using 'forward packets' card lets you realize the simplest switch with the OpenFlow (@<img>{switch}). The switch checks the destination MAC address of the received packet and forwards the packet to the port where the host with the MAC address is connected.
 
-//image[switch][OpenFlowでスイッチを実現する][width=8cm]
+//image[switch][Realize switch with OpenFlow][width=8cm]
 
-これに「流量を調べる」を組み合わせると、スイッチにトラフィック集計機能を付け加えられます（@<img>{traffic_switch}）。フローエントリごとにどれだけのパケットを転送したかを集めることで、コントローラでネットワーク全体のトラフィックを集計できます。
+If 'check flow rate' card is combined, traffic aggregating function is appended to the switch (@<img>{traffic_switch}). The controller can summarize the whole network's traffic by adding up how many packets were forwarded for each flow table.
 
-//image[traffic_switch][OpenFlowでトラフィック集計機能つきスイッチを実現する][width=8cm]
+//image[traffic_switch][Realize the switch with traffic aggregating function by OpenFlow][width=8cm]
 
-なお、スイッチのOpenFlowでの詳しい実装方法は@<chap>{learning_switch}で、またトラフィック集計機能は@<chap>{traffic_monitor}で説明します。
+The details on how to implement the switch with the OpenFlow and the traffic aggregating function will be explained in @<chap>{learning_switch} and @<chap>{traffic_monitor}, respectively.
 
-=== ルータ
+=== Router
 
-「パケットを転送する」に「書き換える」を組み合わせると、ルータをOpenFlowで実現できます（@<img>{router}）。ルータは異なる2つのネットワークの間で動作し、ネットワーク間のパケットのやりとりに必要な転送と書き換え処理を行います。パケットがルータを通るとき、ルータはパケットの宛先と送信元のMACアドレスを書き換えて転送します。
+Routers can be realized with OpenFlow when 'forward packets' and 'rewrite' cards are combined (@<img>{router}). Routers operate between two different networks, forwarding and rewriting packets so that the two networks can communicate. When the packet goes through the router, the router rewrites the packet's destination and source MAC address before forwarding the packet.
 
-//image[router][OpenFlowでルータを実現する][width=12cm]
+//image[router][Realize router with OpenFlow][width=12cm]
 
-なお、ルータのOpenFlowでの詳しい実装方法は@<chap>{router_part1}および@<chap>{router_part2}で説明します。
+The details on how to implement the router with OpenFlow will be explained in @<chap>{router_part1} and @<chap>{router_part2}
 
-=== ロードバランサ
+=== Load balancer
 
-ルータに「流量を調べる」を追加して改造すると、いわゆるロードバランサをOpenFlowで実現できます（@<img>{load_balancer}）。ロードバランサとは、Webサーバなどアクセスが集中しやすいサーバの負荷を下げるため、クライアントからのアクセスを複数台のバックエンドサーバに振り分けるネットワーク装置やソフトウェアです。
+The so called load balancer can be realized by the OpenFlow if 'check flow rate' is appended to the router (@<img>{load_balancer}). A load balancer is a device or a software that distributes the accesses from clients to multiple backend servers, to lower the load of servers with high access rates such as web servers.
 
-//image[load_balancer][OpenFlowでロードバランサを実現する][width=10cm]
+//image[load_balancer][Realize load balancer with OpenFlow][width=10cm]
 
-ロードバランサは次のように動作します。
+The operations of load balancer follow.
 
- 1. クライアントからのリクエストが届くと、担当するバックエンドサーバを決める
- 2. リクエストパケットをバックエンドサーバに届けるために書き換える（ルータと同じ）
- 3. バックエンドサーバがつながるスイッチポートに、書き換えたパケットを出力する
+ 1. When a request from a client arrives, determine the backend server in charge
+ 2. Rewrite the request packet so that it can reach the backend server (same as the router)
+ 3. Output the rewritten packet from the switch port that the backend server is connected to 
 
 //noindent
-アクセスの状況によっては、バックエンドサーバの間で負荷に偏りが出ることがあります。そこで「流量を調べる」を使うと、空いているバックエンドへ優先して振り分けられます。
+The load between the backend servers may not be balanced depending on the access situation. Using 'check flow rate' card, the backend with a lower load is chosen with priority.
 
-必要なバックエンドサーバの数は、時間帯によって異なります。たとえば、アクセスが減る夜中になればバックエンドサーバ数を減らせます。逆に昼食後などのアクセスが増えやすい時間帯では、バックエンドサーバを増やす必要があります。
+The number of necessary backend servers depends on the period of time. For example, the number of backend servers can be reduced in the middle of the night when access rate decrease. On the contrary, it must be increased around after lunch time when many people tend to surf the net.
 
-もしバックエンドサーバの数を調節できるAPIがあれば、ロードバランシングとバックエンドサーバ数の調節を連携できます（@<img>{advanced_load_balancer}）。「流量を調べる」でトラフィックを調べ、これに応じてバックエンドサーバ数をAPI経由で自動調節できるからです。
+If there's an API that adjusts the number of the backend servers, the load balancing function and adjusting the number of the backend servers can be collaborated (@<img>{advanced_load_balancer}). This is because the traffic can be examined by 'check flow rate' and accordingly, the number of the backend servers can be automatically adjusted through the API.
 
-//image[advanced_load_balancer][トラフィックに応じてバックエンドサーバの数を調節する高度なロードバランサの例][width=10cm]
+//image[advanced_load_balancer][Example of high-spec load balancer that adjusts the number of backend servers according to the traffic amount][width=10cm]
 
-このように、コントローラはバックエンドサーバのような既存ミドルウェアと連携することでネットワークに機能を追加できます。コントローラは主要なプログラミング言語で実装できるので (@<chap>{openflow_frameworks}で紹介)、さまざまな既存ミドルウェアのAPIを通じて楽に連携できます。
+As shown above, the controller can append functions to the network by collaborating with conventional middleware such as backend server. The controller collaborates easily with various kinds of conventional middleware through the APIs since the controller can be implemented by major programming languages which will be introduced in @<chap>{openflow_frameworks}.
 
-さて、ここまでで基本的なネットワーク機器をOpenFlowで実装する例をいくつか紹介してきました。ここからはより細かく、ネットワーク経路の制御をOpenFlowで行うパターンをいくつか見ていきます。
+We've introduced several examples on how to implement some basic networking devices with the OpenFlow so far. From now on, we'll be digging deeper into the patterns of how to control the networking route by the OpenFlow.
 
-=== 帯域を目一杯まで使う
+=== Fully utilize the bandwidth 
 
-「パケットを転送する」を使うと、複数の経路を使ってVMイメージなどの大きなデータを効率的に転送できます。転送元から転送先へ複数のコネクションを張り、それぞれを同時に使って転送できるのです（@<img>{maximize_bandwidth}）。
+If you use 'forward packet', large data such as VM images can be effectively forwarded by using multiple routes. Multiple connections from the source to the destination are made, and the connections are used simultaneously to forward the data (@<img>{maximize_bandwidth}).
 
-//image[maximize_bandwidth][複数経路を使って帯域をかせぐ][width=12cm]
+//image[maximize_bandwidth][Earn bandwidth by using multiple routes][width=12cm]
 
-この「帯域を目一杯まで使う」の具体的な例は、@<chap>{google}で紹介します。
+A detailed example of this 'fully utilize the bandwidth' will be introduced in @<chap>{google}.
 
-=== パケットを複製する
+=== Packet replication
 
-「分岐する」を使えば、サーバが送信したパケットをスイッチでコピーして複数のクライアントに届られます（@<img>{multicast}）。クライアントの数が増えてもスイッチがパケットを複製してくれるので、サーバから送るパケットの数を増やす必要はありません。これによって、ネットワークの帯域を節約できます。
+When 'branch' is used, the packets sent from the server are copied at the switch and delivered to multiple clients (@<img>{multicast}). Even if the number of clients increase, the switches will replicate the packets so there's no need to multiply the number of packets from the server. As a result, the network bandwidth can be saved.
 
-//image[multicast][パケットを複製し、複数のクライアントに届ける][width=10cm]
+//image[multicast][Replicate packets and deliver them to multiple clients][width=10cm]
 
-また、「分岐する」で冗長な経路を作り、それぞれの経路に複製したパケットを流せば、ネットワークに障害が起こった場合でもパケットをロスせずに復旧できます（@<img>{fail_over}）。クライアントとサーバが通信する状況を考えてください。一番左のスイッチは、複製したパケットを、2 つの経路それぞれに送ります。受け取る側は、冗長化された経路のうちどちらか一方だけから受け取るようにしておきます。このようにしておけば、もしどちらかの経路に障害が起こっても、もう一方の経路からパケットを受け取れるので、パケットを一つも落とさずに通信を続けられます。
+In addition, the 'branch' will allow you to create redundant routes. If replicated packets are sent to each route, the network can be recovered without loosing a single packet in case of a failure (@<img>{fail_over}). Think of a situation where a client and a server communicate. The left-most switch sends the replicated packets to both of the routes. The receiver accepts packets from only one of the routes. That way, even when there's a failure in one route, none of the packet will get lost since the other route is still working.
 
-//image[fail_over][OpenFlow で冗長な経路を作る][width=12cm]
+//image[fail_over][Create redundant route with OpenFlow][width=12cm]
 
-ここで重要なのは、コントローラは全体の状況を見て自由自在に経路を決められるということです。従来のネットワークでは、各スイッチが個別に最適となるような経路を決めるため最短路など特定の経路しか取れませんでした。逆にOpenFlowでは、コントローラが全体の道路と交通状況を逐一把握しているため、好きなポイントで自由に経路を切り替えられます。
+What's important here is that the controller sees the whole picture and can make decision on routes at will. In the conventional network, each switch could only select a specific route, such as the shortest one, based on its individually calculated optimal route. However in the OpenFlow, the controller can change the route in any way and in any time it wants based on the overall knowledge on the route and the traffic situation.
 
-=== 自由にネットワーク構成を作る・変更する
+=== Create and change the network structure as you want 
 
-OpenFlowを使うと、ネットワーク構成を物理的な構成にしばられることなく自由に変更できます。@<img>{patch_panel}のようにスイッチにホスト2つとネットワーク2つが接続していると考えてください。コントローラはこれに「パケットを転送する」フローエントリを打ち込むことで、ホストとネットワークの接続を自由に切り替えられます。たとえばホストAがつながるポートとネットワークBのつながるポートでパケットを相互に転送すれば、ホストAはネットワークBに属するようになります。
+By using the OpenFlow, you can change the network structure freely without being limited by the physical structure. Let's say two hosts and two networks are connected to a switch as shown in @<img>{patch_panel}. 
+The controller can select the connection of hosts and networks freely by inserting a flow entry that says 'forward packet'. For example, Host A belongs to the Network B by mutually forwarding the packet between Host A's port and Network B's port.
 
-//image[patch_panel][各ホストの所属するネットワークを切り替える][width=12cm]
+//image[patch_panel][Select the network where each host belongs][width=12cm]
 
-こうした機能を持つハードウェアをパッチパネルと呼び、OpenFlowでの実現方法を@<chap>{patch_panel}で詳しく説明します。より高度な、いわゆるネットワーク仮想化の例については、@<chap>{sliceable_switch}および@<chap>{datacenter_wakame}で紹介します。
+The hardware with this kind of function is called a patch panel and we'll be covering how to implement it with the OpenFlow in more details in @<chap>{patch_panel}. A more advanced example, a network virtualization so to speak, will be introduced in @<chap>{sliceable_switch} and @<chap>{datacenter_wakame}.
 
-== まとめ
+== Wrap-up
 
-OpenFlowがぴったりとはまる具体的なユースケースを見てきました。OpenFlowではプログラミング次第で好きな機能を追加できますが、専用のネットワーク機器と同じフル機能を実装するのは現実的ではありません。そのかわりデータセンターに代表される、ソフトウェアでハードウェア全体を制御する世界とうまくマッチします。ネットワーク管理の自動化や最適化、そしてスループットの向上に必要な機能をOpenFlowで実装し、信頼性にかかわる部分は他のミドルウェアに任せる、それがOpenFlowの最も威力を発揮する使い方です。
+We looked at some specific use cases where the OpenFlow fits perfectly. You can add any kind of functions you want depending on the programming in the OpenFlow but it's not really realistic to implement every functions of the dedicated networking devices. Instead, it matches well with the world where the software controls the hardware, represented by the data centers. Implement the necessary functions for automation/optimization of network operation and achieve higher throughputs with the OpenFlow, while leaving the parts related to the reliability to other middleware. That's how OpenFlow should be used to display its great abilities. 
 
-次章ではいよいよOpenFlowの仕様を少し詳しく紹介します。
+In the next section, we'll be introducing the specification of the OpenFlow in detail.
 
-== 参考文献
+== Reference
 
-: 『Googleクラウドの核心』(Luiz Andre Barroso、Urs Holze著／日経BP社)
-  Googleの巨大データセンターはウェアハウス・スケール・コンピュータ(WSC, 倉庫規模のコンピュータ)とも呼ばれ、何万ものサーバが詰め込まれた巨大倉庫を一台のコンピュータとしてソフトウェアで制御します。実際のデータセンター運用者でしか知り得ない豊富なデータを元に、WSC全体のアーキテクチャとその中で使われるミドルウェア等の設計を議論しています。
+: 『The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines』(Luiz Andre Barroso、Urs Holzle／Morgan and Claypool Publishers)
+ Google's enormous data center is called 'warehouse scale computer (WSC)' and the software as a computer controls tens of thousands servers squeezed into the gigantic warehouse. The book discusses the overall architecture of the WSC and the designs of middleware, based on an affluent data that only the actual data center operators could know.
