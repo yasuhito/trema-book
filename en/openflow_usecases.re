@@ -123,5 +123,5 @@ In the next section, we'll be introducing the specification of the OpenFlow in d
 
 == Reference
 
-: 『The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines』(Luiz Andre Barroso、Urs Holzle／Morgan and Claypool Publishers)
+: The Datacenter as a Computer: An Introduction to the Design of Warehouse-Scale Machines (Luiz Andre Barroso, Urs Holzle/Morgan and Claypool Publishers)
  Google's enormous data center is called 'warehouse scale computer (WSC)' and the software as a computer controls tens of thousands servers squeezed into the gigantic warehouse. The book discusses the overall architecture of the WSC and the designs of middleware, based on an affluent data that only the actual data center operators could know.
