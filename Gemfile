@@ -1,6 +1,13 @@
 source :rubygems
 
-gem "bindata"
+
+gem "trema", "~> 0.3.0"
+gem "bindata", "~> 1.4.5"
+
+
+group :development do
+  gem "rspec", "~> 2.12.0"
+end
 
 
 ### Local variables:
