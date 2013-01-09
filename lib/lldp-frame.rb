@@ -82,6 +82,41 @@ class LldpFrame < BinData::Record
 end
 
 
+class Lldp
+  def self.read packet_in
+    new LldpFrame.read( packet_in.data ).source_mac
+  end
+
+
+  def initialize mac
+    @frame = LldpFrame.new
+    @frame.source_mac = mac.value
+    @frame.chassis_id = BinData::Uint48le.new( mac.value ).to_binary_s
+    @frame.port_id = "\x01Port aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    @frame.ttl = 120
+  end
+
+
+  def source_mac
+    Trema::Mac.new @frame.source_mac.value
+  end
+
+
+  def to_binary
+    @frame.to_binary_s
+  end
+end
+
+
+module Trema
+  class PacketIn
+    def lldp?
+      eth_type == 0x88CC
+    end
+  end
+end
+
+
 ### Local variables:
 ### mode: Ruby
 ### coding: utf-8-unix

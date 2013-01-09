@@ -6,7 +6,9 @@ gem "bindata", "~> 1.4.5"
 
 
 group :development do
+  gem "aruba", "~> 0.5.1"
   gem "rspec", "~> 2.12.0"
+  gem "cucumber", "~> 1.2.1"
 end
 
 
