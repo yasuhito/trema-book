@@ -2,9 +2,8 @@ $LOAD_PATH.unshift File.expand_path( File.join File.dirname( __FILE__ ), "lib" )
 
 require "rubygems"
 
-require "trema"
 require "lldp-frame"
-require "bindata"
+require "trema"
 
 
 class TopologyController < Controller
@@ -12,7 +11,7 @@ class TopologyController < Controller
 
 
   def start
-    @switch_db = Hash.new
+    @switch_db = {}
   end
 
 
