@@ -21,13 +21,18 @@ class TopologyController < Controller
 
 
   def features_reply dpid, message
-    @switch_db[ message.ports[ 0 ].hw_addr ] = dpid
+    @switch_db[ dpid ] = message.ports
   end
 
 
   def packet_in dpid, message
     return if not message.lldp?
-    info format( "%#x <-> %#x", Lldp.read( message ).dpid, dpid )
+    lldp = Lldp.read( message )
+    info format(
+           "%#x (port %d) <-> %#x (port %d)",
+           lldp.dpid, lldp.port_number,
+           dpid, message.in_port
+         )
   end
 
 
@@ -37,12 +42,16 @@ class TopologyController < Controller
 
 
   def flood_lldp_frames
-    @switch_db.each_pair do | mac, dpid |
-      send_packet_out(
-        dpid,
-        :actions => SendOutPort.new( OFPP_FLOOD ),
-        :data => Lldp.new( mac, dpid ).to_binary
-      )
+    @switch_db.each_pair do | dpid, ports |
+      ports.select do | each |
+        each.number != 65534 and each.up?
+      end.each do | each |
+        send_packet_out(
+          dpid,
+          :actions => SendOutPort.new( each.number ),
+          :data => Lldp.new( dpid, each.number ).to_binary
+        )
+      end
     end
   end
 end

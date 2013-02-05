@@ -25,7 +25,7 @@ class PortIdTlv < BinData::Primitive
 
 
   def get
-    self
+    self.tlv_info_string
   end
 
 
@@ -85,31 +85,30 @@ end
 class Lldp
   def self.read packet_in
     lldp_frame = LldpFrame.read( packet_in.data )
-    new lldp_frame.source_mac, lldp_frame.chassis_id.unpack( "Q*" )[ 0 ]
+    new lldp_frame.chassis_id.unpack( "Q" )[ 0 ], lldp_frame.port_id.unpack( "S" )[ 0 ]
   end
 
 
-  def initialize mac, dpid
+  def initialize dpid, port_number
     @frame = LldpFrame.new
-    @frame.source_mac = mac.value
     @frame.chassis_id = BinData::Uint64le.new( dpid ).to_binary_s
-    @frame.port_id = "\x01Port aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    @frame.port_id = BinData::Uint16le.new( port_number ).to_binary_s
     @frame.ttl = 120
   end
 
 
   def dpid
-    @frame.chassis_id.unpack( "Q*" )[ 0 ]
+    @frame.chassis_id.unpack( "Q" )[ 0 ]
   end
 
 
-  def source_mac
-    Trema::Mac.new @frame.source_mac.value
+  def port_number
+    @frame.port_id.unpack( "S" )[ 0 ]
   end
 
 
   def to_binary
-    @frame.to_binary_s
+    @frame.to_binary_s + "\000" * ( 64 - @frame.num_bytes )
   end
 end
 
