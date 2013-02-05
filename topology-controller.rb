@@ -7,11 +7,13 @@ require "trema"
 
 
 class TopologyController < Controller
-  periodic_timer_event :flood_lldp_frames, 5
+  periodic_timer_event :flood_lldp_frames, 1
+  periodic_timer_event :show_topology, 3
 
 
   def start
     @switch_db = {}
+    @topology = []
   end
 
 
@@ -25,14 +27,24 @@ class TopologyController < Controller
   end
 
 
+  def show_topology
+    return if @topology.empty?
+    @topology.uniq.sort.each do | each |
+      info each
+    end
+    info "topology updated"
+    @topology = []
+  end
+
+
   def packet_in dpid, message
     return if not message.lldp?
     lldp = Lldp.read( message )
-    info format(
-           "%#x (port %d) <-> %#x (port %d)",
-           lldp.dpid, lldp.port_number,
-           dpid, message.in_port
-         )
+    @topology << format(
+                   "%#x (port %d) <-> %#x (port %d)",
+                   lldp.dpid, lldp.port_number,
+                   dpid, message.in_port
+                 )
   end
 
 

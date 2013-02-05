@@ -9,17 +9,9 @@ rescue Bundler::BundlerError => e
 end
 
 
-# $LOAD_PATH.unshift( File.expand_path( File.dirname( __FILE__ ) + "/../../ruby" ) )
-
-
 require "aruba/cucumber"
 require "rspec"
 require "trema"
-
-
-def ps_entry_of name
-  `ps -ef | grep -w "#{ name } " | grep -v grep`
-end
 
 
 ### Local variables:
