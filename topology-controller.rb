@@ -27,7 +27,7 @@ class TopologyController < Controller
 
   def packet_in dpid, message
     return if not message.lldp?
-    info format( "%#x <-> %#x", @switch_db[ Lldp.read( message ).source_mac ], dpid )
+    info format( "%#x <-> %#x", Lldp.read( message ).dpid, dpid )
   end
 
 
@@ -41,7 +41,7 @@ class TopologyController < Controller
       send_packet_out(
         dpid,
         :actions => SendOutPort.new( OFPP_FLOOD ),
-        :data => Lldp.new( mac ).to_binary
+        :data => Lldp.new( mac, dpid ).to_binary
       )
     end
   end

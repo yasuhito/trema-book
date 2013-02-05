@@ -8,7 +8,7 @@ class ChassisIdTlv < BinData::Primitive
 
 
   def get
-    self
+    self.tlv_info_string
   end
 
 
@@ -84,16 +84,22 @@ end
 
 class Lldp
   def self.read packet_in
-    new LldpFrame.read( packet_in.data ).source_mac
+    lldp_frame = LldpFrame.read( packet_in.data )
+    new lldp_frame.source_mac, lldp_frame.chassis_id.unpack( "Q*" )[ 0 ]
   end
 
 
-  def initialize mac
+  def initialize mac, dpid
     @frame = LldpFrame.new
     @frame.source_mac = mac.value
-    @frame.chassis_id = BinData::Uint48le.new( mac.value ).to_binary_s
+    @frame.chassis_id = BinData::Uint64le.new( dpid ).to_binary_s
     @frame.port_id = "\x01Port aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     @frame.ttl = 120
+  end
+
+
+  def dpid
+    @frame.chassis_id.unpack( "Q*" )[ 0 ]
   end
 
 
