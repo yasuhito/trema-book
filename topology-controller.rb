@@ -7,23 +7,32 @@ require "trema"
 
 
 class TopologyController < Controller
+  periodic_timer_event :send_features_request, 1
   periodic_timer_event :flood_lldp_frames, 1
   periodic_timer_event :show_topology, 3
 
 
   def start
-    @switch_db = {}
+    @switch_db = []
+    @port_db = {}
     @topology = []
   end
 
 
   def switch_ready dpid
-    send_message dpid, FeaturesRequest.new
+    @switch_db << dpid
+  end
+
+
+  def switch_disconnected dpid
+    @switch_db -= [ dpid ]
+    @port_db.delete dpid
+    info "Switch %#x deleted", dpid
   end
 
 
   def features_reply dpid, message
-    @switch_db[ dpid ] = message.ports
+    @port_db[ dpid ] = message.ports
   end
 
 
@@ -43,8 +52,15 @@ class TopologyController < Controller
   ##############################################################################
 
 
+  def send_features_request
+    @switch_db.each do | each |
+      send_message each, FeaturesRequest.new
+    end
+  end
+
+
   def flood_lldp_frames
-    @switch_db.each_pair do | dpid, ports |
+    @port_db.each_pair do | dpid, ports |
       ports.select do | each |
         each.number != 65534 and each.up?
       end.each do | each |
