@@ -27,16 +27,6 @@ class TopologyController < Controller
   end
 
 
-  def show_topology
-    return if @topology.empty?
-    @topology.uniq.sort.each do | each |
-      info each
-    end
-    info "topology updated"
-    @topology = []
-  end
-
-
   def packet_in dpid, message
     return if not message.lldp?
     lldp = Lldp.read( message )
@@ -65,6 +55,16 @@ class TopologyController < Controller
         )
       end
     end
+  end
+
+
+  def show_topology
+    return if @topology.empty?
+    @topology.uniq.sort.each do | each |
+      info each
+    end
+    info "topology updated"
+    @topology = []
   end
 end
 
