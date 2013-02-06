@@ -38,6 +38,13 @@ class TopologyController < Controller
   end
 
 
+  def port_status dpid, message
+    if message.phy_port.down?
+      info "Port #{ message.phy_port.number } (Switch %#x) is DOWN", dpid
+    end
+  end
+
+
   def packet_in dpid, message
     return if not message.lldp?
     lldp = Lldp.read( message )

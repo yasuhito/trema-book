@@ -21,7 +21,7 @@ Feature: Detect network topology
     0x3 (port 2) <-> 0x2 (port 1)
     """
 
-  Scenario: Delete a switch then topology updated
+  Scenario: Kill a switch then the topology updated
     Given I run `trema run topology-controller.rb -c network.conf` interactively
     And I wait for output to contain "topology updated"
     When I run `trema kill 0x3`
@@ -33,5 +33,23 @@ Feature: Detect network topology
     topology updated
     0x1 (port 2) <-> 0x2 (port 2)
     0x2 (port 2) <-> 0x1 (port 2)
+    topology updated
+    """
+
+  Scenario: Bring a port down then the topology updated
+    Given I run `trema run topology-controller.rb -c network.conf` interactively
+    And I wait for output to contain "topology updated"
+    When I run `trema port_down --switch 0x3 --port 1`
+    And I wait for output to contain "Port 1 (Switch 0x3) is DOWN"
+    And I wait for output to contain "Port 1 (Switch 0x1) is DOWN"
+    And I run `sleep 5`
+    And I run `trema killall`
+    Then the output should contain:
+    """
+    topology updated
+    0x1 (port 2) <-> 0x2 (port 2)
+    0x2 (port 1) <-> 0x3 (port 2)
+    0x2 (port 2) <-> 0x1 (port 2)
+    0x3 (port 2) <-> 0x2 (port 1)
     topology updated
     """
