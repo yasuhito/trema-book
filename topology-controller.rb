@@ -9,27 +9,18 @@ require "trema-extensions/port"
 
 
 class TopologyController < Controller
-  periodic_timer_event :send_features_request, 1
   periodic_timer_event :flood_lldp_frames, 1
   periodic_timer_event :show_topology, 3
 
 
   def start
-    @switch_db = []
     @port_db = {}
     @topology = []
   end
 
 
   def switch_ready dpid
-    @switch_db << dpid
-  end
-
-
-  def switch_disconnected dpid
-    @switch_db -= [ dpid ]
-    @port_db.delete dpid
-    info "Switch %#x deleted", dpid
+    send_message dpid, FeaturesRequest.new
   end
 
 
@@ -38,8 +29,15 @@ class TopologyController < Controller
   end
 
 
+  def switch_disconnected dpid
+    @port_db.delete dpid
+    info "Switch %#x deleted", dpid
+  end
+
+
   def port_status dpid, message
     if message.phy_port.down?
+      @port_db[ dpid ] -= [ message.phy_port ]
       info "Port #{ message.phy_port.number } (Switch %#x) is DOWN", dpid
     end
   end
@@ -59,13 +57,6 @@ class TopologyController < Controller
   ##############################################################################
   private
   ##############################################################################
-
-
-  def send_features_request
-    @switch_db.each do | each |
-      send_message each, FeaturesRequest.new
-    end
-  end
 
 
   def flood_lldp_frames
