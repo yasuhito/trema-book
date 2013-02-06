@@ -5,6 +5,7 @@ require "rubygems"
 require "lldp-frame"
 require "trema"
 require "trema-extensions/packet-in"
+require "trema-extensions/port"
 
 
 class TopologyController < Controller
@@ -63,7 +64,7 @@ class TopologyController < Controller
   def flood_lldp_frames
     @port_db.each_pair do | dpid, ports |
       ports.select do | each |
-        each.number != 65534 and each.up?
+        ( not each.local? ) and each.up?
       end.each do | each |
         send_packet_out(
           dpid,
