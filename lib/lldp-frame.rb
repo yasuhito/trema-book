@@ -113,15 +113,6 @@ class Lldp
 end
 
 
-module Trema
-  class PacketIn
-    def lldp?
-      eth_type == 0x88CC
-    end
-  end
-end
-
-
 ### Local variables:
 ### mode: Ruby
 ### coding: utf-8-unix

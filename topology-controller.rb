@@ -4,6 +4,7 @@ require "rubygems"
 
 require "lldp-frame"
 require "trema"
+require "trema-extensions/packet-in"
 
 
 class TopologyController < Controller
