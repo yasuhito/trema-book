@@ -1,7 +1,7 @@
 source :rubygems
 
 
-gem "trema", "~> 0.3.7"
+gem "trema", "~> 0.3.9"
 gem "bindata", "~> 1.4.5"
 
 

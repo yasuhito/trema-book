@@ -39,6 +39,9 @@ class TopologyController < Controller
     if message.phy_port.down?
       @port_db[ dpid ] -= [ message.phy_port ]
       info "Port #{ message.phy_port.number } (Switch %#x) is DOWN", dpid
+    elsif message.phy_port.up?
+      @port_db[ dpid ] << message.phy_port.dup
+      info "Port #{ message.phy_port.number } (Switch %#x) is UP", dpid
     end
   end
 
