@@ -2,7 +2,7 @@ $LOAD_PATH.unshift File.expand_path( File.join File.dirname( __FILE__ ), "lib" )
 
 require "rubygems"
 
-require "lldp-frame"
+require "topology-db"
 require "trema"
 require "trema-extensions/packet-in"
 require "trema-extensions/port"
@@ -14,8 +14,7 @@ class TopologyController < Controller
 
 
   def start
-    @port_db = {}
-    @topology = []
+    @topology_db = TopologyDB.new
   end
 
 
@@ -25,22 +24,22 @@ class TopologyController < Controller
 
 
   def features_reply dpid, message
-    @port_db[ dpid ] = message.ports
+    @topology_db.add_ports dpid, message.ports
   end
 
 
   def switch_disconnected dpid
-    @port_db.delete dpid
+    @topology_db.delete_switch dpid
     info "Switch %#x deleted", dpid
   end
 
 
   def port_status dpid, message
     if message.phy_port.down?
-      @port_db[ dpid ] -= [ message.phy_port ]
+      @topology_db.delete_ports dpid, message.phy_port
       info "Port #{ message.phy_port.number } (Switch %#x) is DOWN", dpid
     elsif message.phy_port.up?
-      @port_db[ dpid ] << message.phy_port.dup
+      @topology_db.add_ports dpid, message.phy_port.dup
       info "Port #{ message.phy_port.number } (Switch %#x) is UP", dpid
     end
   end
@@ -48,12 +47,7 @@ class TopologyController < Controller
 
   def packet_in dpid, message
     return if not message.lldp?
-    lldp = Lldp.read( message )
-    @topology << format(
-                   "%#x (port %d) <-> %#x (port %d)",
-                   lldp.dpid, lldp.port_number,
-                   dpid, message.in_port
-                 )
+    @topology_db.add_link_by dpid, message
   end
 
 
@@ -63,10 +57,8 @@ class TopologyController < Controller
 
 
   def flood_lldp_frames
-    @port_db.each_pair do | dpid, ports |
-      ports.select do | each |
-        ( not each.local? ) and each.up?
-      end.each do | each |
+    @topology_db.each_pair do | dpid, ports |
+      ports.each do | each |
         send_packet_out(
           dpid,
           :actions => SendOutPort.new( each.number ),
@@ -77,13 +69,14 @@ class TopologyController < Controller
   end
 
 
+  # FIXME
   def show_topology
-    return if @topology.empty?
-    @topology.uniq.sort.each do | each |
+    @topology_db.to_s.split( "\n" ).each do | each |
       info each
     end
     info "topology updated"
-    @topology = []
+
+    @topology_db.clear
   end
 end
 
