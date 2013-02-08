@@ -37,6 +37,7 @@ $ trema run ./topology-controller.rb -c fullmesh.conf
 ```
 
 スイッチやポートを落としたり上げたりしてトポロジの変化を楽しむ:
+(以下、別ターミナルで)
 
 ```shell
 $ trema kill 0x1  # スイッチ 0x1 を落とす
