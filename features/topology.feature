@@ -26,7 +26,6 @@ Feature: Detect network topology
     And I wait for output to contain "topology updated"
     When I run `trema kill 0x3`
     And I wait for output to contain "Switch 0x3 deleted"
-    And I run `sleep 5`
     And I run `trema killall`
     Then the output should contain:
     """
@@ -42,7 +41,6 @@ Feature: Detect network topology
     When I run `trema port_down --switch 0x3 --port 1`
     And I wait for output to contain "Port 1 (Switch 0x3) is DOWN"
     And I wait for output to contain "Port 1 (Switch 0x1) is DOWN"
-    And I run `sleep 5`
     And I run `trema killall`
     Then the output should contain:
     """
@@ -61,7 +59,6 @@ Feature: Detect network topology
     And I wait for output to contain "Port 1 (Switch 0x3) is DOWN"
     And I run `trema port_up --switch 0x3 --port 1`
     And I wait for output to contain "Port 1 (Switch 0x1) is UP"
-    And I run `sleep 5`
     And I run `trema killall`
     Then the output should contain:
     """
