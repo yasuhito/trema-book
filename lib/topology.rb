@@ -12,7 +12,8 @@ class Topology
   extend Forwardable
 
 
-  def_delegator :@ports, :each_pair, :each_ports
+  def_delegator :@ports, :each_pair, :each_switch
+  def_delegator :@links, :each, :each_link
 
 
   def initialize controller
@@ -47,8 +48,9 @@ class Topology
     link = Link.new( dpid, packet_in )
     if not @links.include?( link )
       @links << link
+      @links.sort!
       changed
-      notify_observers @links.sort
+      notify_observers self
     end
   end
 
@@ -65,7 +67,7 @@ class Topology
         @links -= [ each ]
       end
     end
-    notify_observers @links.sort
+    notify_observers self
   end
 end
 

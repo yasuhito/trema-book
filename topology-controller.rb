@@ -3,20 +3,38 @@ $LOAD_PATH.unshift File.expand_path( File.join File.dirname( __FILE__ ), "lib" )
 require "rubygems"
 
 require "topology"
-require "topology-view"
 require "trema"
 require "trema-extensions/packet-in"
+require "view/text"
 
 
 #
 # This controller collects network topology information using LLDP.
+#
+# Usage:
+#   $ trema run topology-controller.rb -c network.conf
+#   $ trema run "topology-controller.rb graphviz" -c network.conf
+#   $ trema run "topology-controller.rb graphviz /tmp/topology.png" -c network.conf
 #
 class TopologyController < Controller
   periodic_timer_event :flood_lldp_frames, 1
 
 
   def start
-    @topology = Topology.new( TopologyView.new )
+    view = View::Text.new
+
+    if not ARGV[ 1 ].nil?
+      if ARGV[ 1 ].downcase == "graphviz"
+        require "view/graphviz"
+        if ARGV.size > 2
+          view = View::Graphviz.new( ARGV[ 2 ] )
+        else
+          view = View::Graphviz.new
+        end
+      end
+    end
+
+    @topology = Topology.new( view )
   end
 
 
@@ -45,7 +63,7 @@ class TopologyController < Controller
     elsif updated_port.down?
       @topology.delete_port dpid, updated_port
     elsif updated_port.up?
-      @topology.add_port dpid, port
+      @topology.add_port dpid, updated_port
     end
   end
 
@@ -62,7 +80,7 @@ class TopologyController < Controller
 
 
   def flood_lldp_frames
-    @topology.each_ports do | dpid, ports |
+    @topology.each_switch do | dpid, ports |
       send_lldp dpid, ports
     end
   end
