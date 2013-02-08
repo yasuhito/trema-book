@@ -20,19 +20,14 @@ class TopologyDB
   end
 
 
-  def add_ports dpid, ports
-    [ ports ].flatten.select do | each |
-      ( not each.local? ) and each.up?
-    end.each do | each |
-      @db[ dpid ] += [ each ]
-    end
+  def add_port dpid, port
+    return if port.local? or port.down?
+    @db[ dpid ] += [ port ]
   end
 
 
-  def delete_ports dpid, ports
-    [ ports ].flatten.each do | each |
-      @db[ dpid ] -= [ each ]
-    end
+  def delete_port dpid, port
+    @db[ dpid ] -= [ port ]
   end
 
 

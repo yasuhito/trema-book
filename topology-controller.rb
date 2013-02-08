@@ -24,7 +24,9 @@ class TopologyController < Controller
 
 
   def features_reply dpid, message
-    @topology_db.add_ports dpid, message.ports
+    message.ports.each do | each |
+      @topology_db.add_port dpid, each
+    end
   end
 
 
@@ -36,10 +38,10 @@ class TopologyController < Controller
 
   def port_status dpid, message
     if message.phy_port.down?
-      @topology_db.delete_ports dpid, message.phy_port
+      @topology_db.delete_port dpid, message.phy_port
       info "Port #{ message.phy_port.number } (Switch %#x) is DOWN", dpid
     elsif message.phy_port.up?
-      @topology_db.add_ports dpid, message.phy_port.dup
+      @topology_db.add_port dpid, message.phy_port.dup
       info "Port #{ message.phy_port.number } (Switch %#x) is UP", dpid
     end
   end
