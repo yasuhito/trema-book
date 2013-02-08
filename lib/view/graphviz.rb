@@ -9,7 +9,7 @@ module View
 
 
     def update topology
-      g = GraphViz.new( :G, :use => "neato" )
+      g = GraphViz.new( :G, :use => "neato", :overlap => false, :splines => true )
 
       switch = {}
       topology.each_switch do | dpid, ports |

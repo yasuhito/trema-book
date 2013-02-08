@@ -7,7 +7,7 @@ task :default => :run
 
 
 task :run do
-  sh "trema run ./topology-controller.rb -c network.conf"
+  sh "trema run ./topology-controller.rb -c triangle.conf"
 end
 
 
