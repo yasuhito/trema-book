@@ -1,7 +1,7 @@
 source :rubygems
 
 
-gem "trema", "~> 0.3.9"
+gem "trema", "~> 0.3.10"
 gem "bindata", "~> 1.4.5"
 gem "ruby-graphviz", "~> 1.0.8"
 
