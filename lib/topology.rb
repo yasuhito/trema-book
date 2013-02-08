@@ -1,10 +1,12 @@
 require "link"
-require "lldp-frame"
 require "observer"
-require "trema"
 require "trema-extensions/port"
 
 
+#
+# Topology information containing the list of known switches, ports,
+# and links.
+#
 class Topology
   include Observable
   extend Forwardable
@@ -22,29 +24,27 @@ class Topology
 
   def delete_switch dpid
     @ports[ dpid ].each do | each |
-      delete_port_by_number dpid, each
+      delete_port dpid, each
     end
     @ports.delete dpid
   end
 
 
   def add_port dpid, port
-    return if port.local? or port.down?
-    @ports[ dpid ] += [ port.number ]
+    @ports[ dpid ] += [ port ]
   end
 
 
   def delete_port dpid, port
-    delete_port_by_number dpid, port.number
+    @ports[ dpid ] -= [ port ]
+    delete_link_by dpid, port
   end
 
 
   def add_link_by dpid, packet_in
     raise "Not an LLDP packet!" if not packet_in.lldp?
 
-    lldp = Lldp.read( packet_in )
-    link = Link.new( lldp.dpid, lldp.port_number, dpid, packet_in.in_port )
-
+    link = Link.new( dpid, packet_in )
     if not @links.include?( link )
       @links << link
       changed
@@ -58,11 +58,9 @@ class Topology
   ##############################################################################
 
 
-  def delete_port_by_number dpid, number
-    @ports[ dpid ] -= [ number ]
-    @links.collect do | each |
-      if ( ( each.dpid1 == dpid ) and ( each.port1 == number ) ) or
-          ( ( each.dpid2 == dpid ) and ( each.port2 == number ) )
+  def delete_link_by dpid, port
+    @links.each do | each |
+      if each.has?( dpid, port.number )
         changed
         @links -= [ each ]
       end

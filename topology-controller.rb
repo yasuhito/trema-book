@@ -22,13 +22,12 @@ class TopologyController < Controller
 
   def switch_ready dpid
     send_message dpid, FeaturesRequest.new
-    info "Switch %#x is UP", dpid
   end
 
 
   def features_reply dpid, features_reply
     features_reply.ports.each do | each |
-      next if each.down?
+      next if each.down? or each.local?
       @topology.add_port dpid, each
     end
   end
@@ -36,16 +35,17 @@ class TopologyController < Controller
 
   def switch_disconnected dpid
     @topology.delete_switch dpid
-    info "Switch %#x is DOWN", dpid
   end
 
 
   def port_status dpid, port_status
     updated_port = port_status.phy_port
-    if updated_port.down?
-      delete_port dpid, updated_port
+    if updated_port.local?
+      return
+    elsif updated_port.down?
+      @topology.delete_port dpid, updated_port
     elsif updated_port.up?
-      add_port dpid, updated_port
+      @topology.add_port dpid, port
     end
   end
 
@@ -61,18 +61,6 @@ class TopologyController < Controller
   ##############################################################################
 
 
-  def delete_port dpid, port
-    @topology.delete_port dpid, port
-    info "Port #{ port.number } (Switch %#x) is DOWN", dpid
-  end
-
-
-  def add_port dpid, port
-    @topology.add_port dpid, port.dup
-    info "Port #{ port.number } (Switch %#x) is UP", dpid
-  end
-
-
   def flood_lldp_frames
     @topology.each_ports do | dpid, ports |
       send_lldp dpid, ports
@@ -82,10 +70,11 @@ class TopologyController < Controller
 
   def send_lldp dpid, ports
     ports.each do | each |
+      port_number = each.number
       send_packet_out(
         dpid,
-        :actions => SendOutPort.new( each ),
-        :data => Lldp.new( dpid, each ).to_binary
+        :actions => SendOutPort.new( port_number ),
+        :data => Lldp.new( dpid, port_number ).to_binary
       )
     end
   end
