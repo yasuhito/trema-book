@@ -17,7 +17,6 @@ class Link
   end
 
 
-  # FIXME
   def == other
     ( @dpid1 == other.dpid1 ) and
       ( @dpid2 == other.dpid2 ) and
