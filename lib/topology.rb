@@ -10,7 +10,7 @@ class Topology
   extend Forwardable
 
 
-  def_delegators :@ports, :each_pair
+  def_delegator :@ports, :each_pair, :each_ports
 
 
   def initialize controller
@@ -22,7 +22,7 @@ class Topology
 
   def delete_switch dpid
     @ports[ dpid ].each do | each |
-      delete_port dpid, each
+      delete_port_by_number dpid, each
     end
     @ports.delete dpid
   end
@@ -30,25 +30,18 @@ class Topology
 
   def add_port dpid, port
     return if port.local? or port.down?
-    @ports[ dpid ] += [ port ]
+    @ports[ dpid ] += [ port.number ]
   end
 
 
   def delete_port dpid, port
-    @ports[ dpid ] -= [ port ]
-    @links.collect do | each |
-      if ( ( each.dpid1 == dpid ) and ( each.port1 == port.number ) ) or
-          ( ( each.dpid2 == dpid ) and ( each.port2 == port.number ) )
-        changed
-        @links -= [ each ]
-      end
-    end
-    notify_observers @links.sort
+    delete_port_by_number dpid, port.number
   end
 
 
   def add_link_by dpid, packet_in
     raise "Not an LLDP packet!" if not packet_in.lldp?
+
     lldp = Lldp.read( packet_in )
     link = Link.new( lldp.dpid, lldp.port_number, dpid, packet_in.in_port )
 
@@ -57,6 +50,24 @@ class Topology
       changed
       notify_observers @links.sort
     end
+  end
+
+
+  ##############################################################################
+  private
+  ##############################################################################
+
+
+  def delete_port_by_number dpid, number
+    @ports[ dpid ] -= [ number ]
+    @links.collect do | each |
+      if ( ( each.dpid1 == dpid ) and ( each.port1 == number ) ) or
+          ( ( each.dpid2 == dpid ) and ( each.port2 == number ) )
+        changed
+        @links -= [ each ]
+      end
+    end
+    notify_observers @links.sort
   end
 end
 
