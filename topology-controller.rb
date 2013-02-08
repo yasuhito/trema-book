@@ -77,8 +77,6 @@ class TopologyController < Controller
       info each
     end
     info "topology updated"
-
-    @topology_db.clear
   end
 end
 
