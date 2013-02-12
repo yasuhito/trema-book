@@ -46,10 +46,8 @@ $ trema port_down --switch 0x1 --port 1  # スイッチ 0x1 のポート 1 を�
 $ trema port_up --switch 0x1 --port 1  # 落としたポートを上げる
 ```
 
-(実験的) graphviz でトポロジ画像を出す:
+graphviz でトポロジ画像を出す:
 
 ```shell
 $ trema run "./topology-controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
 ```
-
-ただし、複雑なトポロジだと graphviz がコケることがあります。現在調査中。
