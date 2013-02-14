@@ -51,3 +51,9 @@ graphviz でトポロジ画像を出す:
 ```shell
 $ trema run "./topology-controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
 ```
+
+LLDP の宛先 MAC アドレスを任意のやつに変える:
+
+```shell
+$ trema run "./topology-controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
+```
