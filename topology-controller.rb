@@ -2,6 +2,7 @@ $LOAD_PATH.unshift File.expand_path( File.join File.dirname( __FILE__ ), "lib" )
 
 require "rubygems"
 
+require "gli"
 require "topology"
 require "trema"
 require "trema-extensions/packet-in"
@@ -11,30 +12,14 @@ require "view/text"
 #
 # This controller collects network topology information using LLDP.
 #
-# Usage:
-#   $ trema run topology-controller.rb -c network.conf
-#   $ trema run "topology-controller.rb graphviz" -c network.conf
-#   $ trema run "topology-controller.rb graphviz /tmp/topology.png" -c network.conf
-#
 class TopologyController < Controller
   periodic_timer_event :flood_lldp_frames, 1
 
 
   def start
-    view = View::Text.new
-
-    if not ARGV[ 1 ].nil?
-      if ARGV[ 1 ].downcase == "graphviz"
-        require "view/graphviz"
-        if ARGV.size > 2
-          view = View::Graphviz.new( ARGV[ 2 ] )
-        else
-          view = View::Graphviz.new
-        end
-      end
-    end
-
-    @topology = Topology.new( view )
+    @view = View::Text.new
+    parse ARGV.dup
+    @topology = Topology.new( @view )
   end
 
 
@@ -79,6 +64,43 @@ class TopologyController < Controller
   ##############################################################################
 
 
+  def parse argv
+    GLI::App.program_desc "Topology discovery controller"
+
+    GLI::App.flag [ :d, :destination_mac ]
+
+    GLI::App.pre do | global_options, command, options, args |
+      if global_options[ :destination_mac ]
+        @destination_mac = Mac.new( global_options[ :destination_mac ] )
+      end
+    end
+
+    GLI::App.default_command :text
+
+    GLI::App.desc "Displays topology information (text mode)"
+    GLI::App.command :text do | c |
+      c.action do | global_options, options, args |
+        @view = View::Text.new
+      end
+    end
+
+    GLI::App.desc "Displays topology information (Graphviz mode)"
+    arg_name "output_file"
+    GLI::App.command :graphviz do | c |
+      c.action do | global_options, options, args |
+        require "view/graphviz"
+        if args.empty?
+          @view = View::Graphviz.new
+        else
+          @view = View::Graphviz.new( args[ 0 ] )
+        end
+      end
+    end
+
+    GLI::App.run argv
+  end
+
+
   def flood_lldp_frames
     @topology.each_switch do | dpid, ports |
       send_lldp dpid, ports
@@ -89,10 +111,15 @@ class TopologyController < Controller
   def send_lldp dpid, ports
     ports.each do | each |
       port_number = each.number
+      lldp_binary = if @destination_mac
+                      Lldp.new( dpid, port_number, @destination_mac.value ).to_binary
+                    else
+                      Lldp.new( dpid, port_number ).to_binary
+                    end
       send_packet_out(
         dpid,
         :actions => SendOutPort.new( port_number ),
-        :data => Lldp.new( dpid, port_number ).to_binary
+        :data => lldp_binary
       )
     end
   end

@@ -11,8 +11,9 @@ class Lldp
   end
 
 
-  def initialize dpid, port_number
+  def initialize dpid, port_number, destination_mac = 0x0180c200000e
     @frame = LldpFrame.new
+    @frame.destination_mac = destination_mac
     @frame.chassis_id.subtype = 7
     @frame.chassis_id = BinData::Uint64le.new( dpid ).to_binary_s
     @frame.port_id.subtype = 7

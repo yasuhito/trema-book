@@ -9,7 +9,7 @@ Feature: Detect network topology
 
   Scenario: Detect switch to switch links
     When I run `trema run topology-controller.rb -c triangle.conf` interactively
-     And I run `sleep 2`
+     And I run `sleep 4`
      And I run `trema killall`
     Then the output should contain:
     """

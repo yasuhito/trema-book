@@ -1,9 +1,10 @@
 source :rubygems
 
 
-gem "trema", "~> 0.3.10"
 gem "bindata", "~> 1.4.5"
+gem "gli", "~> 2.5.4"
 gem "ruby-graphviz", "~> 1.0.8"
+gem "trema", "~> 0.3.11"
 
 
 group :development do

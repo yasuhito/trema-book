@@ -1,3 +1,4 @@
+require "forwardable"
 require "link"
 require "observer"
 require "trema-extensions/port"

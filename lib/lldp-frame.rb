@@ -76,7 +76,7 @@ class LldpFrame < BinData::Record
 
   endian :big
 
-  uint48 :destination_mac, :value => 0x0180c200000e
+  uint48 :destination_mac
   uint48 :source_mac
   uint16 :ethertype, :value => 0x88cc
   chassis_id_tlv :chassis_id
