@@ -7,6 +7,7 @@ require "command-line"
 require "topology"
 require "trema"
 require "trema-extensions/packet-in"
+require "trema-extensions/port"
 
 
 #
@@ -84,12 +85,12 @@ class TopologyController < Controller
 
 
   def lldp_binary_string dpid, port_number
-    lldp = if @command_line.destination_mac
-             Lldp.new dpid, port_number, @command_line.destination_mac.value
-           else
-             Lldp.new dpid, port_number
-           end
-    lldp.to_binary
+    destination_mac = @command_line.destination_mac
+    if destination_mac
+      Lldp.new( dpid, port_number, destination_mac.value ).to_binary
+    else
+      Lldp.new( dpid, port_number ).to_binary
+    end
   end
 end
 
