@@ -7,7 +7,7 @@ Feature: Detect network topology
   Background:
     Given I cd to "../.."
 
-  Scenario: Detect switch <-> switch link
+  Scenario: Detect switch to switch links
     When I run `trema run topology-controller.rb -c triangle.conf` interactively
      And I run `sleep 2`
      And I run `trema killall`

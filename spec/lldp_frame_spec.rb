@@ -17,8 +17,10 @@ describe LldpFrame do
 
     lldp_frame = LldpFrame.new
     lldp_frame.source_mac = 0x00192fa7b28d
-    lldp_frame.chassis_id = "\x04\x00\x19\x2f\xa7\xb2\x8d"
-    lldp_frame.port_id = "\x01Uplink to S1"
+    lldp_frame.chassis_id.subtype = 4
+    lldp_frame.chassis_id = "\x00\x19\x2f\xa7\xb2\x8d"
+    lldp_frame.port_id.subtype = 1
+    lldp_frame.port_id = "Uplink to S1"
     lldp_frame.ttl = 120
 
     lldp_frame.to_binary_s.unpack( "H*" ).should == sample_packet.unpack( "H*" )
