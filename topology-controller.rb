@@ -74,17 +74,22 @@ class TopologyController < Controller
   def send_lldp dpid, ports
     ports.each do | each |
       port_number = each.number
-      lldp_binary = if @command_line.destination_mac
-                      Lldp.new( dpid, port_number, @command_line.destination_mac.value ).to_binary
-                    else
-                      Lldp.new( dpid, port_number ).to_binary
-                    end
       send_packet_out(
         dpid,
         :actions => SendOutPort.new( port_number ),
-        :data => lldp_binary
+        :data => lldp_binary_string( dpid, port_number )
       )
     end
+  end
+
+
+  def lldp_binary_string dpid, port_number
+    lldp = if @command_line.destination_mac
+             Lldp.new dpid, port_number, @command_line.destination_mac.value
+           else
+             Lldp.new dpid, port_number
+           end
+    lldp.to_binary
   end
 end
 
