@@ -57,19 +57,3 @@ LLDP の宛先 MAC アドレスを任意のやつに変える:
 ```shell
 $ trema run "./topology-controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
 ```
-
-
-FAQ
----
-
-Q: 次のようなエラーが出て動きません。
-
-```
-Invalid gemspec in [/var/lib/gems/1.8/specifications/gli-2.0.0.gemspec]: undefined method `prerelease?' for "2.0.0":String
-```
-
-A: たぶん、依存する gem がインストールできてません。次のコマンドでインストールしてください。
-
-```shell
-$ bundle install
-```
