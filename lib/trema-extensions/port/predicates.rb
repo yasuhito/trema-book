@@ -1,7 +1,10 @@
+require "trema"
+
+
 module TremaExtensions
   module Port
     def local?
-      number == 65534
+      number == Trema::Controller::OFPP_LOCAL
     end
   end
 end
