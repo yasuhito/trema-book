@@ -6,7 +6,6 @@ require "bundler/setup"
 require "command-line"
 require "topology"
 require "trema"
-require "trema-extensions/packet-in"
 require "trema-extensions/port"
 
 
@@ -42,7 +41,7 @@ class TopologyController < Controller
 
 
   def port_status dpid, port_status
-    updated_port = port_status.phy_port
+    updated_port = port_status.port
     return if updated_port.local?
     @topology.update_port dpid, updated_port
   end

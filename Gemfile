@@ -4,7 +4,7 @@ source "https://rubygems.org"
 gem "bindata", "~> 1.4.5"
 gem "gli", "~> 2.5.4"
 gem "ruby-graphviz", "~> 1.0.8"
-gem "trema", "~> 0.3.13"
+gem "trema", "~> 0.3.14"
 
 
 group :development do
