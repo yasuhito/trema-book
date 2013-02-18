@@ -1,4 +1,4 @@
-source :rubygems
+source "https://rubygems.org"
 
 
 gem "bindata", "~> 1.4.5"
