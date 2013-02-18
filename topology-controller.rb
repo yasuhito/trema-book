@@ -30,8 +30,7 @@ class TopologyController < Controller
 
 
   def features_reply dpid, features_reply
-    features_reply.ports.each do | each |
-      next if each.down? or each.local?
+    features_reply.physical_ports.select( &:up? ).each do | each |
       @topology.add_port dpid, each
     end
   end
