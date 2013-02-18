@@ -32,6 +32,15 @@ class Topology
   end
 
 
+  def update_port dpid, port
+    if port.down?
+      delete_port dpid, port
+    elsif port.up?
+      add_port dpid, port
+    end
+  end
+
+
   def add_port dpid, port
     @ports[ dpid ] += [ port ]
   end

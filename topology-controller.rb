@@ -43,13 +43,8 @@ class TopologyController < Controller
 
   def port_status dpid, port_status
     updated_port = port_status.phy_port
-    if updated_port.local?
-      return
-    elsif updated_port.down?
-      @topology.delete_port dpid, updated_port
-    elsif updated_port.up?
-      @topology.add_port dpid, updated_port
-    end
+    return if updated_port.local?
+    @topology.update_port dpid, updated_port
   end
 
 
