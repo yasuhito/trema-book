@@ -1,307 +1,312 @@
-= OpenFlow の仕組み
+= Mechanism of OpenFlow
 
 //lead{
-OpenFlow の概念が分かったところでもう少し細かい仕様に進みましょう。ここでは実用重視で OpenFlow 仕様のポイントとよく使う用語を押さえます。
+Now that we acknowledge the concept of the OpenFlow, let's proceed to a bit more detailed specification. 
+We're going to put an emphasis on the practicality and grasp the points of the OpenFlow specification and frequently used words.
 //}
 
 //indepimage[torema][][width=10cm]
 
-== OpenFlow の標準仕様
+== Standard specification of OpenFlow
 
-OpenFlow標準仕様が主に定義するのは次の 2 つです。
+OpenFlow's standard specification mainly defines the following two items.
 
- 1. コントローラとスイッチの間の通信プロトコル (セキュアチャンネル)
- 2. 設定されたフローエントリに対するスイッチの振る舞い
+ 1. Communication protocol between the controller and switch (secure channel)
+ 2. Switch's behavior on configured flow entry
 
 //noindent
-本章ではこの 2 つの中でも特によく使う機能のみを重点的に説明します。
+In this section, we'll focus only on the more used function among the two.
 
-執筆時の OpenFlow 仕様最新バージョンは 1.3 ですが、以降の説明では対応する商用スイッチも出そろっているバージョン 1.0 をベースに説明します。なお、1.0 とそれ以降では考え方やモデルに大きな変更はありませんので、1.0 を理解していれば新しいバージョンも理解しやすいでしょう。
+The latest version of the OpenFlow specification was 1.3 when this book was written, but the later descriptions are based on 1.0 since the corresponding commercial switches are also based on 1.0. There aren't radical changes on the idea or the model from 1.0 and above so if you can understand 1.0, it should be easy to understand the later versions as well.
 
-== スイッチとコントローラ間のやりとり
+== Exchange between the switch and the controller
 
-OpenFlow スイッチとコントローラは OpenFlow 仕様で規定されたメッセージをやりとりしながら動作します。ここでは具体的にどのようなメッセージを送受信するか順を追って説明します。@<chap>{whats_openflow}で見たカスタマーサービスセンターでのやりとりを思い出しながら読んでください。
+OpenFlow switches and controllers operate by exchanging messages defined by the OpenFlow specification. Here we explain what kind of messages are sent and received in a sequential order. Recall the story of the customer support center in @<chap>{whats_openflow} when you read.
 
-=== スイッチとコントローラ間の接続を確立する
+=== Establish connection between the switch and the controller
 
-最初にコントローラとスイッチはセキュアチャンネルの接続を確立します。OpenFlow にはセキュアチャンネルをスイッチとコントローラのどちらが始めるかの規定はありませんが、現状では@<img>{secure_channel} のようにスイッチからコントローラへと接続する実装が多いようです。
+The first thing that the controller and switch do is to establish the secure channel connection. There aren't any rules on which one should initiate the connection first but it seems to be from the switch to the controller in most of the recent implementations as shown in @<img>{secure_channel}.
 
-//image[secure_channel][スイッチがコントローラに接続しセキュアチャンネルを確立][width=12cm]
+//image[secure_channel][Switch connects to the controller and establishes secure channel][width=12cm] 
 
-セキュアチャンネルは普通の TCP 接続です。コントローラとスイッチの両方が対応している場合には、性能は落ちますがよりセキュアな TLS (Transport Layer Security) を使うこともできます。
+Secure channel is a regular TCP connection. When both the controller and the switch are OpenFlow compatible, a more secure TLS (Transport Layer Security) can also be used although the performance may marginally degrade. 
 
-=== バージョンのネゴシエーション
+=== Negotiate version
 
-次に使用する OpenFlow プロトコルのバージョンを確認するステップ、いわゆるバージョンネゴシエーションが始まります。セキュアチャンネルを確立すると、スイッチとコントローラはお互いに自分のしゃべれるバージョン番号を乗せた Hello メッセージを出し合います (@<img>{version_negotiation})。
+The next step is confirming the OpenFlow protocol version, the so-called version negotiation. After establishing the secure channel, the switch and the controller exchange Hello messages with their own version numbers (@<img>{version_negotiation}).
 
-//image[version_negotiation][Hello メッセージを出し合うことで相手の OpenFlow プロトコルバージョンを確認][width=12cm]
+//image[version_negotiation][Confirming the other side's OpenFlow protocol version by exchanging the Hello message][width=12cm]
 
-相手と同じバージョンを話せるようであればネゴシエーションに成功で、本格的におしゃべりを始められるようになります。
+The negotiation is successful if the same version is spoken, and then the real communication begins.
 
-=== スイッチのスペックの確認
+=== Confirm switch's specification
 
-次にコントローラは接続したスイッチがどんなスイッチかを確認します。ネゴシエーション直後はまだバージョンしか確認できていないので、コントローラはスイッチに Features Request というメッセージを送って次の各情報をリクエストします。
+Next, the controller confirms the connected switch's specification. The controller sends a 'Features Request' message to the switch and asks for the following information since only the version can be confirmed right after the negotiation.
 
- * スイッチのユニーク ID (Datapath ID)
- * 物理ポートの一覧情報
- * サポートする機能の一覧
+ * Unique ID of switch (Data path ID)
+ * List of physical ports
+ * List of supported functions
 
-//image[features_request_reply][Features Request メッセージでスイッチのスペックを確認][width=12cm]
+//image[features_request_reply][Confirm switch specification by 'Features Request' message][width=12cm]
 
-スイッチは Features Reply メッセージでこの情報を返信します。
+The switch replies by sending 'Features Reply' message.
 
-=== 未知のパケットの受信
+=== Receive unknown packets
 
-スイッチはフローテーブル中に登録されていない通信を検知すると、コントローラにそのパケットおよび関連情報を通知します。これを Packet In メッセージと呼びます。
+When the switch detects communication that is not registered in the flow table, it notifies the controller of that packet and related information. This is called 'Packet In' message.
 
-//image[packet_in][未知のパケットとその情報が Packet In メッセージとしてコントローラに上がる][width=12cm]
+//image[packet_in][Unknown packet and related information is sent to the controller as 'Packet In' message][width=12cm]
 
-=== フローテーブルの更新とパケットの転送
+=== Update flow table and forward packet
 
-パケットを転送する場合には、Flow Modメッセージによってパケットを転送するためのフローエントリをスイッチのフローテーブルに書き込みます。そして、Packet OutメッセージによってPacket Inを起こしたパケット自体を正しい宛先に流してやります。これをやらないとPacket Inを起こしたパケットのデータはコントローラに残ったままで、宛先には届きません(@<img>{flowmod_packetout})。
+When forwarding the packets, a flow entry is written to the flow table in the switch, to forward the packets by 'Flow Mod' message. Then the packets that caused 'Packet In' are sent to the appropriate destination by 'Packet Out' message. Without this, the data of the packets that evoked 'Packet In' ends up remaining in the controller, never to be sent to the destination (@<img>{flowmod_packetout}).
 
-//image[flowmod_packetout][Flow Mod によってフローテーブルを更新し、Packet In を起こしたパケットを Packet Out で転送][width=12cm]
+//image[flowmod_packetout][Update the flow table by 'Flow Mod' and forward packets that caused 'Packet In' by 'Packet Out'][width=12cm]
 
-====[column] 取間先生曰く: Flow Mod と Packet Out を同時にやる方法？
+====[column] Mr. Torema says: 'Flow Mod' and 'Packet Out' at the same time?
 
-実は OpenFlow の仕様には、一発の Flow Mod で Packet Out もまとめてやってしまう方法が載っています。しかしこれは危険なプログラミングスタイルです。
+Actually, there's a way to do 'Flow Mod' and 'Packet Out' at the same time. Although it's written in the OpenFlow specification, it's rather a dangerous programming style.
 
-スイッチに Packet In が上がると、スイッチのバッファ領域に Packet In を起こしたパケットの中身がバッファされます。そしてコントローラに上がる Packet In メッセージには、このバッファ領域の ID (Buffer ID と呼ばれる) が通知されます。これを Flow Mod のときに指定すると、スイッチが Packet Out してくれます(@<img>{buffer_id})。
+When the switch receives 'Packet In', the switch buffers the contents of the packet that evoked 'Packet In' and the ID of the buffer (Buffer ID) is notified to the 'Packet In' message that is sent to the controller. If this is set at the timing of 'Flow Mod', the switch performs 'Packet Out' (@<img>{buffer_id}).
 
-//image[buffer_id][Flow Mod のときに Buffer ID を指定することで同時に Packet Out する][width=12cm]
+//image[buffer_id]['Flow Mod' and 'Packet Out' at the same time by designating Buffer ID][width=12cm]
 
-しかし、この方法は@<em>{禁じ手}です。これは次の理由によります:
+However, this is a @<em>{taboo}. Here's why.
 
- * スイッチのバッファにパケットが残っているかどうかはスイッチの外から観測できないので、指定した Buffer ID のパケットがバッファに残っているかは一か八かである
- * 確実にスイッチのバッファに残っていると分かっていても、Flod Mod を打った瞬間に消えているかもしれない
- * 格安のスイッチには、そもそもバッファがないかもしれない
+ * It's hit or miss whether the packets designated by the Buffer ID are still in the switch's buffer or not since there's no way to observe from outside of the switch
+ * Even if you know for sure that the packets are still in the switch's buffer, they might disappear as soon as you type in 'Flow Mod'
+ * Cheap switches might not have a buffer from the beginning
 
-というわけで、本文中で説明したように Packet Out は Flow Mod と独立して打つのが良い方法です。
+So it's safe to send 'Packet Out' and 'Flow Mod' commands independently as explained in this book.
 
-ちなみに、Flow Mod と Packet Out を同時にする場合、バッファに残っていてもいなくても正しく動く疑似コードは次のようになります。
+Just for the record when 'Flow Mod' and 'Packet Out' is done at the same time, here's a pseudo code that works even if there's nothing in the buffer.
 
 //emlist{
 begin
-  flow_mod( Buffer-ID = packet_in.buffer_id )  # Buffer ID 指定あり
+  flow_mod( Buffer-ID = packet_in.buffer_id )  # Designation of Buffer ID
 rescue
-  packet_out( packet_in )  # Flow Mod が失敗した場合、明示的に Packet Out
+  packet_out( packet_in )  # If Flow Mod fails, explicitly Packet Out
 end
 //}
 
 //noindent
-見ればわかるように、万が一バッファに残っていなかったときの例外処理に Packet Out を書かなければなりません。そのせいでコードが長くなってしまいます。
+As you can see, you have to write 'Packet Out' as an exception handling in case there's nothing in the buffer. The code gets longer as a result.
 
-正しい方法を見てみましょう:
+Let's look at the correct way:
 
 //emlist{
-flow_mod # Buffer ID 指定なし
+flow_mod # No designation of Buffer ID 
 packet_out( packet_in )
 //}
 
 //noindent
-こちらの方が、ずっと短いし、正しく動きます。
+It's much shorter this way and it works just right as well.
 
 ====[/column]
 
-=== フローエントリの寿命と統計情報
+=== Lifespan of flow table and statistical information
 
-Flow Mod で打ち込むフローエントリには「寿命」を設定できます。寿命の指定には次の 2 種類があります。
+A 'lifespan' can be set to the flow entry that is created by 'Flow Mod'. There are two types of lifespan.
 
- * アイドルタイムアウト: 参照されない時間がこの寿命に逹すると、そのフローエントリを消す。パケットが到着し、フローエントリが参照された時点で 0 秒にリセットされる。
- * ハードタイムアウト: 参照の有無を問わず、フローエントリが書き込まれてからの時間がこの寿命に逹すると、そのフローエントリを消す。
+ * Idle time out: When the non-referred time reaches this lifespan, the flow entry is deleted. Once the packets arrive and the flow entry is referred, the time is reset to 0 second.
+ * Hard time out: The flow entry is deleted when this lifespan is reached (counted from the moment when the flow entry was written) regardless of the referred status.
 
-どちらのタイムアウトも 0 にして打ち込むと、そのフローエントリは明示的に消さない限りフローテーブルに残ります。
+When these time outs are set to 0, the flow entry remains in the flow table unless it is explicitly deleted.
+ 
+When the flow entry is deleted, the information of the deleted flow entry and the statistical information of the packets processed according to that flow entry are notified to the controller. This is called 'Flow Removed' message and it's used for collecting the network traffic.
 
-フローエントリが消されるとき、消されたフローエントリの情報とそのフローエントリにしたがって処理されたパケットの統計情報がコントローラに通知されます。これを Flow Removed メッセージと呼びます。このメッセージはネットワークのトラフィック量の集計に使えます。
+//image[flow_removed][When the flow entry is deleted by time out, the statistical information of the forwarded packet is sent to the controller as 'Flow Removed'][width=12cm]
 
-//image[flow_removed][フローエントリが寿命で削除されると、転送されたパケットの統計情報が Flow Removed としてコントローラに上がる][width=12cm]
+== Inside the flow entry
 
-== フローエントリの中身
+A flow entry is composed of the following 3 components as shown in @<chap>{whats_openflow}.
 
-@<chap>{whats_openflow}で見たようにフローエントリは次の 3 要素から成ります。
+ * Matching rule
+ * Action
+ * Statistical information
 
- * マッチングルール
- * アクション
- * 統計情報
+We'll be looking at these components in detail but you don't have to remember everything from the beginning. Please use the following subsections as a reference when you get lost in the following chapters.
 
-以下ではそれぞれの中身を少し細かく見ていきます。なお、これらを最初からすべて頭に入れる必要はありません。以降の章を読んでいてわからなくなったらレファレンスとして活用してください。
+=== Matching rule
 
-=== マッチングルール
+Matching rule is a condition that makes the OpenFlow switch to decide whether it should take an action or not when it receives packets. For example, the switch takes an action only on the packets that match the given rules such as 'If the packet's destination is a http server' or 'If the packet's destination is a broadcast address'.
 
-マッチングルールとは、OpenFlow スイッチがパケットを受け取ったときにアクションを起こすかどうかを決める条件です。たとえば「パケットの宛先が http サーバーだったら」とか「パケットの宛先がブロードキャストアドレスだったら」などという条件に適合したパケットにだけ、スイッチがアクションを起こすというわけです。
+12 types of rules (@<table>{matching_rules}) can be used in OpenFlow 1.0. These rules are values well used in ethernet and TCP/UDP.
 
-OpenFlow 1.0 では、@<table>{matching_rules} の 12 種類の条件が使えます。これらの条件はイーサネットや TCP/UDP でよく使われる値です。
+====[column] Mr. Torema says: Another name of matching rule
 
-====[column] 取間先生曰く: マッチングルールの別名
+There're actually other ways to call 'matching rule': 'OpenFlow 12 tuple' and 'header field'. Which is quite confusing so it's just 'matching rule' in this book. It's because the name expresses the role of 'When packet arrives, match according to the rules' straightforwardly and the most easily comprehensible.
 
-フローエントリの 3 要素のひとつ、マッチングルールには実は "OpenFlow 12 タプル"、"ヘッダフィールド" という別の呼び方もあって、よく混乱します。そこでこの本では" マッチングルール" で統一することにしました。パケットが来たときにルールに従ってマッチする、という役割をすなおに表現していて、いちばんわかりやすい名前だからです。
+"OpenFlow 12 tuples" becomes 15 tuples in OpenFlow 1.1, and who knows how many there'll be in the future? In other words, on one knows till when this name is available. Also the name 'header field' doesn't really tell what it does and seems a bit difficult in a strange way.
 
-"OpenFlow 12 タプル" は OpenFlow 1.1 では 15 タプルになるし、この先どこまで増えるかわかりません。つまりいつまで使えるかわからない名前です。また "ヘッダフィールド" では、何をするものか名前からはわかりづらいし、変に難しそうですよね。
 
 ====[/column]
 
-//table[matching_rules][マッチングルールで指定できる 12 種類の条件]{
-名前				説明
+//table[matching_rules][12 kinds of conditions that can be set by matching rule]{
+Name				Description
 --------------------------------------------------------------
-Ingress Port		スイッチの物理ポート番号
-Ether src			送信元 MAC アドレス
-Ether dst			宛先 MAC アドレス
-Ether type			イーサネットの種別
-IP src				送信元 IP アドレス
-IP dst				宛先 IP アドレス
-IP proto			IP のプロトコル種別
-IP ToS bits			IP の ToS 情報
-TCP/UDP src port	TCP/UDP の送信元ポート番号
-TCP/UDP dst port	TCP/UDP の宛先ポート番号
+Ingress Port		Physical port number of switch
+Ether src		Source MAC address
+Ether dst			Destination MAC address
+Ether type			Ethernet type
+IP src				Source IP address
+IP dst				 Destination IP address
+IP proto			 IP protocol type
+IP ToS bits			IP ToS information 
+TCP/UDP src port	Source port number of TCP/UDP
+TCP/UDP dst port	Destination port number of TCP/UDP
 VLAN id				VLAN ID
-VLAN priority		VLAN PCP の値 (CoS)
+VLAN priority		VLAN PCP value (CoS)
 //}
 
-OpenFlow の世界では、このマッチングルールで指定できる条件を自由に組み合わせて通信を制御します。たとえば、
+In the world of the OpenFlow, the communication is controlled by freely combining the conditions that can be set by these matching rules. Example conditions follow. 
 
- * スイッチの物理ポート 1 番から届く、宛先が TCP 80 番 (= HTTP) のパケットを書き換える
- * MAC アドレスが 02:27:e4:fd:a3:5d で宛先の IP アドレスが 192.168.0.0/24 は遮断する
+ * Rewrite packet that arrives at switch's physical port #1 with destination of TCP 80 (= HTTP) 
+ * Deny packet with MAC address of 02:27:e4:fd:a3:5d and destination IP address of 192.168.0.0/24
 
-//noindent
-などといった具合です。
+These are called 'Wildcard Match' since only partial conditions are specified. Of course, it's possible to create a matching rule that specifies all 12 types of conditions, which is called 'Exact Match'.'Exact Match' is used when a particular packet needs to be matched by the flow entry and 'Wildcard Match' is used when a wide range of types of packets needs to matched by a single flow entry.
 
-もちろん、12 種類の条件すべてを指定したマッチングルールを作ることもできます。これを Exact Match と呼びます。対して上の例のように一部の条件だけを指定したものを Wildcard Match と呼びます。特定のパケットだけをピンポイントでフローエントリにひっかける場合は Exact Match を使い、幅広い種類のパケットをひとつのフローエントリでひっかける場合には Wildcard Match を使うと覚えてください。
+====[column] Mr. Torema says: OSI network model falls apart?
 
-====[column] 取間先生曰く: OSI ネットワークモデルが壊れる？
+A lad with a rich experience in network once said,
 
-あるネットワークの経験豊富な若者がこんな事を言っていました。
+'If OpenFlow can do anything across the layers, wouldn't OSI network model@<fn>{OSImodel} fall apart?'
 
-「OpenFlow のようにレイヤをまたがって自由に何でもできるようになると、OSI ネットワークモデル(よく「レイヤ 2」とか「レイヤ 3」とか呼ばれるアレのこと。正確には ISO によって制定された、異機種間のデータ通信を実現するためのネットワーク構造の設計方針)が壊れるんじゃないか？」
+//footnote[OSImodel][It's those Layer 2 and Layer 3 stuff. To be more correct, it's a construction policy of the network architecture defined by ISO to realize data communication between dissimilar devices.]
 
-その心配は無用です。OSI ネットワークモデルは正確に言うと「OSI 参照モデル」と言って、通信プロトコルを分類して見通しを良くするために定義した "参照用" の階層モデルです。たとえば自分が xyz プロトコルというのを作ったけど人に説明したいというときに、どう説明するか考えてみましょう。「これはレイヤ 3 のプロトコルで、…」という風に階層を指して (参照して) 説明を始めれば相手に通りがよいでしょう。つまり、OSI ネットワークモデルはネットワーク屋同士で通じる「語彙」として使える、まことに便利なものなのです。
+There's no need for such worries. OSI network model is a 'OSI reference model' and it's a model to 'reference' for grouping the communication protocol and make them look better. For example, consider a situation that you've made a protocol called xyz and have to explain it to someone. You would start the sentence by pointing (referencing) to a layer such as 'This is a Layer 3 protocol and…' which would help the listener understand you better. In other words, the OSI network model is conveniently used as a vocabulary that's understood between the people who know a little bit about the network.
+However, this is nothing more than a reference let alone a policy, so it doesn't mean that every network protocol and networking device have to abide the rule. As said before, a sentence like 'If abc should be in the OSI, it would be placed in Layer 4' would suffice. 
 
-でも、これはあくまで「参照」であって「規約」ではないので、すべてのネットワークプロトコル、ネットワーク機器がこれに従わなければいけない、というものではありません。さっき言ったように「この ○○ は、仮に OSI で言うとレイヤ4 にあたる」のように使うのが正しいのです。
-
-そして、OpenFlow はたまたまいくつものレイヤの情報が使える、ただそれだけのことです。
+So, it's just that the OpenFlow happens to use a couple of layers' information. 
 
 ====[/column]
 
-=== アクション
+=== Action
 
-アクションとは、スイッチに入ってきたパケットをどう料理するか、という@<em>{動詞}にあたる部分です。よく「OpenFlow でパケットを書き換えて曲げる」などと言いますが、こうした書き換えなどはすべてアクションで実現できます。それでは、OpenFlow 1.0 ではどんなアクションが定義されているか見てみましょう。
+An action is something like a @<em>{verb} that specifies how to cook the packet that arrived at the switch. 
+The phrase such as 'Rewrite the packet by OpenFlow and forward' is often used and this rewriting process can be realized by the actions. So let's take a look at what kind of actions are defined in OpenFlow 1.0.
 
-アクションは大きく分けて次の 4 種類があります。
+There are 4 main types of actions.
 
- * Forward: パケットを指定したポートから出す
- * Modify-Field: パケットの中身を書き換える
- * Drop: パケットを捨てる
- * Enqueue: ポートごとに指定されたスイッチのキューに入れる。QoS 用
+ * Forward: Forward the packet from the designated port 
+ * Modify-Field: Rewrite the content of the packet
+ * Drop: Drop packets
+ * Enqueue: Attach packet to the designated switch for each port (for QoS)
 
-アクションは動詞と同じく指定した順番に実行されます。「おにぎりを作って、食べて、片付ける」といったふうに。たとえば、パケットを書き換えて指定したポートから出したいときには、
+Like a verb, the action is performed sequentially as commanded - 'Make onigiri, eat, and clean up'. For example, if packets need to be rewritten and outputted from the designated port, the list of actions should be something like this.
 
 //emlist{
 [Modify-Field, Forward]
 //}
 
-というアクションのリストを指定します。ここで、アクションは指定された順番に実行されることに注意してください。アクションの順番を変えてしまうと、違う結果が起こります。たとえば「おにぎりを食べてから、おにぎりを作る」と最後におにぎりが残ってしまいます。同様に先ほどの例を逆にしてしまうと、まず先にパケットがフォワードされてしまいます。その後 Modify-Field が実行されても、書き換えられた後、そのパケットは破棄されるだけです。
+Here, note that the actions are performed sequentially as commanded. If these orders are changed, you would get a different result. For example, if it's 'Eat onigiri and then make onigiri', you would have an onigiri left in the end. So if you reverse the above example, packets would be forwarded first. Even if the 'Modify-Field' happens afterwards, the packet would end up being destroyed after it's rewritten.
 
 //emlist{
-# パケットを書き換える前にフォワードされてしまう。
+# Forwarding happens first before the packet is rewritten.
 [Forward, Modify-Field]
 //}
 
-同じ動詞を複数指定することもできます。
+Identical verbs can be placed multiple times.
 
 //emlist{
 [Modify-Field A, Modify-Field B, Forward A, Forward B]
 //}
 
-この場合は、フィールド A と B を書き換えて、ポート A と B へフォワードする、と読めます。このように、複数のフィールドを書き換えたり、複数のポートにパケットを出したりする場合には、アクションを複数連ねて指定します@<fn>{num_actions}。
+The above example would be read as 'Rewrite field A and B, and forward it to port A and B'. Like this, a list of multiple actions@<fn>{num_actions} can be created when rewriting multiple fields or outputting packets to multiple ports.
 
-//footnote[num_actions][指定できるアクション数の上限は OpenFlow スイッチとコントローラの実装に依存します。普通に使う分にはまず問題は起こらないでしょう。]
+//footnote[num_actions][The maximum number of actions is dependent on the implementation of OpenFlow switch and controller. Normally the numbers wouldn't cause any problems.]
 
-Drop は特殊なアクションで、実際に Drop アクションというものが具体的に定義されているわけではありません。アクションのリストに Forward アクションをひとつも入れなかった場合、そのパケットはどこにもフォワードされずに捨てられます。これを便宜的に Drop アクションと呼んでいるわけです。
+Drop is a special kind of action and it's not really specifically defined. In case there aren't any Forward actions in the action list, the packets aren't forwarded anywhere but discarded. Therefore, it's conveniently called a Drop action.
 
-それでは、最もよく使われる Forward アクションと Modify-Field アクションで具体的に何が指定できるか見て行きましょう。
+Now let's take a look at the most widely used Forward and Modify-Field action, and what they're capable of doing in detail.
 
-==== Forward アクション
+==== Forward action
 
-Forward アクションでは指定したポートからパケットを出力します。出力先にはポート番号を指定しますが、特殊用途のために定義されている論理ポートを使うこともできます。
+Forward action output packets from the designated port. Port numbers can be designated but logical ports, defined for the special purposes, can be used as well.
 
- * ポート番号: パケットを指定した番号のポートに出す。
- * IN_PORT: パケットを入ってきたポートに出す。
- * ALL: パケットを入ってきたポート以外のすべてのポートに出す。
- * FLOOD: パケットをスイッチが作るスパニングツリーに沿って出す。
- * CONTROLLER: パケットをコントローラに明示的に送り、Packet In を起こす。
- * NORMAL: パケットをスイッチの機能を使って転送する。
- * LOCAL: パケットをスイッチのローカルスタックに上げる。ローカルスタック上で動作するアプリケーションにパケットを渡したい場合に使う。あまり使われない。
+ * Port Number: Output packets from the designated port number
+ * IN_PORT: Output packets to ingress port
+ * ALL: Output packets to all ports except the ingress port
+ * FLOOD: Output packets according to the spanning tree that switch made
+ * CONTROLLER: Explicitly send packets to the controller and trigger Packet In
+ * NORMAL: Forward packets using switch's function
+ * LOCAL: Sends packets to the switch's local stack. Used when there's a need to hand the packets over to the application that runs on the local stack. Not used very often.
 
-この中でも FLOOD や NORMAL は OpenFlow スイッチ機能と既存のスイッチ機能を組み合わせて使うための論理ポートです。
+Among these actions, FLOOD and NORMAL are logical ports when the function of OpenFlow and conventional switches is used together. 
 
-==== Modify-Field アクション
+==== Modify-Field action
 
-Modify-Field アクションではパケットのさまざまな部分を書き換えできます。
+Modify-Field action rewrites various parts of the packet. 
 
- * 送信元 MAC アドレスの書き換え
- * 宛先 MAC アドレスの書き換え
- * 送信元 IP アドレスの書き換え
- * 宛先 IP アドレスの書き換え
- * ToS フィールドの書き換え
- * TCP/UDP 送信元ポートの書き換え
- * TCP/UDP 宛先ポートの書き換え
- * VLAN ヘッダの除去
- * VLAN ID の書き換え (VLAN ヘッダがなければ、新たに付与する)
- * VLAN プライオリティの書き換え (VLAN ヘッダがなければ、新たに付与する)
+ * Rewrite source MAC address
+ * Rewrite destination MAC address
+ * Rewrite source IP address
+ * Rewrite destination IP address
+ * Rewrite ToS field
+ * Rewrite TCP/UDP source port
+ * Rewrite TCP/UDP destination port
+ * Delete VLAN header
+ * Rewrite VLAN ID (If no VLAN header exists, grant a new one)
+ * Rewrite VLAN priority (If no VLAN header exists, grant a new one)
 
-それぞれのアクションでできることと、代表的な使い道を順番に見ていきましょう。
+Let's look at what these actions can do and their typical usage. 
 
-===== MAC アドレスの書き換え
+===== Rewrite MAC address
 
-MAC アドレス書き換えの代表的な例がルータです。OpenFlow はルータの実装に必要な、送信元と宛先 MAC アドレスの書き換えアクションをサポートしています。
+A typical example of rewriting MAC address is the router. OpenFlow supports the action of rewriting source and destination MAC address that is necessary for implementing the router function. 
 
-//image[rewrite_mac][ルータでの送信元と宛先 MAC アドレスの書き換え][width=12cm]
+//image[rewrite_mac][Rewriting source and destination MAC address in router][width=12cm]
 
-ルータは 2 つのネットワークの間で動作し、ネットワーク間で行き交うパケットの交通整理を行います。ホスト A が異なるネットワークに属するホスト B にパケットを送ると、ルータはそのパケットを受け取りその宛先 IP アドレスから転送先のネットワークを決定します。そして、パケットに記述された宛先 MAC アドレスを次に送るべきホストの MAC アドレスに、送信元を自分の MAC アドレスに書き換えてデータを転送します。
+A router works between two different networks and controls the traffic of the packets that come and go. When Host A sends a packet to the Host B residing in another network, the router receives the packet and determines where to forward it based on the destination IP address. Then the router rewrites the destination MAC address of the packet with the host MAC address of where the router is supposed to send the packet to. In addition, the router rewrites the source with the its own MAC address before forwarding the data. 
 
-===== IP アドレスの書き換え
+===== Rewrite IP address
 
-IP アドレス書き換えの代表的な例が NAT (Network Address Transition) です。OpenFlow は NAT の実装に必要な、送信元と宛先 IP アドレスの書き換えアクションをサポートしています。
+A well-known example of rewriting the IP address is the NAT (Network Address Translation). OpenFlow supports the action of rewriting source and destination IP address that is necessary for implementing the NAT function.
 
-//image[rewrite_ip_address][NAT での送信元と宛先 IP アドレスの書き換え][width=12cm]
+//image[rewrite_ip_address][Rewriting source and destination IP address in NAT][width=12cm]
 
-インターネットと接続するルータでは、プライベート/グローバルネットワーク間での通信を通すために IP アドレスを次のように変換します。プライベートネットワーク内のクライアントからインターネット上のサーバーに通信をする場合、ゲートウェイはプライベートネットワークから届いたパケットの送信元 IP アドレスを自分のグローバルな IP アドレスに変換して送信します。逆にサーバーからの返信は逆の書き換えを行うことによりプライベートネットワーク内のクライアントに届けます。
+Routers connected to the Internet rewrites the IP address to enable the communication between a private and a global network. 
+When a client in the private network wants to communicate with a server in the Internet, the gateway sends the packet after rewriting the source IP address of the packet that arrived from the private network 
+with the gateway's global IP address. The reply from the server to the client works the same way, only by rewriting the packet in vice-versa.
 
-===== ToS フィールドの書き換え
+===== Rewrite ToS field
 
-ToS フィールドは通信のサービス品質 (QoS) を制御する目的でパケットを受け取ったルータに対して処理の優先度を指定するために使われます。OpenFlow はこの ToS フィールドの書き換えアクションをサポートしています。
+ToS field is used when a router needs to designate the processing priority of the received packets to control the communication QoS. OpenFlow supports this action of rewriting ToS field.
 
-===== TCP/UDP ポート番号の書き換え
+===== Rewrite TCP/UDP port number
 
-TCP/UDP ポート番号書き換えの代表的な例が IP マスカレードです。OpenFlow は IP マスカレードの実装に必要な、送信元と宛先の TCP/UDP ポート番号の書き換えアクションをサポートしています。
+A typical example of rewriting TCP/UDP port is the IP masquerade. OpenFlow supports the action of rewriting source and destination TCP/UDP port that is necessary for implementing the IP masquerading function. 
 
-//image[rewrite_port][IP マスカレードでの送信元と宛先 TCP/UDP ポート番号の書き換え][width=12cm]
+//image[rewrite_port][Rewriting source and destination TCP/UDP port in IP masquerade][width=12cm]
 
-ブロードバンドルータなど 1 つのグローバルアドレスで複数のホストが同時に通信を行う環境では、NAT だけだと TCP/UDP のポート番号が重複する可能性があります。そこで、IP マスカレードではプライベートネットワーク側のポート番号をホストごとに適当に割り当て、通信のつどポート番号を変換することで解決します。
+In an environment such as broadband routers where multiple hosts simultaneously communicate with a single global address, TCP/UDP port numbers may be redundant with just the NAT. IP masquerading solves this issue by assigning the private network's port number to each host and translating the port numbers for each communication. 
 
-===== VLAN ヘッダの書き換え
+===== Rewrite VLAN header
 
-既存のタグ付き VLAN で構築したネットワークと OpenFlow で構築したネットワークを接続するという特別な用途のために、VLAN ヘッダの書き換えアクションがあります。VLAN をひとことで説明すると、既存のスイッチで構成されるネットワーク (ブロードキャストが届く範囲のネットワーク) を複数のネットワークに分割して使用するための仕組みです。この分割したネットワーク自体を VLAN と呼ぶ場合もあります。どの VLAN に所属するかを区別するのが VLAN のタグ (VLAN ID) で、パケットに付与される VLAN ヘッダがこのタグ情報を含みます。Modify-Field アクションは VLAN ヘッダの操作に必要なアクションを 3 種類用意しています。
+Rewriting VLAN header is used for the special purpose of connecting the traditional network constructed with tagged VLANs and the network constructed with OpenFlow. VLAN divides the network constructed with the conventional switches (network within a broadcast's reach) into multiple networks and sometimes the divided network itself is called VLAN. It's the VLAN's tag (VLAN ID) that distinguishes each VLAN and the VLAN header that's assigned to the packet contains this tag information. There are three kinds of Modify-Field actions that is required for handling the VLAN header. 
 
-//image[strip_vlan][VLAN ヘッダを書き換えるアクションの使い道][width=12cm]
+//image[strip_vlan][Usage of rewriting the VLAN header action][width=12cm]
 
-: VLAN ヘッダの除去
-  VLAN を流れる VLAN ヘッダ付きパケットから VLAN ヘッダを除去し、普通のパケットに戻すアクションです。
+: Delete VLAN header
+ An action that puts the packet with the VLAN header back to a regular packet by eliminating the VLAN header from the packet that flows in the VLAN. 
 
-: VLAN ID の書き換え
-  VLAN パケットが属する VLAN の ID を書き換えます。たとえば VLAN ID を 3 に書き換えるといったアクションを指定できます。また、VLAN ヘッダがついていないパケットに 指定した VLAN ID を持つ VLAN ヘッダを付与することもできます。
+: Rewrite VLAN ID
+  Rewrite the VLAN ID of the VLAN packet. For example one can set an action that changes VLAN ID to 3. In addition, one can assign a VLAN header with a VLAN ID to a packet without a VLAN header. 
 
-: VLAN プライオリティの書き換え
-  VLAN 上でのパケットを転送する優先度を変更します。このプライオリティはトラフィックの種類 (データ、音声、動画など) を区別する場合などに使います。指定できる値は 0 (最低) から 7 (最高) までです。
+: Rewrite VLAN priority
+ Change the packet forwarding priority on VLAN. This priority is used when the traffic types (data, voice, video, and etc.) are specified and the value ranges from 0 (lowest) to 7 (highest).
 
-=== 統計情報
+=== Statistical information
 
-OpenFlow 1.0 ではフローエントリごとに次の統計情報を取得できます。
+In OpenFlow 1.0, below statistical information can be acquired per flow entry.
 
- * 受信パケット数
- * 受信バイト数
- * フローエントリが作られてからの経過時間 (秒)
- * フローエントリが作られてからの経過時間 (ナノ秒)
+ * Number of received packets
+ * Number of received bytes
+ * Elapsed time since the flow entry was created (second)
+ * Elapsed time since the flow entry was created (nano second)
 
 == Wrap-up
 
-OpenFlow仕様の中でも特にポイントとなる部分を見てきました。ここまでの章で学んできた内容だけで、すでにOpenFlow専門家と言ってもよいほどの知識が身に付いたはずです。次の章ではOpenFlowコントローラを開発するための代表的なプログラミングフレームワークを紹介します。
+We took a look at the nuts and bolts in the OpenFlow specification. You can probably call yourself a OpenFlow specialist just by having learned all the things in the section. Let us introduce some popular programming frameworks for developing OpenFlow controller in the next section.
+
+
