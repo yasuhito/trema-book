@@ -1,43 +1,44 @@
-= OpenFlow の開発フレームワーク
+= OpenFlow Development Framework
 
 //lead{
-さっそく OpenFlow で何かを作ってみたい! その前に便利な OpenFlow の開発フレームワークを見てみましょう。巨人の肩に乗ってしまえば目的地まではもうすぐです。
-//}
+Okay, so let's make something with OpenFlow already! But before that, let's take a look at some convenient OpenFlow development frameworks. Standing on the shoulders of giants will take you to your destination in a breeze.
+//} 
 
 //indepimage[robot][][width=10cm]
 
-== 開発フレームワークを活用しよう
+== Let's make use of the development framework
 
-新しくWebサービスを立ち上げるには、今やRuby on Rails@<fn>{rails}などのWebアプリケーションフレームワークが不可欠です。もしもフレームワークの助けを借りずに、フルスクラッチでWebサイトを構築しなければならないとしたら…何十倍ものコーディングが発生し、しかもそのほとんどは車輪の再発明に終わるでしょう。効率的にWebサイトを作りたいプログラマ向けに、書店の技術書コーナーにはさまざまなフレームワークの本があふれかえっています。こうしたフレームワークを使ってWebサービスを構築することは、すでに常識なのです。
+Nowadays, Web application frameworks such as Ruby on Rails@<fn>{rails> is indispensable when launching a new Web service. Without such framework's help, constructing the Web site from scratch will not only result in tremendous amount of codings but also in reinventing the wheel. You could easily find books on various frameworks for programmers who want to effectively create Web sites in book stores' technology section. So one can say that using a framework to build a Web service is already a common sense. 
 
 //footnote[rails][@<href>{http://rubyonrails.org/}]
 
-OpenFlowコントローラもフルスクラッチで作るのは大変です。OpenFlowの標準仕様はCで書いてあるので、まずはCが読めることが必須です。仕様が理解できたら、開発に使うプログラミング言語向けにライブラリを書き、その上にコントローラを構築し…考えただけでひと仕事です。動作テストのためのツール類も自分で準備しなければなりません。
+It's also a lot of work to build a OpenFlow controller from scratch. The standard specification of OpenFlow is written in C so it's essential that you can understand the language. After comprehending the specification, you have to write a library for the programming language that's used in the development, 
+construct the controller on top of that, and … it's quite a work just by thinking. On top of that, you would need to prepare some testing tools on your own as well.
 
-そこで、OpenFlowコントローラフレームワークの出番です。Web業界ほどではありませんが、世の中にはすでに主要なプログラミング言語向けのOpenFlowコントローラフレームワークがそろいつつあります。これらを使えば効率的にコントローラを開発できます。またいくつかのフレームワークは開発やデバッグに便利なツールをフレームワークの一部として提供しています。使わない手はありませんね。
+This is where the OpenFlow controller frameworks come in. They don't go as far as the ones in the Web industry, but there are already several OpenFlow controller frameworks for major programming languages ready to be used out there. Some of the frameworks provide convenient tools for developing and debugging as a part of the framework. There are no reason not to use them. 
 
-@<table>{frameworks}に主なOpenFlowコントローラフレームワークを挙げます。いずれもいわゆるオープンソースソフトウェアで、それぞれ対応する言語が異なります。
+Major OpenFlow controller frameworks are listed in @<table>{frameworks}. They are all so-called open source software and the difference is the languages they are developed in.
 
-//table[frameworks][主なOpenFlowコントローラフレームワーク]{
-名前		開発言語		開発元										ライセンス
+//table[frameworks][Major OpenFlow controller framework]{
+Name		Language		Developed by										License
 ----------------------------------------------------------------------------------
-Trema		Ruby			Tremaプロジェクト							GPL2
-NOX			C++				Nicira、スタンフォード大、UC バークレイ		GPL3
-POX			Python			UCバークレイ								GPL3
+Trema		Ruby			Trema Project						GPL2
+NOX			C++				Nicira, Stanford University, UC Berkeley		GPL3
+POX			Python			UC Berkeley								GPL3
 Floodlight	Java			Big Switch Networks Inc.					Apache
 //}
 
-それでは、それぞれの特長を詳しく見ていきましょう。
+Now let's take a look at their details.
 
 == Trema
 
-TremaはRuby用のOpenFlowコントローラフレームワークです(@<img>{trema})。GPLバージョン2ライセンスのフリーソフトウェアです。
+Trema is an OpenFlow controller framework in Ruby(@<img>{trema}) and it's a free software with GPL version 2 license. 
 
-//image[trema][Tremaのサイト(@<href>{http://trema.github.com/trema})][width=12cm]
+//image[trema][Trema Website (@<href>{http://trema.github.com/trema})][width=12cm]
 
-ターゲット言語がRubyであることからもわかるとおり、Tremaの最大の特長は実行速度よりも開発効率に重きを置いていることです。たとえば、Tremaを使うと他のフレームワークに比べて大幅に短いコードでコントローラを実装できます。@<list>{trema_hub}はTremaで書いたコントローラの一例ですが、たった14行のコードだけでハブとして動作する完全なコントローラが書けます。
+The most distinctive feature of Trema is that it puts emphasis on the development efficiency than the execution speed, as you can see from the fact that it targets Ruby. For example, implementing a controller by using Trema drastically reduces the code length compared to other frameworks. @<list>{trema_hub} is an example of a controller written by Trema and by only 14 lines, one can write a full controller that works as a hub. 
 
-//list[trema_hub][Tremaで書いたコントローラ(ハブ)の例]{
+//list[trema_hub][Example of a controller (hub) written by Trema]{
 class RepeaterHub < Controller
   def packet_in datapath_id, message
     send_flow_mod_add(
@@ -54,19 +55,19 @@ class RepeaterHub < Controller
 end
 //}
 
-開発効率向上のしくみとして、Tremaにはコントローラ開発に役立つツールが充実しています。その中でも強力なツール、ネットワークエミュレータはコントローラのテストに便利です。これはノートPC1台でコントローラを開発できるというもので、仮想スイッチと仮想ホストを組み合わせた任意の仮想環境上でコントローラを実行できます。もちろん、こうして開発したコントローラは実際のネットワーク上でもそのまま動作します。
+Trema has a plenty of tools that helps developing the controller, and one of the most powerful tool is the network emulator which is handy when testing the controller. This means that controllers can be developed with just a notebook PC and controllers can be implemented on arbitrary virtual environment by combining virtual switches and virtual hosts. Of course, controllers developed in this way works the same in the real network. 
 
 == NOX
 
-NOXはOpenFlowの生まれ故郷スタンフォード大で開発されたもっとも古いフレームワークで、C++に対応しています(@<img>{nox})。ライセンスはGPLバージョン3のフリーソフトウェアです。
+NOX is the oldest framework developed in Stanford University where OpenFlow was born, using C++(@<img>{nox}). It is a free software with GPL version 3 license. 
 
-//image[nox][NOXのサイト(@<href>{http://www.noxrepo.org/nox/about-nox/})][width=12cm]
+//image[nox][NOX Website (@<href>{http://www.noxrepo.org/nox/about-nox/})][width=12cm]
 
-NOXの長所はユーザ層の厚さです。OpenFlowの登場直後から開発しており、メーリングリストではOpenFlow仕様を作った研究者など、SDNの主要な関係者が活発に議論しています。また歴史が古いため、Webで情報を集めやすいという利点もあります。
+NOX is known for its large number of users. It's been developed since the birth of the OpenFlow and the key persons of SDN including the researchers who devised the OpenFlow specification are engaged in a lively discussion over the mailing list. In addition, the accumulated information over the past years assists developers in need.
 
-最後にNOXのサンプルコードとして、Tremaと同じくハブを実装した例を紹介します(@<list>{nox_hub})。
+Below is a sample NOX code for implementing the same hub that was shown with Trema(@<list>{nox_hub}).
 
-//list[nox_hub][NOXで書いたコントローラ(ハブ)の例]{
+//list[nox_hub][Example of a controller (hub) written by NOX]{
 #include <boost/bind.hpp>
 #include <boost/shared_array.hpp>
 #include "assert.hh"
@@ -166,15 +167,15 @@ REGISTER_COMPONENT(container::Simple_component_factory<Hub>, Hub);
 
 == POX
 
-POXはNOXから派生したプロジェクトで、Pythonでのコントローラ開発に対応したフレームワークです(@<img>{pox})。ライセンスはGPLバージョン3のフリーソフトウェアです。
+POX is a project that was derived from NOX and a framework for developing controllers in Python(@<img>{pox}). It's a free software with GPL version 3 license. 
 
-//image[pox][POXのサイト(@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
+//image[pox][POX Website (@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
 
-POXの特長は実装がPure Pythonであるため、Linux/Mac/WindowsのいずれでもOSを問わず動作することです。まだまだ若いプロジェクトであるためサンプルアプリケーションの数は少ないものの、Pythonプログラマには注目のプロジェクトです。
+POX works on regardless of the OS whether it's Linux, Mac, or Windows since POX is implemented with Pure Python. There aren't a lot of sample application since it's rather a 'young' project but it's getting attentions from Python programmers. 
 
-最後にPOXのサンプルコードとして、同じくハブを実装した例を紹介します(@<list>{pox_hub})。
+Below is a sample POX code for implementing the same hub (@<list>{pox_hub}).
 
-//list[pox_hub][POXで書いたコントローラ(ハブ)の例]{
+//list[pox_hub][Example of a controller (hub) written by POX]{
 from pox.core import core
 import pox.openflow.libopenflow_01 as of
 
@@ -215,15 +216,15 @@ def launch ():
 
 == Floodlight
 
-FloodlightはJava用のフレームワークです(@<img>{floodlight})。ライセンスはApacheのフリーソフトウェアです。
+Floodlight is a framework in Java(@<img>{floodlight}) with the Apache license. 
 
-//image[floodlight][Floodlightのサイト(@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
+//image[floodlight][Floodlight Website (@<href>{http://www.noxrepo.org/pox/about-pox/})][width=12cm]
 
-Floodlightの特長はずばり、プログラマ人口の多いJavaを採用していることです。最近は大学のカリキュラムで最初にJavaを学ぶことが多いため、大部分の人にとって最もとっつきやすいでしょう。また実装がPure Javaであるため、POXと同じくOSを問わず動作するという利点もあります。
+The attribute of Floodlight boils down to adopting Java which has a large population of programmers. Java is one of the first programming languages taught in universities these days so it should be easily accessible for most people. In addition, the implementation is in Pure Java so it works on regardless of the OS like POX.
 
-最後にFloodlightのサンプルコードとして、同じくハブを実装した例を紹介します(@<list>{floodlight_hub})。
+Below is a sample Floodlight code for implementing the same hub (@<list>{floodlight_hub}).
 
-//list[floodlight_hub][Floodlightで書いたコントローラ(ハブ)の例]{
+//list[floodlight_hub][Example of a controller (hub) written by Floodlight]{
 package net.floodlightcontroller.hub;
 
 import java.io.IOException;
@@ -337,36 +338,36 @@ public class Hub implements IFloodlightModule, IOFMessageListener {
 }
 //}
 
-== どれを選べばいい？
+== Which one should you use?
 
-では、いくつもあるフレームワークのうちどれを使えばいいでしょうか？まっとうな答は「開発メンバーが使い慣れた言語をサポートするフレームワークを使え」です。つまり、RubyプログラマのチームであればTrema一択ですし、C++プログラマならNOX一択ということです。
+So, how does one choose a framework? A proper answer would be, "Use a framework that supports the language that the developers are used to". In other words, if you have a team of programmers who are Ruby users, Trema would be the only choice and for C++ programmers, NOX would be the answer.
 
-これを裏付けるものとして、名著『Code Complete 第2版 - 完全なプログラミングを目指して(上下巻)』@<fn>{codecomplete}に説得力のあるデータがあります。
+To back up this statement, there's a convincing data in the great book,『Code Complete: A Practical Handbook of Software Construction, Second Edition』@<fn>{codecomplete}.
 
-//footnote[codecomplete][Steve McConell著／日経BP刊。]
-
-//quote{
-プログラマの生産性は、使い慣れた言語を使用したときの方が、そうでない言語を使用したときよりも向上する。COCOMO IIという見積もりモデルがはじき出したデータによると、3年以上使っている言語で作業しているプログラマの生産性は、ほぼ同じ経験を持つプログラマが始めての言語を使っている場合の生産性を、約30%上回る(Boehm et al. 2000)。これに先立って行われたIBMの調査では、あるプログラミング言語での経験が豊富なプログラマは、その言語にほとんど経験のないプログラマの3倍以上の生産性があることがわかっている(Walston and Felix 1977)。
-//}
-
-これはごくあたりまえの原則ですが、プログラミングの現場では無視されていることが少なくありません。「上司が使えと言ったから」「流行っているらしいから」という理由でなんとなくフレームワークを選び、そしてプロジェクトが炎上するというケースが後をたちません。かならず、プログラマ自身が慣れたプログラミング言語で作るべきです。
-
-一方で、プログラマがいくつもの言語に習熟していた場合、それらの言語の間に明らかな生産性の差が出てくるのも事実です。CやC++のような明示的にメモリ管理が必要な低水準言語と、これにガベージ・コレクションを付け加えたJavaやC#のような言語、また最近のRubyやPythonのように、さらに高レベルで記述できるスクリプティング言語では、生産性と品質に何十倍もの差が出ます。さきほどの『Code Complete』をふたたび引きましょう。
+//footnote[codecomplete][Steve McConell/Microsoft Press]
 
 //quote{
-高級言語を使って作業するプログラマの生産性と品質は、低水準言語を使用するプログラマより高い。(中略) C言語のように、ステートメントが仕様どおりに動いたからといって、いちいち祝杯をあげる必要がなければ、時間が節約できるものというものだ。そのうえ、高級言語は低水準言語よりも表現力が豊かである。つまり、1行のコードでより多くの命令を伝えることができる。
+Programmers are more productive using a familiar language than an unfamiliar one. Data from the Cocomo II estimation model shows that programmers working in a language they've used for three years or more are about 30 percent more productive than programmers with equivalent experience who are new to a language (Boehm et al. 2000). An earlier study at IBM found that programmers who had extensive experience with a programming language were more than three times as productive as those with minimal experience (Walston and Felix 1977)
 //}
 
-このことは、今まで見てきたハブ実装のコード行数を比べても明らかです(@<img>{comparison})。
+This is just a matter-of-fact-principle but it's often ignored in programming fields. People would say "Because I was told by my boss", "Everybody seems to be using it", and etc as a reason for choosing a framework only to find out that the project is on the death march. Programmers must use the programming language that they are familiar with. 
 
-//image[comparison][主なフレームワークでハブを実装したときのコード行数を比較][width=12cm]
+On the other hand, when a programmer is proficient in several languages, it's a fact that there's an apparent difference in productivity among the languages. The productivity and the quality is some ten times different between the low-level languages that need explicit memory management such as C and C++, languages that append garbage collection such as Java and C#, and high-level scripting languages such as Ruby and Python. Let us refer to 『Code Complete』 again.
+
+//quote{
+Programmers working with high-level languages achieve better productivity and quality than those working with lower-level languages. (...) You save time when you don't need to have an awards ceremony every time a C statement does what it's supposed to. Moreover, higher-level languages are more expressive than lower-level languages. Each line of code says more.
+//}
+
+This is obvious when you compare the number of code lines for implementing the hubs(@<img>{comparison}).
+
+//image[comparison][Comparison of number of code lines to implement hubs by major frameworks][width=12cm]
 
 //noindent
-Trema(Ruby)やPOX(Python)などスクリプティング言語を採用するフレームワークでは短い行数で実装できていますが、NOX(C++)やFloodlight(Java)など従来の言語を採用するフレームワークでは一気に行数がはねあがっています。とくに、最も短いTrema(14行)と最も長いFloodlight(111行)を比べるとその差は8倍にもなります。単純には言えませんが、行数だけで見るとTremaはFloodlightの1/8の労力で同じ機能を実装できるのです。
+Frameworks that adopt scripting languages such as Trema (Ruby) and POX (Python) can be implemented with a small number of code lines but those with conventional languages such as NOX (C++) or Floodlight (Java) require much more lines. Especially for Floodlight, 111 lines are needed whereas only 14 lines suffice for Trema. It's hard to say the number code lines is directly proportional to the programming effort but Trema is about 1/8 of Floodlight. 
 
-みなさんだったら、どのフレームワークを選びますか？
+So, which framework would you choose?
 
-===[column] @<ruby>{取間,とれま}先生曰く：どうなる！？OpenFlowコントローラ開発の今後
+===[column] Mr. Torema says: どうなる！？OpenFlowコントローラ開発の今後
 
 私の予想では、OpenFlowコントローラフレームワークはかつてのWebアプリケーションフレームワークと同じ道をたどるのではと思っています。歴史をさかのぼると、1990年代〜2000年代初頭はJava用フレームワーク全盛期でした。無数のJava用フレームワークが雨後の竹の子のように登場し、Java EE、JSP、JSFなど新しい技術も次々と出てきました。IDEが自動生成する長いコードやXMLファイルと格闘しながら、次々と登場する新しい仕様を理解してWebアプリケーションを書くのは至難の業でした。しかし2004年、RubyのWebアプリケーションフレームワークであるRuby on Railsの登場によってWeb業界は一変します。Javaによる鈍重な実装は避け、なるべく短いコードで書こうという考え方がWeb業界を席巻したのです。この流れは、「コードが長くなるフレームワーク」の代名詞であったJavaの世界にも取り入れられ、最近のDjangoやPlayなど近代的なフレームワークを産んできました。
 
@@ -374,29 +375,29 @@ OpenFlowコントローラフレームワークはまだまだ黎明期にあり
 
 ===[/column]
 
-== その他のツール(Oflops)
+== Other tools (Oflops)
 
 OflopsはOpenFlowコントローラとスイッチのためのマイクロベンチマークです。コントローラ用のベンチマークCbenchとスイッチ用のベンチマークOFlopsを提供します。スイッチを作る機会はめったにないのでここではコントローラのベンチマークであるCbenchについて説明します。
 
 Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。Cbenchはスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを送ります。これに反応したコントローラからのFlow Modの数をカウントし、スコアとします。このスコアが大きいコントローラほど「速い」とみなすのです。
 
-Cbenchは次の2種類のベンチマークをサポートします。
+Cbench supports two kinds of benchmarks.
 
 //noindent
-@<em>{レイテンシモード}
+@<em>{Latency Mode}
 
- 1. Packet Inをコントローラに送り、
- 2. コントローラからFlow Modが帰ってくるのを待ち、
- 3. これを繰り返す
+ 1. Send Packet In to controller
+ 2. Wait for Flow Mod to return from the controller
+ 3. Repeat step 1 and 2
 
 //noindent
-@<em>{スループットモード}
+@<em>{Throughput Mode}
 
- 1. Flow Modを待たずにPacket Inを送信し続け、
- 2. Flow Modが返信されたらカウントする。
+ 1. Send Packet In without waiting for Flow Mod
+ 2. Count when Flow Mod is received
 
 
-=== Cbenchの実行例(Tremaの場合)   
+=== Cbenchの実行例 (Trema)   
 
 TremaはCbenchおよびCbenchと接続できるコントローラを含むので、この2つのベンチマークを簡単に実行できます。次のコマンドは、Cbenchをレイテンシモードとスループットモードで実行し結果を表示します(Tremaのインストール方法は続く@<chap>{openflow_framework_trema}で説明します)。
 
@@ -448,7 +449,7 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 32086.02/37174.11/34565.54/1866.9
 ./trema killall
 //}
 
-====[column] @<ruby>{取間,とれま}先生曰く：Cbenchの注意点
+====[column] Mr. Torema says: Cbenchの注意点
 
 Cbench のスコアを盲信しないようにしてください。現在、いくつかの OpenFlow コントローラフレームワークは Cbench のスコアだけを競っているように見えます。たとえば Floodlight は 1 秒間に 100 万発の Flow Mod を打てると宣伝しています。これはなかなかすごい数字です。きちんと計算したわけではないですが、スレッドを駆使してめいっぱい I/O を使い切るようにしなければなかなかこの数字は出ません。とにかくすごい。でも、この数字にはまったく意味がありません。
 
@@ -460,7 +461,7 @@ Cbench のようなマイクロベンチマークでは、測定対象が何で�
 
 ====[/column]
 
-== まとめ
+== Wrap-up
 
 本章では現在利用できる主なOpenFlowコントローラフレームワークを紹介しました。すでに主要な言語のフレームワークがそろっているので、自分の使う言語に合わせてフレームワークを選択できます。
 
