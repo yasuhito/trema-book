@@ -367,19 +367,19 @@ Frameworks that adopt scripting languages such as Trema (Ruby) and POX (Python) 
 
 So, which framework would you choose?
 
-===[column] Mr. Torema says: どうなる！？OpenFlowコントローラ開発の今後
+===[column] Mr. Torema says: What will become of OpenFlow controller development in the future?
 
-私の予想では、OpenFlowコントローラフレームワークはかつてのWebアプリケーションフレームワークと同じ道をたどるのではと思っています。歴史をさかのぼると、1990年代〜2000年代初頭はJava用フレームワーク全盛期でした。無数のJava用フレームワークが雨後の竹の子のように登場し、Java EE、JSP、JSFなど新しい技術も次々と出てきました。IDEが自動生成する長いコードやXMLファイルと格闘しながら、次々と登場する新しい仕様を理解してWebアプリケーションを書くのは至難の業でした。しかし2004年、RubyのWebアプリケーションフレームワークであるRuby on Railsの登場によってWeb業界は一変します。Javaによる鈍重な実装は避け、なるべく短いコードで書こうという考え方がWeb業界を席巻したのです。この流れは、「コードが長くなるフレームワーク」の代名詞であったJavaの世界にも取り入れられ、最近のDjangoやPlayなど近代的なフレームワークを産んできました。
+I would say the OpenFlow controller frameworks will walk the same path as that of the Web application. Looking at the history, frameworks for Java gained popularity between 1990s and beginning of 2000s. Countless frameworks for Java sprung up like mushrooms after rain and new technologies such as Java EE, JSP, and JSF have emerged. It was laborious to write Web applications that required programmers to understand new specifications one after another and at the same time, struggle with long codes that IDE automatically generates and the XML files. However in 2004, Web industry underwent a complete change by the appearance of Ruby Web application framework called Ruby on Rails. The concept of avoiding bulky implementation by Java and writing shortest possible codes took the Web industry by the storm. This mindset was introduced to Java's world of 'a framework with a long code' and gave birth to modernistic frameworks such as Django and Play.
 
-OpenFlowコントローラフレームワークはまだまだ黎明期にあります。TremaやPOXのように最近の考えかたを取り入れたフレームワークはありますが、とくに海外ではNOXやFloodlightなど旧来的なフレームワークが主流を占めています。しかし、ネットワーク業界でもスクリプティング言語を使えるプログラマが増えれば、古い設計のフレームワークを使うプログラマよりも何倍もの生産性をあげることができるようになるでしょう。そしてこの考え方が順調に浸透していけば、さまざまな言語で生産性の高いフレームワークが登場するはずです。
+OpenFlow controller frameworks are still in its earliest days. There are frameworks that implements the recent frame of mind like Trema and POX but the mainstream frameworks such as NOX and Floodlight borrow conventional way of thinking. However, the overall productivity should increase manyfold if there are more programmers who can use scripting languages in the network industry. In addition, when the concept sinks in smoothly, there should be more frameworks with higher productivity in various languages.
 
 ===[/column]
 
 == Other tools (Oflops)
 
-OflopsはOpenFlowコントローラとスイッチのためのマイクロベンチマークです。コントローラ用のベンチマークCbenchとスイッチ用のベンチマークOFlopsを提供します。スイッチを作る機会はめったにないのでここではコントローラのベンチマークであるCbenchについて説明します。
+Oflops is a micro benchmark for OpenFlow controllers and switches. It provides Cbench (benchmark for controllers) and OFlops (benchmark for switches). There aren't a lot of chances to build switches so we'll be explaining on Cbench here.
 
-Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。Cbenchはスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを送ります。これに反応したコントローラからのFlow Modの数をカウントし、スコアとします。このスコアが大きいコントローラほど「速い」とみなすのです。
+Cbench measures the number of Flow Mod that the controller can output per second. Cbench connects to the controller by acting as a switch and sends Packet In to the controller. The controller reacts to this and counts the number of Flow Mod, which counts as a 'score'. A controller with a high score is considered fast.
 
 Cbench supports two kinds of benchmarks.
 
@@ -396,10 +396,9 @@ Cbench supports two kinds of benchmarks.
  1. Send Packet In without waiting for Flow Mod
  2. Count when Flow Mod is received
 
+=== Example of Cbench (Trema)   
 
-=== Cbenchの実行例 (Trema)   
-
-TremaはCbenchおよびCbenchと接続できるコントローラを含むので、この2つのベンチマークを簡単に実行できます。次のコマンドは、Cbenchをレイテンシモードとスループットモードで実行し結果を表示します(Tremaのインストール方法は続く@<chap>{openflow_framework_trema}で説明します)。
+The above two benchmarks can be easily run in Trema since Trema consists of Cbench and the controller which can connect with the Cbench. The following command displays the result of latency mode and throughput mode. (Installation of Trema will be explained in the following @<chap>{openflow_framework_trema})
 
 //cmd{
 % ./build.rb cbench
@@ -449,22 +448,22 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 32086.02/37174.11/34565.54/1866.9
 ./trema killall
 //}
 
-====[column] Mr. Torema says: Cbenchの注意点
+====[column] Mr. Torema says: Something you should be careful about Cbench
 
-Cbench のスコアを盲信しないようにしてください。現在、いくつかの OpenFlow コントローラフレームワークは Cbench のスコアだけを競っているように見えます。たとえば Floodlight は 1 秒間に 100 万発の Flow Mod を打てると宣伝しています。これはなかなかすごい数字です。きちんと計算したわけではないですが、スレッドを駆使してめいっぱい I/O を使い切るようにしなければなかなかこの数字は出ません。とにかくすごい。でも、この数字にはまったく意味がありません。
+Don't rely too much on the Cbench score. Currently, it seems that some OpenFlow controller frameworks vie for Cbench score only. For example, Floodlight claims that it can output million Flow Mods per second, which is quite impressive. This number probably can not be achieved without taking a full advantage of the thread and I/O ability. Anyway, it's amazing. Not that the number means anything. 
 
-Flow Mod を一秒間に 100 万発打たなければならない状況を考えてみてください。それは、Packet In が一秒間に 100 万発起こる状況ということになります。Packet In が一秒間に 100 万発起こるとはどういうことでしょうか? スイッチに何らかのフローが設定されているが入ってきたパケットがまったくそれにマッチせず、どうしたらいいかわからないパケットがすべてコントローラへやってくる、これが一秒間に 100 万回起こるということです。何かがまちがっていると思えないでしょうか？
+Think of a situation where Flow Mods have to be output million times per second. This also means Packet In occurs million times per second and what does that imply? There's some flow set in the switch but no packet matches it, and all the clueless packets arrive at the controller - this happens a million times per second. Don't you think something is wrong with this?
 
-コントローラが Packet In を何発さばけるかという性能は、極端に遅くない限りは重要ではありません。データセンターのように、どこにどんなマシンがありどういう通信をするか把握できている場合は、フローをちゃんと設計していれば Packet In はそんなに起こらないからです。力技で Packet In をさばくよりも、いかに Packet In が起こらないネットワーク設計やフロー設計をするかの方がずっと大事です。
+The controller's ability to process Packet In is not important unless the ability is extremely low. As in data centers, where the location of the machines and the communication pattern is known, Packet In doesn't occur that often as long as the flows are properly designed. Designing a network and flow to avoid Packet In is far more important than processing Packet In with a feat of strength.
 
-Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか？を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
+If one misses to understand the reason behind a result of a measured object in Micro benchmark like Cbench, the conclusion can be blown all out of proportion. Please treat Cbench score as just a reference.
 
 ====[/column]
 
 == Wrap-up
 
-本章では現在利用できる主なOpenFlowコントローラフレームワークを紹介しました。すでに主要な言語のフレームワークがそろっているので、自分の使う言語に合わせてフレームワークを選択できます。
+In this section, we introduced some major OpenFlow controller frameworks. You can choose the framework that supports the language that suits your taste.
 
-もし生産性の高いフレームワークをお望みであればTremaかPOXを選択してください。流れの速いSDN業界では、実行効率よりも「いかに早くサービスインできるか」という生産性の方がずっと重要だからです。
+If you want a framework with high productivity, you might want to use Trema or POX. In an ever-changing SDN industry, it's sometimes more important to prioritize productivity than the execution speed. 
 
-続く第II部では、Tremaを使ったOpenFlowプログラミングを学習します。Rubyの基礎から解説しますので、Rubyが初めてのプログラマでも読み進められるようにしてあります。
+In Part 2, we'll be learning OpenFlow programming using Trema. It starts with the basics of Ruby so even if you're a first-timer with the language, you'll be able to follow through.
