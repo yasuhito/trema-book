@@ -7,7 +7,7 @@ require "lldp-frame"
 class Lldp
   def self.read raw_data
     lldp_frame = LldpFrame.read( raw_data )
-    new lldp_frame.chassis_id.unpack( "Q" )[ 0 ], lldp_frame.port_id.unpack( "S" )[ 0 ]
+    new lldp_frame.dpid, lldp_frame.port_id.unpack( "S" )[ 0 ]
   end
 
 
@@ -15,7 +15,7 @@ class Lldp
     @frame = LldpFrame.new
     @frame.destination_mac = destination_mac
     @frame.chassis_id.subtype = 7
-    @frame.chassis_id = BinData::Uint64le.new( dpid ).to_binary_s
+    @frame.chassis_id = BinData::Uint64be.new( dpid ).to_binary_s.unpack( "C8" )[ 2..7 ].pack( "C6" )
     @frame.port_id.subtype = 7
     @frame.port_id = BinData::Uint16le.new( port_number ).to_binary_s
     @frame.ttl = 120
@@ -23,7 +23,12 @@ class Lldp
 
 
   def dpid
-    @frame.chassis_id.unpack( "Q" )[ 0 ]
+    @frame.dpid
+  end
+
+
+  def optional_tlv
+    @frame.optional_tlv
   end
 
 
