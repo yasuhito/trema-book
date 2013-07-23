@@ -17,7 +17,7 @@ class LldpFrame < BinData::Record
   chassis_id_tlv :chassis_id
   port_id_tlv :port_id
   ttl_tlv :ttl
-  array :optional_tlv, :type => :optional_tlv, :read_until => :eof
+  array :optional_tlv, :type => :optional_tlv, :read_until => lambda { element.end_of_lldpdu? }
 
 
   def dpid
