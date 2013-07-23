@@ -2,7 +2,6 @@ require "rubygems"
 require "bindata"
 
 require "chassis-id-tlv"
-require "end-of-lldpdu"
 require "optional-tlv"
 require "port-id-tlv"
 require "ttl-tlv"
