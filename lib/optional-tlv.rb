@@ -11,14 +11,19 @@ class OptionalTlv < BinData::Record
 
   bit7 :tlv_type
   bit9 :tlv_info_length
-  choice :tlv_value, :selection => :chooser do
-    end_of_lldpdu_value 0, :read_length => 0
+  choice :tlv_value, :onlyif => :not_end_of_lldpdu?, :selection => :chooser do
+    end_of_lldpdu_value 0
     port_description_value 4, :read_length => :tlv_info_length
     system_name_value 5, :read_length => :tlv_info_length
     system_description_value 6, :read_length => :tlv_info_length
     system_capabilities_value 7, :read_length => :tlv_info_length
     management_address_value 8, :read_length => :tlv_info_length
     stringz "unknown", :read_length => :tlv_info_length
+  end
+
+
+  def not_end_of_lldpdu?
+    tlv_type != 0
   end
 
 
