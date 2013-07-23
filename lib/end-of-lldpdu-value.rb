@@ -5,7 +5,7 @@ require "bindata"
 class EndOfLldpduValue < BinData::Record
   endian :big
 
-  stringz :tlv_info_string
+  stringz :tlv_info_string, :value => ""
 end
 
 
