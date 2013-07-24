@@ -58,8 +58,8 @@ describe LldpFrame do
     ].pack( "C*" )
 
     lldp_frame = LldpFrame.new
-    lldp_frame.destination_mac = 0x0180c200000e
-    lldp_frame.source_mac = 0x00192fa7b28d
+    lldp_frame.destination_mac = "01:80:c2:00:00:0e"
+    lldp_frame.source_mac = "00:19:2f:a7:b2:8d"
     lldp_frame.chassis_id.subtype = 4
     lldp_frame.chassis_id = "\x00\x19\x2f\xa7\xb2\x8d"
     lldp_frame.port_id.subtype = 1
