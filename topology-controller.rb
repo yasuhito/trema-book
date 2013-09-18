@@ -80,9 +80,9 @@ class TopologyController < Controller
   def lldp_binary_string dpid, port_number
     destination_mac = @command_line.destination_mac
     if destination_mac
-      Pio::Lldp.new( dpid, port_number, destination_mac.value ).to_binary
+      Pio::Lldp.new( :dpid => dpid, :port_number => port_number, :destination_mac => destination_mac.value ).to_binary
     else
-      Pio::Lldp.new( dpid, port_number ).to_binary
+      Pio::Lldp.new( :dpid => dpid, :port_number => port_number ).to_binary
     end
   end
 end
