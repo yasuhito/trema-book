@@ -3,7 +3,7 @@ require "trema"
 
 module View
   class Text
-    include Trema::Logger
+    include Trema::DefaultLogger
 
 
     def update topology

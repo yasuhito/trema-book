@@ -1,4 +1,5 @@
-require "lldp"
+require "rubygems"
+require "pio/lldp"
 
 
 class Link
@@ -9,7 +10,7 @@ class Link
 
 
   def initialize dpid, packet_in
-    lldp = Lldp.read( packet_in.data )
+    lldp = Pio::Lldp.read( packet_in.data )
     @dpid1 = lldp.dpid
     @dpid2 = dpid
     @port1 = lldp.port_number
