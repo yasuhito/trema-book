@@ -1,5 +1,6 @@
 ruby_topology
 =============
+[![Dependency Status](https://gemnasium.com/yasuhito/ruby_topology.png)](https://gemnasium.com/yasuhito/ruby_topology)
 
 Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 
