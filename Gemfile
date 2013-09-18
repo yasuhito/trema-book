@@ -2,16 +2,16 @@ source "https://rubygems.org"
 
 
 gem "bindata", "~> 1.6.0"
-gem "gli", "~> 2.6.2"
+gem "gli", "~> 2.7.0"
 gem "pio", :git => "git@github.com:shun159/pio.git", :branch => "develop"
-gem "ruby-graphviz", "~> 1.0.8"
-gem "trema", "~> 0.3.20"
+gem "ruby-graphviz", "~> 1.0.9"
+gem "trema", "~> 0.3.21"
 
 
-group :development do
-  gem "aruba", "~> 0.5.1"
-  gem "rspec", "~> 2.12.0"
-  gem "cucumber", "~> 1.2.1"
+group :development, :test do
+  gem "aruba", "~> 0.5.3"
+  gem "cucumber", "~> 1.3.8"
+  gem "rspec", "~> 2.14.1"
 end
 
 
