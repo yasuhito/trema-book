@@ -2,10 +2,10 @@ source "https://rubygems.org"
 
 
 gem "bindata", "~> 1.6.0"
-gem "gli", "~> 2.7.0"
+gem "gli", "~> 2.8.0"
 gem "pio", :git => "git@github.com:shun159/pio.git", :branch => "develop"
 gem "ruby-graphviz", "~> 1.0.9"
-gem "trema", "~> 0.3.21"
+gem "trema", :git => "git@github.com:trema/trema.git", :branch => "develop"
 
 
 group :development, :test do
