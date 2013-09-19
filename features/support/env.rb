@@ -14,6 +14,9 @@ require "rspec"
 require "trema"
 
 
+ENV[ "TREMA_TMP" ] = File.join( File.dirname( __FILE__ ), "..", "..", "tmp", "aruba" )
+
+
 ### Local variables:
 ### mode: Ruby
 ### coding: utf-8-unix
