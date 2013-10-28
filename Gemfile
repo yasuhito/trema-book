@@ -1,11 +1,8 @@
 source "https://rubygems.org"
 
 
-gem "bindata", "~> 1.6.0"
-gem "gli", "~> 2.8.0"
-gem "pio", "~> 0.2.1"
 gem "ruby-graphviz", "~> 1.0.9"
-gem "trema", :git => "git@github.com:trema/trema.git", :branch => "develop"
+gem "trema", "~> 0.4.4"
 
 
 group :development, :test do
