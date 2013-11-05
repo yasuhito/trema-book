@@ -9,8 +9,7 @@ Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 準備
 ----
 
-前もって Trema のビルド環境 (Ruby 1.8.7 とか gcc とか) をセットアップ
-し、次のコマンドを実行。
+前もって Trema のビルド環境セットアップし、次のコマンドを実行。
 
 ```shell
 $ git clone https://github.com/yasuhito/ruby_topology.git
