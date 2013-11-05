@@ -14,10 +14,10 @@ class Topology
   def_delegator :@ports, :each_pair, :each_switch
   def_delegator :@links, :each, :each_link
 
-  def initialize(controller)
+  def initialize(view)
     @ports = Hash.new { [].freeze }
     @links = []
-    add_observer controller
+    add_observer view
   end
 
   def delete_switch(dpid)
