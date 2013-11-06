@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 Before do
   @aruba_timeout_seconds = 10
   run 'trema killall'

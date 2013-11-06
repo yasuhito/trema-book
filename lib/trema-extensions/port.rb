@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'trema-extensions/port/predicates'
 
 module Trema
