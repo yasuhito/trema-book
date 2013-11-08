@@ -1,6 +1,7 @@
 ruby_topology
 =============
 [![Code Climate](https://codeclimate.com/github/yasuhito/ruby_topology.png)](https://codeclimate.com/github/yasuhito/ruby_topology)
+[![Build Status](https://travis-ci.org/yasuhito/ruby_topology.png?branch=develop)](https://travis-ci.org/yasuhito/ruby_topology)
 [![Dependency Status](https://gemnasium.com/yasuhito/ruby_topology.png)](https://gemnasium.com/yasuhito/ruby_topology)
 
 Trema + Ruby で LLDP を使ったネットワークトポロジ探索
