@@ -19,51 +19,51 @@ class CommandLine
 
   def parse(argv)
     program_desc 'Topology discovery controller'
-
-    flag [:d, :destination_mac]
     set_destination_mac_flag
-
-    default_command :text
-
-    desc 'Displays topology information (text mode)'
     define_text_command
-
-    desc 'Displays topology information (Graphviz mode)'
-    arg_name 'output_file'
     define_graphviz_command
-
     run argv
   end
 
   private
 
   def set_destination_mac_flag
+    flag [:d, :destination_mac]
     pre do |global_options, command, options, args|
-      if global_options[:destination_mac]
-        @destination_mac = Mac.new(global_options[:destination_mac])
-      end
+      destination_mac = global_options[:destination_mac]
+      @destination_mac = Mac.new(destination_mac) if destination_mac
       true
     end
   end
 
   def define_text_command
-    command :text do | c |
-      c.action do |global_options, options, args|
-        @view = View::Text.new
-      end
+    default_command :text
+    desc 'Displays topology information (text mode)'
+    command :text do |cmd|
+      cmd.action(&method(:create_text_view))
     end
   end
 
   def define_graphviz_command
-    command :graphviz do | c |
-      c.action do |global_options, options, args|
-        require 'view/graphviz'
-        if args.empty?
-          @view = View::Graphviz.new
-        else
-          @view = View::Graphviz.new(args[0])
-        end
-      end
+    desc 'Displays topology information (Graphviz mode)'
+    arg_name 'output_file'
+    command :graphviz do |cmd|
+      cmd.action(&method(:create_graphviz_view))
+    end
+  end
+
+  private
+
+  def create_text_view(_global_options, _options, _args)
+    @view = View::Text.new
+  end
+
+  def create_graphviz_view(_global_options, _options, args)
+    require 'view/graphviz'
+    if args.empty?
+      @view = View::Graphviz.new
+    else
+      @view = View::Graphviz.new(args[0])
     end
   end
 end

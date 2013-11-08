@@ -23,45 +23,50 @@ class Topology
 
   def delete_switch(dpid)
     @ports[dpid].each do | each |
-      delete_port dpid, each
+      delete_port each
     end
     @ports.delete dpid
   end
 
-  def update_port(dpid, port)
+  def update_port(port)
     if port.down?
-      delete_port dpid, port
+      delete_port port
     elsif port.up?
-      add_port dpid, port
+      add_port port
     end
   end
 
-  def add_port(dpid, port)
-    @ports[dpid] += [port]
+  def add_port(port)
+    @ports[port.dpid] += [port]
   end
 
-  def delete_port(dpid, port)
-    @ports[dpid] -= [port]
-    delete_link_by dpid, port
+  def delete_port(port)
+    @ports[port.dpid] -= [port]
+    delete_link_by port
   end
 
   def add_link_by(dpid, packet_in)
     fail 'Not an LLDP packet!' unless packet_in.lldp?
-
-    link = Link.new(dpid, packet_in)
-    unless @links.include?(link)
-      @links << link
-      @links.sort!
-      changed
-      notify_observers self
+    begin
+      maybe_add_link Link.new(dpid, packet_in)
+    rescue
+      return
     end
+    changed
+    notify_observers self
   end
 
   private
 
-  def delete_link_by(dpid, port)
-    @links.each do | each |
-      if each.has?(dpid, port.number)
+  def maybe_add_link(link)
+    fail 'The link already exists.' if @links.include?(link)
+    @links << link
+    @links.sort!
+  end
+
+  def delete_link_by(port)
+    @links.each do |each|
+      if each.has?(port.dpid, port.number)
         changed
         @links -= [each]
       end

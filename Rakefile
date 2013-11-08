@@ -2,8 +2,9 @@ require 'cucumber/rake/task'
 require 'rspec/core'
 require 'rspec/core/rake_task'
 
-task :default => [:spec, :cucumber, :rubocop]
-task :travis => :rubocop
+task :default => [:spec, :cucumber, :quality]
+task :quality => [:rubocop, :reek]
+task :travis => :quality
 
 task :run do
   sh 'trema run ./topology-controller.rb -c triangle.conf'
@@ -20,6 +21,14 @@ end
 
 require 'rubocop/rake_task'
 Rubocop::RakeTask.new
+
+require 'reek/rake/task'
+Reek::Rake::Task.new do |t|
+  t.fail_on_error = false
+  t.verbose = false
+  t.ruby_opts = ['-rubygems']
+  t.reek_opts = '--quiet'
+end
 
 ### Local variables:
 ### mode: Ruby
