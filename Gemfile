@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'ruby-graphviz', '~> 1.0.9'
-gem 'trema', :github => 'trema/trema', :branch => 'feature/port_dpid'
+gem 'trema', '~> 0.4.5'
 
 group :development, :test do
   gem 'aruba', '~> 0.5.3'
