@@ -26,6 +26,8 @@ class Topology
       delete_port each
     end
     @ports.delete dpid
+    changed
+    notify_observers self
   end
 
   def update_port(port)

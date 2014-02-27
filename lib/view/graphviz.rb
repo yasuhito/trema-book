@@ -9,11 +9,12 @@ module View
     def initialize(output = './topology.png')
       @nodes = {}
       @output = File.expand_path(output)
-      @graphviz = GraphViz.new(:G, use: 'neato', overlap: false, splines: true)
+      @graphviz = nil
     end
 
     def update(topology)
       @nodes.clear
+      @graphviz = GraphViz.new(:G, use: 'neato', overlap: false, splines: true)
       add_nodes(topology)
       add_edges(topology)
       @graphviz.output(png: @output)
