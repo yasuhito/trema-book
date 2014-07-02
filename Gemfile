@@ -12,7 +12,7 @@ group :development, :test do
   gem 'guard-rubocop', '~> 1.1.0'
   gem 'pio', '~> 0.7.0'
   gem 'reek', '~> 1.3.7'
-  gem 'rspec', '~> 2.14.1'
+  gem 'rspec', '~> 3.0.0'
   gem 'rubocop', '~> 0.24.0'
 end
 
