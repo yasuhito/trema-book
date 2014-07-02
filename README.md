@@ -1,8 +1,8 @@
-ruby_topology
-=============
-[![Code Climate](https://codeclimate.com/github/yasuhito/ruby_topology.png)](https://codeclimate.com/github/yasuhito/ruby_topology)
-[![Build Status](https://travis-ci.org/yasuhito/ruby_topology.png?branch=develop)](https://travis-ci.org/yasuhito/ruby_topology)
-[![Dependency Status](https://gemnasium.com/yasuhito/ruby_topology.png)](https://gemnasium.com/yasuhito/ruby_topology)
+topology
+========
+[![Code Climate](https://codeclimate.com/github/trema/topology.png)](https://codeclimate.com/github/trema/topology)
+[![Build Status](https://travis-ci.org/trema/topology.png?branch=develop)](https://travis-ci.org/trema/topology)
+[![Dependency Status](https://gemnasium.com/trema/topology.png)](https://gemnasium.com/trema/topology)
 
 Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 
@@ -13,8 +13,8 @@ Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 前もって Trema のビルド環境セットアップし、次のコマンドを実行。
 
 ```shell
-$ git clone https://github.com/yasuhito/ruby_topology.git
-$ cd ruby_topology
+$ git clone https://github.com/trema/topology.git
+$ cd topology
 $ bundle install
 ```
 
