@@ -29,7 +29,7 @@ class CommandLine
 
   def set_destination_mac_flag
     flag [:d, :destination_mac]
-    pre do |global_options, command, options, args|
+    pre do |global_options, _command, _options, _args|
       destination_mac = global_options[:destination_mac]
       @destination_mac = Mac.new(destination_mac) if destination_mac
       true

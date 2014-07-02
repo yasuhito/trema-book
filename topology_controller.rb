@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 $LOAD_PATH.unshift File.expand_path(File.join File.dirname(__FILE__), 'lib')
 
-require 'rubygems'
-require 'bundler/setup'
-
-require 'command-line'
+require 'command_line'
 require 'topology'
 require 'trema'
 require 'trema-extensions/port'
@@ -25,7 +22,7 @@ class TopologyController < Controller
     send_message dpid, FeaturesRequest.new
   end
 
-  def features_reply(dpid, features_reply)
+  def features_reply(_dpid, features_reply)
     features_reply.physical_ports.select(&:up?).each do |each|
       @topology.add_port each
     end
@@ -35,7 +32,7 @@ class TopologyController < Controller
     @topology.delete_switch dpid
   end
 
-  def port_status(dpid, port_status)
+  def port_status(_dpid, port_status)
     updated_port = port_status.port
     return if updated_port.local?
     @topology.update_port updated_port

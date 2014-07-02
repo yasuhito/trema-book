@@ -2,9 +2,9 @@ require 'cucumber/rake/task'
 require 'rspec/core'
 require 'rspec/core/rake_task'
 
-task :default => [:spec, :cucumber, :quality]
-task :quality => [:rubocop, :reek]
-task :travis => :quality
+task default: [:spec, :cucumber, :quality]
+task quality: [:rubocop, :reek]
+task travis: :quality
 
 task :run do
   sh 'trema run ./topology-controller.rb -c triangle.conf'
@@ -20,7 +20,7 @@ Cucumber::Rake::Task.new do |t|
 end
 
 require 'rubocop/rake_task'
-Rubocop::RakeTask.new
+RuboCop::RakeTask.new
 
 require 'reek/rake/task'
 Reek::Rake::Task.new do |t|

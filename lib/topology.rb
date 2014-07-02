@@ -68,10 +68,9 @@ class Topology
 
   def delete_link_by(port)
     @links.each do |each|
-      if each.has?(port.dpid, port.number)
-        changed
-        @links -= [each]
-      end
+      next unless each.has?(port.dpid, port.number)
+      changed
+      @links -= [each]
     end
     notify_observers self
   end

@@ -21,8 +21,8 @@ module View
 
     private
 
-    def add_nodes(topology, graphviz)
-      topology.each_switch do |dpid, ports|
+    def add_nodes(topology, _graphviz)
+      topology.each_switch do |dpid, _ports|
         @nodes[dpid] = @graphviz.add_nodes(dpid.to_hex, 'shape' => 'box')
       end
     end

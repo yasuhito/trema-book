@@ -29,13 +29,13 @@ $ bundle install
 スイッチ 3 台の三角形トポロジ:
 
 ```shell
-$ trema run ./topology-controller.rb -c triangle.conf
+$ trema run ./topology_controller.rb -c triangle.conf
 ```
 
 スイッチ 10 台のフルメッシュ:
 
 ```shell
-$ trema run ./topology-controller.rb -c fullmesh.conf
+$ trema run ./topology_controller.rb -c fullmesh.conf
 ```
 
 スイッチやポートを落としたり上げたりしてトポロジの変化を楽しむ:
@@ -51,11 +51,11 @@ $ trema port_up --switch 0x1 --port 1  # 落としたポートを上げる
 graphviz でトポロジ画像を出す:
 
 ```shell
-$ trema run "./topology-controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
+$ trema run "./topology_controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
 ```
 
 LLDP の宛先 MAC アドレスを任意のやつに変える:
 
 ```shell
-$ trema run "./topology-controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
+$ trema run "./topology_controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
 ```
