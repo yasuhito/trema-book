@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'cucumber/rake/task'
 require 'rspec/core'
 require 'rspec/core/rake_task'
@@ -29,9 +31,3 @@ Reek::Rake::Task.new do |t|
   t.ruby_opts = ['-rubygems']
   t.reek_opts = '--quiet'
 end
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:
