@@ -5,61 +5,63 @@ topology
 [![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
 [![Gitter chat](https://badges.gitter.im/trema/topology.png)][gitter]
 
-Trema + Ruby で LLDP を使ったネットワークトポロジ探索
+Topology discovery controller in Trema.
 
 [travis]: http://travis-ci.org/trema/topology
 [codeclimate]: https://codeclimate.com/github/trema/topology
 [gemnasium]: https://gemnasium.com/trema/topology
 [gitter]: https://gitter.im/trema/topology
 
-準備
+Install
+-------
+
+```shell
+prompt> git clone https://github.com/trema/topology.git
+prompt> cd topology
+prompt> bundle install
+```
+
+Play
 ----
 
-前もって Trema のビルド環境セットアップし、次のコマンドを実行。
+Run the controller `topology_controller.rb` with `trema run` by
+passing a topology configuration file with `-c` option, then it
+outputs the current topology information in ASCII format.
+
+The triangle topology configuration with three switches:
 
 ```shell
-$ git clone https://github.com/trema/topology.git
-$ cd topology
-$ bundle install
+prompt> trema run ./topology_controller.rb -c triangle.conf
 ```
 
-これで Trema など必要なものをインストールできます。
-
-
-遊ぶ
-----
-
-おなじみ `trema run` で実行すると、トポロジ情報がテキストで見えます。
-
-スイッチ 3 台の三角形トポロジ:
+The full mesh with 10 switches:
 
 ```shell
-$ trema run ./topology_controller.rb -c triangle.conf
+prompt> trema run ./topology_controller.rb -c fullmesh.conf
 ```
 
-スイッチ 10 台のフルメッシュ:
+In another terminal, you can make changes to the current topology by
+adding or deleting switches with `trema kill` and `trema up` commands.
 
 ```shell
-$ trema run ./topology_controller.rb -c fullmesh.conf
+prompt> trema kill 0x1
+prompt> trema up 0x1
 ```
 
-スイッチやポートを落としたり上げたりしてトポロジの変化を楽しむ:
-(以下、別ターミナルで)
+To turn switch ports on/off,
 
 ```shell
-$ trema kill 0x1  # スイッチ 0x1 を落とす
-$ trema up 0x1  # 落としたスイッチ 0x1 をふたたび起動
-$ trema port_down --switch 0x1 --port 1  # スイッチ 0x1 のポート 1 を落とす
-$ trema port_up --switch 0x1 --port 1  # 落としたポートを上げる
+prompt> trema port_down --switch 0x1 --port 1
+prompt> trema port_up --switch 0x1 --port 1
 ```
 
-graphviz でトポロジ画像を出す:
+To view the current topology graphically,
 
 ```shell
 $ trema run "./topology_controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
 ```
 
-LLDP の宛先 MAC アドレスを任意のやつに変える:
+To change the LLDP destination MAC,
 
 ```shell
 $ trema run "./topology_controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
