@@ -26,3 +26,7 @@ notifications:
     on_success: alawys  # options: [always|never|change] default: always
     on_failure: always  # options: [always|never|change] default: always
     on_start: always    # default: false
+
+env:
+  global:
+    secure: V4GY43nbctCpHtWmLu3n12+vhiKi2k1LebQ9EwfcAWzL6MlkS85Dn5B7ozNnKb+Zg19/5Vqd8BFIcuxoif7PizTyT+Xz3UgR81WbYTINbahRqnixR6tq+fzy2mqhyB6gmVDGysepVmNvN0aMbPuXIz3O0pzQHpdVVdDiQxDNcpQ=
