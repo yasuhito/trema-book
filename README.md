@@ -3,12 +3,14 @@ topology
 [![Build Status](http://img.shields.io/travis/trema/topology/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/topology.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
+[![Gitter chat](https://badges.gitter.im/trema/topology.png)][gitter]
 
 Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 
 [travis]: http://travis-ci.org/trema/topology
 [codeclimate]: https://codeclimate.com/github/trema/topology
 [gemnasium]: https://gemnasium.com/trema/topology
+[gitter]: https://gitter.im/trema/topology
 
 準備
 ----
