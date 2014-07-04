@@ -6,7 +6,7 @@ require 'rspec/core/rake_task'
 
 task default: [:spec, :cucumber, :quality]
 task quality: [:rubocop, :reek]
-task travis: :quality
+task travis: [:spec, :quality]
 
 task :run do
   sh 'trema run ./topology-controller.rb -c triangle.conf'

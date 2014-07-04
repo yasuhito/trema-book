@@ -4,6 +4,7 @@ gem 'ruby-graphviz', '~> 1.2.1'
 gem 'trema', github: 'trema/trema', branch: 'develop'
 
 group :development, :test do
+  gem 'codeclimate-test-reporter', require: nil
   gem 'aruba', '~> 0.6.0'
   gem 'cucumber', '~> 1.3.15'
   gem 'guard', '~> 2.6.1'
