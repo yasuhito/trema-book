@@ -5,13 +5,16 @@ script: bundle exec rake travis
 rvm:
   - 1.9.3
   - 2.0.0
-
-branches:
-  only:
-    - master
-    - develop
+  - 2.1.0
+  - ruby-head
 
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install libpcap-dev -qq
- - gem install bundler
+ - gem update bundler
+
+matrix:
+  allow_failures:
+    - rvm: 2.1.0
+    - rvm: ruby-head
+  fast_finish: true
