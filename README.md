@@ -1,11 +1,14 @@
 topology
 ========
-[![Code Climate](https://codeclimate.com/github/trema/topology.png)](https://codeclimate.com/github/trema/topology)
-[![Build Status](https://travis-ci.org/trema/topology.png?branch=develop)](https://travis-ci.org/trema/topology)
-[![Dependency Status](https://gemnasium.com/trema/topology.png)](https://gemnasium.com/trema/topology)
+[![Build Status](http://img.shields.io/travis/trema/topology/develop.svg?style=flat)][travis]
+[![Code Climate](http://img.shields.io/codeclimate/github/trema/topology.svg?style=flat)][codeclimate]
+[![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
 
 Trema + Ruby で LLDP を使ったネットワークトポロジ探索
 
+[travis]: http://travis-ci.org/trema/topology
+[codeclimate]: https://codeclimate.com/github/trema/topology
+[gemnasium]: https://gemnasium.com/trema/topology
 
 準備
 ----
