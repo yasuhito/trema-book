@@ -22,7 +22,7 @@ matrix:
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/ce8abcdff1f9c912333f
+      - https://webhooks.gitter.im/e/e2b123a7c09134ded59f
     on_success: alawys  # options: [always|never|change] default: always
     on_failure: always  # options: [always|never|change] default: always
     on_start: always    # default: false
