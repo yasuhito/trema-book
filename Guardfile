@@ -1,12 +1,9 @@
-# A sample Guardfile
-# More info at https://github.com/guard/guard#readme
+# encoding: utf-8
 
 notification :tmux, display_message: true
 
 guard :bundler do
   watch('Gemfile')
-  # Uncomment next line if your Gemfile contains the `gemspec' command.
-  # watch(/^.+\.gemspec/)
 end
 
 guard :rspec do

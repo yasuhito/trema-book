@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 source 'https://rubygems.org'
 
 gem 'ruby-graphviz', '~> 1.2.1'
@@ -16,9 +18,3 @@ group :development, :test do
   gem 'rspec', '~> 3.0.0'
   gem 'rubocop', '~> 0.24.1'
 end
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:
