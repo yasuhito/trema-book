@@ -9,6 +9,7 @@ gem 'trema', github: 'trema/trema', branch: 'develop'
 group :development do
   gem 'guard', '~> 2.6.1'
   gem 'guard-bundler', '~> 2.0.0'
+  gem 'guard-cucumber', '~> 1.4.1'
   gem 'guard-rspec', '~> 4.2.10'
   gem 'guard-rubocop', '~> 1.1.0'
 end
