@@ -3,6 +3,4 @@ AllCops:
     - Gemfile
     - Guardfile
     - Rakefile
-    - examples
-    - pio.gemspec
     - tasks/*.rake
