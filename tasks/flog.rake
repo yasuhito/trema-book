@@ -16,7 +16,8 @@ begin
       printf "%8.1f: %s\n", score, name
     end
     unless bad_methods.empty?
-      $stderr.puts "#{bad_methods.size} methods have a complexity > #{threshold}"
+      $stderr.puts "#{bad_methods.size} methods "\
+                   "have a complexity > #{threshold}"
     end
   end
 rescue LoadError
@@ -24,4 +25,3 @@ rescue LoadError
     $stderr.puts 'Flog is disabled'
   end
 end
-
