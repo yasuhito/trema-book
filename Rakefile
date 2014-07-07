@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 task default: [:spec, :cucumber, :quality]
-task quality: [:rubocop, :reek]
+task quality: [:rubocop, :reek, :flay]
 task travis: [:spec, :quality]
 
 task :run do
