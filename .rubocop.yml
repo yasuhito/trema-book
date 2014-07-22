@@ -1,0 +1,6 @@
+AllCops:
+  Include:
+    - Gemfile
+    - Guardfile
+    - Rakefile
+    - tasks/*.rake
