@@ -4,14 +4,12 @@
 class ForwardingEntry
   attr_reader :mac
   attr_reader :port_no
-  attr_reader :dpid
   attr_writer :age_max
 
-  def initialize(mac, port_no, age_max, dpid)
+  def initialize(mac, port_no, age_max)
     @mac = mac
     @port_no = port_no
     @age_max = age_max
-    @dpid = dpid
     @last_update = Time.now
   end
 

@@ -5,7 +5,7 @@ require 'forwarding_entry'
 describe ForwardingEntry do
   describe '.new' do
     context 'with port_no = 1' do
-      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 1, 0x123) }
+      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 1) }
 
       describe '#update' do
         context 'with 2' do
@@ -21,12 +21,12 @@ describe ForwardingEntry do
     end
 
     context 'with age_max = 0' do
-      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 0, 0x123) }
+      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 0) }
       Then { entry.aged_out? == true }
     end
 
     context 'when age_max = 10' do
-      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 10, 0x123) }
+      Given(:entry) { ForwardingEntry.new('11:22:33:44:55:66', 1, 10) }
       Then { entry.aged_out? == false }
     end
   end

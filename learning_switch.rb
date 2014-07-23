@@ -3,7 +3,7 @@ $LOAD_PATH.unshift File.expand_path(File.join File.dirname(__FILE__), 'lib')
 
 require 'fdb'
 
-# A OpenFlow controller class that emulates a layer-2 switch.
+# An OpenFlow controller that emulates a layer-2 switch.
 class LearningSwitch < Controller
   add_timer_event :age_fdb, 5, :periodic
 
@@ -15,7 +15,7 @@ class LearningSwitch < Controller
     return if message.macda.reserved?
 
     @fdb.learn message.macsa, message.in_port
-    port_no = @fdb.port_no_of(message.macda)
+    port_no = @fdb.lookup(message.macda)
     if port_no
       flow_mod datapath_id, message, port_no
       packet_out datapath_id, message, port_no
@@ -34,7 +34,7 @@ class LearningSwitch < Controller
     send_flow_mod_add(
       datapath_id,
       match: ExactMatch.from(message),
-      actions: ActionOutput.new(port: port_no)
+      actions: ActionOutput.new(port_no)
     )
   end
 
@@ -44,7 +44,7 @@ class LearningSwitch < Controller
       in_port: message.in_port,
       buffer_id: 0xffffffff,
       data: message.data,
-      actions: ActionOutput.new(port: port_no)
+      actions: ActionOutput.new(port_no)
     )
   end
 

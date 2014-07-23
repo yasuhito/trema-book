@@ -10,31 +10,17 @@ class FDB
     @db = {}
   end
 
-  def port_no_of(mac)
-    dest = @db[mac]
-    if dest
-      dest.port_no
-    else
-      nil
-    end
-  end
-
   def lookup(mac)
-    dest = @db[mac]
-    if dest
-      [dest.dpid, dest.port_no]
-    else
-      nil
-    end
+    entry = @db[mac]
+    entry && entry.port_no
   end
 
-  def learn(mac, port_no, dpid = nil)
+  def learn(mac, port_no)
     entry = @db[mac]
     if entry
       entry.update port_no
     else
-      new_entry = ForwardingEntry.new(mac, port_no, DEFAULT_AGE_MAX, dpid)
-      @db[new_entry.mac] = new_entry
+      @db[mac] = ForwardingEntry.new(mac, port_no, DEFAULT_AGE_MAX)
     end
   end
 
