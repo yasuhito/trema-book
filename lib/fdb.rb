@@ -2,7 +2,7 @@
 
 require 'forwarding_entry'
 
-# A database that keep pairs of MAC address and port number
+# A database that keeps pairs of a MAC address and a port number
 class FDB
   DEFAULT_AGE_MAX = 300
 
