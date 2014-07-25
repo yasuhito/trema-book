@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/trema/trema.git
-  revision: a2dd7f5faa9a225edb365a9fafdc393691a8d4b5
-  branch: develop
+  revision: f26a064d2504dd2225ae890febd032e7591ac7ed
+  branch: feature/hello_trema
   specs:
     trema (0.4.7)
       gli (~> 2.11.0)
@@ -34,9 +34,6 @@ GEM
       multi_test (>= 0.1.1)
     diff-lcs (1.2.5)
     ffi (1.9.3)
-    flay (2.5.0)
-      ruby_parser (~> 3.0)
-      sexp_processor (~> 4.0)
     flog (4.3.0)
       ruby_parser (~> 3.1, > 3.1.0)
       sexp_processor (~> 4.4)
@@ -90,7 +87,6 @@ PLATFORMS
 DEPENDENCIES
   aruba (~> 0.6.0)
   cucumber (~> 1.3.15)
-  flay (~> 2.5.0)
   flog (~> 4.3.0)
   reek (~> 1.3.8)
   rubocop (~> 0.24.1)
