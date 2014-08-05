@@ -1,0 +1,6 @@
+language: ruby
+
+script: bundle exec rake pdf
+
+rvm:
+  - 2.0.0
