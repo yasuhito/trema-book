@@ -1,9 +1,11 @@
-Gemfile.lock
 *.dvi
+*.epub
 *.html
+*.key
 *.log
+*.mobi
 *.pdf
 *.tex
-*.key
-*.epub
-*.mobi
+.quarto
+.sass-cache
+build
