@@ -12,5 +12,5 @@ end
 
 group :test do
   gem 'aruba', '~> 0.6.0'
-  gem 'cucumber', '~> 1.3.15'
+  gem 'cucumber', '~> 1.3.16'
 end
