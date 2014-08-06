@@ -17,9 +17,12 @@ Feature: "Learning Switch" sample application
       link "learning", "host2"
       """
     Given I run `trema run ../../learning_switch.rb -c trema.conf -d`
-     And wait until "LearningSwitch" is up
+    And wait until "LearningSwitch" is up
     When I send 1 packet from host1 to host2
-     And I run `trema show_stats host1 --tx`
-     And I run `trema show_stats host2 --rx`
-    Then the output from "trema show_stats host1 --tx" should contain "192.168.0.2,1,192.168.0.1,1,1,50"
-     And the output from "trema show_stats host2 --rx" should contain "192.168.0.2,1,192.168.0.1,1,1,50"
+    And I send 2 packets from host2 to host1
+    Then the total number of tx packets should be:
+      | host1 | host2 |
+      |     1 |     2 |
+    And the total number of rx packets should be:
+      | host1 | host2 |
+      |     2 |     1 |
