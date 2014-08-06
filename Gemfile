@@ -13,4 +13,6 @@ end
 group :test do
   gem 'aruba', '~> 0.6.0'
   gem 'cucumber', '~> 1.3.16'
+  gem 'rspec', '~> 3.0.0'
+  gem 'rspec-given', '~> 3.5.4'
 end
