@@ -3,6 +3,7 @@ hello_trema
 
 [![Build Status](http://img.shields.io/travis/trema/hello_trema/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/hello_trema.svg?style=flat)][codeclimate]
+[![Dependency Status](http://img.shields.io/gemnasium/trema/hello_trema.svg?style=flat)][gemnasium]
 
 The "Hello Trema!" example is one of the simplest OpenFlow controller
 implementation. The basic functionality of this controller is to
@@ -15,6 +16,7 @@ programming.
 
 [travis]: http://travis-ci.org/trema/hello_trema
 [codeclimate]: https://codeclimate.com/github/trema/hello_trema
+[gemnasium]: https://gemnasium.com/trema/hello_trema
 
 How to run
 ----------
