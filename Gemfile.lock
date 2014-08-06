@@ -39,6 +39,8 @@ GEM
       sexp_processor (~> 4.4)
     gherkin (2.12.2)
       multi_json (~> 1.3)
+    given_core (3.5.4)
+      sorcerer (>= 0.3.7)
     gli (2.11.0)
     json (1.8.1)
     multi_json (1.10.1)
@@ -62,8 +64,19 @@ GEM
       ruby2ruby (>= 2.0.8, < 3.0)
       ruby_parser (~> 3.3)
       sexp_processor
+    rspec (3.0.0)
+      rspec-core (~> 3.0.0)
+      rspec-expectations (~> 3.0.0)
+      rspec-mocks (~> 3.0.0)
+    rspec-core (3.0.3)
+      rspec-support (~> 3.0.0)
     rspec-expectations (3.0.3)
       diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.0.0)
+    rspec-given (3.5.4)
+      given_core (= 3.5.4)
+      rspec (>= 2.12)
+    rspec-mocks (3.0.3)
       rspec-support (~> 3.0.0)
     rspec-support (3.0.3)
     rubocop (0.24.1)
@@ -80,6 +93,7 @@ GEM
       sexp_processor (~> 4.1)
     sexp_processor (4.4.3)
     slop (3.6.0)
+    sorcerer (1.0.2)
 
 PLATFORMS
   ruby
@@ -89,5 +103,7 @@ DEPENDENCIES
   cucumber (~> 1.3.16)
   flog (~> 4.3.0)
   reek (~> 1.3.8)
+  rspec (~> 3.0.0)
+  rspec-given (~> 3.5.4)
   rubocop (~> 0.24.1)
   trema!
