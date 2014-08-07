@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 source 'https://rubygems.org'
 
 gem 'trema', github: 'trema/trema', branch: 'feature/hello_trema'

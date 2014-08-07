@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 task default: [:spec, :cucumber, :quality]
 task quality: [:rubocop, :reek, :flog]
 task travis: [:spec, :quality]
