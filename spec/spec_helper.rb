@@ -1,6 +1,6 @@
+require 'simplecov'
 require 'codeclimate-test-reporter'
 require 'coveralls'
-require 'simplecov'
 
 formatters = [SimpleCov::Formatter::HTMLFormatter]
 formatters << Coveralls::SimpleCov::Formatter if ENV['COVERALLS_REPO_TOKEN']
@@ -9,7 +9,6 @@ if ENV['CODECLIMATE_REPO_TOKEN']
 end
 
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[*formatters]
-
 SimpleCov.start
 
 require 'rspec/given'
