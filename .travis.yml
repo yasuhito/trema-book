@@ -19,4 +19,5 @@ matrix:
 
 env:
   global:
-    secure: Wbr0xE5vrwERQewsrI0upb7evBudCeVP7Fsiub0u+VGVidsrn38WGMAUo08JHIpwys6/vd53GD2J9TRBjvYY2i0sw9CG/Caz9faAll9EhZL0GY6OrWi6hO6C6vseB53gniPWZERb7WyuPSu6Q1jLBbncWHEJ0zHesoVaLpnQhxU=
+    - secure: Wbr0xE5vrwERQewsrI0upb7evBudCeVP7Fsiub0u+VGVidsrn38WGMAUo08JHIpwys6/vd53GD2J9TRBjvYY2i0sw9CG/Caz9faAll9EhZL0GY6OrWi6hO6C6vseB53gniPWZERb7WyuPSu6Q1jLBbncWHEJ0zHesoVaLpnQhxU=
+    - secure: i7iNjmUrvZTkqBPdeK0ocZSyHIkz4g8If8aleh0f7Y3yvEDJWMBKii8iQMkXEW9AJWw8qM7sl5hCDzGkRZtwrzMa5CmEsUBHo4cy6naxhCgdHIWhZYaveT7kn+VIxdmewpExLlTWSlEGLMFbtL+e/1woCbKeOQo49OXpzenV4S4=
