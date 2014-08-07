@@ -2,6 +2,7 @@ hello_trema
 ===========
 
 [![Build Status](http://img.shields.io/travis/trema/hello_trema/develop.svg?style=flat)][travis]
+[![Coverage Status](http://img.shields.io/coveralls/trema/hello_trema/develop.svg?style=flat)][coveralls]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/hello_trema.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/hello_trema.svg?style=flat)][gemnasium]
 
@@ -15,6 +16,7 @@ Ruby. Hence it's a good starting point to learn about Trema
 programming.
 
 [travis]: http://travis-ci.org/trema/hello_trema
+[coveralls]: https://coveralls.io/r/trema/hello_trema
 [codeclimate]: https://codeclimate.com/github/trema/hello_trema
 [gemnasium]: https://gemnasium.com/trema/hello_trema
 
