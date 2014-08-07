@@ -5,6 +5,7 @@ hello_trema
 [![Coverage Status](http://img.shields.io/coveralls/trema/hello_trema/develop.svg?style=flat)][coveralls]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/hello_trema.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/hello_trema.svg?style=flat)][gemnasium]
+[![Inline docs](http://inch-ci.org/github/trema/hello_trema.png?branch=develop)][inch]
 
 The "Hello Trema!" example is one of the simplest OpenFlow controller
 implementation. The basic functionality of this controller is to
@@ -19,6 +20,8 @@ programming.
 [coveralls]: https://coveralls.io/r/trema/hello_trema
 [codeclimate]: https://codeclimate.com/github/trema/hello_trema
 [gemnasium]: https://gemnasium.com/trema/hello_trema
+[inch]: http://inch-ci.org/github/trema/hello_trema
+
 
 How to run
 ----------
