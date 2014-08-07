@@ -1,7 +1,7 @@
 GIT
   remote: git://github.com/trema/trema.git
-  revision: f26a064d2504dd2225ae890febd032e7591ac7ed
-  branch: feature/hello_trema
+  revision: 60fd457f3fe964fedb4e3ff636e6e2efb90441ea
+  branch: develop
   specs:
     trema (0.4.7)
       gli (~> 2.11.0)

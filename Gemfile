@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'trema', github: 'trema/trema', branch: 'feature/hello_trema'
+gem 'trema', github: 'trema/trema', branch: 'develop'
 
 group :development, :test do
   gem 'aruba', '~> 0.6.0'
