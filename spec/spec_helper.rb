@@ -9,6 +9,6 @@ if ENV['CODECLIMATE_REPO_TOKEN']
 end
 
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[*formatters]
-SimpleCov.start
+SimpleCov.start { add_filter '/vendor/' }
 
 require 'rspec/given'
