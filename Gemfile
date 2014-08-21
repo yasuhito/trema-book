@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'trema', github: 'trema/trema', branch: 'develop'
 
 group :development, :test do
-  gem 'aruba', '~> 0.6.0'
+  gem 'aruba', require: false
   gem 'cucumber', '~> 1.3.16'
   gem 'flog', require: false
   gem 'guard', '~> 2.6.1'

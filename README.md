@@ -29,4 +29,5 @@ How to run
 ```
 % bundle install
 % bundle exec trema run lib/hello_trema.rb -c sample.conf
+Hello 0xabc!
 ```
