@@ -21,7 +21,7 @@ group :test do
   gem 'flay', '~> 2.5.0'
   gem 'flog', '~> 4.2.1'
   gem 'reek', '~> 1.3.7'
-  gem 'rspec', '~> 3.0.0'
+  gem 'rspec', '~> 3.1.0'
   gem 'rspec-given', '~> 3.5.4'
   gem 'rubocop', '~> 0.26.1'
 end
