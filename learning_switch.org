@@ -1,0 +1,700 @@
+#+TITLE: すべての基本、ラーニングスイッチ
+#+AUTHOR: Yasuhito Takamiya
+#+LANGUAGE: ja
+#+ICALENDAR_EXCLUDE_TAGS: noex
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="book.css" />
+#+OPTIONS: toc:nil
+
+* すべての基本、ラーニングスイッチ
+#+BEGIN_VERSE
+データセンターのような複雑に入り組んだネットワークも、もしケーブルを抜
+いてバラバラにできたなら、スイッチやサーバなどの意外とシンプルな部品に
+分解できます。
+#+END_VERSE
+
+** ラーニングスイッチとは何か？
+OpenFlowの世界では、コントローラとしてソフトウェア実装したスイッチをよ
+くラーニングスイッチと呼びます。なぜ、ラーニング（学習）スイッチと呼ぶ
+のでしょうか？それは、スイッチが次のように動くからです。
+
+- 学習：ホストから出たパケットに含まれる、ネットワーク上でのホストの位置情報を学習する
+- 転送：今まで学習してきた位置情報を使って、パケットを宛先のホストまで転送する
+
+この「学習し、転送する」というラーニングスイッチの仕組みは応用が広く効
+きます。たとえばPart3で紹介するいくつかのデータセンターネットワークも、
+基本はラーニングスイッチと同じく「学習し、転送する」という動作をします。
+このように、自宅ネットワークであろうが最新鋭のデータセンターであろうが、
+その基本的な考え方は同じなのです。
+
+このおかげで、ラーニングスイッチを作れるようになれば、それを改造するこ
+とでいろいろなアプリケーションを作れるようになります。
+
+- 複数スイッチ対応ラーニングスイッチ（Tremaのサンプルアプリの1つ。第5章で紹介）
+- トラフィックモニタ（第9章で紹介）
+- ルーティングスイッチ（第14章で紹介）
+- スライス機能つきルーティングスイッチ（第15章で紹介）
+
+ではさっそく、ネットワークの基本部品であるラーニングスイッチをTremaで
+実装してみましょう。まずは一般的なハードウェアスイッチの動作原理を理解
+し、次にOpenFlowでの実現方法を見ていきます。
+
+** スイッチの仕組み
+簡単なネットワークを例にしてスイッチの動作を説明します（▼図8-1）。ス
+イッチのポート1番と4番に、ホスト1と2をそれぞれ接続しています。また、そ
+れぞれのホストのネットワークカードは図に示したMACアドレスを持つとしま
+す。
+
+スイッチはホストから届いたパケットを宛先のホストまで転送するために、ス
+イッチにつながる各ホストの位置情報をためておくデータベースを持っていま
+す。これをフォワーディングデータベース（FDB）と呼び、「ホストのMACアド
+レス＋ポート番号」の組を保持します。
+
+図8-1：スイッチ1台とホスト2台からなるネットワークと、スイッチのFDBの内容
+
+ここでホスト2がホスト1へパケットを送信すると、スイッチは▼図8-2のよう
+にパケットをホスト1まで転送します。
+
+1. 届いたパケットの宛先MACアドレス（00:11:11:11:11:11）を見て、このMAC
+   アドレスを持つホストがつながるポート番号をFDBから探す
+2. FDBには「MACアドレス00:11:11:11:11:11 = ポート1」と学習しているので、
+   ポート1にパケットを出力する
+
+図8-2：FDBの情報からパケットをホスト1に届ける
+
+ここまでの仕組みがわかれば、スイッチの機能を実現するコントローラ（ラー
+ニングスイッチ）をOpenFlowで実現するのは簡単です。
+
+** OpenFlow版スイッチ（ラーニングスイッチ）の仕組み
+OpenFlowによるスイッチの構成は▼図8-3のようになります。一般的なハード
+ウェアスイッチとの違いは次の2つです。
+
+- FDBをソフトウェアとして実装し、コントローラが管理する
+- パケットの転送は、コントローラがフローテーブルにフローエントリを書き
+  込むことで制御する
+
+なお、初期状態でのFDBとフローテーブルの中身はどちらも空です。
+
+*** Packet Inからホストの位置情報を学習
+この状態でホスト1がホスト2へパケットを送信すると、コントローラは次のよ
+うにホスト1のネットワーク上での位置情報を学習します（▼図8-4）。
+
+1. フローテーブルはまだ空なので、パケットはPacket Inとしてコントローラ
+   まで上がる
+2. コントローラはPacket Inメッセージからパケットの送信元MACアドレスと
+   パケットの入ってきたポートの番号を調べ、「ポート1番にはMACアドレス
+   が00:11:11:11:11:11のホストがつながっている」とFDBに保存する
+
+図8-3：OpenFlowによるスイッチ（ラーニングスイッチ）の構成
+
+図8-4：Packet Inの送信元MACアドレスとスイッチのポート番号をFDBに学習する
+
+*** Packet Outでパケットを転送（フラッディング）
+学習が終わると次はパケットの転送です。もちろん、パケットの宛先はまだ学
+習していないので、コントローラは次のようにパケットをばらまくことで宛先
+まで届けます。このばらまく処理をフラッディングと呼びます（▼図8-5）。
+
+1. コントローラはPacket Inメッセージの宛先MACアドレスを調べ、FDBから送
+   出先のポート番号を探す。しかし、ホスト2のMACアドレスとポート番号は
+   まだFDBに入っていないのでわからない
+2. コントローラはPacket Outメッセージ（出力ポート＝フラッディング）で
+   パケットをばらまくようにスイッチに指示する。その結果、ポート4につな
+   がるホスト2にパケットが届く
+
+図8-5：パケットの宛先MACアドレスからスイッチのポート番号がFDBに見つか
+らないため、Packet Outメッセージ（出力ポート＝フラッディング）でパケッ
+トをばらまく
+
+*** ふたたび学習と転送（Flow ModとPacket Out）
+この状態でホスト2がホスト1へパケットを送信すると次のようになります（▼
+図8-6）。
+
+1. フローテーブルが空なためコントローラまでふたたびPacket Inメッセージ
+   が上がる
+2. コントローラはこのPacket Inメッセージから「ポート4番にはMACアドレス
+   が00:22:22:22:22:22のホストがつながっている」とFDBに保存する
+3. Packet Inの宛先MACアドレスとFDBを照らし合わせ、出力先のポート番号を
+   探す。ここですでに「ポート1 = MACアドレス00:11:11:11:11:11」と学習
+   しているので、出力ポートは1と決定できる
+4. 「ホスト2からホスト1へのパケットはポート1へ出力せよ」というフローエ
+   ントリをFlow Modメッセージでフローテーブルに書き込む。加えて、
+   Packet Outメッセージ（出力ポート＝1）でPacket Inを起こしたパケット
+   をポート1へ出力する
+
+図8-6：同様にホスト2のMACアドレスとポート番号をFDBに学習し、フローエン
+トリを書き込むとともにパケットをホスト1に届ける
+
+さて、ここまでの段階でフローテーブルには「ホスト2からホスト1へのパケッ
+トはポート1へ出力せよ」というフローエントリが入りました。もし、ホスト2
+がホスト1へふたたびパケットを送信すると、今度はPacket Inがコントローラ
+まで上がることはなく、スイッチ側だけでパケットを転送します。
+
+残りのホスト1からホスト2へのフローエントリはどうでしょう。すでにFDBは
+すべてのホストのMACアドレスとポート番号を学習してあります。もし、ふた
+たびホスト1からホスト2ヘパケットを送信すると、図8-6と同様にコントロー
+ラが「ホスト1からホスト2へのパケットはポート4へ出力せよ」というフロー
+エントリを書き込みます。もちろん、それ以降の通信ではPacket Inはまった
+く上がらずにすべてスイッチ側だけでパケットを処理します。
+
+ちょっと長くなってしまいましたがOpenFlowによるスイッチの実現方法がわか
+りました。いよいよTremaでの実装に移ります。
+
+** LearningSwitchコントローラ
+まずはラーニングスイッチのソースコード（▼リスト8-1）をざっと眺めてみ
+ましょう。とくに、★private★の行よりも上のパブリックなメソッドに注目
+してください。
+
+
+リスト8-1：ラーニングスイッチ（learning-switch.rb）のソースコード
+#+BEGIN_SRC ruby
+class LearningSwitch < Controller
+  def start
+    @fdb = {}
+  end
+
+  def packet_in( datapath_id, message )
+    @fdb[ message.macsa ] = message.in_port
+    port_no = @fdb[ message.macda ]
+    if port_no
+      flow_mod datapath_id, message, port_no
+      packet_out datapath_id, message, port_no
+    else
+      flood datapath_id, message
+    end
+  end
+
+  private
+
+  def flow_mod( datapath_id, message, port_no )
+    send_flow_mod_add(
+      datapath_id,
+      :match => ExactMatch.from( message ),
+      :actions => SendOutPort.new( port_no )
+    )
+  end
+
+  def packet_out( datapath_id, message, port_no )
+    send_packet_out(
+      datapath_id,
+      :packet_in => message,
+      :actions => SendOutPort.new( port_no )
+    )
+  end
+
+  def flood( datapath_id, message )
+    packet_out datapath_id, message, OFPP_FLOOD
+  end
+end
+#+END_SRC
+
+今までの知識だけでもこれだけたくさんのことがわかります。
+
+- ラーニングスイッチの本体は =LearningSwitch= という名前のクラス
+- 起動時に呼ばれる =start= ハンドラでFDBのインスタンス変数を作っている。
+  ={}= という文法は見慣れないが、これにMACアドレスとポート番号の組を保
+  存すると推測できる
+- 見慣れない =packet_in= はPacket Inメソッドを捕捉するためのハンドラ。
+  スイッチのフローエントリにマッチしないパケットがコントローラに上がっ
+  てくると、このハンドラが呼ばれる
+- =packet_in= ハンドラの中では、パケットの宛先MACアドレスからFDBでポー
+  ト番号を調べている。もし宛先のポート番号が見つかった場合には、Flow
+  Modでフローエントリを打ち込みPacket Outでパケットを送信している。も
+  しポート番号が見つからなかった場合は、 =flood= というメソッドを呼ん
+  でいる。これは先述した「パケットをばらまく（フラッディング）」の処理
+
+いかがでしょうか。ラーニングスイッチの心臓部は =packet_in= ハンドラだ
+けで、その中身もやっていることはなんとなくわかると思います。細かい実装
+の解説は後回しにして、さっそく実行してみましょう。
+
+*** 実行してみよう
+今回も仮想ネットワークを使って、仮想スイッチ1台、仮想ホスト2台の構成で
+ラーニングスイッチを起動してみます。次の内容の設定ファイルを
+★learning-switch.conf★として保存してください。
+
+#+BEGIN_SRC
+vswitch("lsw") {
+  datapath_id "0xabc"
+}
+
+vhost("host1") {
+  ip "192.168.0.1"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:01"
+}
+
+vhost("host2") {
+  ip "192.168.0.2"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:02"
+}
+
+link "lsw", "host1"
+link "lsw", "host2"
+#+END_SRC
+
+ここで、★vhost★は仮想ホストの設定です。この設定ファイルでは★host1★、
+★host2★という名前の2つの仮想ホストを起動します。また、★link★は仮想
+リンクで、指定した仮想スイッチと仮想ホストを接続できます。ここでは、仮
+想スイッチ★lsw★と、仮想ホスト★host1★、★host2★をそれぞれ仮想リン
+クで接続しています。
+
+次のように★trema run★の★-c★オプションにこの設定ファイルを渡してラー
+ニングスイッチを実行します。ラーニングスイッチ自体の出力はありません。
+
+#+BEGIN_SRC
+% trema run ./learning-switch.rb -c ./learning-switch.conf ▼<Enter>
+#+END_SRC
+
+別ターミナルを開き、★trema send_packets★コマンドを使ってhost1とhost2
+の間でテストパケットを送ってみます。
+
+#+BEGIN_SRC
+% trema send_packets --source host1 --dest host2 ▼<Enter>
+% trema send_packets --source host2 --dest host1 ▼<Enter>
+#+END_SRC
+
+★trema show_stats★コマンドでhost1とhost2の受信パケット数をチェックし、
+それぞれでパケットを受信していれば成功です。
+
+#+BEGIN_SRC
+% trema show_stats host1 --rx ▼<Enter>
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.1,1,192.168.0.2,1,1,50
+% trema show_stats host2 --rx ▼<Enter>
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.2,1,192.168.0.1,1,1,50
+#+END_SRC
+
+ラーニングスイッチの動作イメージがわかったところで、ソースコードの解説
+に移りましょう。まずはこの章で新しく登場したRubyの構文を紹介します。
+
+** 即席Ruby入門
+ラーニングスイッチのソースコード（リスト8-1）で新しく登場した構文はたっ
+た1つだけです。★start★ハンドラの中で登場したFDBの本体★{}★がそれで
+すが、カンの良い読者ならこれはハッシュテーブルでは？ と気づいているで
+しょう。
+
+*** ハッシュテーブル
+ハッシュテーブルは中カッコで囲まれた辞書です。辞書とは「言葉をその定義
+に対応させたデータベース」です▼注1。Rubyでは、この対応を“★=>★”と
+いう矢印で次のように表します。
+
+注1：Pythonの人々はハッシュテーブルのことをズバリ辞書と呼んでいますが、
+そちらのほうがわかりやすいと筆者は感じます。
+
+#+BEGIN_SRC ruby
+animals = { "armadillo" => "アルマジロ", "boar" => "イノシシ }
+#+END_SRC
+
+たとえば“boar”を日本語で言うと何だろう？ と辞書で調べたくなったら、
+次のようにして辞書を引きます。
+
+#+BEGIN_SRC ruby
+animals[ "boar" ] #=> "イノシシ"
+#+END_SRC
+
+この辞書を引くときに使う言葉（この場合はboar）をキーと言います。そして、
+見つかった定義（この場合はイノシシ）をバリューと言います。
+
+新しい動物を辞書に加えるのも簡単です。
+
+#+BEGIN_SRC ruby
+animals[ "cow" ] = "ウシ"
+#+END_SRC
+
+Rubyのハッシュテーブルはとても高機能なので、文字列だけでなく好きなオブ
+ジェクトを格納できます。たとえば、FDBではMACアドレスをキーとして、ポー
+ト番号をバリューにします。
+
+#+BEGIN_SRC ruby
+fdb[ "00:11:11:11:11:11" ] = 1
+#+END_SRC
+
+もちろん★{}★は空のハッシュテーブルです。FDBは最初は空なので、★{}★
+に初期化されていました。
+
+#+BEGIN_SRC ruby
+def start
+  @fdb = {}
+end
+#+END_SRC
+
+実は、すでにいろんなところでハッシュテーブルを使ってきました。
+★send_flow_mod_add★などの省略可能なオプションは、矢印（★=>★）を使っ
+ていることからもわかるように実はハッシュテーブルなのです。Rubyでは、引
+数の最後がハッシュテーブルである場合、その中カッコを次のように省略でき
+ます。
+
+#+BEGIN_SRC ruby
+send_flow_mod_add(
+  datapath_id,
+  :match => ExactMatch.from( message ),
+  :actions => SendOutPort.new( port_no )
+)
+
+# これと同じ
+send_flow_mod_add(
+  datapath_id,
+  {
+    :match => ExactMatch.from( message ),
+    :actions => SendOutPort.new( port_no )
+  }
+)
+#+END_SRC
+
+** LearningSwitchのソースコード
+それではラーニングスイッチのソースコードを読み解いていきましょう。今回
+の肝となるのは、Packet Inハンドラでの次の処理です。
+
+- FDBの更新とポート番号の検索
+- ポート番号が見つかった場合の、Flow ModとPacket Out処理
+- ポート番号が見つからなかった場合のフラッディング処理
+
+それでは、最初にPacket Inハンドラの定義方法から見ていきましょう。
+
+*** 未知のパケット（Packet In）の処理
+コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラ
+をコントローラクラスに実装します。典型的なPacket Inハンドラは次のよう
+になります（リスト8-1より抜粋）。
+
+#+BEGIN_SRC ruby
+class LearningSwitch < Controller
+  # ...
+
+  def packet_in( datapath_id, message )
+    # ...
+  end
+
+  # ...
+#+END_SRC
+
+最初の引数★datapath_id★は、Packet Inを上げたスイッチのDatapath IDで
+す。2番目の引数★message★は★PacketIn★クラスのインスタンスで、Packet
+Inメッセージをオブジェクトとしてラップしたものです。この★PacketIn★ク
+ラスには主に次の3種類のメソッドが定義されています。
+
+- Packet Inを起こしたパケットのデータやその長さ、およびパケットが入っ
+  てきたスイッチのポート番号などOpenFlowメッセージ固有の情報を返すメソッ
+  ド
+- Packet Inを起こしたパケットの種別（TCPかUDPか？ またVLANタグの有無な
+  ど）を判定するための“★?★”で終わるメソッド
+- 送信元や宛先のMACアドレス、IPアドレスなど、パケットの各フィールドを
+  調べるためのアクセサメソッド
+
+★PacketIn★クラスは非常に多くのメソッドを持っており、またTremaのバー
+ジョンアップごとにその数も増え続けているためすべては紹介しきれません。
+そのかわり、代表的でよく使うものを以下に紹介します。
+
+- ★:data★ ::
+パケットのデータ全体をバイナリ文字列で返す
+- ★:in_port★ ::
+パケットが入ってきたスイッチのポート番号を返す
+- ★:total_len★ ::
+パケットのデータ長を返す
+- ★:buffered?★ ::
+Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
+- ★:macsa★ ::
+パケットの送信元MACアドレスを返す
+- ★:macda★ ::
+パケットの宛先MACアドレスを返す
+- ★:ipv4?★ ::
+パケットがIPv4である場合trueを返す
+- ★:ipv4_saddr★ ::
+パケットの送信元IPアドレスを返す
+- ★:ipv4_daddr★ ::
+パケットの宛先IPアドレスを返す
+- ★:tcp?★ ::
+パケットがTCPである場合trueを返す
+- ★:tcp_src_port★ ::
+パケットのTCPの送信元ポート番号を返す
+- ★:tcp_dst_port★ ::
+パケットのTCP宛先ポート番号を返す
+- ★:udp?★ ::
+パケットがUDPである場合trueを返す
+- ★:udp_src_port★ ::
+パケットのUDPの送信元ポート番号を返す
+- ★:udp_dst_port★ ::
+パケットのUDPの宛先ポート番号を返す
+- ★:vtag?★ ::
+パケットにVLANヘッダが付いている場合trueを返す
+- ★:vlan_vid★ ::
+VLANのVIDを返す
+
+このようなメソッドは他にもたくさんあります。メソッドの完全なリストや詳
+しい情報を知りたい場合には、第5章で紹介した★trema ruby★コマンドで最
+新のTrema APIドキュメントを参照してください。
+
+*** FDBの更新とポート番号の検索
+知らないパケットがPacket Inとして入ってきたとき、ラーニングスイッチは
+次のようにFDBにホストの位置情報を学習し、宛先のポート番号を調べます。
+
+1. パケットの送信元MACアドレスとパケットが入ってきたポート番号をPacket
+   Inメッセージから取り出し、FDB（★@fdb★）に保存する
+2. パケットの宛先MACアドレスとFDBから、パケットを出力するポート番号を
+   調べる
+
+#+BEGIN_SRC ruby
+class LearningSwitch < Controller
+  # ...
+
+  def packet_in( datapath_id, message )
+    @fdb[ message.macsa ] = message.in_port
+    port_no = @fdb[ message.macda ]
+
+    # ...
+  end
+
+  # ...
+end
+#+END_SRC
+
+FDBの実装は単純にハッシュテーブルを使っているだけなので、ひっかかる箇
+所はないと思います。
+
+*** 宛先ポート番号が見つかった場合（Flow ModとPacket Out）
+もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、と
+いうフローエントリをスイッチに書き込みます（★flow_mod★メソッド）。ま
+た、Packet Inを起こしたパケットも忘れずにそのポートへ出力します
+（★packet_out★メソッド）。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+  port_no = @fdb[ message.macda ]
+  if port_no
+    flow_mod datapath_id, message, port_no
+    packet_out datapath_id, message, port_no
+  else
+
+  # ...
+#+END_SRC
+
+この★flow_mod★メソッドと★packet_out★メソッドはそれぞれ
+★Controller★クラスの★send_flow_mod_add★（第7章で紹介）および
+★send_packet_out★（Packet Outの送信）メソッドを次のように呼び出しま
+す。
+
+#+BEGIN_SRC ruby
+# ...
+
+private
+
+def flow_mod( datapath_id, message, port_no )
+  send_flow_mod_add(
+    datapath_id,
+    :match => ExactMatch.from( message ),
+    :actions => SendOutPort.new( port_no )
+  )
+end
+
+def packet_out( datapath_id, message, port_no )
+  send_packet_out(
+    datapath_id,
+    :packet_in => message,
+    :actions => SendOutPort.new( port_no )
+  )
+end
+
+# ...
+#+END_SRC
+
+ここでいくつか見慣れない要素が登場しています。
+
+- ★send_flow_mod_add★の中では、マッチングルールに★ExactMatch.from★
+  の返り値を指定している
+- Packet Outの送信用メソッド（★send_packet_out★）
+
+それでは、それぞれの詳細を見ていきましょう。
+
+**** Exact Matchの作り方
+マッチングルールの中でもすべての条件を指定したものをExact Matchと呼び
+ます。たとえばPacket Inとしてコントローラに入ってきたパケットと、
+
+- パケットが入ってきたスイッチのポート番号
+- 送信元MACアドレス
+- 宛先MACアドレス
+- ...
+
+などなどマッチングルールが定義する12個の条件（詳しくは第3章を参照）が
+すべてまったく同じ、というのがExact Matchです。もし、Exact Matchを普通
+に作るとどうなるでしょうか？
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+
+  send_flow_mod_add(
+    datapath_id,
+    :match => Match.new(
+      :in_port => message.in_port
+      :dl_src => message.macsa,
+      :dl_dst => message.macda,
+      # ...
+#+END_SRC
+
+うーん。やりたいことはわかりますが、マッチングルールを1つ作るだけでこ
+のようにいちいち10行以上も書いていたらしんどいですよね。
+
+そこで、TremaではこのようなExact Matchを楽に書ける次のショートカットを
+用意しています。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+
+  send_flow_mod_add(
+    datapath_id,
+    :match => ExactMatch.from( message ),
+    # ...
+#+END_SRC
+
+なんとたった1行で書けました！ Tremaではこのようにプログラムを短く書け
+る工夫がたくさんあります。これはその都度紹介していくことにしましょう。
+
+ところで今回のラーニングスイッチの例では、スイッチに書き込まれるフロー
+エントリは次の2パターンだけです。
+
+- ホスト1からホスト2
+- ホスト2からホスト1
+
+今回は流れるパケットの種類も限られていますので、フローエントリのマッチ
+ングルールを楽に作るためにExact Macthを使っています。
+
+**** Packet Out API
+Packet OutはOpenFlowで定義されたメッセージの1つで、スイッチの指定した
+ポートからパケットを送信させるためのものです。TremaでPacket Outを送る
+ためのメソッド★send_packet_out★は次の2つの引数を取ります。
+
+#+BEGIN_SRC ruby
+send_packet_out( datapath_id, options )
+#+END_SRC
+
+それぞれの引数の意味は次のとおりです。
+
+- datapath_id：Packet Outの届け先となるスイッチのDatapath ID
+- options：Packet Outメッセージの中身を決めるためのオプションで、アク
+  ションによるパケットの書き換えや出力するポートをハッシュテーブルで指
+  定する。それぞれのオプションにはデフォルト値が設定されているので、必
+  要なオプションのみを指定すればよい
+
+Packet Outの使い道は、Packet Inメッセージとして入ってきたパケットをそ
+のままスイッチのポートから送り出す場合がほとんどです。この場合、パケッ
+トの送信にスイッチのバッファを使う場合と使わない場合とで呼び出しかたが
+変わります。
+
+***** スイッチのバッファを使ってPacket Outする場合
+パケットのデータがスイッチのバッファに乗っていることが期待できる場合に
+は、次のように★:buffer_id★オプションでバッファに乗っているパケットデー
+タのIDを指定してやることでPacket Outできます。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+
+  send_packet_out(
+    datapath_id,
+    :buffer_id => message.buffer_id,
+    :data => message.data,
+    :actions => SendOutPort.new( port_number )
+  )
+#+END_SRC
+
+この場合コントローラからスイッチへのパケットデータのコピーが起こらない
+ため、若干のスピードアップが期待できます。ただし、第3章のコラムで説明
+したとおり、バッファの中身は予測不能でいつデータが消えるかわからないた
+め、この方法は推奨しません。
+
+***** スイッチのバッファを使わずにPacket Outする場合
+スイッチのバッファを使わずにPacket Outする場合、次のように★:data★オ
+プションでパケットのデータを指定する必要があります。バッファに乗ってい
+るかいないかにかかわらずPacket Outできるので、若干遅くなりますが安全で
+す。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+
+  send_packet_out(
+    datapath_id,
+    :data => message.data,
+    :actions => SendOutPort.new( port_number )
+  )
+#+END_SRC
+
+これは、次のように★:packet_in★オプションを使うことで若干短くできます
+（★:data★を書かなくてよくなります）。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+
+  send_packet_out(
+    datapath_id,
+    :packet_in => message,
+    :actions => SendOutPort.new( port_number )
+  )
+#+END_SRC
+
+***** 主なオプション一覧
+optionsに指定できる主なオプションは次のとおりです。
+
+- ★:buffer_id★ ::
+スイッチでバッファされているパケットのIDを指定する。この値を使うと、ス
+イッチでバッファされているパケットを指定してPacket Outできるので効率が
+良くなる（ただし、スイッチにバッファされていない時はエラーになる）
+- ★:data★ ::
+Packet Outするパケットの中身を指定する。もし★:buffer_id★オプションが
+指定されておりスイッチにバッファされたパケットをPacket Outする場合、こ
+の値は使われない
+- ★:packet_in★ ::
+★:data★および★:in_port★オプションを指定するためのショートカット▼
+注2。★packet_in★ハンドラの引数として渡される★PacketIn★メッセージを
+指定する
+- ★:actions★ ::
+Packet Outのときに実行したいアクションの配列を指定する。アクションが1
+つの場合は配列でなくてかまわない
+
+注2：★:in_port★オプションは出力ポートに★OFPP_TABLE★という特殊なポー
+トを指定したときに使うオプションです。通常はまったく使いませんが、もし
+知りたい方はTrema Ruby APIを参照してください。
+
+*** 宛先ポート番号が見つからなかった場合（フラッディング)
+もし宛先ポートが見つからなかった場合、コントローラはPacket Inしたメッ
+セージをフラッディングしてばらまきます。これをやっているのが★flood★
+メソッドで、実体は★packet_out★メソッドのポート番号に仮想ポート番号
+★OFPP_FLOOD★を指定しているだけです。これが指定されたPacket Outメッセー
+ジをスイッチが受け取ると、指定されたパケットをフラッディングします。
+
+#+BEGIN_SRC ruby
+def packet_in( datapath_id, message )
+  # ...
+  port_no = @fdb[ message.macda ]
+  if port_no
+    # ...
+  else
+    flood datapath_id, message
+  end
+  # ...
+end
+
+private
+
+# ...
+
+def flood( datapath_id, message )
+  packet_out datapath_id, message, OFPP_FLOOD
+end
+#+END_SRC
+
+** まとめ
+さまざまなOpenFlowアプリケーションのベースとなるラーニングスイッチの動
+作と作り方を学びました。
+
+- コントローラは、Packet Inメッセージから送信元ホストのMACアドレスとホ
+  ストのつながるスイッチポート番号をFDBに学習する
+- Packet Inの転送先がFDBからわかる場合、Flow Modで以降の転送情報をスイッ
+  チに書き込みPacket Outする。FDBで決定できない場合は、入力ポート以外
+  のすべてのポートにPacket Outでフラッディングする
+
+続く章ではさっそくこのラーニングスイッチを少し改造してトラフィック集計
+機能を加えます。第2章で紹介したフローでできる4つのことのうち、“流量を
+調べる”の実装例です。
