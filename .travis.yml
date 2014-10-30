@@ -6,7 +6,7 @@ before_install:
  - sudo apt-get install pandoc -qq
  - sudo apt-get install python-pygments -qq
   
-script: bundle exec rake travis --trace
+script: bundle exec rake travis
 
 rvm:
   - 2.0.0
