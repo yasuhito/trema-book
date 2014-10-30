@@ -1,6 +1,6 @@
 language: ruby
 
-script: bundle exec rake rubocop
+script: bundle exec rake master
 
 rvm:
   - 2.0.0
