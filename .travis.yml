@@ -1,6 +1,6 @@
 language: ruby
 
-script: bundle exec rake pdf
+script: bundle exec rake rubocop
 
 rvm:
   - 2.0.0
