@@ -14,7 +14,7 @@ Quarto.configure do |config|
   config.use :epubcheck
   config.use :kindlegen
   config.use :bundle
-  config.source_files                    = ['openflow_framework_trema.org']
+  config.source_files                    = ['index.org']
   # config.bitmap_cover_image              = 'images/cover-large.png'
   # config.vector_cover_image              = 'images/cover.svg'
   config.stylesheets.cover_color         = '#fff4cd'

@@ -1,7 +1,6 @@
 #+TITLE: すべての基本、ラーニングスイッチ
 #+AUTHOR: Yasuhito Takamiya
 #+LANGUAGE: ja
-#+ICALENDAR_EXCLUDE_TAGS: noex
 #+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="book.css" />
 #+OPTIONS: toc:nil
 
