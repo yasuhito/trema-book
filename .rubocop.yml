@@ -1,6 +1,7 @@
 AllCops:
   Include:
-    - Rakefile
+    - '**/Rakefile'
   Exclude:
-    - ja/**/*
-    - build/**/*
+    - 'build/**/*'
+    - 'ja/**/*'
+    - 'vendor/**/*'

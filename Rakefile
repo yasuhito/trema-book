@@ -21,8 +21,8 @@ Quarto.configure do |config|
   # config.vector_cover_image              = 'images/cover.svg'
   config.stylesheets.cover_color         = '#fff4cd'
 
-  config.stylesheets.heading_font        = '"Hiragino Kaku Gothic Pro", sans-serif'
-  config.stylesheets.font                = '"Hiragino Mincho Pro", serif'
+  config.stylesheets.heading_font = '"Hiragino Kaku Gothic Pro", sans-serif'
+  config.stylesheets.font         = '"Hiragino Mincho Pro", serif'
 
   # config.add_font('Source Code Pro', file: 'fonts/SourceCodePro-Regular.otf')
   # config.add_font(
