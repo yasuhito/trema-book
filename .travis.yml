@@ -5,7 +5,7 @@ before_install:
  - sudo apt-get install texinfo -qq
  - sudo apt-get install pandoc -qq
   
-script: bundle exec rake travis
+script: bundle exec rake travis --trace
 
 rvm:
   - 2.0.0
