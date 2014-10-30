@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+task travis: [:prepare, :master]
+
 Dir.glob('tasks/*.rake').each { |each| import each }
 
 require 'quarto/tasks'

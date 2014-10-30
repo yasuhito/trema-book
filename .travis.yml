@@ -1,6 +1,6 @@
 language: ruby
 
-script: bundle exec rake master
+script: bundle exec rake travis
 
 rvm:
   - 2.0.0
