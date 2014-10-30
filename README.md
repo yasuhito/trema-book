@@ -5,6 +5,11 @@
  * Amazon: http://www.amazon.co.jp/dp/4774154652/
  * サポートサイト: http://yasuhito.github.com/trema-book/
 
+### Badges
+
+[![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis]
+
+[travis]: http://travis-ci.org/yasuhito/trema-book
 
 ### License
 
