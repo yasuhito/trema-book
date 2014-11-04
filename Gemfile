@@ -30,4 +30,5 @@ end
 # The test group will be installed on Travis CI
 group :test do
   gem 'codeclimate-test-reporter', require: false
+  gem 'coveralls', require: false
 end
