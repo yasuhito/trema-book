@@ -23,5 +23,5 @@ group :test do
   gem 'reek', '~> 1.3.8'
   gem 'rspec', '~> 3.1.0'
   gem 'rspec-given', '~> 3.5.4'
-  gem 'rubocop', '~> 0.26.1'
+  gem 'rubocop'
 end
