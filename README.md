@@ -31,13 +31,13 @@ outputs the current topology information in ASCII format.
 The triangle topology configuration with three switches:
 
 ```shell
-prompt> trema run ./topology_controller.rb -c triangle.conf
+prompt> trema run ./lib/topology_controller.rb -c triangle.conf
 ```
 
 The full mesh with 10 switches:
 
 ```shell
-prompt> trema run ./topology_controller.rb -c fullmesh.conf
+prompt> trema run ./lib/topology_controller.rb -c fullmesh.conf
 ```
 
 In another terminal, you can make changes to the current topology by
@@ -58,11 +58,11 @@ prompt> trema port_up --switch 0x1 --port 1
 To view the current topology graphically,
 
 ```shell
-$ trema run "./topology_controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
+$ trema run "./lib/topology_controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
 ```
 
 To change the LLDP destination MAC,
 
 ```shell
-$ trema run "./topology_controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
+$ trema run "./lib/topology_controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
 ```
