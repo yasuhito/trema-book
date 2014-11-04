@@ -19,7 +19,8 @@ Quarto.configure do |config|
 
   config.source_files = [
     'openflow_framework_trema.org',
-    'learning_switch.org'
+    'learning_switch.org',
+    'topology.org'
   ]
   config.stylesheets.cover_color  = '#fff4cd'
 
