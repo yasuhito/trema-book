@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 $LOAD_PATH.unshift File.expand_path(File.join File.dirname(__FILE__), 'lib')
 
 require 'command_line'
@@ -73,9 +72,3 @@ class TopologyController < Controller
     end
   end
 end
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

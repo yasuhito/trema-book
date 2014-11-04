@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'bundler'
 
 begin
@@ -14,9 +13,3 @@ require 'rspec'
 require 'trema'
 
 ENV['TREMA_TMP'] = File.join(__dir__, '..', '..', 'tmp', 'aruba')
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

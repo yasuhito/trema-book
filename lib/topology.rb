@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'forwardable'
 require 'link'
 require 'observer'
@@ -75,9 +74,3 @@ class Topology
     notify_observers self
   end
 end
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

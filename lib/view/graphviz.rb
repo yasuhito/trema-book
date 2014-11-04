@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'graphviz'
 
 module View
@@ -35,9 +34,3 @@ module View
     end
   end
 end
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

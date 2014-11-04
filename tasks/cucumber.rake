@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 begin
   require 'cucumber/rake/task'
   Cucumber::Rake::Task.new
