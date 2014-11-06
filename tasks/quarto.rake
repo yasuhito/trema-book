@@ -14,6 +14,7 @@ Quarto.configure do |config|
   config.use :prince
 
   config.source_files = [
+    'foreword.markdown',
     'openflow_framework_trema.org',
     'learning_switch.org',
     'routing_switch.org',
