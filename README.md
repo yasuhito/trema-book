@@ -8,8 +8,10 @@
 ### Badges
 
 [![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis]
+[![Dependency Status](http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat)][gemnasium]
 
 [travis]: http://travis-ci.org/yasuhito/trema-book
+[gemnasium]: https://gemnasium.com/yasuhito/trema-book
 
 ### License
 
