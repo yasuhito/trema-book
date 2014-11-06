@@ -1,7 +1,13 @@
 AllCops:
   Include:
-    - '**/Rakefile'
+    - Guardfile
+    - Rakefile
   Exclude:
     - 'build/**/*'
     - 'ja/**/*'
     - 'vendor/**/*'
+
+Style/FileName:
+  Exclude:
+    - Guardfile
+    - Rakefile
