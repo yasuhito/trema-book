@@ -1,8 +1,9 @@
 AllCops:
   Include:
+    - 'build/listings/*.rb'
+    - 'tasks/*.rake'
     - Guardfile
     - Rakefile
-    - 'build/listings/*.rb'
   Exclude:
     - 'ja/**/*'
     - 'vendor/**/*'
