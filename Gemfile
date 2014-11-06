@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
 gem 'rake'
-gem 'quarto', github: 'avdi/quarto'
+gem 'quarto', github: 'yasuhito/quarto', branch: 'develop'
 gem 'rubocop'
