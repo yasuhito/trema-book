@@ -2,8 +2,8 @@ AllCops:
   Include:
     - Guardfile
     - Rakefile
+    - 'build/listings/*.rb'
   Exclude:
-    - 'build/**/*'
     - 'ja/**/*'
     - 'vendor/**/*'
 
@@ -11,3 +11,23 @@ Style/FileName:
   Exclude:
     - Guardfile
     - Rakefile
+
+Style/TrailingBlankLines:
+  Exclude:
+    - 'build/listings/*.rb'
+
+Style/AsciiComments:
+  Exclude:
+    - 'build/listings/*.rb'
+
+Style/GuardClause:
+  Exclude:
+    - 'build/listings/*.rb'
+    
+Lint/UselessAssignment:
+  Exclude:
+    - 'build/listings/*.rb'
+
+Lint/UnusedMethodArgument:
+  Exclude:
+    - 'build/listings/*.rb'

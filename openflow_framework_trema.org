@@ -198,9 +198,10 @@ trema version 0.4.1
 し分からなくても今のところは気にせずそのまま入力してください。
 
 #+BEGIN_SRC ruby
+  # 'こんにちは Trema' コントローラ
   class HelloTrema < Controller
     def start
-      puts "Hello, Trema!"
+      puts 'Hello, Trema!'
     end
   end
 #+END_SRC
@@ -331,10 +332,11 @@ while   yield
 このうち、「Hello Trema!」では =class= と =def= 、そして =end= キーワー
 ドを使いました。
 
-#+BEGIN_SRC ruby -n
+#+BEGIN_SRC ruby
+  # 'こんにちは Trema' コントローラ
   class HelloTrema < Controller
     def start
-      puts "Hello, Trema!"
+      puts 'Hello, Trema!'
     end
   end
 #+END_SRC
@@ -359,7 +361,7 @@ Tower (東京タワー) もそうです。東京タワーは動かすことが�
 セットすると変更できません (変更しようとすると警告が出ます)。
 
 #+BEGIN_SRC ruby
-TokyoTower = "東京都港区芝公園4丁目2-8"
+TOKYO_TOWER = '東京都港区芝公園4丁目2-8'
 #+END_SRC
 
 「Hello Trema!」の例では =class= キーワードに続く =HelloTrema= と、
@@ -367,9 +369,10 @@ TokyoTower = "東京都港区芝公園4丁目2-8"
 数なので実行中にその名前を変えることはできません。
 
 #+BEGIN_SRC ruby
+  # 'こんにちは Trema' コントローラ
   class HelloTrema < Controller
     def start
-      puts "Hello, Trema!"
+      puts 'Hello, Trema!'
     end
   end
 #+END_SRC
@@ -385,15 +388,18 @@ TokyoTower = "東京都港区芝公園4丁目2-8"
 継承します。クラスを継承するには、
 
 #+BEGIN_SRC ruby
-class クラス名 < 親クラス名
+  class MyClassName < SuperClassName
+    # ...
+  end
 #+END_SRC
 
 と書きます。
 
 #+BEGIN_SRC ruby
+  # 'こんにちは Trema' コントローラ
   class HelloTrema < Controller
     def start
-      puts "Hello, Trema!"
+      puts 'Hello, Trema!'
     end
   end
 #+END_SRC
@@ -437,9 +443,10 @@ run= でコントローラを起動したときに自動的に呼ばれます。
 同じく文字列を標準出力へ改行付きで出力します。
 
 #+BEGIN_SRC ruby
+  # 'こんにちは Trema' コントローラ
   class HelloTrema < Controller
     def start
-      puts "Hello, Trema!"
+      puts 'Hello, Trema!'
     end
   end
 #+END_SRC

@@ -145,44 +145,45 @@ OpenFlowによるスイッチの構成は▼図8-3のようになります。一
 
 リスト8-1：ラーニングスイッチ（learning-switch.rb）のソースコード
 #+BEGIN_SRC ruby
-class LearningSwitch < Controller
-  def start
-    @fdb = {}
-  end
+  # ラーニングスイッチコントローラ
+  class LearningSwitch < Controller
+    def start
+      @fdb = {}
+    end
 
-  def packet_in( datapath_id, message )
-    @fdb[ message.macsa ] = message.in_port
-    port_no = @fdb[ message.macda ]
-    if port_no
-      flow_mod datapath_id, message, port_no
-      packet_out datapath_id, message, port_no
-    else
-      flood datapath_id, message
+    def packet_in(datapath_id, message)
+      @fdb[message.macsa] = message.in_port
+      port_no = @fdb[message.macda]
+      if port_no
+        flow_mod datapath_id, message, port_no
+        packet_out datapath_id, message, port_no
+      else
+        flood datapath_id, message
+      end
+    end
+
+    private
+
+    def flow_mod(datapath_id, message, port_no)
+      send_flow_mod_add(
+        datapath_id,
+        match: ExactMatch.from(message),
+        actions: SendOutPort.new(port_no)
+      )
+    end
+
+    def packet_out(datapath_id, message, port_no)
+      send_packet_out(
+        datapath_id,
+        packet_in: message,
+        actions: SendOutPort.new(port_no)
+      )
+    end
+
+    def flood(datapath_id, message)
+      packet_out datapath_id, message, OFPP_FLOOD
     end
   end
-
-  private
-
-  def flow_mod( datapath_id, message, port_no )
-    send_flow_mod_add(
-      datapath_id,
-      :match => ExactMatch.from( message ),
-      :actions => SendOutPort.new( port_no )
-    )
-  end
-
-  def packet_out( datapath_id, message, port_no )
-    send_packet_out(
-      datapath_id,
-      :packet_in => message,
-      :actions => SendOutPort.new( port_no )
-    )
-  end
-
-  def flood( datapath_id, message )
-    packet_out datapath_id, message, OFPP_FLOOD
-  end
-end
 #+END_SRC
 
 今までの知識だけでもこれだけたくさんのことがわかります。
@@ -281,14 +282,14 @@ ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
 そちらのほうがわかりやすいと筆者は感じます。
 
 #+BEGIN_SRC ruby
-animals = { "armadillo" => "アルマジロ", "boar" => "イノシシ }
+animals = { 'armadillo' => 'アルマジロ', 'boar' => 'イノシシ' }
 #+END_SRC
 
 たとえば“boar”を日本語で言うと何だろう？ と辞書で調べたくなったら、
 次のようにして辞書を引きます。
 
 #+BEGIN_SRC ruby
-animals[ "boar" ] #=> "イノシシ"
+animals['boar'] # => 'イノシシ'
 #+END_SRC
 
 この辞書を引くときに使う言葉（この場合はboar）をキーと言います。そして、
@@ -297,7 +298,7 @@ animals[ "boar" ] #=> "イノシシ"
 新しい動物を辞書に加えるのも簡単です。
 
 #+BEGIN_SRC ruby
-animals[ "cow" ] = "ウシ"
+animals['cow'] = 'ウシ'
 #+END_SRC
 
 Rubyのハッシュテーブルはとても高機能なので、文字列だけでなく好きなオブ
@@ -305,7 +306,7 @@ Rubyのハッシュテーブルはとても高機能なので、文字列だけ�
 ト番号をバリューにします。
 
 #+BEGIN_SRC ruby
-fdb[ "00:11:11:11:11:11" ] = 1
+fdb['00:11:11:11:11:11'] = 1
 #+END_SRC
 
 もちろん★{}★は空のハッシュテーブルです。FDBは最初は空なので、★{}★
@@ -326,17 +327,8 @@ end
 #+BEGIN_SRC ruby
 send_flow_mod_add(
   datapath_id,
-  :match => ExactMatch.from( message ),
-  :actions => SendOutPort.new( port_no )
-)
-
-# これと同じ
-send_flow_mod_add(
-  datapath_id,
-  {
-    :match => ExactMatch.from( message ),
-    :actions => SendOutPort.new( port_no )
-  }
+  match: ExactMatch.from(message),
+  actions: SendOutPort.new(port_no)
 )
 #+END_SRC
 
@@ -356,14 +348,16 @@ send_flow_mod_add(
 になります（リスト8-1より抜粋）。
 
 #+BEGIN_SRC ruby
-class LearningSwitch < Controller
-  # ...
+  # ラーニングスイッチコントローラ
+  class LearningSwitch < Controller
+    # ...
 
-  def packet_in( datapath_id, message )
+    def packet_in(datapath_id, message)
+      # ...
+    end
+
     # ...
   end
-
-  # ...
 #+END_SRC
 
 最初の引数★datapath_id★は、Packet Inを上げたスイッチのDatapath IDで
@@ -432,18 +426,19 @@ VLANのVIDを返す
    調べる
 
 #+BEGIN_SRC ruby
-class LearningSwitch < Controller
-  # ...
+  # ラーニングスイッチコントローラ
+  class LearningSwitch < Controller
+    # ...
 
-  def packet_in( datapath_id, message )
-    @fdb[ message.macsa ] = message.in_port
-    port_no = @fdb[ message.macda ]
+    def packet_in(datapath_id, message)
+      @fdb[message.macsa] = message.in_port
+      port_no = @fdb[message.macda]
+
+      # ...
+    end
 
     # ...
   end
-
-  # ...
-end
 #+END_SRC
 
 FDBの実装は単純にハッシュテーブルを使っているだけなので、ひっかかる箇
@@ -456,15 +451,16 @@ FDBの実装は単純にハッシュテーブルを使っているだけなの�
 （★packet_out★メソッド）。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
-  port_no = @fdb[ message.macda ]
-  if port_no
-    flow_mod datapath_id, message, port_no
-    packet_out datapath_id, message, port_no
-  else
-
-  # ...
+  def packet_in(datapath_id, message)
+    # ...
+    port_no = @fdb[message.macda]
+    if port_no
+      flow_mod datapath_id, message, port_no
+      packet_out datapath_id, message, port_no
+    else
+      # ...
+    end
+  end
 #+END_SRC
 
 この★flow_mod★メソッドと★packet_out★メソッドはそれぞれ
@@ -477,19 +473,19 @@ def packet_in( datapath_id, message )
 
 private
 
-def flow_mod( datapath_id, message, port_no )
+def flow_mod(datapath_id, message, port_no)
   send_flow_mod_add(
     datapath_id,
-    :match => ExactMatch.from( message ),
-    :actions => SendOutPort.new( port_no )
+    match: ExactMatch.from(message),
+    actions: SendOutPort.new(port_no)
   )
 end
 
-def packet_out( datapath_id, message, port_no )
+def packet_out(datapath_id, message, port_no)
   send_packet_out(
     datapath_id,
-    :packet_in => message,
-    :actions => SendOutPort.new( port_no )
+    packet_in: message,
+    actions: SendOutPort.new(port_no)
   )
 end
 
@@ -518,16 +514,22 @@ end
 に作るとどうなるでしょうか？
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
+  def packet_in(datapath_id, message)
+    # ...
 
-  send_flow_mod_add(
-    datapath_id,
-    :match => Match.new(
-      :in_port => message.in_port
-      :dl_src => message.macsa,
-      :dl_dst => message.macda,
-      # ...
+    # TODO: オプションをすべて全部ベタに書く.
+    send_flow_mod_add(
+      datapath_id,
+      match: Match.new(
+        in_port: message.in_port,
+        dl_src: message.macsa,
+        dl_dst: message.macda
+      ),
+      actions: SendOutPort.new(port_no)
+    )
+
+    # ...
+  end
 #+END_SRC
 
 うーん。やりたいことはわかりますが、マッチングルールを1つ作るだけでこ
@@ -537,13 +539,16 @@ def packet_in( datapath_id, message )
 用意しています。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
-
-  send_flow_mod_add(
-    datapath_id,
-    :match => ExactMatch.from( message ),
+  def packet_in(datapath_id, message)
     # ...
+
+    send_flow_mod_add(
+      datapath_id,
+      match: ExactMatch.from(message),
+      actions: SendOutPort.new(port_no)
+    )
+  end
+
 #+END_SRC
 
 なんとたった1行で書けました！ Tremaではこのようにプログラムを短く書け
@@ -564,7 +569,7 @@ Packet OutはOpenFlowで定義されたメッセージの1つで、スイッチ�
 ためのメソッド★send_packet_out★は次の2つの引数を取ります。
 
 #+BEGIN_SRC ruby
-send_packet_out( datapath_id, options )
+send_packet_out(datapath_id, options)
 #+END_SRC
 
 それぞれの引数の意味は次のとおりです。
@@ -586,15 +591,18 @@ Packet Outの使い道は、Packet Inメッセージとして入ってきたパ�
 タのIDを指定してやることでPacket Outできます。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
+  def packet_in(datapath_id, message)
+    # ...
 
-  send_packet_out(
-    datapath_id,
-    :buffer_id => message.buffer_id,
-    :data => message.data,
-    :actions => SendOutPort.new( port_number )
-  )
+    send_packet_out(
+      datapath_id,
+      buffer_id: message.buffer_id,
+      data: message.data,
+      actions: SendOutPort.new(port_number)
+    )
+
+    # ...
+  end
 #+END_SRC
 
 この場合コントローラからスイッチへのパケットデータのコピーが起こらない
@@ -609,28 +617,34 @@ def packet_in( datapath_id, message )
 す。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
+  def packet_in(datapath_id, message)
+    # ...
 
-  send_packet_out(
-    datapath_id,
-    :data => message.data,
-    :actions => SendOutPort.new( port_number )
-  )
+    send_packet_out(
+      datapath_id,
+      data: message.data,
+      actions: SendOutPort.new(port_number)
+
+    # ...
+    )
+  end
 #+END_SRC
 
 これは、次のように★:packet_in★オプションを使うことで若干短くできます
 （★:data★を書かなくてよくなります）。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
+  def packet_in(datapath_id, message)
+    # ...
 
-  send_packet_out(
-    datapath_id,
-    :packet_in => message,
-    :actions => SendOutPort.new( port_number )
-  )
+    send_packet_out(
+      datapath_id,
+      packet_in: message,
+      actions: SendOutPort.new(port_number)
+    )
+
+    # ...
+  end
 #+END_SRC
 
 ***** 主なオプション一覧
@@ -664,24 +678,26 @@ Packet Outのときに実行したいアクションの配列を指定する。�
 ジをスイッチが受け取ると、指定されたパケットをフラッディングします。
 
 #+BEGIN_SRC ruby
-def packet_in( datapath_id, message )
-  # ...
-  port_no = @fdb[ message.macda ]
-  if port_no
+  def packet_in(datapath_id, message)
     # ...
-  else
-    flood datapath_id, message
+    port_no = @fdb[message.macda]
+    if port_no
+      flow_mod datapath_id, message, port_no
+      packet_out datapath_id, message, port_no
+    else
+      # 宛先ポート番号が見つからなかった
+      flood datapath_id, message
+    end
+    # ...
   end
+
+  private
+
   # ...
-end
 
-private
-
-# ...
-
-def flood( datapath_id, message )
-  packet_out datapath_id, message, OFPP_FLOOD
-end
+  def flood(datapath_id, message)
+    packet_out datapath_id, message, OFPP_FLOOD
+  end
 #+END_SRC
 
 ** まとめ
