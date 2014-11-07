@@ -16,6 +16,8 @@ Quarto.configure do |config|
   config.source_files = [
     'foreword.markdown',
     'ch1_whats_openflow.org',
+    'ch2_openflow_usecases.org',
+    'ch3_openflow_spec.org',
     'openflow_framework_trema.org',
     'learning_switch.org',
     'routing_switch.org',
