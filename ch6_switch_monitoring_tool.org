@@ -5,7 +5,6 @@
 #+OPTIONS: toc:nil
 
 * スイッチ監視ツール
-
 #+BEGIN_VERSE
 OpenFlowの一番の特長は、たくさんのスイッチをひとつのコントローラで集中
 制御できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験
@@ -26,9 +25,11 @@ OpenFlowの特長は「たくさんのスイッチをひとつのコントロー
 イムに表示します。たくさんあるスイッチ全体が正常に動いているかを確認す
 るのに便利です。
 
-//image[switch_monitor_overview][スイッチ監視ツール][width=12cm]
+#+CAPTION: スイッチ監視ツール
+#+LABEL: fig:switch_monitor_overview
+[[./ja/images/switch_monitoring_tool/switch_monitor_overview.png]]
 
-スイッチ監視ツールは@<img>{switch_monitor_overview} のように動作します。
+スイッチ監視ツールは [[fig:switch_monitor_overview]] のように動作します。
 OpenFlowスイッチは、起動すると指定したOpenFlowコントローラへ接続します。
 コントローラはスイッチの接続を検知すると、起動したスイッチの情報を表示
 します。逆にスイッチが予期せぬ障害など何らかの原因で接続を切った場合、
