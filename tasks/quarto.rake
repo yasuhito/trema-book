@@ -19,10 +19,10 @@ Quarto.configure do |config|
     'ch2_openflow_usecases.org',
     'ch3_openflow_spec.org',
     'ch4_openflow_frameworks.org',
-    'openflow_framework_trema.org',
-    'learning_switch.org',
-    'routing_switch.org',
-    'sliceable_switch.org'
+    'ch5_openflow_framework_trema.org',
+    'ch8_learning_switch.org',
+    'ch14_routing_switch.org',
+    'ch15_sliceable_switch.org'
   ]
   config.stylesheets.cover_color  = '#fff4cd'
 
