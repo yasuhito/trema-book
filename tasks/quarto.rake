@@ -18,6 +18,7 @@ Quarto.configure do |config|
     'ch1_whats_openflow.org',
     'ch2_openflow_usecases.org',
     'ch3_openflow_spec.org',
+    'ch4_openflow_frameworks.org',
     'openflow_framework_trema.org',
     'learning_switch.org',
     'routing_switch.org',
