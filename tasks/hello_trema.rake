@@ -8,6 +8,6 @@ directory 'vendor'
 
 directory VENDOR_HELLO_TREMA_DIR => 'vendor' do
   cd 'vendor' do
-    sh 'git clone git@github.com:trema/hello_trema.git'
+    sh 'git clone https://github.com/trema/hello_trema.git'
   end
 end
