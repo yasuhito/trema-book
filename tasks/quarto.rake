@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'quarto/tasks'
 require 'quarto'
 
@@ -5,7 +6,7 @@ Quarto.configure do |config|
   config.metadata = true
 
   config.author = 'Yasuhito Takamiya'
-  config.title = 'Trema Book'
+  config.title = 'OpenFlow実践入門'
   config.language = 'ja'
 
   config.use :bundle
