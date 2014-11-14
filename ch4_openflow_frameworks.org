@@ -66,20 +66,20 @@ GPLバージョン2ライセンスのフリーソフトウェアです。
 
 //list[trema_hub][Tremaで書いたコントローラ(ハブ)の例]{
 #+BEGIN_SRC ruby
-class RepeaterHub < Controller
-  def packet_in datapath_id, message
-    send_flow_mod_add(
-      datapath_id,
-      :match => ExactMatch.from( message ),
-      :actions => SendOutPort.new( OFPP_FLOOD )
-    )
-    send_packet_out(
-      datapath_id,
-      :packet_in => message,
-      :actions => SendOutPort.new( OFPP_FLOOD )
-    )
+  class RepeaterHub < Trema::Controller
+    def packet_in(datapath_id, message)
+      send_flow_mod_add(
+        datapath_id,
+        match: ExactMatch.from(message),
+        actions: SendOutPort.new(OFPP_FLOOD)
+      )
+      send_packet_out(
+        datapath_id,
+        packet_in: message,
+        actions: SendOutPort.new(OFPP_FLOOD)
+      )
+    end
   end
-end
 #+END_SRC
 
 開発効率向上のしくみとして、Tremaにはコントローラ開発に役立つツールが
