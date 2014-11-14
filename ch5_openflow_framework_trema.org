@@ -219,79 +219,76 @@ Hello, Trema!  # Ctrl+c で終了
 を実行できることがわかると思います。 =trema= コマンドには他にもいくつ
 かの機能がありますのでここで簡単に紹介しておきましょう。
 
-** =trema= コマンド
+** tremaコマンド
+=trema= コマンドはTrema唯一のコマンドラインツールであり、コントローラ
+の起動やテストなどさまざまな用途に使います。たとえば先ほどの「Hello
+Trema!」で見たように、 =trema run= はコントローラを起動するためのコマ
+ンドです。起動したコントローラはOpenFlowスイッチと接続しメッセージをや
+りとりします。また、次の章以降で触れますが =trema run= コマンドはオプ
+ションで仮想ネットワークを作ることもでき、作ったコントローラをこの仮想
+ネットワークの中でテストできます（[[fig:trema_overview]]）。このように、
+=trema= コマンドはTremaフレームワークにおける中心的なツールで、あらゆ
+るコントローラ開発の出発点と言えます。
 
-=trema= コマンドは Trema 唯一のコマンドラインツールであり、コントローラ
-の起動やテストなど様々な用途に使います。たとえば先ほどの 「Hello
-Trema!」で見たように、 =trema run= はコントローラを起動するためのコマン
-ドです。起動したコントローラは OpenFlow スイッチと接続しメッセージをや
-りとりします。また、次の章以降で触れますが =trema run= コマンドはオプショ
-ンで仮想ネットワークを作ることもでき、作ったコントローラをこの仮想ネッ
-トワークの中でテストできます [[fig:trema_overview]]。このように、 =trema=
-コマンドは Trema フレームワークにおける中心的なツールで、あらゆるコント
-ローラ開発の出発点と言えます。
-
-#+CAPTION: =trema= コマンドでコントローラを実ネットワークや仮想ネットワークで実行
+#+CAPTION: tremaコマンドの実行イメージ
 #+LABEL: fig:trema_overview
-#+ATTR_HTML: :width 600pt
 [[./ja/images/openflow_framework_trema/trema_overview.png]]
 
 =trema= コマンドは =git= や =svn= コマンドと似たコマンド体系を持ってお
-り、 =trema= に続けて =run= などのサブコマンドを指定することで様々な機
-能を呼び出します。こうしたコマンド体系を一般に「コマンドスイート」と呼
-びます。
+り、 =trema= に続けて =run= などのサブコマンドを指定することでさまざま
+な機能を呼び出します。こうしたコマンド体系を一般に「コマンドスイート」
+と呼びます。
 
 一般的なコマンドスイートと同じく、サブコマンドの一覧は =trema help= で
-表示できます。また、サブコマンド自体のヘルプは =trema help [サブコマン
-ド]= で表示できます。以下に =trema help= で表示されるサブコマンド一覧を
-ざっと紹介しておきましょう。いくつかのサブコマンドはまだ使い方を紹介し
+表示できます。また、サブコマンド自体のヘルプは =trema help［サブコマン
+ド］= で表示できます。以下に、 =trema help= で表示されるサブコマンド一
+覧をざっと紹介しておきます。いくつかのサブコマンドはまだ使い方を紹介し
 ていませんが、続く章で説明しますので今は目を通すだけでかまいません。
 
 - =trema run= ::
                 コントローラをフォアグラウンドで実行する。
-                =--daemonize (-d)= オプションを付けるとコントローラをバッ
-                クグラウンド(デーモンモード)として実行できる
+                =--daemonize（-d）= オプションを付けるとコントローラを
+                バックグラウンド（デーモンモード）として実行できる
 - =trema killall= ::
-                    バックグラウンドで起動している Trema プロセス全体を
+                    バックグラウンドで起動しているTremaプロセス全体を
                     停止する
 - =trema version= ::
                     Tremaのバージョンを表示する。 =trema --version= と
                     同じ
 - =trema ruby= ::
-                 Trema の Ruby API をブラウザで表示する
-- =trema kill [仮想スイッチ]= ::
+                 TremaのRuby APIをブラウザで表示する
+- =trema kill［仮想スイッチ］= ::
      仮想ネットワーク内の指定したスイッチを停止する
-     ([[chap:switch_monitoring_tool]]を参照)
-- =trema up [仮想スイッチ]= ::
+     （[[chap:switch_monitoring_tool]]を参照）
+- =trema up ［仮想スイッチ］= ::
      仮想ネットワークの指定したスイッチを再起動する
-     ([[chap:switch_monitoring_tool]]を参照)
-- =trema send_packets [送信オプション]= ::
+     （[[chap:switch_monitoring_tool]]を参照）
+- =trema send_packets ［送信オプション］= ::
      仮想ネットワーク内でテストパケットを送信する
-     ([[chap:learning_switch]]を参照)
-- =trema show_stats [仮想ホスト名]= ::
+     （[[chap:learning_switch]]を参照）
+- =trema show_stats ［仮想ホスト名］= ::
      仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報を表示す
-     る([[chap:learning_switch]]を参照)
+     る（[[chap:learning_switch]]を参照）
 - =trema reset_stats= ::
      仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報をリセッ
-     トする([[chap:learning_switch]]を参照)
-- =trema dump_flows [仮想スイッチ名]= ::
+     トする（[[chap:learning_switch]]を参照）
+- =trema dump_flows ［仮想スイッチ名］= ::
      仮想ネットワーク内の仮想スイッチのフローテーブルを表示する
-     ([[chap:learning_switch]]を参照)
+     （[[chap:learning_switch]]を参照）
 
-この章ではさきほど使った =trema run= に加えて、Ruby API を表示する
-=trema ruby= コマンドを覚えておいてください。 =trema ruby= を実行すると
-デフォルトブラウザで Trema Ruby API リファレンスのページが開きます
-([[fig:trema_ruby]])。プログラミング中いつでもコマンド一発でリファレン
-スを開けるので大変便利です。
+この章ではさきほど使った =trema run= に加えて、Ruby APIを表示する
+=trema ruby= コマンドを覚えておいてください。 =trema ruby= を実行する
+とデフォルトブラウザでTrema Ruby APIのページ（[[fig:trema_ruby]]）が開きま
+す。プログラミング中いつでもコマンド一発でリファレンスを開けるので大変
+便利です。
 
-#+CAPTION: =trema ruby= コマンドで Trema Ruby API リファレンスを表示したところ
+#+CAPTION: trema rubyコマンドでTrema Ruby APIリファレンスを表示したところ
 #+LABEL: fig:trema_ruby
-#+ATTR_HTML: :width 700pt
 [[./ja/images/openflow_framework_trema/trema_ruby.png]]
 
-では、気になっていた Ruby の文法にそろそろ進みましょう。Part 2 では今後
-もたくさん Ruby を使いますが、その都度必要な文法を説明しますので心配は
-いりません。しっかりついてきてください。
+では、気になっていたRubyの文法にそろそろ進みましょう。Part2では今後も
+たくさんRubyを使いますが、その都度必要な文法を説明しますので心配はいり
+ません。しっかりついてきてください。
 
 ** 即席 Ruby 入門
 
