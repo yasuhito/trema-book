@@ -345,16 +345,16 @@ SmalltalkにはRubyにも取り入れられたイテレータの機能があり�
 チに書き込みます。
 
 #+BEGIN_SRC ruby
-  def make_patch( datapath_id, port_a, port_b )
+  def make_patch(datapath_id, port_a, port_b)
     send_flow_mod_add(
       datapath_id,
-      :match => Match.new( :in_port => port_a ),
-      :actions => SendOutPort.new( port_b )
+      match: Match.new(in_port: port_a),
+      actions: SendOutPort.new(port_b)
     )
     send_flow_mod_add(
       datapath_id,
-      :match => Match.new( :in_port => port_b ),
-      :actions => SendOutPort.new( port_a )
+      match: Match.new(in_port: port_b),
+      actions: SendOutPort.new(port_a)
     )
   end
 #+END_SRC
