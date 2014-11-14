@@ -285,15 +285,11 @@ class PatchPanel < Controller
 グ用のフローエントリを書き込みます。
 
 #+BEGIN_SRC ruby
-  # ...
-
-  def switch_ready( datapath_id )
-    @patch.each do | port_a, port_b |
+  def switch_ready(datapath_id)
+    @patch.each do |port_a, port_b|
       make_patch datapath_id, port_a, port_b
     end
   end
-
-  # ...
 #+END_SRC
 
 - @<tt>{@patch.each}は@<tt>{start}ハンドラで読み込んだパッチング設定を
@@ -352,8 +348,6 @@ SmalltalkにはRubyにも取り入れられたイテレータの機能があり�
 チに書き込みます。
 
 #+BEGIN_SRC ruby
-  # ...
-
   def make_patch( datapath_id, port_a, port_b )
     send_flow_mod_add(
       datapath_id,
@@ -366,8 +360,6 @@ SmalltalkにはRubyにも取り入れられたイテレータの機能があり�
       :actions => SendOutPort.new( port_a )
     )
   end
-
-  # ...
 #+END_SRC
 
 最初に説明したように、1つのパッチは2つのフローエントリになります。
@@ -388,16 +380,14 @@ send_flow_mod_add( datapath_id, options )
 を見てみましょう。
 
 #+BEGIN_SRC ruby
-  # ...
-
   def make_patch(datapath_id, port_a, port_b)
     send_flow_mod_add(
       datapath_id,
-      match: Match.new(:in_port => port_a),
+      match: Match.new(in_port: port_a),
       actions: SendOutPort.new(port_b)
     )
-
-  # ...
+    # ...
+  end
 #+END_SRC
 
 ここでは、ポート@<tt>{port_a}番へ上がってきたパケットをポート
