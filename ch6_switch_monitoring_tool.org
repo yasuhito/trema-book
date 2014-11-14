@@ -348,8 +348,8 @@ door.open
 ます。
 
 #+BEGIN_SRC ruby
-"redrum".reverse
-#=> "murder"
+  'redrum'.reverse
+  # => "murder"
 #+END_SRC
 
 この場合、文字列がひっくりかえり新しい文字列が返ってきました。@<br>{}
@@ -357,8 +357,8 @@ door.open
 質問すると答を返してくれることもあります。
 
 #+BEGIN_SRC ruby
-[ "卵" ].empty?
-#=> false
+  ['卵'].empty?
+  # => false
 #+END_SRC
 
 要素が一つの配列(@<tt>{[ "卵" ]})は空ではないので@<tt>{false}(偽)が返っ
@@ -368,8 +368,8 @@ door.open
 文字をはさんで連結(@<tt>{join})します。
 
 #+BEGIN_SRC ruby
-[ "M", "A", "S", "H" ].join( "★" )
-#=> "M★A★S★H"
+  ['M', 'A', 'S', 'H'].join('★')
+  # => "M★A★S★H"
 #+END_SRC
 
 Rubyにはこのような組込みメソッドが何百種類もあります。それぞれの動作は
