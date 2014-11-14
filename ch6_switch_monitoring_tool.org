@@ -484,26 +484,18 @@ info "Switch " + datapath_id.to_hex + " is UP"
 @<tt>{#{...\}}で組み込んだ方が良いこともあります。
 
 *** スイッチの切断を捕捉する
-@<tt>{switch_disconnected}ハンドラでは、スイッチ一覧リストから切断した
-スイッチのDatapath IDを削除し、切断したスイッチの情報を画面に表示しま
-す。
+=switch_disconnected= ハンドラでは、スイッチ一覧リストから切断したスイッ
+チのDatapath IDを削除し、切断したスイッチの情報を画面に表示します。
 
 #+BEGIN_SRC ruby
-class SwitchMonitor < Controller
-  # ...
-
-  def switch_disconnected( datapath_id )
-    @switches -= [ datapath_id.to_hex ]
-    info "Switch #{ datapath_id.to_hex } is DOWN"
+  def switch_disconnected(datapath_id)
+    @switches -= [datapath_id.to_hex]
+    info "Switch #{datapath_id.to_hex} is DOWN"
   end
-
-  # ...
-end
 #+END_SRC
 
-ここでは@<tt>{switch_ready}とは逆に、配列の引き算(@<tt>{-=})で切断した
-スイッチのDatapath IDを@<tt>{@switches}から除いていることに注意してく
-ださい。
+ここでは =switch_ready= とは逆に、配列の引き算(=-\==)で切断したスイッ
+チのDatapath IDを =@switches= から除いていることに注意してください。
 
 *** スイッチ一覧を一定時間ごとに表示する
 #@warn(クラスメソッドの説明)
@@ -530,15 +522,14 @@ class Human < Controller
 えなくなります。
 
 #+BEGIN_SRC ruby
-class Human < Controller
-  periodic_timer_event :happy_birthday, 31536000
+  class Human < Trema::Controller
+    periodic_timer_event :happy_birthday, 31536000
 
-  # ...
+    private
 
-  private
-
-  def happy_birthday
-    @age += 1
+    def happy_birthday
+      @age += 1
+    end
   end
 #+END_SRC
 
@@ -546,17 +537,17 @@ class Human < Controller
 しょう。
 
 #+BEGIN_SRC ruby
-class SwitchMonitor < Controller
-  periodic_timer_event :show_switches, 10
+  class SwitchMonitor < Controller
+    periodic_timer_event :show_switches, 10
 
-  # ...
+    # ...
 
-  private
+    private
 
-  def show_switches
-    info "All switches = " + @switches.sort.join( ", " )
+    def show_switches
+      info 'All switches = ' + @switches.sort.join(', ')
+    end
   end
-end
 #+END_SRC
 
 クラス名定義直後のタイマー定義より、10秒ごとに@<tt>{show_switches}メソッ
