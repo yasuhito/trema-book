@@ -10,6 +10,8 @@
 足すだけで、簡単に機能を追加できるTremaのパワーを実感してください。
 #+END_VERSE
 
+[[./images/traffic_monitor/flags.png]]
+
 ** トラフィック情報を収集しよう
 第8章で作ったラーニングスイッチをベースに、より高機能なスイッチを作っ
 てみましょう。今回作るトラフィックモニタは、パっと見は普通のラーニング
@@ -26,7 +28,9 @@
 このFlow Removedメッセージにはトラフィック情報が含まれているので、コン
 トローラで取り出して集計してやります（▼図9-1）。
 
-○図9-1：Flow Removedメッセージから統計情報を取得する
+#+CAPTION: Flow Removedメッセージから統計情報を取得する
+#+LABEL: fig:flow_removed
+[[./images/traffic_monitor/flow_removed.png]]
 
 トラフィック収集以外の部分は、ラーニングスイッチとまったく変わりません。
 ソースコードの差分も小さいので、前置きはこのくらいにしてソースコードを
@@ -164,7 +168,9 @@
 の構成でトラフィックモニタを起動してみましょう。リスト9-3の内容の仮想
 ネットワーク設定を =traffic-monitor.conf= として保存します。
 
-○図9-2：トラフィックモニタを実行する仮想ネットワーク環境
+#+CAPTION: トラフィックモニタを実行する仮想ネットワーク環境
+#+LABEL: fig:traffic_monitor_setup
+[[./images/traffic_monitor/traffic_monitor_setup.png]]
 
 ○リスト9-3：仮想スイッチ0xabcに仮想ホストhost1、host2を接続
 #+BEGIN_SRC ruby
@@ -319,7 +325,9 @@ Rubyプログラマはこのようにブロックをたくさん使いますが�
 ントローラはラーニングスイッチ相当の処理をした後、Packet Inしたパケッ
 ト1つ分のトラフィック情報をカウンタに記録します（▼図9-3）。
 
-○図9-3：Packet Inしたパケットもカウンタに記録する
+#+CAPTION: Packet Inしたパケットもカウンタに記録する
+#+LABEL: fig:packet_in
+[[./images/traffic_monitor/packet_in.png]]
 
 実際のトラフィックモニタのコードでは、次のようにPacket Inを送ったホス
 トのMACアドレス (=message.macsa=) と、パケットの数1つ、そしてパケット
