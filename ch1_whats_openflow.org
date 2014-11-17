@@ -10,6 +10,9 @@
 いネットワーク用語を使わずに、身近なたとえ話で解説します。
 #+END_VERSE
 
+#+ATTR_HTML: :width 500pt
+[[./images/whats_openflow/incredible_machine.png]]
+
 ** ソフトウェアで思いどおりにコントロールする
 #+BEGIN_QUOTE
 無精（Laziness）：エネルギーの総支出を減らすために、多大な努力をするよ
