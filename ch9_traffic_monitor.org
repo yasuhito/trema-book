@@ -86,8 +86,8 @@
     def show_counter
       puts Time.now
       @counter.each_pair do |mac, counter|
-        puts "#{mac} #{counter[:packet_count]} packets"\
-             " (#{counter[:byte_count]} bytes)"
+        puts "#{mac} #{counter[:packet_count]} packets "\
+             "(#{counter[:byte_count]} bytes)"
       end
     end
 
@@ -287,7 +287,8 @@ byte_count: 0= というハッシュテーブルを代入する」という意�
 
 #+BEGIN_SRC ruby
   @counter.each_pair do |mac, counter|
-    puts "#{mac} #{counter[:packet_count]} packets (#{counter[:byte_count]} bytes)"
+    puts "#{mac} #{counter[:packet_count]} packets "\
+         "(#{counter[:byte_count]} bytes)"
   end
 #+END_SRC
 

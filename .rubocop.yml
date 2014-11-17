@@ -13,6 +13,10 @@ Style/FileName:
     - Guardfile
     - Rakefile
 
+Style/Documentation:
+  Exclude:
+    - 'build/listings/*.rb'
+
 Style/TrailingBlankLines:
   Exclude:
     - 'build/listings/*.rb'

@@ -50,29 +50,29 @@ Tremaのサンプルアプリに付属する@<tt>{switch_monitor/switch-monitor.
 //list[switch-monitor.rb][スイッチ監視ツール (@<tt>{switch-monitor.rb}) のソースコード]{
 
 #+BEGIN_SRC ruby
-class SwitchMonitor < Controller
-  periodic_timer_event :show_switches, 10
+  class SwitchMonitor < Controller
+    periodic_timer_event :show_switches, 10
 
-  def start
-    @switches = []
+    def start
+      @switches = []
+    end
+
+    def switch_ready(datapath_id)
+      @switches << datapath_id.to_hex
+      info "Switch #{datapath_id.to_hex} is UP"
+    end
+
+    def switch_disconnected(datapath_id)
+      @switches -= [datapath_id.to_hex]
+      info "Switch #{datapath_id.to_hex} is DOWN"
+    end
+
+    private
+
+    def show_switches
+      info 'All switches = ' + @switches.sort.join(', ')
+    end
   end
-
-  def switch_ready( datapath_id )
-    @switches << datapath_id.to_hex
-    info "Switch #{ datapath_id.to_hex } is UP"
-  end
-
-  def switch_disconnected( datapath_id )
-    @switches -= [ datapath_id.to_hex ]
-    info "Switch #{ datapath_id.to_hex } is DOWN"
-  end
-
-  private
-
-  def show_switches
-    info "All switches = " + @switches.sort.join( ", " )
-  end
-end
 #+END_SRC
 
 新しい品詞や構文がいくつかありますが、今までに学んだ知識だけでこのRuby
@@ -419,21 +419,20 @@ Rubyにはこのような組込みメソッドが何百種類もあります。�
 イッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
 
 #+BEGIN_SRC ruby
-class SwitchMonitor < Controller
-  # ...
+  class SwitchMonitor < Controller
+    # ...
 
-  def start
-    @switches = []
+    def start
+      @switches = []
+    end
+
+    def switch_ready(datapath_id)
+      @switches << datapath_id.to_hex
+      info "Switch #{datapath_id.to_hex} is UP"
+    end
+
+    # ...
   end
-
-
-  def switch_ready( datapath_id )
-    @switches << datapath_id.to_hex
-    info "Switch #{ datapath_id.to_hex } is UP"
-  end
-
-  # ...
-end
 #+END_SRC
 
 @<tt>{@switches}は現在起動しているスイッチのDatapath IDを管理するイン
@@ -506,9 +505,12 @@ info "Switch " + datapath_id.to_hex + " is UP"
 定された間隔ごとに呼ばれます。
 
 #+BEGIN_SRC ruby
-class Human < Controller
-  # 1年(31536000 秒)ごとにhappy_birthdayメソッドを呼ぶ
-  periodic_timer_event :happy_birthday, 31536000
+  class Human < Controller
+    # 1年(31536000 秒)ごとにhappy_birthdayメソッドを呼ぶ
+    periodic_timer_event :happy_birthday, 31_536_000
+
+    # ...
+  end
 #+END_SRC
 
 この定義はクラス名定義の直後に来るので、まるでクラス属性としてタイマー
@@ -522,7 +524,7 @@ class Human < Controller
 
 #+BEGIN_SRC ruby
   class Human < Trema::Controller
-    periodic_timer_event :happy_birthday, 31536000
+    periodic_timer_event :happy_birthday, 31_536_000
 
     private
 
@@ -536,7 +538,7 @@ class Human < Controller
 しょう。
 
 #+BEGIN_SRC ruby
-  class SwitchMonitor < Controller
+  class SwitchMonitor < Trema::Controller
     periodic_timer_event :show_switches, 10
 
     # ...
