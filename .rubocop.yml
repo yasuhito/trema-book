@@ -17,6 +17,10 @@ Style/Documentation:
   Exclude:
     - 'build/listings/*.rb'
 
+Style/WordArray:
+  Exclude:
+    - 'build/listings/*.rb'
+      
 Style/TrailingBlankLines:
   Exclude:
     - 'build/listings/*.rb'
