@@ -213,9 +213,7 @@ Rubyの正規表現はPerlや他の言語の正規表現とほとんど同じで
 条件に指定することでマッチしたかどうかを判定できます。
 
 #+BEGIN_SRC ruby
-  if /taura/=~ 'restaurant'
-    puts 'restaurantはtauraにマッチ'
-  end
+  puts 'restaurantはtauraにマッチ' if /taura/=~ 'restaurant'
 
   # (出力)
   # restaurantはtauraにマッチ
@@ -299,7 +297,6 @@ Rubyの正規表現はPerlや他の言語の正規表現とほとんど同じで
   に取る。
 
 **** [column] 取間先生曰く：イテレータの仮引数は@<tt>{each}にしよう
-
 イテレータを回すとき、仮引数の名前には何を使うのがよいでしょうか？律義
 なプログラマはたとえば次のように、要素の種類に応じて名前を変えているで
 しょう。
@@ -307,11 +304,13 @@ Rubyの正規表現はPerlや他の言語の正規表現とほとんど同じで
 #+BEGIN_SRC ruby
   # pages に対するイテレータなので、仮引数は page
   pages.each do |page|
+    puts "Saving #{page.number}..."
     page.save
   end
 
   # servers に対するイテレータなので、仮引数は server
   servers.each do |server|
+    puts "shutting down #{server.name}..."
     server.shutdown!
   end
 #+END_SRC
@@ -320,10 +319,12 @@ Rubyの正規表現はPerlや他の言語の正規表現とほとんど同じで
 
 #+BEGIN_SRC ruby
   pages.each do |each|
+    puts "Saving #{each.number}..."
     each.save
   end
 
   servers.each do |each|
+    puts "shutting down #{server.name}..."
     each.shutdown!
   end
 #+END_SRC

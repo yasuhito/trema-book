@@ -255,9 +255,7 @@ byte_count: 0= というハッシュテーブルを代入する」という意�
 なります。
 
 #+BEGIN_SRC ruby
-  if @db[mac].nil?
-    @db[mac] = { packet_count: 0, byte_count: 0 }
-  end
+  @db[mac] = { packet_count: 0, byte_count: 0 } if @db[mac].nil?
   @db[mac][:packet_count] += packet_count
   @db[mac][:byte_count] += byte_count
 #+END_SRC

@@ -282,19 +282,18 @@ periodic_timer_event show_switches, 10
 えます。具体的な例として次の@<tt>{Human}クラスを見てください。
 
 #+BEGIN_SRC ruby
-# 人間を表すクラス
-class Human
-  # 初期化。生まれたときは歳は0歳
-  def initialize
-    @age = 0
-  end
+  # 人間を表すクラス
+  class Human
+    # 初期化。生まれたときは歳は0歳
+    def initialize
+      @age = 0
+    end
 
-
-  # 一年に一度、歳をとる
-  def happy_birthday
-    @age += 1
+    # 一年に一度、歳をとる
+    def happy_birthday
+      @age += 1
+    end
   end
-end
 #+END_SRC
 
 @<tt>{Human}クラスで定義される@<tt>{Human}オブジェクトは、初期化したと
@@ -468,13 +467,13 @@ run}をフォアグラウンドで実行している場合にはターミナル�
 組込む文法です。
 
 #+BEGIN_SRC ruby
-info "Switch #{ datapath_id.to_hex } is UP"
+  info "Switch #{ datapath_id.to_hex } is UP"
 #+END_SRC
 
 これは次のコードと同じです。
 
 #+BEGIN_SRC ruby
-info "Switch " + datapath_id.to_hex + " is UP"
+  info 'Switch ' + datapath_id.to_hex + ' is UP'
 #+END_SRC
 
 どちらを使ってもかまいませんが、@<tt>{+}による文字列の連結を使いすぎる
