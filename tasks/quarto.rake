@@ -26,6 +26,7 @@ Quarto.configure do |config|
     'ch7_patch_panel.org',
     'ch8_learning_switch.org',
     'ch9_traffic_monitor.org',
+    'ch10_router_part1.org',
     'ch14_routing_switch.org',
     'ch15_sliceable_switch.org'
   ]
