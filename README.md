@@ -2,6 +2,7 @@ topology
 ========
 [![Build Status](http://img.shields.io/travis/trema/topology/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/topology.svg?style=flat)][codeclimate]
+[![Coverage Status](http://img.shields.io/codeclimate/coverage/github/trema/topology.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
 [![Gitter chat](https://badges.gitter.im/trema/topology.png)][gitter]
 
