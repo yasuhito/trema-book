@@ -4,16 +4,16 @@ gem 'trema', github: 'trema/trema', branch: 'develop'
 
 group :development, :test do
   gem 'aruba', require: false
-  gem 'cucumber', '~> 1.3.16'
+  gem 'cucumber', require: false
   gem 'flog', require: false
-  gem 'guard', '~> 2.6.1'
+  gem 'guard', require: false
   gem 'guard-bundler', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
-  gem 'rake'
+  gem 'rake', require: false
   gem 'reek', require: false
-  gem 'rspec', '~> 3.0.0'
-  gem 'rspec-given', '~> 3.5.4'
+  gem 'rspec', require: false
+  gem 'rspec-given', require: false
   gem 'rubocop', require: false
 end
 
