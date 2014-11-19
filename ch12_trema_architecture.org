@@ -1,0 +1,637 @@
+#+TITLE: Tremaのアーキテクチャ
+#+AUTHOR: Yasuhito Takamiya
+#+LANGUAGE: ja
+#+HTML_HEAD_EXTRA: <link rel="stylesheet" type="text/css" href="book.css" />
+#+OPTIONS: toc:nil
+
+* Tremaのアーキテクチャ
+#+BEGIN_VERSE
+今まで触れてこなかったTremaの内部構造を詳しく見てみましょう。他の章に
+比べ少し難易度が高いので、取っつきやすいように対話形式にしました。
+#+END_VERSE
+
+** OpenFlow先生が家にやってきた
+3月にしてはあたたかい夜更け、友太郎▼ルビ：ゆうたろう▼君が自宅の書斎
+にていつものようにコーディングを楽しんでいたときのこと。ふいに、玄関の
+外から聞き覚えのある声。
+
+*謎の声* ：「もしもし、友太郎君はおるかの？」
+
+*友太郎君* ：「あっ！ 取間▼ルビ：とれま▼先生じゃないですか。こんな夜
+中にどうされたんですか？」
+
+*取間先生* ：「三軒茶屋（東京都）で飲んでいたら、愛用のサンダルがなく
+なってしまってのう。必死に探したんじゃが、どうやら別の客が間違えて履い
+て行ってしまったようじゃ。そのおかげで終電までなくしてしもうたわい！
+ワッハッハ」
+
+この取間先生、飲んでいて陽気ですが足元を見るとたしかに裸足です。それに
+着物の裾▼ルビ：すそ▼もやたらと汚れています。どうやら酔った勢いだけで、
+友太郎君の住む武蔵小杉（神奈川県）まではるばる歩いてきてしまったようで
+す。
+
+*取間先生* ：「そこで悪いのじゃが友太郎君、今夜はこのみじめな老人を泊
+めてくれんか？ お礼と言ってはなんじゃが、始発まで時間はたっぷりあるか
+らTremaについてまだ話してなかったことをすべて教えよう。友太郎君は最近
+Tremaでいろいろとアプリを書いているようだし、いろいろ聞きたい事もある
+だろうと思ってな」
+
+*友太郎君* ：「ぜひそのお話聞きたいです！ さあさどうぞお上がりください」
+
+** trema runの裏側
+*取間先生* ：「では基本的な話から。Tremaでコントローラを動かすには
+=trema run= じゃったな（第5章）。このコマンド、実は裏でいろんなプロセ
+スを起動しているんじゃ。具体的に何をやっているか、 =trema run= に =-v=
+オプションを付けると見ることができるぞ。さっそく、サンプルに付いている
+ラーニングスイッチ（第8章）を試しに起動してみてごらん」
+
+#+BEGIN_SRC bash
+% trema -v run learning-switch.rb -c learning_switch.conf
+（省略）/switch_manager --daemonize --port=6633 \
+  -- port_status::LearningSwitch packet_in::LearningSwitch \
+  state_notify::LearningSwitch vendor::LearningSwitch
+sudo ip link delete trema0-0 2>/dev/null
+sudo ip link delete trema1-0 2>/dev/null
+sudo ip link add name trema0-0 type veth peer name trema0-1
+sudo sysctl -w net.ipv6.conf.trema0-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema0-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema0-0 up
+sudo /sbin/ifconfig trema0-1 up
+sudo ip link add name trema1-0 type veth peer name trema1-1
+sudo sysctl -w net.ipv6.conf.trema1-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema1-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema1-0 up
+sudo /sbin/ifconfig trema1-1 up
+sudo （省略）/phost/phost -i trema0-1 -p （省略）/trema/tmp/pid -l \
+（省略）/trema/tmp/log -D
+sudo （省略）/phost/cli -i trema0-1 set_host_addr --ip_addr 192.168.0.1 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:01
+sudo （省略）/phost/phost -i trema1-1 -p （省略）/trema/tmp/pid -l （省略）/
+trema/tmp/log -D
+sudo （省略）/phost/cli -i trema1-1 set_host_addr --ip_addr 192.168.0.2 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:02
+sudo （省略）/openvswitch/bin/ovs-openflowd --detach --out-of-band --fail=closed \
+  --inactivity-probe=180 --rate-limit=40000 --burst-limit=20000 \
+  --pidfile=（省略）/trema/tmp/pid/open_vswitch.lsw.pid \
+  --verbose=ANY:file:dbg \
+  --verbose=ANY:console:err --log-file=（省略）/trema/tmp/log/openflowd.lsw.log \
+  --datapath-id=0000000000000abc --unixctl=（省略）/trema/tmp/sock/ovs-openflowd.lsw.ctl \
+  --ports=trema0-0,trema1-0 netdev@vsw_0xabc tcp:127.0.0.1:6633
+sudo （省略）/phost/cli -i trema0-1 add_arp_entry --ip_addr 192.168.0.2 \
+  --mac_addr 00:00:00:01:00:02
+sudo （省略）/phost/cli -i trema1-1 add_arp_entry --ip_addr 192.168.0.1 \
+  --mac_addr 00:00:00:01:00:01
+#+END_SRC
+
+*友太郎君* ：「うわっ！ なんだかいっぱい字が出てきましたね」
+
+*取間先生* ：「この出力をよーく見れば、 =trema run= コマンドが裏でどん
+なことをしてくれているのかスグわかるのじゃ。たとえばログの最初を見ると、
+=switch_manager= というプロセスが起動されておるな？ Tremaではこのプロ
+セスがスイッチと最初に接続するんじゃ」
+
+** Switch Manager
+Switch Manager (=[trema]/objects/switch_manager/switch_manager=) はス
+イッチからの接続要求を待ち受けるデーモンです。スイッチとの接続を確立す
+ると、子プロセスとしてSwitch Daemonプロセスを起動し、スイッチとの接続
+をこのプロセスへ引き渡します（▼図12-1）。
+
+#+CAPTION: スイッチからの接続の受付
+#+LABEL: fig:switch_manager_daemon
+[[./images/trema_architecture/switch_manager_daemon.png]]
+
+*友太郎君* ：「うーむ。いきなりむずかしいです」
+
+*取間先生* ：「そんなことはないぞ、ぜんぜん簡単じゃ。Switch Managerの
+役割はいわばUNIXのinetdと同じと考えればよい。つまりSwitch Managerは新
+しいスイッチが接続してくるのを見張っているだけで、実際のスイッチとのや
+りとりはスイッチごとに起動するSwitch Daemonプロセスに一切合切まかせて
+しまうというわけじゃ」
+
+*友太郎君* ：「なるほど！ たしかによく似ていますね」
+
+** Switch Daemon
+Switch Daemon (=[trema]/objects/switch_manager/switch=) は、Switch
+Managerが確立したスイッチとの接続を引き継ぎ、スイッチとTrema上のアプリ
+ケーションプロセスとの間で流れるOpenFlowメッセージを仲介します（▼図
+12-2）。
+
+#+CAPTION: スイッチとTremaアプリケーションの間でOpenFlowメッセージを仲介するSwitch Daemon
+#+LABEL: fig:switch_daemon
+[[./images/trema_architecture/switch_daemon.png]]
+
+- アプリケーションプロセスが生成したOpenFlowメッセージをスイッチへ配送する
+- スイッチから受信したOpenFlowメッセージをアプリケーションプロセスへ届ける
+
+*** OpenFlowメッセージの検査
+Switch Daemonの重要な仕事として、OpenFlowメッセージの検査があります。
+Switch DaemonはTremaアプリケーションとスイッチの間で交換されるOpenFlow
+メッセージの中身をすべて検査します。そして、もし不正なメッセージを発見
+するとログファイル (=[trema]/tmp/log/switch.[接続しているスイッチの
+Datapath ID].log=) にエラーを出します。
+
+*友太郎君* ：「Switch ManagerとSwitch Daemonプロセスでの役割分担とか、
+スイッチごとにSwitch Daemonプロセスが起動するところなど、ほんとにUNIXっ
+ぽいですね」
+
+*取間先生* ：「うむ。そうしたほうが1つひとつのデーモンが単純化できて、
+実装も簡単になるからな」
+
+*友太郎君* ：「送信するメッセージを厳密にチェックするのはいいと思うん
+ですが、受信もチェックするのってやりすぎではないですか？ ほら、“送信
+するものに関しては厳密に、受信するものに関しては寛容に▼注1”って言う
+じゃないですか」
+
+*取間先生* ：「受信メッセージのチェックをあまり寛容にしすぎると、後々
+とんでもないことが起こるのじゃ。Tremaの開発者が言っておったが、昔ある
+ネットワーク機器の開発でそれをやって相互接続テストでひどい目に遭ったそ
+うじゃよ。それに、Tremaは受信メッセージもちゃんとチェックするようにし
+たおかげで、実際に助かったことがたくさんあったのじゃ。たとえばOpenFlow
+の標準的なベンチマークツールCbench（第４章）のバグ発見にTremaが一役買っ
+たそうじゃ」
+
+*友太郎君* ：「へえー！ すごいですね!」
+
+○注1：TCPを規定したRFC 793において、ジョン・ポステルが“相互運用性を
+確保するためにTCPの実装が持つべき性質”として要約した、いわゆる堅牢▼
+ルビ：けんろう▼さ原則のこと。
+
+*** コラム：【取間先生曰く】きれいなOpenFlowメッセージを作る
+OpenFlowメッセージフォーマットはCの構造体で定義されていて、ところどこ
+ろパディング（詰め物）領域があります。このパディング領域はまったく使わ
+れないので、実際は何が入っていても動きます。しかしデバッグでOpenFlowメッ
+セージを16進ダンプしたときなど、ここにゴミが入っていると大変見づらいも
+のです。
+
+そこでSwitch Daemonは送受信するOpenFlowメッセージのパディング部分をす
+べてゼロで埋め、きれいなOpenFlowメッセージにして送ってあげるという地道
+なことをやっています。これに気づく人は少ないでしょうが、こういう見えな
+い工夫こそがTremaの品質です。
+
+*** スイッチの仮想化
+Switch Daemonのもう1つの重要な役割がスイッチの仮想化です。実は、Trema
+では1つのスイッチにいくつものアプリケーションをつなげられます。このと
+き、アプリケーションの間でスイッチ制御を調停し、競合が起きないようにす
+るのもSwitch Daemonの大きな役割です（▼図12-3）。
+
+#+CAPTION: Switch Daemonはスイッチ制御を調停することでアプリ間の競合を防ぐ
+#+LABEL: fig:switch_virtualization
+[[./images/trema_architecture/switch_virtualization.png]]
+
+例を1つ挙げます。OpenFlowの仕様にFlow Cookieという便利な機能があります。
+このCookieをFlow Modのパラメータとして指定すると、たとえば同じCookieを
+持つフローエントリーどうしを1つのグループとしてまとめて管理するなどが
+できます。
+
+TremaでこのCookieを使った場合、よく調べるとFlow Modで指定したCookie値
+とスイッチのフローテーブルに実際に設定されたCookie値が異なることがわか
+ります。これはSwitch Daemonがアプリケーション間でCookie値の競合が起こ
+らないように調停しているからです。たとえば、Trema上で動くアプリケーショ
+ンAとBがたまたま同じCookie値の10を使おうとするとどうなるでしょうか（▼
+図12-4）。そのままだと、両者が混じってしまい混乱します。Switch Daemon
+は、こうしたCookie値の重複を避けるための次の変換を行います。Switch
+DaemonにCookie値が指定されたFlow Modが届くと、Switch DaemonはCookie値
+をまだ使われていない値に変換してからスイッチに打ち込みます（逆方向のメッ
+セージではこれと逆のことを行います）。この変換のおかげで、プログラマは
+ほかのアプリケーションとCookie値がかぶらないように注意する必要がなくな
+ります。
+
+#+CAPTION: Cookie値を自動変換してアプリ間の競合を防ぐ
+#+LABEL: fig:flow_cookie_virtualization
+[[./images/trema_architecture/flow_cookie_virtualization.png]]
+
+このほかにも、Switch DaemonはOpenFlowメッセージのトランザクションIDも
+自動で変換します。まさにTremaの世界の平和を守る縁の下の力持ちと言えま
+す。
+
+** 仮想ネットワーク
+*友太郎君* ：「Tremaでなにがうれしいかって、仮想ネットワークの機能ですよね！ おかげでノートパソコン1台で開発できるからすっごく楽なんですけど、あれってどういう仕組みなんですか？」
+
+*取間先生* ：「むずかしいことはしておらん。Linuxカーネルの標準機能を使って、仮想スイッチプロセスと仮想ホストプロセスをつなげているだけじゃ」
+
+*友太郎君* ：「？」
+
+*** 仮想スイッチ
+仮想スイッチの実体は、フリーのOpenFlowスイッチ実装であるOpen
+vSwitch（http://openvswitch.org/）です。 =trema run= コマンドに与えら
+れた仮想ネットワーク設定ファイル中の仮想スイッチ定義（▼リスト12-1）に
+従って、Tremaはスイッチプロセスを必要な数だけ起動します。
+
+○リスト12-1：仮想ネットワーク設定ファイル中の仮想スイッチ定義例
+#+BEGIN_SRC ruby
+vswitch("lsw") {
+  datapath_id "0xabc"
+}
+#+END_SRC
+
+これに対応する =trema run= のログは次のようになります。
+
+#+BEGIN_SRC bash
+% trema -v run learning-switch.rb -c learning_switch.conf ▼<Enter>
+（省略）
+sudo （省略）/openvswitch/bin/ovs-openflowd --detach --out-of-band \
+  --fail=closed \
+  --inactivity-probe=180 --rate-limit=40000 --burst-limit=20000 \
+  --pidfile=（省略）/trema/tmp/pid/open_vswitch.lsw.pid \
+  --verbose=ANY:file:dbg \
+  --verbose=ANY:console:err \
+  --log-file=（省略）/trema/tmp/log/openflowd.lsw.log \
+  --datapath-id=0000000000000abc \
+  --unixctl=（省略）/trema/tmp/sock/ovs-openflowd.lsw.ctl \
+  --ports=trema0-0,trema1-0 netdev@vsw_0xabc tcp:127.0.0.1:6633
+（省略）
+#+END_SRC
+
+*** 仮想ホスト
+仮想ホストの実体は、phostと呼ばれるユーザレベルプロセスです
+(=[trema]/objects/phost/phost=)。これは、任意のイーサネットフレーム・
+UDP/IPパケットを送受信できます。 =trema run= コマンドに与えられた設定
+ファイル中の仮想ホスト定義（▼リスト12-2）に従って、Tremaは必要な数の
+phostプロセスを起動します。
+
+○リスト12-2：仮想ネットワーク設定ファイル中の仮想ホスト定義例
+#+BEGIN_SRC ruby
+vhost("host1") {
+  ip "192.168.0.1"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:01"
+}
+
+vhost("host2") {
+  ip "192.168.0.2"
+  netmask "255.255.0.0"
+  mac "00:00:00:01:00:02"
+}
+#+END_SRC
+
+これに対応する =trema run= のログは次のようになります。
+
+#+BEGIN_SRC bash
+% trema -v run learning-switch.rb -c learning_switch.conf ▼<Enter>
+（省略）
+sudo （省略）/phost/phost -i trema0-1 -p （省略）/trema/tmp/pid -l \
+  （省略）/trema/tmp/log -D
+sudo （省略）/phost/cli -i trema0-1 set_host_addr --ip_addr 192.168.0.1 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:01
+sudo （省略）/phost/phost -i trema1-1 -p （省略）/trema/tmp/pid -l \
+  （省略）/trema/tmp/log -D
+sudo （省略）/phost/cli -i trema1-1 set_host_addr --ip_addr 192.168.0.2 \
+  --ip_mask 255.255.0.0 --mac_addr 00:00:00:01:00:02
+（省略）
+sudo （省略）/phost/cli -i trema0-1 add_arp_entry --ip_addr 192.168.0.2 \
+  --mac_addr 00:00:00:01:00:02
+sudo （省略）/phost/cli -i trema1-1 add_arp_entry --ip_addr 192.168.0.1 \
+  --mac_addr 00:00:00:01:00:01
+#+END_SRC
+
+*** 仮想リンク
+仮想スイッチと仮想ホストを接続する仮想リンクの実体は、Linuxが標準で提
+供するVirtual Ethernet Deviceです。これは、Point-to-Pointのイーサネッ
+トリンクを仮想的に構成してくれるものです。 =trema run= コマンドに与え
+られた仮想ネットワーク設定ファイル中の仮想リンク定義（▼リスト12-3）に
+従って、Tremaは必要な数の仮想リンクを作ります。
+
+○リスト12-3：仮想ネットワーク設定ファイル中の仮想リンク定義例
+#+BEGIN_SRC ruby
+link "lsw", "host1"
+link "lsw", "host2"
+#+END_SRC
+
+これに対応する =trema run= のログは次のようになります。
+
+#+BEGIN_SRC bash
+% trema -v run learning-switch.rb -c learning_switch.conf ▼<Enter>
+（省略）
+sudo ip link delete trema0-0 2>/dev/null
+sudo ip link delete trema1-0 2>/dev/null
+sudo ip link add name trema0-0 type veth peer name trema0-1
+sudo sysctl -w net.ipv6.conf.trema0-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema0-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema0-0 up
+sudo /sbin/ifconfig trema0-1 up
+sudo ip link add name trema1-0 type veth peer name trema1-1
+sudo sysctl -w net.ipv6.conf.trema1-0.disable_ipv6=1 >/dev/null 2>&1
+sudo sysctl -w net.ipv6.conf.trema1-1.disable_ipv6=1 >/dev/null 2>&1
+sudo /sbin/ifconfig trema1-0 up
+sudo /sbin/ifconfig trema1-1 up
+（省略）
+#+END_SRC
+
+** Trema Cライブラリ
+*友太郎君* ：「そういえば、Tremaって実はCからも使えるらしいじゃないですか。せっかくだから、どんなライブラリがあるか教えてくれますか」
+
+*取間先生* ：「よかろう。しかし、わしはちょっと飲み足りないので、一緒にビールでも買いに行かんか？ Cライブラリもなにしろ数がたくさんあるから、歩きながら1つずつ説明することにしよう」
+
+*友太郎君* ：「まだ飲むんだ……」
+
+*取間先生* ：「なんじゃとお！」
+
+　酔っ払いに怒られることほどみじめなことはありません。でも友太郎君は取間先生の話が聞きたいので仕方なくコンビニエンスストアまで付き合います。
+
+*** OpenFlow Application Interface
+OpenFlowメッセージを受信したときにアプリケーションのハンドラを起動した
+り、逆にアプリケーションが送信したOpenFlowメッセージを適切なSwitch
+Daemonに配送したりするのがOpenFlow Application Interface
+(=[trema]/src/lib/openflow_application_interface.c=) です。
+
+OpenFlow Application Interfaceは、アプリケーションが受信したOpenFlowメッ
+セージをプログラマが扱いやすい形に変換してハンドラに渡します。たとえば、
+次の処理を行います。
+
+- OpenFlowメッセージのマッチングルール部をホストバイトオーダーへ変換
+- アクションなどの可変長部分をリストに変換
+- Packet Inメッセージに含まれるイーサネットフレームを解析し、フレーム
+  と解析結果（パケットの種類など）を組にしてハンドラへ渡す
+
+*友太郎君* ：「なるほど。TremaのOpenFlow APIが使いやすい理由って、裏で
+こういう変換をたくさんやってくれているからなんですね。たしかにバイトオー
+ダー変換とかを意識しないで書けるのってすごく楽です」
+
+*取間先生* ：「そうそう。他のOpenFlowフレームワークでここまで親切なも
+のはないぞ。Tremaはこうやってプログラマの凡ミスによるバグを減らしてい
+るんじゃ」
+
+*** OpenFlow Messages
+アプリケーションがOpenFlowメッセージを生成するときに使うのが、OpenFlow
+Messages (=[trema]/src/lib/openflow_message.c) です。メッセージ受信
+の場合とは逆に、
+
+- ホストバイトオーダーで指定された値をネットワークバイトオーダーで変換
+  し、OpenFlowメッセージのヘッダへ格納
+- リストの形で与えられた値を可変長ヘッダへ格納
+
+などを行います。
+
+また、不正なメッセージの生成を防ぐため、パラメータ値の範囲検査やフラグ
+の検査などOpenFlow仕様と照らし合わせた厳密なチェックをここでやります。
+生成したメッセージは、OpenFlow Application Interfaceが提供するメッセー
+ジ送信APIを用いて、Switch Daemonを介してスイッチへ送信します。
+
+*友太郎君* ：「チェックが厳しいですね！」
+
+*取間先生* ：「これはさっきも言ったように、Tremaをいろいろなベンダのス
+イッチと相互接続したときに相手に迷惑をかけないための最低限の礼儀じゃ。
+逆に言うと、Tremaと問題なくつながるスイッチは正しいOpenFlow 1.0をしゃ
+べることができる、とも言えるな」
+
+*友太郎君* ：「かっこいい！」
+
+*** パケットパーサ
+Packet Inメッセージに含まれるイーサネットフレームを解析したり、解析結
+果を参照するAPIを提供したりするのが、パケットパーサ
+(=[trema]/src/lib/packet_parser.c=) です。パケットがTCPなのかUDPなのか
+といったパケットの種類の判別や、MACやIPアドレスといったヘッダフィール
+ド値の参照を容易にしています。
+
+*** プロセス間通信
+Switch Daemonとユーザのアプリケーション間のOpenFlowメッセージのやりと
+りなど、プロセス間の通信には =[trema]/src/lib/messenger.c= で定義され
+るプロセス間通信APIが使われます。
+
+*** 基本データ構造
+その他、Cライブラリでは基本的なデータ構造を提供しています。たとえば、
+イーサネットフレームを扱うための可変長バッファ
+(=[trema]/src/lib/buffer.c=)、アクションリストなどを入れるための連結リ
+スト (=[trema]/src/lib/{linked_list.c,doubly_linked_list.c}=)、FDBなど
+に使うハッシュテーブル (=[trema]/src/lib/hash_table.c=) などです。ただ
+し、Rubyには標準でこれらのデータ構造があるため、Rubyライブラリでは使わ
+れません。
+
+*取間先生* ：「TremaのRubyライブラリも、このしっかりとしたCライブラリ
+の上に構築されておる。 =[trema]/ruby/= ディレクトリの中を見てみるとわ
+かるが、Rubyライブラリの大半はCで書かれておるのだ。そのおかげでこうし
+た各種チェックがRubyからも利用できる」
+
+*友太郎君* ：「へー！ あ、家に着きましたね」
+
+** 低レベルデバッグツールTremashark
+コンビニエンスストアから帰ってきましたが、深夜の2人のTrema談義はさらに
+続きます。
+
+*取間先生* ：「こうして見るとTremaって意外と複雑じゃろう。もし友太郎君
+がさらにTremaをハックしてみたいとして、ツールの手助けなしにやるのはちょっ
+とたいへんだと思うから、いいツールを紹介してあげよう。これはTremashark
+と言って、Tremaの内部動作を可視化してくれるありがたいツールじゃ。これ
+を使うと、アプリケーションとSwitch Daemonの間でやりとりされるメッセー
+ジの中身など、いろんなものがWiresharkのGUIで見られて便利じゃぞ」
+
+*友太郎君* ：「おお、そんなものがあるんですね！」
+
+*** Tremasharkの強力な機能
+TremasharkはTremaの内部動作と関連するさまざまな情報を可視化するツール
+で、具体的には次の情報を収集・解析し、表示する機能を持ちます（▼図
+12-5）。
+
+1. Trema内部やアプリケーション間の通信（IPC）イベント
+2. セキュアチャネル、および任意のネットワークインターフェース上を流れるメッセージ
+3. スイッチやホストなどから送信されたSyslogメッセージ
+4. スイッチのCLI出力など、任意の文字列
+
+#+CAPTION: Tremasharkの概要
+#+LABEL: fig:tremashark_overview
+[[./images/trema_architecture/tremashark_overview.png]]
+
+各種情報の収集を行うのがTremasharkのイベントコレクタです。これは、
+Trema内部や外部プロセス・ネットワーク装置などから情報を収集し、時系列
+順に整列します。整列した情報は、ファイルに保存したりユーザインターフェー
+ス上でリアルタイムに表示したりできます。
+
+TremasharkのユーザインターフェースはWiresharkとTremaプラグインからなり
+ます。イベントコレクタによって収集した情報はこのプラグインが解析し、
+WiresharkのGUIもしくはCUI上に表示します。
+
+*** 動かしてみよう
+イベントコレクタは、Tremaをビルドする際に自動的にビルドされます。しか
+し、Tremaプラグイン標準ではビルドされませんので、利用するには次の準備
+が必要です。
+
+**** Wiresharkのインストール
+TremasharkのユーザインターフェースはWiresharkを利用していますので、ま
+ずはWiresharkのインストールが必要です。Ubuntu LinuxやDebian GNU/Linux
+での手順は次のようになります。
+
+#+BEGIN_SRC bash
+% sudo apt-get install wireshark ▼<Enter>
+#+END_SRC
+
+**** Tremaプラグインのインストール
+次に、WiresharkのTremaプラグインをビルドしてインストールします。Ubuntu
+Linux 11.10の場合の手順は次のとおりです。
+
+#+BEGIN_SRC bash
+% cd /tmp ▼<Enter>
+% apt-get source wireshark ▼<Enter>
+% sudo apt-get build-dep wireshark ▼<Enter>
+% cd ［tremaディレクトリ］/src/tremashark/plugin ▼<Enter>
+% ln -s /tmp/wireshark-（バージョン番号） wireshark ▼<Enter>
+% cd wireshark ▼<Enter>
+% ./configure ▼<Enter>
+% cd ../packet-trema ▼<Enter>
+% make ▼<Enter>
+% mkdir -p ~/.wireshark/plugins ▼<Enter>
+% cp packet-trema.so ~/.wireshark/plugins ▼<Enter>
+% cp ../user_dlts ~/.wireshark ▼<Enter>
+#+END_SRC
+
+**** OpenFlowプラグインのインストール
+Tremaのモジュール間で交換されるOpenFlowメッセージを解析し表示するには、
+Tremaプラグインに加えてOpenFlowプロトコルのプラグインも必要です。
+OpenFlowプロトコルのプラグインはOpenFlowのレファレンス実装とともに配布
+されており、次の手順でインストールできます。
+
+#+BEGIN_SRC bash
+% git clone git://gitosis.stanford.edu/openflow.git ▼<Enter>
+% cd openflow/utilities/wireshark_dissectors/openflow ▼<Enter>
+% patch < [tremaディレクトリ]/vendor/packet-openflow.patch ▼<Enter>
+% cd .. ▼<Enter>
+% make ▼<Enter>
+% cp openflow/packet-openflow.so ~/.wireshark/plugins ▼<Enter>
+#+END_SRC
+
+**** 実行してみよう
+いよいよ、Tremasharkを使ってTremaのモジュール間通信をのぞいてみましょ
+う。例としてTremaサンプルアプリケーションの1つ、ラーニングスイッチと
+Switch Daemon間の通信を見てみることにします。
+
+まず、次のコマンドでラーニングスイッチを起動してください。ここでオプショ
+ンに =-s= を指定することで、Tremasharkのイベントコレクタとユーザインター
+フェースが起動します。
+
+#+BEGIN_SRC bash
+% trema run learning-switch.rb -c learning_switch.conf -s -d ▼<Enter>
+#+END_SRC
+
+ラーニングスイッチの起動後、イベントコレクタへのイベント通知を有効にす
+る必要があります。これは、イベントを収集したいプロセスにUSR2シグナルを
+送ることで有効にできます。シグナルを送るための各プロセスのPIDは、Trema
+のディレクトリの下のtmp/pid以下のファイルに保存されています。たとえば、
+Rubyで書かれたアプリケーションのPIDは、 =［コントローラのクラス名］.pid=
+という名前のファイルに保存されます。またSwitch DaemonのPIDは、
+=switch.［管理するスイッチのDatapath ID］.pid= という名前のファイルに
+保存されます。
+
+今回の例では、ラーニングスイッチとSwitch Daemonのイベントを見るので、
+次のように =kill= コマンドを使って各プロセスへUSR2シグナルを送ります。
+
+#+BEGIN_SRC bash
+% kill -USR2 `cat tmp/pid/LearningSwitch.pid` ▼<Enter>
+% kill -USR2 `cat tmp/pid/switch.0x1.pid` ▼<Enter>
+#+END_SRC
+
+これで、プロセス間のIPCイベントをのぞく準備ができました。ではイベント
+を発生させるために、以下のようにスイッチに接続されたホスト間でパケット
+を交換してみましょう。
+
+#+BEGIN_SRC bash
+% trema send_packets --source host1 --dest host2 ▼<Enter>
+% trema send_packets --source host2 --dest host1 ▼<Enter>
+#+END_SRC
+
+すると、▼図12-6に示すようにモジュール間の通信をリアルタイムに観測でき
+ます。これによって、アプリケーションがどのようなOpenFlowメッセージを送
+受信しているかなどを調べられます。
+
+#+CAPTION: Tremasharkユーザインターフェース
+#+LABEL: fig:tremashark_gui
+[[./images/trema_architecture/tremashark_gui.png]]
+
+たとえば、図12-6の一連の解析結果（7、8、9、10番のメッセージ）により、
+Packet InメッセージをトリガとしてラーニングスイッチがFlow Modメッセー
+ジをスイッチ0x1に対して送信していることがわかります。また、下半分のペ
+インには送信したFlow Modメッセージの各フィールドの値が表示されています
+（▼図12-7）。
+
+#+CAPTION: Tremashark（図12-6）による解析結果
+#+LABEL: fig:trema_internal_with_tremashark
+[[./images/trema_architecture/trema_internal_with_tremashark.png]]
+
+*友太郎君* ：「もし原因不明なバグに遭遇したときは、こうやってメッセージの
+中身まで追えるTremasharkを使えばいいわけですね」
+
+*取間先生* ：「ここまでわかっていれば、本格的な実用コントローラを作るのも
+難しくはないぞ。そういえばTremaはサンプルとは別にTrema Appsという実用
+アプリも公開しておる。何か大きなアプリケーションを作るときに役立つと思
+うから、友太郎君のためについでに紹介しておこうかの」
+
+** Trema Apps
+Trema Apps（▼http://github.com/trema/apps）は、Tremaを使った実用的で
+実験的な少し大きめのアプリケーションを集めたリポジトリです。Trema本体
+と同様にGitHub上で公開されており、次の手順でダウンロードできます。
+
+#+BEGIN_SRC bash
+% git clone https://github.com/trema/apps.git ▼<Enter>
+#+END_SRC
+
+それでは、Trema Appsの中でもとくに実用的なアプリを中心に解説していきま
+しょう。
+
+*** ルーティングスイッチ
+複数のOpenFlowスイッチで構成されるネットワークを1つのスイッチに仮想化
+します。サンプルプログラムのマルチラーニングスイッチと異なる点は、ルー
+プのあるネットワークトポロジにも対応している点と、パケットの転送に必ず
+最短パスを選択する点です。詳しくは第14章で説明します。
+
+*** スライス機能付きスイッチ
+OpenFlowネットワーク全体を独立したスライスに分割し、複数の独立したスイッ
+チに仮想化します。ちょうど、ネットワークを複数のVLANに分けるイメージで
+す。これによって、アプリケーションやユーザグループなど用途に応じて独立
+した仮想ネットワークを作れます。詳しくは第15 章で説明します。
+
+*** リダイレクト機能付きルーティングスイッチ
+ルーティングスイッチの亜種で、ユーザ認証とパケットのリダイレクト機能を
+付け加えたものです。基本的な動作はルーティングスイッチと同じですが、認
+証されていないホストからのパケットをほかのサーバに強制的にリダイレクト
+します。この仕組みを使えばたとえば、認証していないユーザのHTTPセッショ
+ンを強制的に特定のサイトへ飛ばすなどといったことが簡単にできます。
+
+*** memcached版ラーニングスイッチ
+サンプルプログラムのラーニングスイッチ（第8章）と同じ機能を持ちますが、
+FDBの実装にmemcached（▼http://memcached.org/）を用いています。Rubyの
+memcachedライブラリを使うことで、オリジナルのラーニングスイッチにほと
+んど変更を加えずにmemcached対応できているところがポイントです。また、
+マルチラーニングスイッチ（第5章）のmemcached版もあります。
+
+*** シンプルマルチキャスト
+IPTVサービスなどで使われるマルチキャスト転送を実現するコントローラです。
+配信サーバから送られたパケットをOpenFlowスイッチがコピーして、すべての
+視聴者へと届けます。
+
+*** フローダンパー
+OpenFlowスイッチのフローテーブルを取得するためのユーティリティです。デ
+バッグツールとしても便利です。Appendix Aで使い方を紹介しています。
+
+*** Packet Inディスパッチャ
+Packet Inメッセージを複数のTremaアプリケーションに振り分けるサンプルで
+す。物理アドレスから、ユニキャストかブロードキャストかを判断します。
+
+*** ブロードキャストヘルパ
+ブロードキャストやマルチキャストなど、コントローラに負荷の大きいトラ
+フィックを分離して、別の独立したコントローラで処理させるためのアプリで
+す。
+
+*** フローマネージャ
+関連するフローエントリをまとめて管理するAPIを提供します。かなり実験的
+な実装なので、APIは変更する可能性があります。
+
+** まとめ
+そうこうしている間に夜は白み、取間先生はゆっくりと帰り支度を始めました。
+
+*取間先生* ：「友太郎君どうもありがとう。今夜はひさびさに若者と話せて楽しかったよ。わしが教えられることはすべて教えたし、これで君も立派なOpenFlowプログラマじゃ」
+
+*友太郎君* ：「こちらこそありがとうございました。なにかいいアプリケーションができたら、先生にも教えますね！」
+
+今回は、今まで触れてこなかったTremaの構成や内部動作について学びました。
+
+- Tremaで開発したOpenFlowコントローラは、Tremaが提供するSwitch Manager、
+  Switch Daemonとアプリケーションプロセスから構成される
+- コントローラの動作に必要なプロセスの起動や停止などの管理はtremaコマ
+  ンドが自動的に行ってくれる
+- Tremasharkにより、Tremaの内部動作を可視化できる。これは、アプリケー
+  ションやTremaの動作を詳細に確認したい場合に役立つ
+- Trema Appsには、大きめのTremaアプリケーションが公開されており、自分
+  で実用アプリケーションを作る際の参考になる
+
+さて、Part2プログラミング編はこれでおしまいです。Tremaを使えばOpenFlow
+コントローラが簡単に開発できることを実感していただけたのではないでしょ
+うか？ Tremaを使って、ぜひあなたも便利なOpenFlowコントローラを開発して
+みてください。
