@@ -29,6 +29,7 @@ Quarto.configure do |config|
     'ch10_router_part1.org',
     'ch11_router_part2.org',
     'ch12_trema_architecture.org',
+    'ch13_migrating_openflow.org',
     'ch14_routing_switch.org',
     'ch15_sliceable_switch.org'
   ]
