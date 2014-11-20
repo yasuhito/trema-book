@@ -19,3 +19,7 @@ matrix:
     - rvm: 2.1.0
     - rvm: ruby-head
   fast_finish: true
+
+env:
+  global:
+    secure: gJ8H6EeJPPcnR8PAUrfJ6kkaKZ7bpTL68OX3Un35xp4uQzUO3vsJ4rPBCJgbrIm8BCfA/MJXmy0LNT9tnCEmE0fBenSnJl3b59UULz67QwJaYVzYtCr7A3IOd6/J59cTNlryM6wXxvFJB+QRD7M5+/HOLso+PCbqxsTWbn6+n1E=
