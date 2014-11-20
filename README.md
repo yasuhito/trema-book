@@ -2,12 +2,14 @@ cbench
 ======
 [![Build Status](http://img.shields.io/travis/trema/cbench/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/cbench.svg?style=flat)][codeclimate]
+[![Dependency Status](http://img.shields.io/gemnasium/trema/cbench.svg?style=flat)][gemnasium]
 
 An dedicated OpenFlow controller implementation for "cbench" OpenFlow
 controller benchmark.
 
 [travis]: http://travis-ci.org/trema/cbench
 [codeclimate]: https://codeclimate.com/github/trema/cbench
+[gemnasium]: https://gemnasium.com/trema/cbench
 
 Install
 -------
