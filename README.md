@@ -38,7 +38,7 @@ Run this controller
 then, on another terminal
 
 ```
-% ./vendor/oflops-0.03.trema1/cbench/cbench --port 6653 --switches 1 --loops 10 --delay 1000
+% ./bin/cbench --port 6653 --switches 1 --loops 10 --delay 1000
 ```
 
 Enjoy!
