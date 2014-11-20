@@ -4,6 +4,7 @@ cbench
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/cbench.svg?style=flat)][codeclimate]
 [![Coverage Status](http://img.shields.io/coveralls/trema/cbench/develop.svg?style=flat)][coveralls]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/cbench.svg?style=flat)][gemnasium]
+[![Gitter chat](http://img.shields.io/badge/GITTER-cbench-blue.svg?style=flat)][gitter]
 
 An dedicated OpenFlow controller implementation for "cbench" OpenFlow
 controller benchmark.
@@ -12,7 +13,7 @@ controller benchmark.
 [codeclimate]: https://codeclimate.com/github/trema/cbench
 [coveralls]: https://coveralls.io/r/trema/cbench
 [gemnasium]: https://gemnasium.com/trema/cbench
-
+[gitter]: https://gitter.im/trema/cbench
 
 Install
 -------

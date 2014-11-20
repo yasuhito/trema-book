@@ -14,6 +14,14 @@ before_install:
   - sudo apt-get install libpcap-dev -qq
   - gem update bundler
 
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/3b864a9224cb5ac89c83
+    on_success: change
+    on_failure: always
+    on_start: false
+
 matrix:
   allow_failures:
     - rvm: 2.1.0
