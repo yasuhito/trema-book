@@ -1,8 +1,11 @@
 cbench
 ======
+[![Code Climate](http://img.shields.io/codeclimate/github/trema/cbench.svg?style=flat)][codeclimate]
 
 An dedicated OpenFlow controller implementation for "cbench" OpenFlow
 controller benchmark.
+
+[codeclimate]: https://codeclimate.com/github/trema/cbench
 
 Install
 -------
