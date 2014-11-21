@@ -32,7 +32,7 @@ Play
 Run this controller
 
 ```
-% bundle exec trema run ./lib/cbench_switch.rb
+% TREMA_TMP=./tmp bundle exec trema run ./lib/cbench_switch.rb
 ```
 
 then, on another terminal
