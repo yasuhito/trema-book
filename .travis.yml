@@ -8,12 +8,16 @@ rvm:
   - ruby-head
 
 before_install:
- - sudo apt-get update -qq
- - sudo apt-get install libpcap-dev -qq
- - gem update bundler
+  - sudo apt-get update -qq
+  - sudo apt-get install libpcap-dev -qq
+  - gem update bundler
 
 matrix:
   allow_failures:
     - rvm: 2.1.0
     - rvm: ruby-head
   fast_finish: true
+
+env:
+  global:
+    secure: K8XOn6irNlcpwwXsTJYH5jA7Iu3JM329kl8lzKIeku+5ypVTOBoknVr7NHQJEJvC/RWUmXh9IxPSo2xUVfO6gVum9rjCRzG+m7dVvhvM7I4E0nnCn/ouTkY+ksSBcPJ34UDb7Z4NzyrrG04MtJKLwbBtD61hRseeo3hOO9uAH6Y=
