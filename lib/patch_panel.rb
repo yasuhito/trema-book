@@ -1,5 +1,5 @@
 # Software patch-panel.
-class PatchPanel < Controller
+class PatchPanel < Trema::Controller
   def start
     @patch = []
     File.open('./patch_panel.conf').each_line do |each|
