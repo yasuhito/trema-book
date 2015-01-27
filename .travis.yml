@@ -7,6 +7,7 @@ script: bundle exec rake travis
 rvm:
   - 2.0
   - 2.1
+  - 2.2
   - ruby-head
 
 before_install:
