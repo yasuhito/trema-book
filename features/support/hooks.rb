@@ -1,9 +1,8 @@
 Before do
   @aruba_timeout_seconds = 10
-  run 'trema killall'
+  run 'sudo -v'
 end
 
 After do
   run 'trema killall'
-  processes.clear
 end
