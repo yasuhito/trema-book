@@ -1,6 +1,2 @@
- AllCops:
-  Include:
-    - Gemfile
-    - Guardfile
-    - Rakefile
-    - tasks/*.rake
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
