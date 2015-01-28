@@ -2,14 +2,19 @@ require 'trema'
 require 'hello_trema'
 
 describe HelloTrema do
-  Given(:hello_trema) { HelloTrema.new }
+  Given(:logger) { spy('logger') }
+  Given(:hello_trema) do
+    HelloTrema.new.tap do |controller|
+      allow(controller).to receive(:logger).and_return(logger)
+    end
+  end
 
   describe '#switch_ready' do
-    When(:output) { hello_trema.switch_ready(dpid) }
+    When { hello_trema.switch_ready(dpid) }
 
     context 'with 0xabc' do
-      When(:dpid) { 0xabc }
-      Then { output == 'Hello 0xabc!' }
+      Given(:dpid) { 0xabc }
+      Then { expect(logger).to have_received(:info).with('Hello 0xabc!') }
     end
   end
 end
