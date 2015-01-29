@@ -6,7 +6,7 @@ describe PatchPanel do
 
   context 'when patch_panel.conf = "1 2\n3 4"' do
     Given(:config) { "1 2\n3 4" }
-    Given { allow(File).to receive(:open).and_return(StringIO.new(config)) }
+    Given { allow(IO).to receive(:read).and_return(config) }
 
     describe '#start' do
       When { patch_panel.start(argv) }

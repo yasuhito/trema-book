@@ -1,12 +1,9 @@
+require 'English'
+
 # Software patch-panel.
 class PatchPanel < Trema::Controller
   def start(argv)
-    @patch = []
-    File.open(config_file(argv)).each_line do |each|
-      if /^(\d+)\s+(\d+)$/ =~ each
-        @patch << [Regexp.last_match[1].to_i, Regexp.last_match[2].to_i]
-      end
-    end
+    @patch = parse(IO.read(argv[1] || './patch_panel.conf'))
   end
 
   def switch_ready(datapath_id)
@@ -17,8 +14,11 @@ class PatchPanel < Trema::Controller
 
   private
 
-  def config_file(argv)
-    argv[1] ? argv[1] : './patch_panel.conf'
+  def parse(config)
+    config.split("\n").map do |each|
+      fail unless /^(\d+)\s+(\d+)$/=~ each
+      [$LAST_MATCH_INFO[1].to_i, $LAST_MATCH_INFO[2].to_i]
+    end
   end
 
   def make_patch(datapath_id, port_a, port_b)
