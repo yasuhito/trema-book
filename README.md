@@ -7,6 +7,8 @@ patch_panel
 [![Dependency Status](http://img.shields.io/gemnasium/trema/patch_panel.svg?style=flat)][gemnasium]
 [![Inline docs](http://inch-ci.org/github/trema/patch_panel.png?branch=develop)][inch]
 
+OpenFlow controller that emulates a software patch panel.
+
 [travis]: http://travis-ci.org/trema/patch_panel
 [coveralls]: https://coveralls.io/r/trema/patch_panel
 [codeclimate]: https://codeclimate.com/github/trema/patch_panel
@@ -19,5 +21,28 @@ How to run
 
 ```
 % bundle install
-% bundle exec trema run lib/patch_panel.rb -c sample.conf
+% bundle exec trema run lib/patch_panel.rb -c trema.conf
 ```
+
+
+Configuration
+-------------
+
+When `patch_panel.rb` starts up, it will search for its configuration
+file named `patch_panel.conf` in the current working directory. If you
+want to specify a path to a configuration file, pass it to
+`patch_panel.rb` as its argument:
+
+```
+% bundle exec trema run "lib/patch_panel.rb foobar.conf" -c trema.conf
+```
+
+A configuration file contains patching information. Each line has a
+pair of port numbers like so:
+
+```
+1 2
+3 4
+```
+
+The first line means that switch port #1 is connected to port #2.
