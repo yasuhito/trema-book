@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 64e63fb4384a262c740f2b5ae487a336a3d97895
+  revision: ea3c98aa5fa8cfa815653273114458b759b91929
   branch: develop
   specs:
     phut (0.1.0)
@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 40001eba07d657e583f97207f79875d2be5e3bf6
+  revision: 1fcbee5ddd7b491a6326f2d40b424bbd7f1c5702
   branch: develop
   specs:
     trema (0.1.0)
