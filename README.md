@@ -19,5 +19,5 @@ How to run
 
 ```
 % bundle install
-% bundle exec trema run lib/patch_panel.rb -c sample.conf
+% bundle exec trema run lib/patch_panel.rb -c trema.conf
 ```
