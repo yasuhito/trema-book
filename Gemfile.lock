@@ -1,22 +1,22 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 6d05e56b36f51ec4a147bfcd9cfbea88abb04c46
+  revision: ea3c98aa5fa8cfa815653273114458b759b91929
   branch: develop
   specs:
     phut (0.1.0)
       gli (~> 2.12.2)
-      pio (~> 0.11.1)
+      pio (~> 0.11.2)
       pry (~> 0.10.1)
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: c3c02e4503fabb9bbed8b4b24f9f18ce2c3da650
+  revision: 1fcbee5ddd7b491a6326f2d40b424bbd7f1c5702
   branch: develop
   specs:
     trema (0.1.0)
       bundler (~> 1.7.12)
       gli (~> 2.12.0)
-      pio (~> 0.11.1)
+      pio (~> 0.11.2)
       rake
 
 GEM
@@ -116,7 +116,7 @@ GEM
       shellany (~> 0.0)
     parser (2.2.0.2)
       ast (>= 1.1, < 3.0)
-    pio (0.11.1)
+    pio (0.11.2)
       bindata (~> 2.1.0)
     powerpack (0.0.9)
     procto (0.0.2)
