@@ -16,7 +16,7 @@ class PatchPanel < Trema::Controller
 
   def parse(config)
     config.split("\n").map do |each|
-      fail unless /^(\d+)\s+(\d+)$/=~ each
+      fail "Invalid format: '#{each}'" unless /^(\d+)\s+(\d+)$/=~ each
       [$LAST_MATCH_INFO[1].to_i, $LAST_MATCH_INFO[2].to_i]
     end
   end
