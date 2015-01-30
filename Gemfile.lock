@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: ea3c98aa5fa8cfa815653273114458b759b91929
+  revision: 03e1efb9b6880ea303b4b066f5bb58fab8628721
   branch: develop
   specs:
     phut (0.1.0)
@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 1fcbee5ddd7b491a6326f2d40b424bbd7f1c5702
+  revision: 227b01dfd88b21a0760e31c28c23e8fcdf223023
   branch: develop
   specs:
     trema (0.1.0)
@@ -45,7 +45,7 @@ GEM
     concord (0.1.5)
       adamantium (~> 0.2.0)
       equalizer (~> 0.0.9)
-    coveralls (0.7.3)
+    coveralls (0.7.8)
       multi_json (~> 1.10)
       rest-client (~> 1.7)
       simplecov (~> 0.9.1)
