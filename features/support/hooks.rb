@@ -4,5 +4,4 @@ end
 
 After do
   run 'trema killall'
-  sleep 5
 end
