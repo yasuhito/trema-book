@@ -1,10 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/env'
+require 'rake'
+load File.expand_path(File.join(__dir__, '../tasks/cbench.rake'))
 
-unless File.executable?(CBENCH)
-  warn 'Cbench is not yet compiled. Run `bundle exec rake`.'
-  abort
-end
-
-exec CBENCH, *ARGV
+Rake::Task['vendor:cbench:run'].invoke(ARGV)

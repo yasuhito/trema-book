@@ -22,7 +22,6 @@ Install
 $ git clone https://github.com/trema/cbench.git
 $ cd cbench
 $ bundle install
-$ bundle exec rake
 ```
 
 

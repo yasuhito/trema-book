@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'rake'
 gem 'phut', github: 'trema/phut', branch: 'develop'
 gem 'pio', github: 'trema/pio', branch: 'feature/exact_match'
 gem 'trema', github: 'trema/trema_ruby', branch: 'develop'

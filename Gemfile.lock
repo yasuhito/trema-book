@@ -220,6 +220,7 @@ DEPENDENCIES
   inch
   phut!
   pio!
+  rake
   reek
   rspec
   rspec-given

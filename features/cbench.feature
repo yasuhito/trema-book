@@ -6,7 +6,6 @@ Feature: cbench command
     PID_DIR: .
     SOCKET_DIR: .
     """
-    And I successfully run `rake`
 
   Scenario: Run
     Given I successfully run `sudo -v`    
@@ -16,12 +15,4 @@ Feature: cbench command
     Then the output should contain:
     """
     RESULT: 1 switches 1 tests
-    """
-
-  Scenario: "Cbench is not yet compiled" error
-    Given I run `rake clean`
-    When I run `cbench --help`
-    Then the output should contain:
-    """
-    Cbench is not yet compiled. Run `bundle exec rake`.
     """
