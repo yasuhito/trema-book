@@ -21,7 +21,6 @@ task 'vendor:cbench:run' => CBENCH do
   exec CBENCH, *ARGV
 end
 
-
 CLEAN << VENDOR_OFLOPS
 
 file OPENFLOW_H do
