@@ -1,0 +1,35 @@
+language: ruby
+
+script: bundle exec rake travis
+
+bundler_args: --without development
+
+rvm:
+  - 2.0
+  - 2.1
+  - 2.2
+  - ruby-head
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install libpcap-dev -qq
+  - gem update bundler
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/3b864a9224cb5ac89c83
+    on_success: change
+    on_failure: always
+    on_start: false
+
+matrix:
+  allow_failures:
+    - rvm: 2.1
+    - rvm: ruby-head
+  fast_finish: true
+
+env:
+  global:
+    - secure: gJ8H6EeJPPcnR8PAUrfJ6kkaKZ7bpTL68OX3Un35xp4uQzUO3vsJ4rPBCJgbrIm8BCfA/MJXmy0LNT9tnCEmE0fBenSnJl3b59UULz67QwJaYVzYtCr7A3IOd6/J59cTNlryM6wXxvFJB+QRD7M5+/HOLso+PCbqxsTWbn6+n1E=
+    - secure: PNzWkBNz8ocbjB4jks4fsADTMRdL6jhju1CPx7KfUGovnCQ8MSPRW2WMAuKtNVI3L0mlXqxfqeIwrSJJZk0Ip6kAUsNlH952cEaTLz+yzub491Q4R4zPW+OVFjyPHzbC1HQLdu0i97Th8UgFB7LGrp3QddI0RW7BMf7yhu+Zfxs=
