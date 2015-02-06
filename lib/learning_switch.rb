@@ -4,6 +4,8 @@ require 'fdb'
 
 # An OpenFlow controller that emulates a layer-2 switch.
 class LearningSwitch < Trema::Controller
+  timer_event :age_fdb, interval: 5.sec
+
   def start(_argv)
     @fdb = FDB.new
   end
@@ -19,6 +21,10 @@ class LearningSwitch < Trema::Controller
     else
       flood datapath_id, message
     end
+  end
+
+  def age_fdb
+    @fdb.age
   end
 
   private
