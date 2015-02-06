@@ -12,9 +12,19 @@ emulates a layer 2 switch.
 [codeclimate]: https://codeclimate.com/github/trema/learning_switch
 [gemnasium]: https://gemnasium.com/trema/learning_switch
 
-How to run
-----------
+Install
+-------
 
 ```
-% trema run learning_switch.rb -c trema.conf
+$ git clone https://github.com/trema/learning_switch.git
+$ cd learning_switch
+$ bundle install
+```
+
+
+Play
+----
+
+```
+% bundle exec trema run lib/learning_switch.rb -c trema.conf
 ```
