@@ -1,11 +1,11 @@
 Feature: "Hello Trema!" example
   Background:
     Given a file named ".trema/config" with:
-      """
-      LOG_DIR: .
-      PID_DIR: .
-      SOCKET_DIR: .
-      """
+    """
+    LOG_DIR: .
+    PID_DIR: .
+    SOCKET_DIR: .
+    """
     And I successfully run `sudo -v`
 
   Scenario: Run
