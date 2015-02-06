@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 3a0eda8ca93f6e2f2d5728ae6987e63b559e4499
+  revision: 9912a0a5e85c170777a3c05b49847aef640a2078
   branch: develop
   specs:
     phut (0.1.0)
@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: e25ef4f5461ba6575846e038b5ee48b2a56341a5
+  revision: 9431c798bf1a4ff414786fa0cca72fbc93ab2562
   branch: develop
   specs:
     trema (0.1.0)
@@ -119,14 +119,14 @@ GEM
     multi_test (0.1.1)
     nenv (0.2.0)
     netrc (0.10.2)
-    notiffany (0.0.3)
+    notiffany (0.0.4)
       nenv (~> 0.1)
       shellany (~> 0.0)
     parser (2.2.0.2)
       ast (>= 1.1, < 3.0)
     pio (0.12.0)
       bindata (~> 2.1.0)
-    powerpack (0.0.9)
+    powerpack (0.1.0)
     procto (0.0.2)
     pry (0.10.1)
       coderay (~> 1.1.0)
@@ -160,10 +160,10 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.1)
-    rubocop (0.28.0)
+    rubocop (0.29.0)
       astrolabe (~> 1.3)
-      parser (>= 2.2.0.pre.7, < 3.0)
-      powerpack (~> 0.0.6)
+      parser (>= 2.2.0.1, < 3.0)
+      powerpack (~> 0.1)
       rainbow (>= 1.99.1, < 3.0)
       ruby-progressbar (~> 1.4)
     ruby-progressbar (1.7.1)
