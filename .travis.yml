@@ -3,9 +3,9 @@ language: ruby
 script: bundle exec rake travis
 
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.0
+  - 2.0
+  - 2.1
+  - 2.2
   - ruby-head
 
 before_install:
@@ -15,6 +15,6 @@ before_install:
 
 matrix:
   allow_failures:
-    - rvm: 2.1.0
+    - rvm: 2.1
     - rvm: ruby-head
   fast_finish: true
