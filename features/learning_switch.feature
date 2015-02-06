@@ -1,25 +1,27 @@
-Feature: "Learning Switch" sample application
+Feature: "Learning Switch" example
+  Background:
+    Given a file named ".trema/config" with:
+    """
+    LOG_DIR: .
+    PID_DIR: .
+    SOCKET_DIR: .
+    """
+    And a file named "trema.conf" with:
+    """
+    vswitch('learning') { datapath_id '0xabc' }
 
-  In order to learn how to implement software L2 switch
-  As a developer using Trema
-  I want to execute "Learning Switch" sample application
+    vhost('host1') { ip '192.168.0.1' }
+    vhost('host2') { ip '192.168.0.2' }
 
-  @slow_process
-  Scenario: Run Learning Switch
-    Given a file named "trema.conf" with:
-      """
-      vswitch("learning") { datapath_id "0xabc" }
+    link 'learning', 'host1'
+    link 'learning', 'host2'
+    """
 
-      vhost("host1") { ip "192.168.0.1" }
-      vhost("host2") { ip "192.168.0.2" }
-
-      link "learning", "host1"
-      link "learning", "host2"
-      """
-    Given I run `trema run ../../learning_switch.rb -c trema.conf -d`
-    And wait until "LearningSwitch" is up
-    When I send 1 packet from host1 to host2
-    And I send 2 packets from host2 to host1
+  Scenario: Run
+    Given I successfully run `trema run ../../lib/learning_switch.rb -c trema.conf -d`
+    And I run `sleep 5`
+    When I successfully run `trema send_packets --source host1 --dest host2 --n_pkts 1`
+    And I successfully run `trema send_packets --source host2 --dest host1 --n_pkts 2`
     Then the total number of tx packets should be:
       | host1 | host2 |
       |     1 |     2 |

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 Then(/^the total number of tx packets should be:$/) do |table|
   sleep 1
   table.hashes[0].each_pair do |host, n|

@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 begin
   require 'reek/rake/task'
   Reek::Rake::Task.new do |t|

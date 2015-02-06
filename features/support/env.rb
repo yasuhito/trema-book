@@ -1,13 +1,4 @@
-# encoding: utf-8
-
 require 'aruba/cucumber'
-require 'trema'
-
-ENV['TREMA_TMP'] = File.join(__dir__, '..', '..', 'tmp', 'aruba')
-
-def ps_entry_of(name)
-  `ps -ef | grep -w "#{name} " | grep -v grep`
-end
 
 # show_stats output format:
 # ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets

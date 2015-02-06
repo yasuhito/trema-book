@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 notification :tmux, display_message: true
 
 guard :bundler do

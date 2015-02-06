@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # Forwarding database (FDB) entry.
 class ForwardingEntry
   attr_reader :mac

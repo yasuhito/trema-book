@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'forwarding_entry'
 
 # A database that keeps pairs of a MAC address and a port number

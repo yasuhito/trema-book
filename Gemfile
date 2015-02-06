@@ -1,24 +1,33 @@
-# encoding: utf-8
-
 source 'https://rubygems.org'
 
-gem 'trema', github: 'trema/trema', branch: 'develop'
+gem 'phut', github: 'trema/phut', branch: 'develop'
+gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 
-group :development do
-  gem 'guard', '~> 2.6.1'
-  gem 'guard-bundler', '~> 2.0.0'
-  gem 'guard-cucumber', '~> 1.4.1'
-  gem 'guard-rspec', '~> 4.2.10'
-  gem 'guard-rubocop', '~> 1.1.0'
+group :development, :test do
+  gem 'aruba', require: false
+  gem 'cucumber', require: false
+  gem 'rspec', require: false
+  gem 'rspec-given', require: false
+
+  gem 'guard', require: false
+  gem 'guard-bundler', require: false
+  gem 'guard-cucumber', require: false
+  gem 'guard-rspec', require: false
+  gem 'guard-rubocop', require: false
+
+  gem 'flay', require: false
+  gem 'flog', require: false
+  gem 'reek', require: false
+  gem 'rubocop', require: false
 end
 
+group :development do
+  gem 'inch', require: false
+  gem 'yard', require: false
+end
+
+# The test group will be installed on Travis CI
 group :test do
-  gem 'aruba', '~> 0.6.0'
-  gem 'cucumber', '~> 1.3.15'
-  gem 'flay', '~> 2.5.0'
-  gem 'flog', '~> 4.3.0'
-  gem 'reek', '~> 1.3.8'
-  gem 'rspec', '~> 3.0.0'
-  gem 'rspec-given', '~> 3.5.4'
-  gem 'rubocop', '~> 0.24.1'
+  gem 'codeclimate-test-reporter', require: false
+  gem 'coveralls', require: false
 end
