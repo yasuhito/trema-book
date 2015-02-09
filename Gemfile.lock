@@ -1,22 +1,22 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 61f06416f8d7c9d2c23d7ea39522a60669a2e18a
+  revision: 91b98a6fa1d2e5342051df2911b0c1ec5d06d262
   branch: develop
   specs:
     phut (0.1.0)
       gli (~> 2.12.2)
-      pio (~> 0.13.0)
+      pio (~> 0.14.0)
       pry (~> 0.10.1)
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 233476e63f0cde12fad381aecbc1ceb2ef3055f8
+  revision: 82aaa786bab37f853dd5e2aca3a095be35b99658
   branch: develop
   specs:
     trema (0.1.0)
       bundler (~> 1.7.12)
       gli (~> 2.12.0)
-      pio (~> 0.13.0)
+      pio (~> 0.14.0)
       rake
 
 GEM
@@ -124,7 +124,7 @@ GEM
       shellany (~> 0.0)
     parser (2.2.0.2)
       ast (>= 1.1, < 3.0)
-    pio (0.13.0)
+    pio (0.14.0)
       bindata (~> 2.1.0)
     powerpack (0.1.0)
     procto (0.0.2)
@@ -137,7 +137,7 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    reek (1.6.4)
+    reek (1.6.5)
       parser (~> 2.2.0.pre.7)
       rainbow (>= 1.99, < 3.0)
       unparser (~> 0.2.2)

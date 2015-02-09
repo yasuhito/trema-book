@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift File.expand_path(__dir__)
+$LOAD_PATH.unshift __dir__
 
 require 'fdb'
 
@@ -10,17 +10,10 @@ class LearningSwitch < Trema::Controller
     @fdb = FDB.new
   end
 
-  def packet_in(datapath_id, message)
+  def packet_in(_datapath_id, message)
     return if message.destination_mac.reserved?
-
     @fdb.learn message.source_mac, message.in_port
-    port_no = @fdb.lookup(message.destination_mac)
-    if port_no
-      flow_mod datapath_id, message, port_no
-      packet_out datapath_id, message, port_no
-    else
-      flood datapath_id, message
-    end
+    flow_mod_and_packet_out message
   end
 
   def age_fdb
@@ -29,23 +22,33 @@ class LearningSwitch < Trema::Controller
 
   private
 
-  def flow_mod(datapath_id, message, port_no)
+  def flow_mod_and_packet_out(message)
+    port_no = @fdb.lookup(message.destination_mac)
+    if port_no
+      flow_mod message, port_no
+      packet_out message, port_no
+    else
+      flood message
+    end
+  end
+
+  def flow_mod(message, port_no)
     send_flow_mod_add(
-      datapath_id,
+      message.datapath_id,
       match: ExactMatch.new(message),
       actions: SendOutPort.new(port_no)
     )
   end
 
-  def packet_out(datapath_id, message, port_no)
+  def packet_out(message, port_no)
     send_packet_out(
-      datapath_id,
+      message.datapath_id,
       packet_in: message,
       actions: SendOutPort.new(port_no)
     )
   end
 
-  def flood(datapath_id, message)
-    packet_out datapath_id, message, :flood
+  def flood(message)
+    packet_out message, :flood
   end
 end
