@@ -1,6 +1,9 @@
 # Change log
 
 ## develop (unreleased)
+
+
+## 0.2.0 (2/9/2015)
 ### New features
 * Add new example `MultiLearningSwitch`.
 
