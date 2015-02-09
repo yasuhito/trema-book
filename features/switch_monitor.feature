@@ -22,5 +22,7 @@ Feature: Switch Monitor example
     And the file "SwitchMonitor.log" should contain "Switch 0x3 is UP"
     When I successfully run `trema kill 0x2`
     Then the file "SwitchMonitor.log" should contain "Switch 0x2 is DOWN"
+    Then a file named "open_vswitch.0x2.pid" should not exist
     When I successfully run `trema up 0x2`
-    Then the file "SwitchMonitor.log" should contain "Switch 0x2 is UP"
+    Then a file named "open_vswitch.0x2.pid" should exist
+    
