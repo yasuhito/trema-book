@@ -5,6 +5,7 @@ Learning Switch
 [![Coverage Status](http://img.shields.io/coveralls/trema/learning_switch/develop.svg?style=flat)][coveralls]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/learning_switch.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/learning_switch.svg?style=flat)][gemnasium]
+[![Inline docs](http://inch-ci.org/github/trema/learning_switch.png?branch=develop)][inch]
 
 An OpenFlow controller that controls a single OpenFlow switch and
 emulates a layer 2 switch.
@@ -13,6 +14,7 @@ emulates a layer 2 switch.
 [coveralls]: https://coveralls.io/r/trema/learning_switch
 [codeclimate]: https://codeclimate.com/github/trema/learning_switch
 [gemnasium]: https://gemnasium.com/trema/learning_switch
+[inch]: http://inch-ci.org/github/trema/learning_switch
 
 Install
 -------
