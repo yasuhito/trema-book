@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 91b98a6fa1d2e5342051df2911b0c1ec5d06d262
+  revision: 97525671c6963cc22d62af4f1be6735c01cdf4ad
   branch: develop
   specs:
     phut (0.1.0)
@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 82aaa786bab37f853dd5e2aca3a095be35b99658
+  revision: 09cc4ab6078b4a32df06c67f74750ca3609797bc
   branch: develop
   specs:
     trema (0.1.0)
@@ -73,7 +73,7 @@ GEM
     given_core (3.6.0)
       sorcerer (>= 0.3.7)
     gli (2.12.2)
-    guard (2.11.1)
+    guard (2.12.0)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
