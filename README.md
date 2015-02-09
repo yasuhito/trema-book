@@ -29,6 +29,20 @@ $ bundle install
 Play
 ----
 
+Run this controller:
+
 ```
 % bundle exec trema run lib/learning_switch.rb -c trema.conf
 ```
+
+Send some packets from host1 to host2, and show received packet stats
+of host2:
+
+```
+% bundle exec trema send_packets --source host1 --dest host2 --n_pkts 10
+% bundle exec trema show_stats host2 --rx
+ip_dst,tp_dst,ip_src,tp_src,n_pkts,n_octets
+192.168.0.2,1,192.168.0.1,1,10,500
+```
+
+Enjoy!
