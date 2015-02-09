@@ -1,0 +1,21 @@
+language: ruby
+
+bundler_args: --without development
+
+script: bundle exec rake travis
+
+rvm:
+  - 2.0
+  - 2.1
+  - 2.2
+  - ruby-head
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install libpcap-dev -qq
+  - gem update bundler
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+  fast_finish: true
