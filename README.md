@@ -23,11 +23,21 @@ programming.
 [inch]: http://inch-ci.org/github/trema/hello_trema
 
 
-How to run
-----------
+Install
+-------
 
 ```
-% bundle install
-% bundle exec trema run lib/hello_trema.rb -c trema.conf
+$ git clone https://github.com/trema/hello_trema.git
+$ cd hello_trema
+$ bundle install
+```
+
+
+Play
+----
+
+```
+% bundle exec trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
+Trema started (args = ["foo", "bar", "baz"]).
 Hello 0xabc!
 ```
