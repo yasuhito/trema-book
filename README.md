@@ -28,6 +28,7 @@ How to run
 
 ```
 % bundle install
-% bundle exec trema run lib/hello_trema.rb -c trema.conf
+% bundle exec trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
+Trema started (args = ["foo", "bar", "baz"]).
 Hello 0xabc!
 ```
