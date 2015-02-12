@@ -1,10 +1,11 @@
 # Change log
 
 ## develop (unreleased)
+### Changes
+* [#5](https://github.com/trema/hello_trema/pull/5): Add `HelloTrema#start` handler.
 
 
 ## 0.1.1 (2/6/2015)
-
 ### Bugs fixed
 * Automatically respond to Echo request messages from switches.
 
