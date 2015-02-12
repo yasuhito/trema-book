@@ -1,6 +1,9 @@
 # Change log
 
 ## develop (unreleased)
+
+
+## 0.2.0 (2/12/2015)
 ### Changes
 * [#5](https://github.com/trema/hello_trema/pull/5): Add `HelloTrema#start` handler.
 
