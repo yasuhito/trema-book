@@ -1,6 +1,8 @@
 # Change log
 
 ## develop (unreleased)
+### Changes
+* Put patch_panel arguments (config file) after `--`.
 
 
 ## 0.1.1 (2/6/2015)
