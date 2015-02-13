@@ -11,7 +11,6 @@ group :development, :test do
   gem 'flog', require: false
   gem 'guard', require: false
   gem 'guard-bundler', require: false
-  gem 'guard-cucumber', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
   gem 'reek', require: false
