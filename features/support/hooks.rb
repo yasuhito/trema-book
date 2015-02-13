@@ -4,7 +4,7 @@ Before('@sudo') do
   @aruba_io_wait_seconds = 30
 end
 
-After do
+After('@sudo') do
   run 'trema killall'
   sleep 10
 end
