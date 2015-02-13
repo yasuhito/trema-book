@@ -16,11 +16,20 @@ OpenFlow controller that emulates a software patch panel.
 [inch]: http://inch-ci.org/github/trema/patch_panel
 
 
-How to run
-----------
+Install
+-------
 
 ```
-% bundle install
+$ git clone https://github.com/trema/patch_panel.git
+$ cd patch_panel
+$ bundle install
+```
+
+
+Play
+----
+
+```
 % bundle exec trema run lib/patch_panel.rb -c trema.conf
 ```
 
@@ -34,7 +43,7 @@ want to specify a path to a configuration file, pass it to
 `patch_panel.rb` as its argument:
 
 ```
-% bundle exec trema run "lib/patch_panel.rb foobar.conf" -c trema.conf
+% bundle exec trema run lib/patch_panel.rb -c trema.conf -- foobar.conf
 ```
 
 A configuration file contains patching information. Each line has a

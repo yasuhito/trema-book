@@ -1,8 +1,10 @@
-Before do
-  @aruba_timeout_seconds = 10
+Before('@sudo') do
+  fail 'sudo authentication failed' unless system 'sudo -v'
+  @aruba_timeout_seconds = 30
+  @aruba_io_wait_seconds = 30
 end
 
 After do
   run 'trema killall'
-  sleep 5
+  sleep 10
 end
