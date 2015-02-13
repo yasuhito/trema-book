@@ -1,5 +1,9 @@
 # A simple openflow controller for benchmarking.
 class CbenchSwitch < Trema::Controller
+  def start(args)
+    logger.info "CbenchSwitch started."
+  end
+
   def packet_in(datapath_id, message)
     send_flow_mod_add(
       datapath_id,

@@ -1,22 +1,22 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 9912a0a5e85c170777a3c05b49847aef640a2078
+  revision: e28ea0b14036853ae61a73e2a3d48d56400a0a9d
   branch: develop
   specs:
     phut (0.1.0)
       gli (~> 2.12.2)
-      pio (~> 0.12.0)
+      pio (~> 0.15.0)
       pry (~> 0.10.1)
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 9431c798bf1a4ff414786fa0cca72fbc93ab2562
+  revision: 41354a44af537668e5f806031ffe21b2393a154f
   branch: develop
   specs:
     trema (0.1.0)
-      bundler (~> 1.7.12)
+      bundler (~> 1.8.0)
       gli (~> 2.12.0)
-      pio (~> 0.12.0)
+      pio (~> 0.15.0)
       rake
 
 GEM
@@ -73,7 +73,7 @@ GEM
     given_core (3.6.0)
       sorcerer (>= 0.3.7)
     gli (2.12.2)
-    guard (2.11.1)
+    guard (2.12.1)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
@@ -116,15 +116,15 @@ GEM
     method_source (0.8.2)
     mime-types (2.4.3)
     multi_json (1.10.1)
-    multi_test (0.1.1)
+    multi_test (0.1.2)
     nenv (0.2.0)
     netrc (0.10.2)
-    notiffany (0.0.4)
+    notiffany (0.0.5)
       nenv (~> 0.1)
       shellany (~> 0.0)
     parser (2.2.0.2)
       ast (>= 1.1, < 3.0)
-    pio (0.12.0)
+    pio (0.15.0)
       bindata (~> 2.1.0)
     powerpack (0.1.0)
     procto (0.0.2)
@@ -137,9 +137,9 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    reek (1.6.4)
-      parser (~> 2.2.0.pre.7)
-      rainbow (>= 1.99, < 3.0)
+    reek (2.0.0)
+      parser (~> 2.2)
+      rainbow (~> 2.0)
       unparser (~> 0.2.2)
     rest-client (1.7.2)
       mime-types (>= 1.16, < 3.0)
