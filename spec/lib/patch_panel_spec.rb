@@ -2,18 +2,28 @@ require 'trema'
 require 'patch_panel'
 
 describe PatchPanel do
-  Given(:patch_panel) { PatchPanel.new }
+  Given(:logger) { spy('logger') }
+  Given(:patch_panel) do
+    PatchPanel.new.tap do |controller|
+      allow(controller).to receive(:logger).and_return(logger)
+    end
+  end
 
   context 'when patch_panel.conf = "1 2\n3 4"' do
     Given(:config) { "1 2\n3 4" }
     Given { allow(IO).to receive(:read).and_return(config) }
 
     describe '#start' do
-      When { patch_panel.start(argv) }
+      When { patch_panel.start(args) }
 
       context "with ['patch_panel.rb']" do
-        Given(:argv) { ['patch_panel.rb'] }
+        Given(:args) { [] }
         Then { patch_panel.instance_variable_get(:@patch) == [[1, 2], [3, 4]] }
+        Then do
+          expect(logger).
+            to(have_received(:info).
+               with('PatchPanel started (config = patch_panel.conf).'))
+        end
 
         describe '#switch_ready' do
           When { patch_panel.switch_ready(dpid) }
