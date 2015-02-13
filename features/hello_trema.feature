@@ -28,6 +28,7 @@ Feature: "Hello Trema!" example
   @sudo
   Scenario: Run as a daemon
     When I run `trema run ../../lib/hello_trema.rb -c trema.conf -d -p . -l . -s . -- foo bar baz`
+    And I wait until a file named "HelloTrema.pid" is created
     And I run `sleep 5`
     Then a file named "HelloTrema.log" should exist
     And the file "HelloTrema.log" should contain:

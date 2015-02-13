@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: 42d3e279ae5b88cdef9e3e6549fa7c1da1616aab
+  revision: e28ea0b14036853ae61a73e2a3d48d56400a0a9d
   branch: develop
   specs:
     phut (0.1.0)
@@ -108,7 +108,7 @@ GEM
     method_source (0.8.2)
     mime-types (2.4.3)
     multi_json (1.10.1)
-    multi_test (0.1.1)
+    multi_test (0.1.2)
     nenv (0.2.0)
     netrc (0.10.2)
     notiffany (0.0.5)
