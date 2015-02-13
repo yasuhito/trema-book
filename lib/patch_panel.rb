@@ -2,8 +2,10 @@ require 'English'
 
 # Software patch-panel.
 class PatchPanel < Trema::Controller
-  def start(argv)
-    @patch = parse(IO.read(argv[1] || './patch_panel.conf'))
+  def start(args)
+    config_file = args[0] || 'patch_panel.conf'
+    @patch = parse(IO.read(config_file))
+    logger.info "PatchPanel started (config = #{config_file})."
   end
 
   def switch_ready(datapath_id)
@@ -15,10 +17,12 @@ class PatchPanel < Trema::Controller
   private
 
   def parse(config)
-    config.split("\n").map do |each|
-      fail "Invalid format: '#{each}'" unless /^(\d+)\s+(\d+)$/=~ each
-      [$LAST_MATCH_INFO[1].to_i, $LAST_MATCH_INFO[2].to_i]
-    end
+    config.each_line.map { |each| parse_line(each) }
+  end
+
+  def parse_line(line)
+    fail "Invalid format: '#{line}'" unless /^(\d+)\s+(\d+)$/=~ line
+    [$LAST_MATCH_INFO[1].to_i, $LAST_MATCH_INFO[2].to_i]
   end
 
   def make_patch(datapath_id, port_a, port_b)
