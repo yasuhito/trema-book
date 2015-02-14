@@ -1,9 +1,12 @@
 # Change log
 
 ## develop (unreleased)
+
+
+## 0.2.0 (2/14/2015)
 ### Changes
 * Add `CbenchSwitch#start` handler.
-* Use `-p`, `-l` and `-s` options of `trema run`.
+* Use `-p`, `-l` and `-s` options of `trema run` in cucumber.
 
 
 ## 0.1.1 (2/6/2015)
