@@ -18,7 +18,7 @@ group :development, :test do
   gem 'rubocop', require: false
 end
 
-group :development do
+group :doc do
   gem 'inch', require: false
   gem 'yard', require: false
 end

@@ -1,22 +1,23 @@
 # Switch liveness monitor.
 class SwitchMonitor < Trema::Controller
-  timer_event :show_switches, interval: 10.sec
-
-  def start(_argv)
+  def start(_args)
     @switches = []
+    logger.info 'SwitchMonitor started.'
   end
 
   def switch_ready(datapath_id)
-    @switches << datapath_id.to_hex
-    logger.info "Switch #{ datapath_id.to_hex } is UP"
+    @switches << datapath_id
+    logger.info "#{datapath_id.to_hex} is up (all = #{switches_in_string})"
   end
 
   def switch_disconnected(datapath_id)
-    @switches -= [datapath_id.to_hex]
-    logger.info "Switch #{ datapath_id.to_hex } is DOWN"
+    @switches -= [datapath_id]
+    logger.info "#{datapath_id.to_hex} is down (all = #{switches_in_string})"
   end
 
-  def show_switches
-    logger.info 'All switches = ' + @switches.sort.join(', ')
+  private
+
+  def switches_in_string
+    @switches.sort.map(&:to_hex).join(', ')
   end
 end
