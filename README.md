@@ -32,11 +32,9 @@ Run this controller:
 
 ```
 % bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
-All switches =
-Switch 0x3 is UP
-Switch 0x2 is UP
-Switch 0x1 is UP
-All switches = 0x1, 0x2, 0x3
+0x3 is up (all = 0x3)
+0x2 is up (all = 0x2, 0x3)
+0x1 is up (all = 0x1, 0x2, 0x3)
 ...
 ```
 
@@ -46,22 +44,17 @@ current switch status.
 
 ```
 (On another terminal)
-% bundle exec trema kill 0x1
-% bundle exec trema up 0x1
+% bundle exec trema kill 0x2
+% bundle exec trema up 0x2
 ```
 
 ```
 % bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
-All switches =
-Switch 0x3 is UP
-Switch 0x2 is UP
-Switch 0x1 is UP
-All switches = 0x1, 0x2, 0x3
-...
-Switch 0x1 is DOWN
-All switches = 0x2, 0x3
-...
-Switch 0x1 is UP
+0x3 is up (all = 0x3)
+0x2 is up (all = 0x2, 0x3)
+0x1 is up (all = 0x1, 0x2, 0x3)
+0x2 is down (all = 0x1, 0x3)
+0x2 is up (all = 0x1, 0x2, 0x3)
 ```
 
 Enjoy!
