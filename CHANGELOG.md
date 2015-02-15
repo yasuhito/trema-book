@@ -1,6 +1,8 @@
 # Change log
 
 ## develop (unreleased)
+### Changes
+* Use `-p`, `-l` and `-s` options of `trema run` in cucumber.
 
 
 ## 0.2.0 (2/9/2015)
