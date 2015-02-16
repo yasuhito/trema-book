@@ -43,8 +43,6 @@ class FDB
   end
 
   def age
-    @db.delete_if do |_mac, entry|
-      entry.aged_out?
-    end
+    @db.delete_if { |_mac, entry| entry.aged_out? }
   end
 end
