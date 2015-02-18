@@ -1,6 +1,6 @@
 AllCops:
   Include:
-    - '*.conf'
+    - ./*.conf
     - Gemfile
     - Guardfile
     - Rakefile

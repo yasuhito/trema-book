@@ -30,11 +30,13 @@ class Link
   end
 
   def to_s
-    format '%#x (port %d) <-> %#x (port %d)', dpid_a, port_a, dpid_b, port_b
+    format '%#x-%#x', dpid_a, dpid_b
   end
 
-  def has?(dpid, port)
-    ((@dpid_a == dpid) && (@port_a == port)) ||
-      ((@dpid_b == dpid) && (@port_b == port))
+  def connect_to?(port)
+    dpid = port.dpid
+    port_no = port.number
+    ((@dpid_a == dpid) && (@port_a == port_no)) ||
+      ((@dpid_b == dpid) && (@port_b == port_no))
   end
 end

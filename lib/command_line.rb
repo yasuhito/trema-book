@@ -1,27 +1,25 @@
-require 'rubygems'
-
 require 'gli'
+require 'pio'
 require 'view/text'
 
-#
 # command-line options passed to topology-controller.rb
-#
 class CommandLine
   include GLI::App
 
   attr_reader :view
   attr_reader :destination_mac
 
-  def initialize
-    @view = View::Text.new
+  def initialize(logger)
+    @logger = logger
+    @view = View::Text.new(@logger)
   end
 
-  def parse(argv)
+  def parse(args)
     program_desc 'Topology discovery controller'
     set_destination_mac_flag
     define_text_command
     define_graphviz_command
-    run argv
+    run args
   end
 
   private
@@ -30,7 +28,7 @@ class CommandLine
     flag [:d, :destination_mac]
     pre do |global_options, _command, _options, _args|
       destination_mac = global_options[:destination_mac]
-      @destination_mac = Mac.new(destination_mac) if destination_mac
+      @destination_mac = Pio::Mac.new(destination_mac) if destination_mac
       true
     end
   end
@@ -54,7 +52,7 @@ class CommandLine
   private
 
   def create_text_view(_global_options, _options, _args)
-    @view = View::Text.new
+    @view = View::Text.new(@logger)
   end
 
   def create_graphviz_view(_global_options, _options, args)

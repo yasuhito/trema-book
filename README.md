@@ -59,11 +59,11 @@ $ trema port_up --switch 0x1 --port 1
 To view the current topology graphically,
 
 ```bash
-$ trema run "./lib/topology_controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
+$ trema run ./lib/topology_controller.rb -c fullmesh.conf -- graphviz /tmp/topology.png
 ```
 
 To change the LLDP destination MAC,
 
 ```bash
-$ trema run "./lib/topology_controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
+$ trema run ./lib/topology_controller.rb -c fullmesh.conf -- --destination_mac 11:22:33:44:55:66
 ```

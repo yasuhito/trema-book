@@ -1,36 +1,25 @@
 require 'graphviz'
 
 module View
-  #
   # Topology controller's GUI (graphviz).
-  #
   class Graphviz
     def initialize(output = './topology.png')
-      @nodes = {}
       @output = File.expand_path(output)
     end
 
-    def update(topology)
-      @nodes.clear
-      graphviz = GraphViz.new(:G, use: 'neato', overlap: false, splines: true)
-      add_nodes(topology, graphviz)
-      add_edges(topology, graphviz)
-      graphviz.output(png: @output)
-    end
-
-    private
-
-    def add_nodes(topology, graphviz)
-      topology.each_switch do |dpid, _ports|
-        @nodes[dpid] = graphviz.add_nodes(dpid.to_hex, 'shape' => 'box')
+    # rubocop:disable AbcSize
+    def update(_event, _changed, topology)
+      GraphViz.new(:G, use: 'neato', overlap: false, splines: true) do |gviz|
+        nodes = topology.switches.each_with_object({}) do |each, tmp|
+          tmp[each] = gviz.add_nodes(each.to_hex, shape: 'box')
+        end
+        topology.links.each do |each|
+          next unless nodes[each.dpid_a] && nodes[each.dpid_b]
+          gviz.add_edges nodes[each.dpid_a], nodes[each.dpid_b]
+        end
+        gviz.output png: @output
       end
     end
-
-    def add_edges(topology, graphviz)
-      topology.each_link do |each|
-        node_a, node_b = @nodes[each.dpid_a], @nodes[each.dpid_b]
-        graphviz.add_edges node_a, node_b if node_a && node_b
-      end
-    end
+    # rubocop:enable AbcSize
   end
 end

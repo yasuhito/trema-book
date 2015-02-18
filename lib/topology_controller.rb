@@ -1,52 +1,55 @@
+$LOAD_PATH.unshift __dir__
+
 require 'command_line'
 require 'topology'
-require 'trema'
-require 'trema-extensions/port'
 
-#
 # This controller collects network topology information using LLDP.
-#
-class TopologyController < Controller
-  periodic_timer_event :flood_lldp_frames, 1
+class TopologyController < Trema::Controller
+  timer_event :flood_lldp_frames, interval: 1.sec
 
-  def start
-    @command_line = CommandLine.new
-    @command_line.parse(ARGV.dup)
+  def start(argv)
+    @command_line = CommandLine.new(logger)
+    @command_line.parse(argv)
     @topology = Topology.new(@command_line.view)
+    logger.info 'Topology started.'
   end
 
   def switch_ready(dpid)
-    send_message dpid, FeaturesRequest.new
+    send_message dpid, Features::Request.new
   end
 
-  def features_reply(_dpid, features_reply)
-    features_reply.physical_ports.select(&:up?).each do |each|
-      @topology.add_port each
-    end
+  def features_reply(dpid, features_reply)
+    @topology.add_switch dpid, features_reply.physical_ports.select(&:up?)
   end
 
   def switch_disconnected(dpid)
     @topology.delete_switch dpid
   end
 
-  def port_status(_dpid, port_status)
-    updated_port = port_status.port
+  def port_modify(_dpid, port_status)
+    updated_port = port_status.desc
     return if updated_port.local?
-    @topology.update_port updated_port
+    if updated_port.down?
+      @topology.delete_port updated_port
+    elsif updated_port.up?
+      @topology.add_port updated_port
+    else
+      fail 'Unknown port status.'
+    end
   end
 
   def packet_in(dpid, packet_in)
     return unless packet_in.lldp?
-    @topology.add_link_by dpid, packet_in
+    @topology.maybe_add_link Link.new(dpid, packet_in)
   end
 
-  private
-
   def flood_lldp_frames
-    @topology.each_switch do |dpid, ports|
+    @topology.ports.each do |dpid, ports|
       send_lldp dpid, ports
     end
   end
+
+  private
 
   def send_lldp(dpid, ports)
     ports.each do |each|
@@ -64,7 +67,7 @@ class TopologyController < Controller
     if destination_mac
       Pio::Lldp.new(dpid: dpid,
                     port_number: port_number,
-                    destination_mac: destination_mac.value).to_binary
+                    destination_mac: destination_mac).to_binary
     else
       Pio::Lldp.new(dpid: dpid, port_number: port_number).to_binary
     end

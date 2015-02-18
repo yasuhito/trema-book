@@ -1,5 +1,5 @@
 <%
-std_opts = "--format progress features --tags ~@wip -r features"
+std_opts = "features --tags ~@wip -r features"
 wip_opts = "--color -r features --tags @wip"
 %>
 default: <%= std_opts %>
