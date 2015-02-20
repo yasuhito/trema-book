@@ -1,35 +1,29 @@
-require "graphviz"
-
+require 'graphviz'
 
 module View
+  # Topology controller's GUI (graphviz).
   class Graphviz
-    def initialize output = "./topology.png"
-      @output = File.expand_path( output )
+    def initialize(output = 'topology.png')
+      @output = output
     end
 
-
-    def update topology
-      g = GraphViz.new( :G, :use => "neato", :overlap => false, :splines => true )
-
-      switch = {}
-      topology.each_switch do | dpid, ports |
-        switch[ dpid ] = g.add_nodes( dpid.to_hex, "shape" => "box" )
-      end
-
-      topology.each_link do | each |
-        if switch[ each.dpid1 ] and switch[ each.dpid2 ]
-          g.add_edges switch[ each.dpid1 ], switch[ each.dpid2 ]
+    # rubocop:disable AbcSize
+    def update(_event, _changed, topology)
+      GraphViz.new(:G, use: 'neato', overlap: false, splines: true) do |gviz|
+        nodes = topology.switches.each_with_object({}) do |each, tmp|
+          tmp[each] = gviz.add_nodes(each.to_hex, shape: 'box')
         end
+        topology.links.each do |each|
+          next unless nodes[each.dpid_a] && nodes[each.dpid_b]
+          gviz.add_edges nodes[each.dpid_a], nodes[each.dpid_b]
+        end
+        gviz.output png: @output
       end
+    end
+    # rubocop:enable AbcSize
 
-      g.output( :png => @output )
+    def to_s
+      "Graphviz mode, output = #{@output}"
     end
   end
 end
-
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

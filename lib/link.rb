@@ -1,50 +1,42 @@
-require "rubygems"
-require "pio/lldp"
+require 'rubygems'
+require 'pio/lldp'
 
-
+#
+# Edges between two switches.
+#
 class Link
-  attr_reader :dpid1
-  attr_reader :dpid2
-  attr_reader :port1
-  attr_reader :port2
+  attr_reader :dpid_a
+  attr_reader :dpid_b
+  attr_reader :port_a
+  attr_reader :port_b
 
-
-  def initialize dpid, packet_in
-    lldp = Pio::Lldp.read( packet_in.data )
-    @dpid1 = lldp.dpid
-    @dpid2 = dpid
-    @port1 = lldp.port_number
-    @port2 = packet_in.in_port
+  def initialize(dpid, packet_in)
+    lldp = Pio::Lldp.read(packet_in.data)
+    @dpid_a = lldp.dpid
+    @dpid_b = dpid
+    @port_a = lldp.port_number
+    @port_b = packet_in.in_port
   end
 
-
-  def == other
-    ( @dpid1 == other.dpid1 ) and
-      ( @dpid2 == other.dpid2 ) and
-      ( @port1 == other.port1 ) and
-      ( @port2 == other.port2 )
+  def ==(other)
+    (@dpid_a == other.dpid_a) &&
+      (@dpid_b == other.dpid_b) &&
+      (@port_a == other.port_a) &&
+      (@port_b == other.port_b)
   end
 
-
-  def <=> other
+  def <=>(other)
     to_s <=> other.to_s
   end
 
-
   def to_s
-    format "%#x (port %d) <-> %#x (port %d)", dpid1, port1, dpid2, port2
+    format '%#x-%#x', dpid_a, dpid_b
   end
 
-
-  def has? dpid, port
-    ( ( @dpid1 == dpid ) and ( @port1 == port ) ) or
-      ( ( @dpid2 == dpid ) and ( @port2 == port ) )
+  def connect_to?(port)
+    dpid = port.dpid
+    port_no = port.number
+    ((@dpid_a == dpid) && (@port_a == port_no)) ||
+      ((@dpid_b == dpid) && (@port_b == port_no))
   end
 end
-
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

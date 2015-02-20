@@ -1,18 +1,14 @@
-require "rubygems"
+require 'simplecov'
+require 'codeclimate-test-reporter'
+require 'coveralls'
 
-require "rspec"
-require "rspec/autorun"
-
-
-# Requires supporting files with custom matchers and macros, etc,
-# in ./support/ and its subdirectories.
-Dir[ "#{ File.dirname( __FILE__ ) }/support/**/*.rb" ].each do | each |
-  require File.expand_path( each )
+formatters = [SimpleCov::Formatter::HTMLFormatter]
+formatters << Coveralls::SimpleCov::Formatter if ENV['COVERALLS_REPO_TOKEN']
+if ENV['CODECLIMATE_REPO_TOKEN']
+  formatters << CodeClimate::TestReporter::Formatter
 end
 
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[*formatters]
+SimpleCov.start { add_filter '/vendor/' }
 
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:
+require 'rspec/given'

@@ -2,7 +2,6 @@
 *.rbc
 .bundle
 .config
-Gemfile.lock
 InstalledFiles
 coverage
 lib/bundler/man
@@ -13,6 +12,7 @@ test/tmp
 test/version_tmp
 tmp
 topology.png
+/vendor/
 
 # YARD artifacts
 .yardoc

@@ -1,89 +1,67 @@
-require "forwardable"
-require "link"
-require "observer"
-require "trema-extensions/port"
+$LOAD_PATH.unshift __dir__
 
+require 'link'
+require 'observer'
 
-#
 # Topology information containing the list of known switches, ports,
 # and links.
-#
 class Topology
   include Observable
-  extend Forwardable
 
+  attr_reader :links
+  attr_reader :ports
 
-  def_delegator :@ports, :each_pair, :each_switch
-  def_delegator :@links, :each, :each_link
-
-
-  def initialize controller
+  def initialize(view)
     @ports = Hash.new { [].freeze }
     @links = []
-    add_observer controller
+    add_observer view
   end
 
+  def switches
+    @ports.keys
+  end
 
-  def delete_switch dpid
-    @ports[ dpid ].each do | each |
-      delete_port dpid, each
-    end
+  def add_switch(dpid, ports)
+    ports.each { |each| add_port(each) }
+    changed
+    notify_observers :add_switch, dpid, self
+  end
+
+  def delete_switch(dpid)
+    @ports[dpid].each { |each| delete_port(each) }
     @ports.delete dpid
+    changed
+    notify_observers :delete_switch, dpid, self
   end
 
-
-  def update_port dpid, port
-    if port.down?
-      delete_port dpid, port
-    elsif port.up?
-      add_port dpid, port
-    end
+  def add_port(port)
+    @ports[port.dpid] += [port]
+    changed
+    notify_observers :add_port, port, self
   end
 
-
-  def add_port dpid, port
-    @ports[ dpid ] += [ port ]
+  def delete_port(port)
+    @ports[port.dpid].delete_if { |each| each.number == port.number }
+    changed
+    notify_observers :delete_port, port, self
+    maybe_delete_link port
   end
 
-
-  def delete_port dpid, port
-    @ports[ dpid ] -= [ port ]
-    delete_link_by dpid, port
+  def maybe_add_link(link)
+    return if @links.include?(link)
+    @links << link
+    changed
+    notify_observers :add_link, link, self
   end
 
-
-  def add_link_by dpid, packet_in
-    raise "Not an LLDP packet!" if not packet_in.lldp?
-
-    link = Link.new( dpid, packet_in )
-    if not @links.include?( link )
-      @links << link
-      @links.sort!
-      changed
-      notify_observers self
-    end
-  end
-
-
-  ##############################################################################
   private
-  ##############################################################################
 
-
-  def delete_link_by dpid, port
-    @links.each do | each |
-      if each.has?( dpid, port.number )
-        changed
-        @links -= [ each ]
-      end
+  def maybe_delete_link(port)
+    @links.each do |each|
+      next unless each.connect_to?(port)
+      changed
+      @links -= [each]
+      notify_observers :delete_link, each, self
     end
-    notify_observers self
   end
 end
-
-
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:

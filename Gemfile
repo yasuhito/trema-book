@@ -1,19 +1,31 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-
-gem "ruby-graphviz", "~> 1.0.9"
-gem "trema", "~> 0.4.4"
-
+gem 'ruby-graphviz'
+gem 'phut', github: 'trema/phut', branch: 'develop'
+gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 
 group :development, :test do
-  gem "aruba", "~> 0.5.3"
-  gem "cucumber", "~> 1.3.8"
-  gem "rspec", "~> 2.14.1"
+  gem 'aruba', require: false
+  gem 'cucumber', require: false
+  gem 'flay', require: false
+  gem 'flog', require: false
+  gem 'guard', require: false
+  gem 'guard-bundler', require: false
+  gem 'guard-cucumber', require: false
+  gem 'guard-rspec', require: false
+  gem 'guard-rubocop', require: false
+  gem 'reek', require: false
+  gem 'rspec', require: false
+  gem 'rspec-given', require: false
+  gem 'rubocop', require: false
 end
 
+group :doc do
+  gem 'inch', require: false
+  gem 'yard', require: false
+end
 
-### Local variables:
-### mode: Ruby
-### coding: utf-8-unix
-### indent-tabs-mode: nil
-### End:
+group :test do
+  gem 'codeclimate-test-reporter', require: false
+  gem 'coveralls', require: false
+end

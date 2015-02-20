@@ -1,61 +1,69 @@
-ruby_topology
-=============
-[![Code Climate](https://codeclimate.com/github/yasuhito/ruby_topology.png)](https://codeclimate.com/github/yasuhito/ruby_topology)
-[![Dependency Status](https://gemnasium.com/yasuhito/ruby_topology.png)](https://gemnasium.com/yasuhito/ruby_topology)
+topology
+========
+[![Build Status](http://img.shields.io/travis/trema/topology/develop.svg?style=flat)][travis]
+[![Code Climate](http://img.shields.io/codeclimate/github/trema/topology.svg?style=flat)][codeclimate]
+[![Coverage Status](http://img.shields.io/codeclimate/coverage/github/trema/topology.svg?style=flat)][codeclimate]
+[![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
+[![Gitter chat](https://badges.gitter.im/trema/topology.png)][gitter]
 
-Trema + Ruby で LLDP を使ったネットワークトポロジ探索
+Topology discovery controller in Trema.
 
+[travis]: http://travis-ci.org/trema/topology
+[codeclimate]: https://codeclimate.com/github/trema/topology
+[gemnasium]: https://gemnasium.com/trema/topology
+[gitter]: https://gitter.im/trema/topology
 
-準備
-----
+Install
+-------
 
-前もって Trema のビルド環境 (Ruby 1.8.7 とか gcc とか) をセットアップ
-し、次のコマンドを実行。
-
-```shell
-$ git clone https://github.com/yasuhito/ruby_topology.git
-$ cd ruby_topology
+```bash
+$ git clone https://github.com/trema/topology.git
+$ cd topology
 $ bundle install
 ```
 
-これで Trema など必要なものをインストールできます。
-
-
-遊ぶ
+Play
 ----
 
-おなじみ `trema run` で実行すると、トポロジ情報がテキストで見えます。
+Run the controller `topology_controller.rb` with `trema run` by
+passing a topology configuration file with `-c` option, then it
+outputs the current topology information in ASCII format.
 
-スイッチ 3 台の三角形トポロジ:
+The triangle topology configuration with three switches:
 
-```shell
-$ trema run ./topology-controller.rb -c triangle.conf
+```bash
+$ trema run ./lib/topology_controller.rb -c triangle.conf
 ```
 
-スイッチ 10 台のフルメッシュ:
+The full mesh with 10 switches:
 
-```shell
-$ trema run ./topology-controller.rb -c fullmesh.conf
+```bash
+$ trema run ./lib/topology_controller.rb -c fullmesh.conf
 ```
 
-スイッチやポートを落としたり上げたりしてトポロジの変化を楽しむ:
-(以下、別ターミナルで)
+In another terminal, you can make changes to the current topology by
+adding or deleting switches with `trema kill` and `trema up` commands.
 
-```shell
-$ trema kill 0x1  # スイッチ 0x1 を落とす
-$ trema up 0x1  # 落としたスイッチ 0x1 をふたたび起動
-$ trema port_down --switch 0x1 --port 1  # スイッチ 0x1 のポート 1 を落とす
-$ trema port_up --switch 0x1 --port 1  # 落としたポートを上げる
+```bash
+$ trema kill 0x1
+$ trema up 0x1
 ```
 
-graphviz でトポロジ画像を出す:
+To turn switch ports on/off,
 
-```shell
-$ trema run "./topology-controller.rb graphviz /tmp/topology.png" -c fullmesh.conf
+```bash
+$ trema port_down --switch 0x1 --port 1
+$ trema port_up --switch 0x1 --port 1
 ```
 
-LLDP の宛先 MAC アドレスを任意のやつに変える:
+To view the current topology graphically,
 
-```shell
-$ trema run "./topology-controller.rb --destination_mac 11:22:33:44:55:66" -c fullmesh.conf
+```bash
+$ trema run ./lib/topology_controller.rb -c fullmesh.conf -- graphviz /tmp/topology.png
+```
+
+To change the LLDP destination MAC,
+
+```bash
+$ trema run ./lib/topology_controller.rb -c fullmesh.conf -- --destination_mac 11:22:33:44:55:66
 ```
