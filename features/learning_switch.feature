@@ -14,8 +14,7 @@ Feature: "Learning Switch" example
   @sudo
   Scenario: Run as a daemon
     Given I run `trema run ../../lib/learning_switch.rb -c trema.conf -p . -l . -s .` interactively
-    And I wait for stdout to contain "LearningSwitch started"
-    And I run `sleep 5`
+    And I run `sleep 8`
     When I run `trema send_packets --source host1 --dest host2 --n_pkts 1`
     And I run `trema send_packets --source host2 --dest host1 --n_pkts 2`
     Then the total number of tx packets should be:
@@ -28,8 +27,7 @@ Feature: "Learning Switch" example
   @sudo
   Scenario: Run as a daemon
     Given I successfully run `trema run ../../lib/learning_switch.rb -c trema.conf -d -p . -l . -s .`
-    And I wait until a file named "LearningSwitch.pid" is created
-    And I run `sleep 5`
+    And I run `sleep 8`
     When I successfully run `trema send_packets --source host1 --dest host2 --n_pkts 1`
     And I successfully run `trema send_packets --source host2 --dest host1 --n_pkts 2`
     Then the total number of tx packets should be:
