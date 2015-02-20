@@ -16,7 +16,7 @@ Feature: Detect network topology
     When I run `trema run ../../lib/topology_controller.rb -c triangle.conf -p . -l . -s .` interactively
     And I run `sleep 5`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     0x1-0x2, 0x1-0x3, 0x2-0x1, 0x2-0x3, 0x3-0x1, 0x3-0x2
     """
@@ -26,7 +26,7 @@ Feature: Detect network topology
     When I run `trema run ../../lib/topology_controller.rb -c triangle.conf -p . -l . -s . -- graphviz` interactively
     And I run `sleep 5`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Topology started (Graphviz mode, output = topology.png)
     """
@@ -37,7 +37,7 @@ Feature: Detect network topology
     When I run `trema run ../../lib/topology_controller.rb -c triangle.conf -p . -l . -s . -- graphviz foobar.png` interactively
     And I run `sleep 5`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Topology started (Graphviz mode, output = foobar.png)
     """
@@ -50,15 +50,15 @@ Feature: Detect network topology
     When I run `trema kill 0x3`
     And I run `sleep 2`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Switch 0x3 deleted: 0x1, 0x2
     """
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Link 0x2-0x3 deleted
     """
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Link 0x3-0x2 deleted
     """
@@ -70,7 +70,7 @@ Feature: Detect network topology
     When I run `trema port_down --switch 0x3 --port 1`
     And I run `sleep 2`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Port 0x3:1 deleted: 2
     """
@@ -83,7 +83,7 @@ Feature: Detect network topology
     And I run `trema port_up --switch 0x3 --port 1`
     And I run `sleep 2`
     And I run `trema killall`
-    Then the output should contain:
+    Then the stdout should contain:
     """
     Port 0x3:1 added: 1, 2
     """
