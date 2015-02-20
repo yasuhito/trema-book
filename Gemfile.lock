@@ -10,7 +10,7 @@ GIT
 
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: e22a081333de3f936bf5471b782995987cc69158
+  revision: bd73b839751f4217ddf33453e9ca89e9e99c6c65
   branch: develop
   specs:
     trema (0.1.0)
@@ -133,7 +133,7 @@ GEM
       parser (~> 2.2)
       rainbow (~> 2.0)
       unparser (~> 0.2.2)
-    rest-client (1.7.2)
+    rest-client (1.7.3)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
     rspec (3.2.0)
