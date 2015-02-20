@@ -6,6 +6,7 @@ end
 
 guard :rubocop do
   watch(/.+\.rb$/)
+  watch(/.+\.rake$/)
   watch(/(?:.+\/)?\.rubocop\.yml$/) { |m| File.dirname(m[0]) }
 end
 
