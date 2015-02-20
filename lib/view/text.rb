@@ -9,6 +9,10 @@ module View
       __send__ event, changed, topology
     end
 
+    def to_s
+      'text mode'
+    end
+
     private
 
     def add_switch(dpid, topology)
@@ -21,12 +25,17 @@ module View
                   topology.switches.map(&:to_hex))
     end
 
-    def add_port(port, _topology)
-      show_status "Port #{port.dpid.to_hex}:#{port.number} added", []
+    def add_port(port, topology)
+      add_or_delete_port :added, port, topology
     end
 
-    def delete_port(port, _topology)
-      show_status "Port #{port.dpid.to_hex}:#{port.number} deleted", []
+    def delete_port(port, topology)
+      add_or_delete_port :deleted, port, topology
+    end
+
+    def add_or_delete_port(message, port, topology)
+      ports = topology.ports[port.dpid].map(&:number).sort
+      show_status "Port #{port.dpid.to_hex}:#{port.number} #{message}", ports
     end
 
     def add_link(link, topology)

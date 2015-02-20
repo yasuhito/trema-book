@@ -11,7 +11,6 @@ class CommandLine
 
   def initialize(logger)
     @logger = logger
-    @view = View::Text.new(@logger)
   end
 
   def parse(args)

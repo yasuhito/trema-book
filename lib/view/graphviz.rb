@@ -3,8 +3,8 @@ require 'graphviz'
 module View
   # Topology controller's GUI (graphviz).
   class Graphviz
-    def initialize(output = './topology.png')
-      @output = File.expand_path(output)
+    def initialize(output = 'topology.png')
+      @output = output
     end
 
     # rubocop:disable AbcSize
@@ -21,5 +21,9 @@ module View
       end
     end
     # rubocop:enable AbcSize
+
+    def to_s
+      "Graphviz mode, output = #{@output}"
+    end
   end
 end

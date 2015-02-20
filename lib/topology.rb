@@ -1,3 +1,5 @@
+$LOAD_PATH.unshift __dir__
+
 require 'link'
 require 'observer'
 
@@ -39,7 +41,7 @@ class Topology
   end
 
   def delete_port(port)
-    @ports[port.dpid].delete port
+    @ports[port.dpid].delete_if { |each| each.number == port.number }
     changed
     notify_observers :delete_port, port, self
     maybe_delete_link port

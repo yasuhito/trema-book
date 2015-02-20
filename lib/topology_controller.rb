@@ -11,7 +11,7 @@ class TopologyController < Trema::Controller
     @command_line = CommandLine.new(logger)
     @command_line.parse(argv)
     @topology = Topology.new(@command_line.view)
-    logger.info 'Topology started.'
+    logger.info "Topology started (#{@command_line.view})."
   end
 
   def switch_ready(dpid)
