@@ -14,11 +14,11 @@ Feature: Switch Monitor example
     And I run `trema kill 0x2`
     And I run `trema up 0x2`
     And I run `trema killall`
-    Then the output should contain "SwitchMonitor started"
-    And the output should contain "0x1 is up"
-    And the output should contain "0x2 is up"
-    And the output should contain "0x3 is up"
-    And the output should contain:
+    Then the stdout should contain "SwitchMonitor started"
+    And the stdout should contain "0x1 is up"
+    And the stdout should contain "0x2 is up"
+    And the stdout should contain "0x3 is up"
+    And the stdout should contain:
     """
     0x2 is down (all = 0x1, 0x3)
     0x2 is up (all = 0x1, 0x2, 0x3)
