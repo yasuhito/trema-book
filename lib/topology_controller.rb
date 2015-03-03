@@ -7,6 +7,8 @@ require 'topology'
 class TopologyController < Trema::Controller
   timer_event :flood_lldp_frames, interval: 1.sec
 
+  attr_reader :topology
+
   def start(argv)
     @command_line = CommandLine.new(logger)
     @command_line.parse(argv)
@@ -39,8 +41,11 @@ class TopologyController < Trema::Controller
   end
 
   def packet_in(dpid, packet_in)
-    return unless packet_in.lldp?
-    @topology.maybe_add_link Link.new(dpid, packet_in)
+    if packet_in.lldp?
+      @topology.maybe_add_link Link.new(dpid, packet_in)
+    else
+      @topology.add_host(packet_in.source_mac, dpid, packet_in.in_port)
+    end
   end
 
   def flood_lldp_frames
