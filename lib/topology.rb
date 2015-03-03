@@ -14,6 +14,7 @@ class Topology
   def initialize(view)
     @ports = Hash.new { [].freeze }
     @links = []
+    @fdb = {}
     add_observer view
   end
 
@@ -52,6 +53,14 @@ class Topology
     @links << link
     changed
     notify_observers :add_link, link, self
+  end
+
+  def add_host(mac_address, dpid, port)
+    @fdb[mac_address] = [dpid, port]
+  end
+
+  def find_dpid_and_port(mac_address)
+    @fdb[mac_address]
   end
 
   private
