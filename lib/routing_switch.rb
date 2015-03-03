@@ -31,12 +31,10 @@ class RoutingSwitch < Trema::Controller
 
   def packet_in(dpid, message)
     @topology_controller.packet_in(dpid, message)
-    send_flow_mod_add(dpid,
-                      match: ExactMatch.new(message),
-                      actions: SendOutPort.new(:flood))
-    send_packet_out(dpid,
-                    packet_in: message,
-                    actions: SendOutPort.new(:flood))
+    dpid, port =
+      @topology_controller.topology.find_dpid_and_port(message.destination_mac)
+    return unless dpid
+    send_packet_out(dpid, packet_in: message, actions: SendOutPort.new(port))
   end
 
   def flood_lldp_frames
