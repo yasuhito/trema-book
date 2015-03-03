@@ -1,5 +1,5 @@
 Feature: routing switch
-  @sudo
+  @sudo @announce
   Scenario: One switch
     Given a file named "trema.conf" with:
     """
@@ -20,17 +20,19 @@ Feature: routing switch
     And I run `trema show_stats host2 -S .`
     Then the stdout from "trema show_stats host1 -S ." should contain:
     """
-    Packets sent:
-      192.168.0.1 -> 192.168.0.2 = 1 packet
-    Packets received:
-      192.168.0.2 -> 192.168.0.1 = 1 packet
+    192.168.0.1 -> 192.168.0.2 = 1 packet
+    """
+    And the stdout from "trema show_stats host1 -S ." should contain:
+    """
+    192.168.0.2 -> 192.168.0.1 = 1 packet
     """
     And the stdout from "trema show_stats host2 -S ." should contain:
     """
-    Packets sent:
-      192.168.0.2 -> 192.168.0.1 = 1 packet
-    Packets received:
-      192.168.0.1 -> 192.168.0.2 = 1 packet
+    192.168.0.2 -> 192.168.0.1 = 1 packet
+    """
+    And the stdout from "trema show_stats host2 -S ." should contain:
+    """
+    192.168.0.1 -> 192.168.0.2 = 1 packet
     """
 
   @wip @sudo @announce
