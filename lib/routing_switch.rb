@@ -1,3 +1,4 @@
+$LOAD_PATH.unshift __dir__
 $LOAD_PATH.unshift File.join(__dir__, '../vendor/topology/lib')
 
 require 'topology_controller'
