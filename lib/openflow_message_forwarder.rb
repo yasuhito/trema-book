@@ -10,9 +10,9 @@ class OpenflowMessageForwarder < Trema::Controller
 
   def start(argv)
     @topology_controller = TopologyController.new
-    @topology_controller.start(argv)
     @routing_switch = RoutingSwitch.new
-    @routing_switch.start(@topology_controller.topology)
+    @topology_controller.start(argv, @routing_switch)
+    @routing_switch.start
   end
 
   def switch_ready(dpid)
