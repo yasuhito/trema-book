@@ -1,22 +1,31 @@
 GIT
   remote: git://github.com/trema/phut.git
-  revision: b72a46d70a34ed1e73fdd566a151a4eab6a61386
+  revision: 114b1a32499a4e0dbb5007e584de1374ba5b63e6
   branch: develop
   specs:
-    phut (0.1.0)
-      gli (~> 2.12.2)
-      pio (~> 0.15.2)
+    phut (0.2.0)
+      gli (~> 2.12.3)
+      pio (~> 0.16.0)
       pry (~> 0.10.1)
 
 GIT
+  remote: git://github.com/trema/pio.git
+  revision: 402c64d47271182fdd3925da67cdc8798cef5193
+  branch: develop
+  specs:
+    pio (0.16.0)
+      bindata (~> 2.1.0)
+
+GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: bd73b839751f4217ddf33453e9ca89e9e99c6c65
+  revision: 3b09df02bf1f28f91b0817c2451aa7161aea1abd
   branch: develop
   specs:
     trema (0.1.0)
       bundler (~> 1.8.2)
       gli (~> 2.12.2)
-      pio (~> 0.15.2)
+      phut (~> 0.2.0)
+      pio (~> 0.16.0)
       rake
 
 GEM
@@ -39,13 +48,13 @@ GEM
       timers (~> 4.0.0)
     childprocess (0.5.5)
       ffi (~> 1.0, >= 1.0.11)
-    codeclimate-test-reporter (0.4.6)
+    codeclimate-test-reporter (0.4.7)
       simplecov (>= 0.7.1, < 1.0.0)
     coderay (1.1.0)
     concord (0.1.5)
       adamantium (~> 0.2.0)
       equalizer (~> 0.0.9)
-    coveralls (0.7.10)
+    coveralls (0.7.11)
       multi_json (~> 1.10)
       rest-client (>= 1.6.8, < 2)
       simplecov (~> 0.9.1)
@@ -72,8 +81,8 @@ GEM
       multi_json (~> 1.3)
     given_core (3.7.0)
       sorcerer (>= 0.3.7)
-    gli (2.12.2)
-    guard (2.12.2)
+    gli (2.12.3)
+    guard (2.12.4)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
@@ -115,17 +124,15 @@ GEM
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (0.8.2)
     mime-types (2.4.3)
-    multi_json (1.10.1)
+    multi_json (1.11.0)
     multi_test (0.1.2)
     nenv (0.2.0)
-    netrc (0.10.2)
+    netrc (0.10.3)
     notiffany (0.0.6)
       nenv (~> 0.1)
       shellany (~> 0.0)
     parser (2.2.0.3)
       ast (>= 1.1, < 3.0)
-    pio (0.15.2)
-      bindata (~> 2.1.0)
     powerpack (0.1.0)
     procto (0.0.2)
     pry (0.10.1)
@@ -137,10 +144,12 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    reek (2.0.0)
+    reek (2.0.1)
       parser (~> 2.2)
       rainbow (~> 2.0)
+      require_all (~> 1.3)
       unparser (~> 0.2.2)
+    require_all (1.3.2)
     rest-client (1.7.3)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
@@ -148,7 +157,7 @@ GEM
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
       rspec-mocks (~> 3.2.0)
-    rspec-core (3.2.0)
+    rspec-core (3.2.1)
       rspec-support (~> 3.2.0)
     rspec-expectations (3.2.0)
       diff-lcs (>= 1.2.0, < 2.0)
@@ -156,10 +165,10 @@ GEM
     rspec-given (3.7.0)
       given_core (= 3.7.0)
       rspec (>= 2.14.0)
-    rspec-mocks (3.2.0)
+    rspec-mocks (3.2.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
-    rspec-support (3.2.1)
+    rspec-support (3.2.2)
     rubocop (0.29.1)
       astrolabe (~> 1.3)
       parser (>= 2.2.0.1, < 3.0)
@@ -186,7 +195,7 @@ GEM
     thread_safe (0.3.4)
     timers (4.0.1)
       hitimes
-    tins (1.3.4)
+    tins (1.3.5)
     unparser (0.2.2)
       abstract_type (~> 0.0.7)
       adamantium (~> 0.2.0)
@@ -214,6 +223,7 @@ DEPENDENCIES
   guard-rubocop
   inch
   phut!
+  pio!
   reek
   rspec
   rspec-given

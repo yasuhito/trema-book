@@ -2,6 +2,7 @@ $LOAD_PATH.unshift __dir__
 
 require 'link'
 require 'observer'
+require 'graph'
 
 # Topology information containing the list of known switches, ports,
 # and links.
@@ -15,6 +16,7 @@ class Topology
     @ports = Hash.new { [].freeze }
     @links = []
     @fdb = {}
+    @graph = Hash.new { [].freeze }
     add_observer view
   end
 
@@ -29,7 +31,7 @@ class Topology
   end
 
   def delete_switch(dpid)
-    @ports[dpid].each { |each| delete_port(each) }
+    delete_port(@ports[dpid].pop) until @ports[dpid].empty?
     @ports.delete dpid
     changed
     notify_observers :delete_switch, dpid, self
@@ -37,6 +39,8 @@ class Topology
 
   def add_port(port)
     @ports[port.dpid] += [port]
+    @graph["#{port.dpid}:#{port.number}"] += [port.dpid]
+    @graph[port.dpid] += ["#{port.dpid}:#{port.number}"]
     changed
     notify_observers :add_port, port, self
   end
@@ -50,17 +54,25 @@ class Topology
 
   def maybe_add_link(link)
     return if @links.include?(link)
+    @graph["#{link.dpid_a}:#{link.port_a}"] += ["#{link.dpid_b}:#{link.port_b}"]
+    @graph["#{link.dpid_b}:#{link.port_b}"] += ["#{link.dpid_a}:#{link.port_a}"]
     @links << link
     changed
     notify_observers :add_link, link, self
   end
 
-  def add_host(mac_address, dpid, port)
-    @fdb[mac_address] = [dpid, port]
+  def add_host(ip_address, dpid, port)
+    @fdb[ip_address] = [dpid, port]
+    @graph[ip_address] += ["#{dpid}:#{port}"]
+    @graph["#{dpid}:#{port}"] += [ip_address]
   end
 
-  def find_dpid_and_port(mac_address)
-    @fdb[mac_address]
+  def find_dpid_and_port(ip_address)
+    @fdb[ip_address]
+  end
+
+  def route(ip_source_address, ip_destination_address)
+    Graph.new(@graph).route(ip_source_address, ip_destination_address)
   end
 
   private
