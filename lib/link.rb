@@ -11,7 +11,7 @@ class Link
   attr_reader :port_b
 
   def initialize(dpid, packet_in)
-    lldp = Pio::Lldp.read(packet_in.data)
+    lldp = packet_in.data
     @dpid_a = lldp.dpid
     @dpid_b = dpid
     @port_a = lldp.port_number
