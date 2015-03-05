@@ -46,6 +46,10 @@ module View
       show_status "Link #{link} deleted", topology.links
     end
 
+    def add_host(_changed, _topology)
+      # ignore
+    end
+
     def show_status(message, objects)
       status = objects.sort.map(&:to_s).join(', ')
       @logger.info "#{message}: #{status}"

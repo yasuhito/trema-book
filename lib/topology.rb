@@ -16,8 +16,9 @@ class Topology
     @ports = Hash.new { [].freeze }
     @links = []
     @fdb = {}
-    @graph = Hash.new { [].freeze }
+    @graph = Graph.new
     add_observer view
+    add_observer @graph
   end
 
   def switches
@@ -39,8 +40,6 @@ class Topology
 
   def add_port(port)
     @ports[port.dpid] += [port]
-    @graph["#{port.dpid}:#{port.number}"] += [port.dpid]
-    @graph[port.dpid] += ["#{port.dpid}:#{port.number}"]
     changed
     notify_observers :add_port, port, self
   end
@@ -54,8 +53,6 @@ class Topology
 
   def maybe_add_link(link)
     return if @links.include?(link)
-    @graph["#{link.dpid_a}:#{link.port_a}"] += ["#{link.dpid_b}:#{link.port_b}"]
-    @graph["#{link.dpid_b}:#{link.port_b}"] += ["#{link.dpid_a}:#{link.port_a}"]
     @links << link
     changed
     notify_observers :add_link, link, self
@@ -63,8 +60,8 @@ class Topology
 
   def add_host(ip_address, dpid, port)
     @fdb[ip_address] = [dpid, port]
-    @graph[ip_address] += ["#{dpid}:#{port}"]
-    @graph["#{dpid}:#{port}"] += [ip_address]
+    changed
+    notify_observers :add_host, [ip_address, dpid, port], self
   end
 
   def find_dpid_and_port(ip_address)
@@ -72,7 +69,7 @@ class Topology
   end
 
   def route(ip_source_address, ip_destination_address)
-    Graph.new(@graph).route(ip_source_address, ip_destination_address)
+    @graph.route(ip_source_address, ip_destination_address)
   end
 
   private

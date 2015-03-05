@@ -30,14 +30,27 @@ class Graph
     end
   end
 
-  def initialize(data)
-    @nodes = data.each_with_object({}) do |(node, neighbors), hash|
-      hash[node] = Node.new(node, neighbors)
+  def initialize
+    @data = Hash.new { [].freeze }
+  end
+
+  def update(event, changed, _topology)
+    case event
+    when :add_port, :add_link
+      __send__ event, changed
+    when :add_host
+      __send__ event, *changed
+    else
+      true
     end
   end
 
   # rubocop:disable MethodLength
   def route(start, goal)
+    @nodes = @data.each_with_object({}) do |(node, neighbors), hash|
+      hash[node] = Node.new(node, neighbors)
+    end
+
     return unless @nodes[start]
     return unless @nodes[goal]
 
@@ -55,6 +68,21 @@ class Graph
   # rubocop:enable MethodLength
 
   private
+
+  def add_port(port)
+    @data["#{port.dpid}:#{port.number}"] += [port.dpid]
+    @data[port.dpid] += ["#{port.dpid}:#{port.number}"]
+  end
+
+  def add_link(link)
+    @data["#{link.dpid_a}:#{link.port_a}"] += ["#{link.dpid_b}:#{link.port_b}"]
+    @data["#{link.dpid_b}:#{link.port_b}"] += ["#{link.dpid_a}:#{link.port_a}"]
+  end
+
+  def add_host(ip_address, dpid, port)
+    @data[ip_address] += ["#{dpid}:#{port}"]
+    @data["#{dpid}:#{port}"] += [ip_address]
+  end
 
   def dijkstra(start_name)
     @nodes.fetch(start_name).distance = 0
