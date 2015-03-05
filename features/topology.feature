@@ -43,7 +43,7 @@ Feature: Detect network topology
     """
     And a file named "foobar.png" should exist
 
-  @sudo @announce
+  @sudo
   Scenario: Kill a switch then the topology updated
     Given I run `trema run ../../lib/topology_controller.rb -c triangle.conf -P . -L . -S .` interactively
     And I run `sleep 5`
