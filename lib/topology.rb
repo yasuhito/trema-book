@@ -2,7 +2,6 @@ $LOAD_PATH.unshift __dir__
 
 require 'link'
 require 'observer'
-require 'graph'
 
 # Topology information containing the list of known switches, ports,
 # and links.
@@ -12,13 +11,10 @@ class Topology
   attr_reader :links
   attr_reader :ports
 
-  def initialize(view)
+  def initialize(observers)
     @ports = Hash.new { [].freeze }
     @links = []
-    @fdb = {}
-    @graph = Graph.new
-    add_observer view
-    add_observer @graph
+    observers.each { |each| add_observer each }
   end
 
   def switches
@@ -59,13 +55,8 @@ class Topology
   end
 
   def add_host(ip_address, dpid, port)
-    @fdb[ip_address] = [dpid, port]
     changed
     notify_observers :add_host, [ip_address, dpid, port], self
-  end
-
-  def find_dpid_and_port(ip_address)
-    @fdb[ip_address]
   end
 
   def route(ip_source_address, ip_destination_address)
