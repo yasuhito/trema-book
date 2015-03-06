@@ -2,6 +2,7 @@ $LOAD_PATH.unshift __dir__
 
 require 'link'
 require 'observer'
+require 'graph'
 
 # Topology information containing the list of known switches, ports,
 # and links.
@@ -15,7 +16,9 @@ class Topology
     @ports = Hash.new { [].freeze }
     @links = []
     @fdb = {}
+    @graph = Graph.new
     add_observer view
+    add_observer @graph
   end
 
   def switches
@@ -29,7 +32,7 @@ class Topology
   end
 
   def delete_switch(dpid)
-    @ports[dpid].each { |each| delete_port(each) }
+    delete_port(@ports[dpid].pop) until @ports[dpid].empty?
     @ports.delete dpid
     changed
     notify_observers :delete_switch, dpid, self
@@ -55,12 +58,18 @@ class Topology
     notify_observers :add_link, link, self
   end
 
-  def add_host(mac_address, dpid, port)
-    @fdb[mac_address] = [dpid, port]
+  def add_host(ip_address, dpid, port)
+    @fdb[ip_address] = [dpid, port]
+    changed
+    notify_observers :add_host, [ip_address, dpid, port], self
   end
 
-  def find_dpid_and_port(mac_address)
-    @fdb[mac_address]
+  def find_dpid_and_port(ip_address)
+    @fdb[ip_address]
+  end
+
+  def route(ip_source_address, ip_destination_address)
+    @graph.route(ip_source_address, ip_destination_address)
   end
 
   private
