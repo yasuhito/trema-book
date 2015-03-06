@@ -2,7 +2,6 @@ $LOAD_PATH.unshift __dir__
 
 require 'link'
 require 'observer'
-require 'graph'
 
 # Topology information containing the list of known switches, ports,
 # and links.
