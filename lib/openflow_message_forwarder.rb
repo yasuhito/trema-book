@@ -8,10 +8,11 @@ require 'topology_controller'
 class OpenflowMessageForwarder < Trema::Controller
   timer_event :flood_lldp_frames, interval: 1.sec
 
-  def start(argv)
+  def start(args)
     @topology_controller = TopologyController.new
     @routing_switch = RoutingSwitch.new
-    @topology_controller.start(argv, @routing_switch)
+    @topology_controller.start(args)
+    @topology_controller.add_observer(@routing_switch)
     @routing_switch.start
   end
 
