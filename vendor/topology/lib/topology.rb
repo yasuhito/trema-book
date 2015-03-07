@@ -11,10 +11,9 @@ class Topology
   attr_reader :links
   attr_reader :ports
 
-  def initialize(view)
+  def initialize
     @ports = Hash.new { [].freeze }
     @links = []
-    add_observer view
   end
 
   def switches
