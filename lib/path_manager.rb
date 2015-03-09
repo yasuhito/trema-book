@@ -10,12 +10,10 @@ class PathManager < Trema::Controller
   end
 
   def packet_in(_dpid, message)
-    shortest_path = @graph.dijkstra(message.source_mac, message.destination_mac)
+    from, to = message.source_mac, message.destination_mac
+    shortest_path = @graph.dijkstra(from, to)
     return unless shortest_path
-    add_path(message.source_mac,
-             shortest_path,
-             message.destination_mac,
-             message)
+    add_path(shortest_path, message)
   end
 
   def update(event, changed, _topology)
@@ -57,10 +55,7 @@ class PathManager < Trema::Controller
     @graph.add_host(mac_address, dpid, port)
   end
 
-  def add_path(_from, shortest_path, _to, packet_in)
-    shortest_path = @graph.dijkstra(packet_in.source_mac,
-                                    packet_in.destination_mac)
-    return unless shortest_path
+  def add_path(shortest_path, packet_in)
     flow_mod_to_each_switch shortest_path, packet_in
     packet_out_to_destination(*shortest_path.last, packet_in)
   end
