@@ -53,9 +53,9 @@ class Topology
     notify_observers :add_link, link, self
   end
 
-  def add_host(ip_address, dpid, port)
+  def add_host(mac_address, ip_address, dpid, port)
     changed
-    notify_observers :add_host, [ip_address, dpid, port], self
+    notify_observers :add_host, [mac_address, ip_address, dpid, port], self
   end
 
   def route(ip_source_address, ip_destination_address)

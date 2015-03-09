@@ -49,7 +49,10 @@ class TopologyController < Trema::Controller
     if packet_in.lldp?
       @topology.maybe_add_link Link.new(dpid, packet_in)
     else
-      @topology.add_host(packet_in.ip_source_address, dpid, packet_in.in_port)
+      @topology.add_host(packet_in.source_mac,
+                         packet_in.ip_source_address,
+                         dpid,
+                         packet_in.in_port)
     end
   end
 
