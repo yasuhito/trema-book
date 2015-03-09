@@ -31,7 +31,7 @@ Play
 To run without virtual slicing, run
 `lib/openflow_message_forwarder.rb` as follows:
 
-```bash
+```
 $ bundle exec trema run lib/openflow_message_forwarder.rb -c trema.conf
 Topology started (text mode).
 Routing Switch started.
@@ -41,9 +41,18 @@ To run with virtual slicing support, run
 `lib/openflow_message_forwarder.rb` with `-- --slicing` options as
 follows:
 
-```bash
+```
 $ bundle exec trema run lib/openflow_message_forwarder.rb -c trema.conf -- --slicing
 Topology started (text mode).
 Routing Switch started.
 Sliceable switch started.
+```
+
+In another terminal, you can create virtual slices and add hosts to
+them with `slice add` and `slice add_host` commands.
+
+```
+$ bundle exec slice add foo
+$ bundle exec slice add_host 00:00:00:00:00:01 --slice foo
+$ bundle exec slice add_host 00:00:00:00:00:01 --slice foo
 ```
