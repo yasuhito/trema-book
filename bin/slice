@@ -15,7 +15,7 @@ module Slice
     c.flag [:S, :socket_dir], default_value: Trema.socket_dir
 
     c.action do |_global_options, options, args|
-      help_now!('name is required') if args.empty?
+      fail 'slice name is required.' if args.empty?
       Trema.controller_process(options[:socket_dir]).add_slice(args.first)
     end
   end
@@ -29,8 +29,8 @@ module Slice
     c.flag [:S, :socket_dir], default_value: Trema.socket_dir
 
     c.action do |_global_options, options, args|
-      fail '--slice option is mandatory' if options[:slice].nil?
-      help_now!('MAC address is required') if args.empty?
+      fail 'MAC address is required.' if args.empty?
+      fail '--slice option is mandatory.' if options[:slice].nil?
       Trema.controller_process(options[:socket_dir]).
         add_mac_to_slice(args.first, options[:slice])
     end

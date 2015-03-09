@@ -52,7 +52,7 @@ In another terminal, you can create virtual slices and add hosts to
 them with `slice add` and `slice add_host` commands.
 
 ```
-$ bundle exec slice add foo
-$ bundle exec slice add_host 00:00:00:00:00:01 --slice foo
-$ bundle exec slice add_host 00:00:00:00:00:01 --slice foo
+$ bundle exec ./bin/slice add foo
+$ bundle exec ./bin/slice add_host 00:00:00:00:00:01 --slice foo
+$ bundle exec ./bin/slice add_host 00:00:00:00:00:01 --slice foo
 ```
