@@ -2,7 +2,7 @@ $LOAD_PATH.unshift __dir__
 
 require 'network_graph'
 
-# L2 routing switch
+# L2 routing path manager
 class PathManager < Trema::Controller
   def start
     @graph = NetworkGraph.new
