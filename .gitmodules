@@ -1,3 +1,0 @@
-[submodule "vendor/topology"]
-	path = vendor/topology
-	url = https://github.com/trema/topology.git
