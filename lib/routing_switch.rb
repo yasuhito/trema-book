@@ -10,7 +10,7 @@ require 'topology_controller'
 # L2 routing switch
 class RoutingSwitch < Trema::Controller
   # Command-line options of RoutingSwitch
-  class CommandLine
+  class Options
     attr_reader :slicing
 
     def initialize
@@ -27,10 +27,9 @@ class RoutingSwitch < Trema::Controller
 
   # This method smells of :reek:TooManyStatements but ignores them
   def start(args)
-    command_line = CommandLine.new
-    command_line.parse(args)
-    @path_manager =
-      command_line.slicing ? SliceableSwitch.new : PathManager.new
+    options = Options.new
+    options.parse(args)
+    @path_manager = options.slicing ? SliceableSwitch.new : PathManager.new
     @topology_controller = TopologyController.new
     @topology_controller.start([])
     @topology_controller.add_observer(@path_manager)
