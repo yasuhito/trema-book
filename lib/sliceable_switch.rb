@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift __dir__
 
+require 'pio'
 require 'routing_switch'
 
 # L2 routing switch with virtual slicing.
@@ -15,7 +16,7 @@ class SliceableSwitch < RoutingSwitch
   end
 
   def add_mac_to_slice(mac_address, slice)
-    @slices[slice] << mac_address
+    @slices[slice] << Pio::Mac.new(mac_address)
   end
 
   def packet_in(dpid, message)

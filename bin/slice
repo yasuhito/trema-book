@@ -1,30 +1,22 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+$LOAD_PATH.unshift File.join(__dir__, '..', 'lib')
 
-require 'drb'
 require 'gli'
-require 'phut'
-require 'pio'
+require 'trema'
 
 # slice command
 module Slice
   extend GLI::App
 
-  def self.controller(socket_dir)
-    socket_file =
-      File.expand_path(File.join(socket_dir, 'OpenflowMessageForwarder.ctl'))
-    DRbObject.new_with_uri('drbunix:' + socket_file)
-  end
-
   desc 'Creates a new virtual slice'
   arg_name 'name'
   command :add do |c|
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: Phut.socket_dir
+    c.flag [:S, :socket_dir], default_value: Trema.socket_dir
 
     c.action do |_global_options, options, args|
       help_now!('name is required') if args.empty?
-      controller(options.fetch(:socket_dir)).add_slice(args.first)
+      Trema.controller_process(options[:socket_dir]).add_slice(args.first)
     end
   end
 
@@ -34,13 +26,13 @@ module Slice
     c.desc 'Slice name'
     c.flag [:s, :slice]
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: Phut.socket_dir
+    c.flag [:S, :socket_dir], default_value: Trema.socket_dir
 
     c.action do |_global_options, options, args|
       fail '--slice option is mandatory' if options[:slice].nil?
       help_now!('MAC address is required') if args.empty?
-      controller(options.fetch(:socket_dir))
-        .add_mac_to_slice(Pio::Mac.new(args.first), options[:slice])
+      Trema.controller_process(options[:socket_dir]).
+        add_mac_to_slice(args.first, options[:slice])
     end
   end
 
