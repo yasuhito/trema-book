@@ -30,9 +30,9 @@ class NetworkGraph
     @graph[port_b] += [port_a]
   end
 
-  def add_host(ip_address, dpid, port_no)
+  def add_host(mac_address, dpid, port_no)
     port = Port.new(dpid, port_no)
-    @graph[ip_address] += [port]
-    @graph[port] += [ip_address]
+    @graph[mac_address] += [port]
+    @graph[port] += [mac_address]
   end
 end

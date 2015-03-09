@@ -11,8 +11,7 @@ class RoutingSwitch < Trema::Controller
   end
 
   def packet_in(_dpid, message)
-    path = @graph.dijkstra(message.ip_source_address,
-                           message.ip_destination_address)
+    path = @graph.dijkstra(message.source_mac, message.destination_mac)
     return unless path
     flow_mod_to_each_switch path, message
     packet_out_to_destination(*path.last, message)
@@ -52,8 +51,9 @@ class RoutingSwitch < Trema::Controller
     # TODO: delete paths that contain the link.
   end
 
-  def add_host(ip_address, dpid, port)
-    @graph.add_host(ip_address, dpid, port)
+  # This method smells of :reek:LongParameterList but ignores them
+  def add_host(mac_address, _ip_address, dpid, port)
+    @graph.add_host(mac_address, dpid, port)
   end
 
   def flow_mod_to_each_switch(path, packet_in)

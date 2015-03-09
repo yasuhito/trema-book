@@ -1,4 +1,5 @@
 require 'dijkstra'
+require 'pio'
 
 describe Dijkstra, '.new' do
   Given(:dijkstra) { Dijkstra.new(graph) }
@@ -49,23 +50,28 @@ describe Dijkstra, '.new' do
   context 'with a network topology graph' do
     Given(:graph) do
       {
-        '192.168.0.1' => ['1:1'],
+        Pio::Mac.new('00:00:00:00:00:01') => ['1:1'],
         1 => ['1:1', '1:2'],
-        '1:1' => ['192.168.0.1', 1],
+        '1:1' => [Pio::Mac.new('00:00:00:00:00:01'), 1],
         '1:2' => [1, '2:2'],
         2 => ['2:1', '2:2'],
-        '2:1' => [2, '192.168.0.2'],
+        '2:1' => [2, Pio::Mac.new('00:00:00:00:00:02')],
         '2:2' => ['1:2', 2],
-        '192.168.0.2' => ['2:1']
+        Pio::Mac.new('00:00:00:00:00:02') => ['2:1']
       }
     end
 
     describe '#run' do
-      context "with '192.168.0.1', '192.168.0.2'" do
-        When(:route) { dijkstra.run('192.168.0.1', '192.168.0.2') }
+      context("with Pio::Mac.new('00:00:00:00:00:01'),"\
+              " Pio::Mac.new('00:00:00:00:00:02')") do
+        When(:route) do
+          dijkstra.run(Pio::Mac.new('00:00:00:00:00:01'),
+                       Pio::Mac.new('00:00:00:00:00:02'))
+        end
         Then do
-          route ==
-            ['192.168.0.1', '1:1', 1, '1:2', '2:2', 2, '2:1', '192.168.0.2']
+          route == [Pio::Mac.new('00:00:00:00:00:01'),
+                    '1:1', 1, '1:2', '2:2', 2, '2:1',
+                    Pio::Mac.new('00:00:00:00:00:02')]
         end
       end
     end

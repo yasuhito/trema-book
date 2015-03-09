@@ -5,5 +5,5 @@ end
 
 After('@sudo') do
   run 'trema killall -S .'
-  sleep 5
+  sleep 10
 end
