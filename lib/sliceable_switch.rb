@@ -1,10 +1,10 @@
 $LOAD_PATH.unshift __dir__
 
+require 'path_manager'
 require 'pio'
-require 'routing_switch'
 
 # L2 routing switch with virtual slicing.
-class SliceableSwitch < RoutingSwitch
+class SliceableSwitch < PathManager
   def start
     super
     @slices = {}

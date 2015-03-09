@@ -36,7 +36,7 @@ Feature: Virtual slicing
     link 'switch2', 'switch4'
     link 'switch3', 'switch4'
     """
-    When I successfully run `trema run ../../lib/openflow_message_forwarder.rb -c trema.conf -d -P . -L . -S . -- --slicing`
+    When I successfully run `trema run ../../lib/routing_switch.rb -c trema.conf -d -P . -L . -S . -- --slicing`
     And I run `sleep 8`
 
   @sudo

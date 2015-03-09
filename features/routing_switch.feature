@@ -25,7 +25,7 @@ Feature: routing switch
     link 'switch2', 'switch4'
     link 'switch3', 'switch4'
     """
-    When I run `trema run ../../lib/openflow_message_forwarder.rb -c trema.conf -d -P . -L . -S .`
+    When I run `trema run ../../lib/routing_switch.rb -c trema.conf -d -P . -L . -S .`
     And I run `sleep 8`
     And I run `trema send_packets --source host1 --dest host2 -S .`
     And I run `trema send_packets --source host2 --dest host1 -S .`

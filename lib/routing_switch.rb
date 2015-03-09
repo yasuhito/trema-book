@@ -1,72 +1,75 @@
 $LOAD_PATH.unshift __dir__
+$LOAD_PATH.unshift File.join(__dir__, '../vendor/topology/lib')
 
-require 'network_graph'
+require 'drb'
+require 'optparse'
+require 'path_manager'
+require 'sliceable_switch'
+require 'topology_controller'
 
 # L2 routing switch
 class RoutingSwitch < Trema::Controller
-  def start
-    @path = []
-    @graph = NetworkGraph.new
+  # Command-line options of RoutingSwitch
+  class CommandLine
+    attr_reader :slicing
+
+    def initialize
+      @opts = OptionParser.new
+      @opts.on('-s', '--slicing') { @slicing = true }
+    end
+
+    def parse(args)
+      @opts.parse [__FILE__] + args
+    end
+  end
+
+  timer_event :flood_lldp_frames, interval: 1.sec
+
+  # This method smells of :reek:TooManyStatements but ignores them
+  def start(args)
+    command_line = CommandLine.new
+    command_line.parse(args)
+    @path_manager =
+      command_line.slicing ? SliceableSwitch.new : PathManager.new
+    @topology_controller = TopologyController.new
+    @topology_controller.start([])
+    @topology_controller.add_observer(@path_manager)
+    @path_manager.start
     logger.info 'Routing Switch started.'
   end
 
-  def packet_in(_dpid, message)
-    path = @graph.dijkstra(message.source_mac, message.destination_mac)
-    return unless path
-    flow_mod_to_each_switch path, message
-    packet_out_to_destination(*path.last, message)
+  def switch_ready(dpid)
+    @topology_controller.switch_ready dpid
   end
 
-  def update(event, changed, _topology)
-    case event
-    when :add_port, :add_link, :delete_link, :delete_port
-      __send__ event, changed
-    when :add_host
-      __send__ event, *changed
-    when :add_switch, :delete_switch
-      # ignore.
-    else
-      logger.debug 'Unknown event: #{event}'
-    end
+  def features_reply(dpid, features_reply)
+    @topology_controller.features_reply dpid, features_reply
+  end
+
+  def switch_disconnected(dpid)
+    @topology_controller.switch_disconnected(dpid)
+  end
+
+  def port_modify(dpid, port_status)
+    @topology_controller.port_modify(dpid, port_status)
+  end
+
+  def packet_in(dpid, message)
+    @topology_controller.packet_in(dpid, message)
+    @path_manager.packet_in(dpid, message) unless message.lldp?
+  end
+
+  def add_slice(name)
+    @path_manager.add_slice(name)
+  end
+
+  def add_mac_to_slice(mac_address, slice)
+    @path_manager.add_mac_to_slice(mac_address, slice)
   end
 
   private
 
-  # This method smells of :reek:FeatureEnvy but ignores them
-  def add_port(port)
-    @graph.add_port port.dpid, port.number
-  end
-
-  def delete_port(_port)
-    # TODO: delete paths that contain the port.
-    true
-  end
-
-  def add_link(link)
-    @graph.add_link link
-    # TODO: update all paths
-  end
-
-  def delete_link(_link)
-    # TODO: delete paths that contain the link.
-  end
-
-  # This method smells of :reek:LongParameterList but ignores them
-  def add_host(mac_address, _ip_address, dpid, port)
-    @graph.add_host(mac_address, dpid, port)
-  end
-
-  def flow_mod_to_each_switch(path, packet_in)
-    path.each do |dpid, port_no|
-      send_flow_mod_add(dpid,
-                        match: ExactMatch.new(packet_in),
-                        actions: SendOutPort.new(port_no))
-    end
-  end
-
-  def packet_out_to_destination(dpid, port_no, packet_in)
-    send_packet_out(dpid,
-                    packet_in: packet_in,
-                    actions: SendOutPort.new(port_no))
+  def flood_lldp_frames
+    @topology_controller.flood_lldp_frames
   end
 end
