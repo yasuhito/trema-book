@@ -54,5 +54,5 @@ them with `slice add` and `slice add_host` commands.
 ```
 $ bundle exec ./bin/slice add foo
 $ bundle exec ./bin/slice add_host 00:00:00:00:00:01 --slice foo
-$ bundle exec ./bin/slice add_host 00:00:00:00:00:01 --slice foo
+$ bundle exec ./bin/slice add_host 00:00:00:00:00:02 --slice foo
 ```
