@@ -1,19 +1,19 @@
 $LOAD_PATH.unshift __dir__
 
 require 'network_graph'
+require 'path'
 
 # L2 routing path manager
 class PathManager < Trema::Controller
   def start
+    @path = []
     @graph = NetworkGraph.new
     logger.info 'Path Manager started.'
   end
 
   def packet_in(_dpid, message)
     from, to = message.source_mac, message.destination_mac
-    shortest_path = @graph.dijkstra(from, to)
-    return unless shortest_path
-    add_path(shortest_path, message)
+    maybe_create_shortest_path(from, to, message)
   end
 
   def update(event, changed, _topology)
@@ -46,8 +46,15 @@ class PathManager < Trema::Controller
     # TODO: update all paths
   end
 
-  def delete_link(_link)
-    # TODO: delete paths that contain the link.
+  # Delete paths that contain the link.
+  def delete_link(link)
+    @graph.delete_link link
+    @path.dup.each do |each|
+      next unless each.has?(link)
+      each.delete
+      @path.delete each
+      maybe_create_shortest_path(each.from, each.to, each.packet_in)
+    end
   end
 
   # This method smells of :reek:LongParameterList but ignores them
@@ -55,22 +62,11 @@ class PathManager < Trema::Controller
     @graph.add_host(mac_address, dpid, port)
   end
 
-  def add_path(shortest_path, packet_in)
-    flow_mod_to_each_switch shortest_path, packet_in
-    packet_out_to_destination(*shortest_path.last, packet_in)
-  end
+  private
 
-  def flow_mod_to_each_switch(path, packet_in)
-    path.each do |dpid, port_no|
-      send_flow_mod_add(dpid,
-                        match: ExactMatch.new(packet_in),
-                        actions: SendOutPort.new(port_no))
-    end
-  end
-
-  def packet_out_to_destination(dpid, port_no, packet_in)
-    send_packet_out(dpid,
-                    packet_in: packet_in,
-                    actions: SendOutPort.new(port_no))
+  def maybe_create_shortest_path(from, to, packet_in)
+    shortest_path = @graph.dijkstra(from, to)
+    return unless shortest_path
+    @path << Path.create(shortest_path, packet_in)
   end
 end

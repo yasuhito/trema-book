@@ -19,10 +19,14 @@ class Link
   end
 
   def ==(other)
-    (@dpid_a == other.dpid_a) &&
-      (@dpid_b == other.dpid_b) &&
-      (@port_a == other.port_a) &&
-      (@port_b == other.port_b)
+    ((@dpid_a == other.dpid_a) &&
+     (@dpid_b == other.dpid_b) &&
+     (@port_a == other.port_a) &&
+     (@port_b == other.port_b)) ||
+      ((@dpid_a == other.dpid_b) &&
+       (@dpid_b == other.dpid_a) &&
+       (@port_a == other.port_b) &&
+       (@port_b == other.port_a))
   end
 
   def <=>(other)
@@ -30,7 +34,7 @@ class Link
   end
 
   def to_s
-    format '%#x-%#x', dpid_a, dpid_b
+    format '%#x-%#x', *([dpid_a, dpid_b].sort)
   end
 
   def connect_to?(port)
