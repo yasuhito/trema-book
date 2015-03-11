@@ -19,39 +19,9 @@ class Path < Trema::Controller
     flow_mod_delete_to_each_switch
   end
 
-  def from
-    @full_path.first
+  def has?(*link)
+    flows.any? { |each| each.sort == link.sort }
   end
-
-  def to
-    @full_path.last
-  end
-
-  def path
-    @full_path[1..-2]
-  end
-
-  # rubocop:disable AbcSize
-  # rubocop:disable CyclomaticComplexity
-  # rubocop:disable MethodLength
-  # rubocop:disable PerceivedComplexity
-  def has?(link)
-    flows.each do |out_port, in_port|
-      return true if (out_port.dpid == link.dpid_a &&
-                      out_port.number == link.port_a &&
-                      in_port.dpid == link.dpid_b &&
-                      in_port.number == link.port_b) ||
-                     (out_port.dpid == link.dpid_b &&
-                      out_port.number == link.port_b &&
-                      in_port.dpid == link.dpid_a &&
-                      in_port.number == link.port_a)
-    end
-    false
-  end
-  # rubocop:enable AbcSize
-  # rubocop:enable CyclomaticComplexity
-  # rubocop:enable MethodLength
-  # rubocop:enable PerceivedComplexity
 
   private
 
@@ -102,5 +72,9 @@ class Path < Trema::Controller
     send_packet_out(out_port.dpid,
                     packet_in: @packet_in,
                     actions: SendOutPort.new(out_port.number))
+  end
+
+  def path
+    @full_path[1..-2]
   end
 end

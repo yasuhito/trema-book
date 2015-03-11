@@ -14,6 +14,7 @@ class Topology
   def initialize
     @ports = Hash.new { [].freeze }
     @links = []
+    @hosts = []
   end
 
   def switches
@@ -53,9 +54,11 @@ class Topology
     notify_observers :add_link, link, self
   end
 
-  def add_host(mac_address, ip_address, dpid, port)
+  def maybe_add_host(*host)
+    return if @hosts.include?(host)
+    @hosts << host
     changed
-    notify_observers :add_host, [mac_address, ip_address, dpid, port], self
+    notify_observers :add_host, host, self
   end
 
   def route(ip_source_address, ip_destination_address)
