@@ -31,6 +31,10 @@ class Path < Trema::Controller
     @full_path[1..-2]
   end
 
+  # rubocop:disable AbcSize
+  # rubocop:disable CyclomaticComplexity
+  # rubocop:disable MethodLength
+  # rubocop:disable PerceivedComplexity
   def has?(link)
     flows.each do |out_port, in_port|
       return true if (out_port.dpid == link.dpid_a &&
@@ -44,6 +48,10 @@ class Path < Trema::Controller
     end
     false
   end
+  # rubocop:enable AbcSize
+  # rubocop:enable CyclomaticComplexity
+  # rubocop:enable MethodLength
+  # rubocop:enable PerceivedComplexity
 
   private
 
@@ -54,7 +62,7 @@ class Path < Trema::Controller
   def flow_mod_add_to_each_switch
     path.each_slice(2) do |in_port, out_port|
       send_flow_mod_add(out_port.dpid,
-                        match: Match.new(exact_match_options(in_port.number)),
+                        match: exact_match(in_port.number),
                         actions: SendOutPort.new(out_port.number))
     end
   end
@@ -62,13 +70,15 @@ class Path < Trema::Controller
   def flow_mod_delete_to_each_switch
     path.each_slice(2) do |in_port, out_port|
       send_flow_mod_delete(out_port.dpid,
-                           match: Match.new(exact_match_options(in_port.number)),
+                           match: exact_match(in_port.number),
                            out_port: out_port.number)
     end
   end
 
-  def exact_match_options(in_port)
-    {
+  # rubocop:disable AbcSize
+  # rubocop:disable MethodLength
+  def exact_match(in_port)
+    match_options = {
       in_port: in_port,
       dl_src: @packet_in.source_mac,
       dl_dst: @packet_in.destination_mac,
@@ -82,7 +92,10 @@ class Path < Trema::Controller
       tp_src: @packet_in.data.transport_source_port,
       tp_dst: @packet_in.data.transport_destination_port
     }
+    Match.new(match_options)
   end
+  # rubocop:enable AbcSize
+  # rubocop:enable MethodLength
 
   def packet_out_to_destination
     out_port = path.last
