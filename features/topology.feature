@@ -1,3 +1,4 @@
+@announce
 Feature: Detect network topology
   Background:
     And a file named "triangle.conf" with:
@@ -18,7 +19,7 @@ Feature: Detect network topology
     And I run `trema killall -S .`
     Then the stdout should contain:
     """
-    0x1-0x2, 0x1-0x3, 0x2-0x1, 0x2-0x3, 0x3-0x1, 0x3-0x2
+    0x1-0x2, 0x1-0x3, 0x2-0x3
     """
 
   @sudo
@@ -56,11 +57,11 @@ Feature: Detect network topology
     """
     Then the stdout should contain:
     """
-    Link 0x2-0x3 deleted
+    Link 0x1-0x3 deleted
     """
     Then the stdout should contain:
     """
-    Link 0x3-0x2 deleted
+    Link 0x2-0x3 deleted
     """
 
   @sudo

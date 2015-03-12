@@ -6,7 +6,6 @@ begin
     t.dirs = FileList['lib/**/*.rb'].map do |each|
       each[/[^\/]+/]
     end.uniq
-    t.threshold = 50
     t.verbose = true
   end
 rescue LoadError

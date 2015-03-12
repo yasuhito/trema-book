@@ -35,23 +35,23 @@ class Topology
 
   def add_switch(dpid, ports)
     ports.each { |each| add_port(each) }
-    maybe_callback :add_switch, dpid, self
+    maybe_send_handler :add_switch, dpid, self
   end
 
   def delete_switch(dpid)
     delete_port(@ports[dpid].pop) until @ports[dpid].empty?
     @ports.delete dpid
-    maybe_callback :delete_switch, dpid, self
+    maybe_send_handler :delete_switch, dpid, self
   end
 
   def add_port(port)
     @ports[port.dpid] += [port]
-    maybe_callback :add_port, Port.new(port.dpid, port.number), self
+    maybe_send_handler :add_port, Port.new(port.dpid, port.number), self
   end
 
   def delete_port(port)
     @ports[port.dpid].delete_if { |each| each.number == port.number }
-    maybe_callback :delete_port, Port.new(port.dpid, port.number), self
+    maybe_send_handler :delete_port, Port.new(port.dpid, port.number), self
     maybe_delete_link port
   end
 
@@ -60,14 +60,14 @@ class Topology
     @links << link
     port_a = Port.new(link.dpid_a, link.port_a)
     port_b = Port.new(link.dpid_b, link.port_b)
-    maybe_callback :add_link, port_a, port_b, self
+    maybe_send_handler :add_link, port_a, port_b, self
   end
 
   def maybe_add_host(*host)
     return if @hosts.include?(host)
     @hosts << host
     mac_address, _ip_address, dpid, port_no = *host
-    maybe_callback :add_host, mac_address, Port.new(dpid, port_no), self
+    maybe_send_handler :add_host, mac_address, Port.new(dpid, port_no), self
   end
 
   def route(ip_source_address, ip_destination_address)
@@ -82,14 +82,14 @@ class Topology
       @links -= [each]
       port_a = Port.new(each.dpid_a, each.port_a)
       port_b = Port.new(each.dpid_b, each.port_b)
-      maybe_callback :delete_link, port_a, port_b, self
+      maybe_send_handler :delete_link, port_a, port_b, self
     end
   end
 
-  def maybe_callback(method, *args)
+  def maybe_send_handler(method, *args)
     @observers.each do |each|
-      next unless each.respond_to?(method)
-      each.__send__ method, *args
+      each.__send__ :update, method, args[0..-2], args.last if each.respond_to?(:update)
+      each.__send__ method, *args if each.respond_to?(method)
     end
   end
 end
