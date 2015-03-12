@@ -11,7 +11,6 @@ class Path < Trema::Controller
     @packet_in = packet_in
     logger.debug 'Creating path: ' + @full_path.map(&:to_s).join(' -> ')
     flow_mod_add_to_each_switch
-    packet_out_to_destination
   end
 
   def delete
@@ -21,6 +20,10 @@ class Path < Trema::Controller
 
   def has?(*link)
     flows.any? { |each| each.sort == link.sort }
+  end
+
+  def out_port
+    path.last
   end
 
   private
@@ -47,13 +50,6 @@ class Path < Trema::Controller
 
   def exact_match(in_port)
     ExactMatch.new(@packet_in).tap { |match| match.in_port = in_port }
-  end
-
-  def packet_out_to_destination
-    out_port = path.last
-    send_packet_out(out_port.dpid,
-                    packet_in: @packet_in,
-                    actions: SendOutPort.new(out_port.number))
   end
 
   def path
