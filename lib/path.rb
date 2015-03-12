@@ -45,27 +45,9 @@ class Path < Trema::Controller
     end
   end
 
-  # rubocop:disable AbcSize
-  # rubocop:disable MethodLength
   def exact_match(in_port)
-    match_options = {
-      in_port: in_port,
-      dl_src: @packet_in.source_mac,
-      dl_dst: @packet_in.destination_mac,
-      dl_vlan: @packet_in.data.vlan_vid,
-      dl_vlan_pcp: @packet_in.data.vlan_pcp,
-      dl_type: @packet_in.data.ether_type,
-      nw_tos: @packet_in.data.ip_type_of_service,
-      nw_proto: @packet_in.data.ip_protocol,
-      nw_src: @packet_in.data.ip_source_address,
-      nw_dst: @packet_in.data.ip_destination_address,
-      tp_src: @packet_in.data.transport_source_port,
-      tp_dst: @packet_in.data.transport_destination_port
-    }
-    Match.new(match_options)
+    ExactMatch.new(@packet_in).tap { |match| match.in_port = in_port }
   end
-  # rubocop:enable AbcSize
-  # rubocop:enable MethodLength
 
   def packet_out_to_destination
     out_port = path.last
