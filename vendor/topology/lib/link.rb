@@ -18,6 +18,9 @@ class Link
     @port_b = packet_in.in_port
   end
 
+  # rubocop:disable AbcSize
+  # rubocop:disable CyclomaticComplexity
+  # rubocop:disable PerceivedComplexity
   def ==(other)
     ((@dpid_a == other.dpid_a) &&
      (@dpid_b == other.dpid_b) &&
@@ -28,6 +31,9 @@ class Link
        (@port_a == other.port_b) &&
        (@port_b == other.port_a))
   end
+  # rubocop:enable AbcSize
+  # rubocop:enable CyclomaticComplexity
+  # rubocop:enable PerceivedComplexity
 
   def <=>(other)
     to_s <=> other.to_s
