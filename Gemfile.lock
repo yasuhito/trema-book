@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 52c52ebd768de5db3343a76e265b5bdb4f19c034
+  revision: dd9be1c625f2481135ae5380340461605e5f61ef
   branch: develop
   specs:
     trema (0.1.0)
@@ -140,7 +140,7 @@ GEM
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
       rspec-mocks (~> 3.2.0)
-    rspec-core (3.2.1)
+    rspec-core (3.2.2)
       rspec-support (~> 3.2.0)
     rspec-expectations (3.2.0)
       diff-lcs (>= 1.2.0, < 2.0)
