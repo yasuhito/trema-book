@@ -5,16 +5,6 @@ module View
       @logger = logger
     end
 
-    def update(event, changed, topology)
-      __send__ event, changed, topology
-    end
-
-    def to_s
-      'text mode'
-    end
-
-    private
-
     def add_switch(dpid, topology)
       show_status("Switch #{dpid.to_hex} added",
                   topology.switches.map(&:to_hex))
@@ -33,21 +23,25 @@ module View
       add_or_delete_port :deleted, port, topology
     end
 
-    def add_or_delete_port(message, port, topology)
-      ports = topology.ports[port.dpid].map(&:number).sort
-      show_status "Port #{port.dpid.to_hex}:#{port.number} #{message}", ports
-    end
-
-    def add_link(link, topology)
+    def add_link(port_a, port_b, topology)
+      link = format('%#x-%#x', *([port_a.dpid, port_b.dpid].sort))
       show_status "Link #{link} added", topology.links
     end
 
-    def delete_link(link, topology)
+    def delete_link(port_a, port_b, topology)
+      link = format('%#x-%#x', *([port_a.dpid, port_b.dpid].sort))
       show_status "Link #{link} deleted", topology.links
     end
 
-    def add_host(_changed, _topology)
-      # ignore
+    def to_s
+      'text mode'
+    end
+
+    private
+
+    def add_or_delete_port(message, port, topology)
+      ports = topology.ports[port.dpid].map(&:number).sort
+      show_status "Port #{port.dpid.to_hex}:#{port.number} #{message}", ports
     end
 
     def show_status(message, objects)

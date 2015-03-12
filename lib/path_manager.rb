@@ -5,16 +5,6 @@ require 'path'
 
 # L2 routing path manager
 class PathManager < Trema::Controller
-  Port = Struct.new(:dpid, :number) do
-    def <=>(other)
-      number <=> other.number
-    end
-
-    def to_s
-      "Switch #{format '%#x', dpid} (port=#{number})"
-    end
-  end
-
   def start
     @path = []
     @graph = Hash.new([].freeze)
@@ -26,48 +16,21 @@ class PathManager < Trema::Controller
     maybe_create_shortest_path message
   end
 
-  # This method smells of :reek:TooManyStatements but ignores them
-  # rubocop:disable MethodLength
-  # rubocop:disable AbcSize
-  def update(event, changed, _topology)
-    case event
-    when :add_port, :delete_port
-      of_port = changed
-      __send__ event, Port.new(of_port.dpid, of_port.number)
-    when :add_link, :delete_link
-      link = changed
-      port_a = Port.new(link.dpid_a, link.port_a)
-      port_b = Port.new(link.dpid_b, link.port_b)
-      __send__ event, port_a, port_b
-    when :add_host
-      mac_address, _ip_address, dpid, port_no = *changed
-      __send__ event, mac_address, Port.new(dpid, port_no)
-    when :add_switch, :delete_switch
-      # ignore.
-    else
-      logger.debug 'Unknown event: #{event}'
-    end
-  end
-  # rubocop:enable MethodLength
-  # rubocop:enable AbcSize
-
-  private
-
-  def add_port(port)
+  def add_port(port, _topology)
     add_graph_path port.dpid, port
   end
 
-  def delete_port(port)
+  def delete_port(port, _topology)
     @graph.delete(port)
     @graph[port.dpid] -= [port]
   end
 
-  def add_link(port_a, port_b)
+  def add_link(port_a, port_b, _topology)
     add_graph_path port_a, port_b
     # TODO: update all paths
   end
 
-  def delete_link(port_a, port_b)
+  def delete_link(port_a, port_b, _topology)
     delete_graph_path port_a, port_b
     paths_containing(port_a, port_b).each do |each|
       @path.delete each
@@ -76,7 +39,7 @@ class PathManager < Trema::Controller
     end
   end
 
-  def add_host(mac_address, port)
+  def add_host(mac_address, port, _topology)
     add_graph_path mac_address, port
   end
 
