@@ -88,7 +88,9 @@ class Topology
 
   def maybe_send_handler(method, *args)
     @observers.each do |each|
-      each.__send__ :update, method, args[0..-2], args.last if each.respond_to?(:update)
+      if each.respond_to?(:update)
+        each.__send__ :update, method, args[0..-2], args.last
+      end
       each.__send__ method, *args if each.respond_to?(method)
     end
   end
