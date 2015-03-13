@@ -55,7 +55,7 @@ Feature: Virtual slicing
       | 192.168.0.1 |        0 |
 
   @sudo
-  Scenario: Add one slice then add two hosts to it
+  Scenario: Add a slice then add two hosts to it
     When I run `slice add foo`
     And I run `slice add_host 00:00:00:00:00:01 --slice foo`
     And I run `slice add_host 00:00:00:00:00:02 --slice foo`
@@ -66,4 +66,4 @@ Feature: Virtual slicing
       | 192.168.0.2 |        1 |
     Then the number of packets received by "host2" should be:
       |      source | #packets |
-      | 192.168.0.1 |        1 |
+      | 192.168.0.1 |        0 |

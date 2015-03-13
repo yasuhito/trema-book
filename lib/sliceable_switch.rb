@@ -19,11 +19,17 @@ class SliceableSwitch < PathManager
     @slices[slice] << Pio::Mac.new(mac_address)
   end
 
-  def packet_in(dpid, message)
+  # This method smells of :reek:TooManyStatements but ignores them
+  def packet_in(_dpid, message)
     return unless @slices.values.any? do |each|
       each.include?(message.source_mac) &&
       each.include?(message.destination_mac)
     end
-    super
+    path = maybe_create_shortest_path(message)
+    return unless path
+    out_port = path.out_port
+    send_packet_out(out_port.dpid,
+                    packet_in: message,
+                    actions: SendOutPort.new(out_port.number))
   end
 end
