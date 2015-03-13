@@ -6,13 +6,15 @@ require 'trema'
 
 # slice command
 module Slice
+  DEFAULT_SOCKET_DIR = ENV['TREMA_SOCKET_DIR'] || Phut.socket_dir
+
   extend GLI::App
 
   desc 'Creates a new virtual slice'
   arg_name 'name'
   command :add do |c|
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: Trema.socket_dir
+    c.flag [:S, :socket_dir], default_value: DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, args|
       fail 'slice name is required.' if args.empty?
@@ -26,7 +28,7 @@ module Slice
     c.desc 'Slice name'
     c.flag [:s, :slice]
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: Trema.socket_dir
+    c.flag [:S, :socket_dir], default_value: DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, args|
       fail 'MAC address is required.' if args.empty?

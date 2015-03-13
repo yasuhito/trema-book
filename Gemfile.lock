@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: dd9be1c625f2481135ae5380340461605e5f61ef
+  revision: 6fc6460d2b7038b607c85bd188dcd6121f451a5e
   branch: develop
   specs:
     trema (0.1.0)
@@ -159,7 +159,7 @@ GEM
       rainbow (>= 1.99.1, < 3.0)
       ruby-progressbar (~> 1.4)
     ruby-progressbar (1.7.1)
-    ruby_parser (3.6.4)
+    ruby_parser (3.6.5)
       sexp_processor (~> 4.1)
     sexp_processor (4.5.0)
     shellany (0.0.1)
