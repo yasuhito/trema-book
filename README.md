@@ -12,9 +12,9 @@ implementation. The basic functionality of this controller is to
 establish an OpenFlow channel connection with an OpenFlow switch and
 output the `"Hello 0xabc! (switch's datapath ID)"` message.
 
-This demonstrates a minimum template for Trema applications written in
-Ruby. Hence it's a good starting point to learn about Trema
-programming.
+This example demonstrates a minimum template for Trema applications
+written in Ruby. Hence, it's a good starting point to learn about
+Trema programming.
 
 [travis]: http://travis-ci.org/trema/hello_trema
 [coveralls]: https://coveralls.io/r/trema/hello_trema
