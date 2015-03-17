@@ -15,6 +15,17 @@ OpenFlow switch liveness monitor.
 [gemnasium]: https://gemnasium.com/trema/switch_monitor
 [inch]: http://inch-ci.org/github/trema/switch_monitor
 
+
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+
+
 Install
 -------
 
@@ -31,7 +42,7 @@ Play
 Run this controller:
 
 ```
-% bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
+$ bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
 0x3 is up (all = 0x3)
 0x2 is up (all = 0x2, 0x3)
 0x1 is up (all = 0x1, 0x2, 0x3)
@@ -44,12 +55,12 @@ current switch status.
 
 ```
 (On another terminal)
-% bundle exec trema kill 0x2
-% bundle exec trema up 0x2
+$ bundle exec trema kill 0x2
+$ bundle exec trema up 0x2
 ```
 
 ```
-% bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
+$ bundle exec trema run ./lib/switch_monitor.rb -c trema.conf
 0x3 is up (all = 0x3)
 0x2 is up (all = 0x2, 0x3)
 0x1 is up (all = 0x1, 0x2, 0x3)

@@ -11,8 +11,6 @@ rvm:
   - ruby-head
 
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install libpcap-dev -qq
   - gem update bundler
 
 matrix:
