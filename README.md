@@ -23,6 +23,16 @@ programming.
 [inch]: http://inch-ci.org/github/trema/hello_trema
 
 
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+
+
 Install
 -------
 
