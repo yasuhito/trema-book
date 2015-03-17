@@ -5,6 +5,7 @@ gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 group :development, :test do
   gem 'aruba', require: false
   gem 'cucumber', require: false
+  gem 'flay', require: false
   gem 'flog', require: false
   gem 'guard', require: false
   gem 'guard-bundler', require: false
