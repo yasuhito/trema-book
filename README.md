@@ -42,7 +42,7 @@ Play
 Run this controller
 
 ```
-% bundle exec trema run ./lib/cbench_switch.rb
+% bundle exec trema run ./lib/cbench.rb
 ```
 
 then, on another terminal
