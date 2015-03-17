@@ -15,6 +15,17 @@ controller benchmark.
 [gemnasium]: https://gemnasium.com/trema/cbench
 [gitter]: https://gitter.im/trema/cbench
 
+
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+
+
 Install
 -------
 
