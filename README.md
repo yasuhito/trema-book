@@ -42,13 +42,13 @@ Play
 Run this controller
 
 ```
-% bundle exec trema run ./lib/cbench.rb
+$ bundle exec trema run ./lib/cbench.rb
 ```
 
 then, on another terminal
 
 ```
-% bundle exec ./bin/cbench --port 6633 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000
+$ bundle exec ./bin/cbench --port 6633 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000
 ```
 
 Enjoy!
