@@ -1,6 +1,9 @@
 # Change log
 
 ## develop (unreleased)
+
+
+## 0.3.0 (3/17/2015)
 ### Changes
 * Phut 0.3.0.
 
