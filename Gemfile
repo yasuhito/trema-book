@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'phut', github: 'trema/phut', branch: 'develop'
 gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 
 group :development, :test do
@@ -18,7 +17,7 @@ group :development, :test do
   gem 'rubocop', require: false
 end
 
-group :development do
+group :doc do
   gem 'inch', require: false
   gem 'yard', require: false
 end

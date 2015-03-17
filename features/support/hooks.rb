@@ -1,6 +1,6 @@
 Before('@sudo') do
-  @aruba_timeout_seconds = 10
-  @aruba_io_wait_seconds = 10
+  fail 'sudo authentication failed' unless system 'sudo -v'
+  @aruba_timeout_seconds = 5
 end
 
 After('@sudo') do

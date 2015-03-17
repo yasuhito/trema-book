@@ -9,6 +9,26 @@ describe HelloTrema do
     end
   end
 
+  describe '#start' do
+    When { hello_trema.start(args) }
+
+    context 'with []' do
+      Given(:args) { [] }
+      Then do
+        expect(logger).to(have_received(:info).
+                          with('Trema started (args = []).'))
+      end
+    end
+
+    context 'with ["foo", "bar", "baz"]' do
+      Given(:args) { %w(foo bar baz) }
+      Then do
+        expect(logger).to(have_received(:info).
+                          with('Trema started (args = ["foo", "bar", "baz"]).'))
+      end
+    end
+  end
+
   describe '#switch_ready' do
     When { hello_trema.switch_ready(dpid) }
 
