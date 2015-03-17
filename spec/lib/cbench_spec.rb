@@ -1,10 +1,10 @@
 require 'trema'
-require 'cbench_switch'
+require 'cbench'
 
-describe CbenchSwitch do
+describe Cbench do
   Given(:logger) { spy('logger') }
   Given(:cbench) do
-    CbenchSwitch.new.tap do |controller|
+    Cbench.new.tap do |controller|
       allow(controller).to receive(:logger).and_return(logger)
     end
   end
@@ -13,7 +13,7 @@ describe CbenchSwitch do
     context 'with []' do
       When { cbench.start([]) }
       Then do
-        expect(logger).to(have_received(:info).with('CbenchSwitch started.'))
+        expect(logger).to(have_received(:info).with('Cbench started.'))
       end
     end
   end

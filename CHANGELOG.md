@@ -3,6 +3,11 @@
 ## develop (unreleased)
 
 
+## 0.3.0 (3/17/2015)
+### Changes
+* Phut 0.3.0.
+
+
 ## 0.2.0 (2/14/2015)
 ### Changes
 * Add `CbenchSwitch#start` handler.
