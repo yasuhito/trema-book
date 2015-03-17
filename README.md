@@ -47,7 +47,7 @@ Play
 ----
 
 ```
-% bundle exec trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
+$ bundle exec trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
 Trema started (args = ["foo", "bar", "baz"]).
 Hello 0xabc!
 ```
