@@ -7,11 +7,18 @@ require 'topology'
 class TopologyController < Trema::Controller
   timer_event :flood_lldp_frames, interval: 1.sec
 
-  def start(argv)
+  attr_reader :topology
+
+  def start(args)
     @command_line = CommandLine.new(logger)
-    @command_line.parse(argv)
-    @topology = Topology.new(@command_line.view)
+    @command_line.parse(args)
+    @topology = Topology.new
+    @topology.add_observer @command_line.view
     logger.info "Topology started (#{@command_line.view})."
+  end
+
+  def add_observer(observer)
+    @topology.add_observer observer
   end
 
   def switch_ready(dpid)
@@ -39,8 +46,14 @@ class TopologyController < Trema::Controller
   end
 
   def packet_in(dpid, packet_in)
-    return unless packet_in.lldp?
-    @topology.maybe_add_link Link.new(dpid, packet_in)
+    if packet_in.lldp?
+      @topology.maybe_add_link Link.new(dpid, packet_in)
+    else
+      @topology.maybe_add_host(packet_in.source_mac,
+                               packet_in.ip_source_address,
+                               dpid,
+                               packet_in.in_port)
+    end
   end
 
   def flood_lldp_frames
@@ -57,7 +70,7 @@ class TopologyController < Trema::Controller
       send_packet_out(
         dpid,
         actions: SendOutPort.new(port_number),
-        data: lldp_binary_string(dpid, port_number)
+        raw_data: lldp_binary_string(dpid, port_number)
       )
     end
   end
