@@ -17,7 +17,7 @@ class PathManager < Trema::Controller
     ports = path ? [path.out_port] : external_ports
     ports.each do |each|
       send_packet_out(each.dpid,
-                      packet_in: message,
+                      raw_data: message.raw_data,
                       actions: SendOutPort.new(each.number))
     end
   end
