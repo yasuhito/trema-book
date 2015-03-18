@@ -5,7 +5,7 @@ begin
   task :flog do
     flog = Flog.new(continue: true)
     flog.flog(*FileList['lib/**/*.rb'])
-    threshold = 12
+    threshold = 10
 
     bad_methods = flog.totals.select do |name, score|
       !(/##{flog.no_method}$/ =~ name) && score > threshold
