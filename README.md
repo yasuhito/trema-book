@@ -15,6 +15,17 @@ An OpenFlow controller that emulates layer 2 switches.
 [gemnasium]: https://gemnasium.com/trema/learning_switch
 [inch]: http://inch-ci.org/github/trema/learning_switch
 
+
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+
+
 Install
 -------
 
