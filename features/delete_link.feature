@@ -13,10 +13,22 @@ Feature: Update shortest paths
       vswitch('switch3') { datapath_id 0x3 }
       vswitch('switch4') { datapath_id 0x4 }
 
-      vhost('host1') { ip '192.168.0.1' }
-      vhost('host2') { ip '192.168.0.2' }
-      vhost('host3') { ip '192.168.0.3' }
-      vhost('host4') { ip '192.168.0.4' }
+      vhost('host1') {
+        ip '192.168.0.1'
+        mac '11:11:11:11:11:11'
+      }
+      vhost('host2') {
+        ip '192.168.0.2'
+        mac '22:22:22:22:22:22'
+      }
+      vhost('host3') {
+        ip '192.168.0.3'
+        mac '33:33:33:33:33:33'
+      }
+      vhost('host4') {
+        ip '192.168.0.4'
+        mac '44:44:44:44:44:44'
+      }
 
       link 'switch1', 'host1'
       link 'switch2', 'host2'
@@ -31,10 +43,26 @@ Feature: Update shortest paths
     And I run `sleep 8`
     And I run `trema send_packets --source host2 --dest host1`
     And I run `trema send_packets --source host1 --dest host2`
-    And I run `trema send_packets --source host2 --dest host1`
-    And I run `trema delete_link switch1 switch2`
-    And I run `sleep 3`
-    And I run `trema send_packets --source host1 --dest host2`
+    Then the file "Path.log" should contain:
+      """
+      Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:2 -> 0x2:2 -> 0x2:1 -> 22:22:22:22:22:22
+      """
+    When I run `trema send_packets --source host2 --dest host1`
+    Then the file "Path.log" should contain:
+      """
+      Creating path: 22:22:22:22:22:22 -> 0x2:1 -> 0x2:2 -> 0x1:2 -> 0x1:1 -> 11:11:11:11:11:11
+      """
+    When I run `trema delete_link switch1 switch2`
+    And I run `sleep 5`
+    Then the file "Path.log" should contain:
+      """
+      Deleting path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:2 -> 0x2:2 -> 0x2:1 -> 22:22:22:22:22:22
+      """
+    And the file "Path.log" should contain:
+      """
+      Deleting path: 22:22:22:22:22:22 -> 0x2:1 -> 0x2:2 -> 0x1:2 -> 0x1:1 -> 11:11:11:11:11:11
+      """
+    When I run `trema send_packets --source host1 --dest host2`
     Then the number of packets received by "host1" should be:
       |      source | #packets |
       | 192.168.0.2 |        2 |

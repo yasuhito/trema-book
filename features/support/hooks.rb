@@ -4,6 +4,15 @@ Before('@sudo') do
 end
 
 After('@sudo') do
-  run 'trema killall -S .'
+  run 'trema killall'
   sleep 10
+end
+
+Before('@rest_api') do
+  fail 'sudo authentication failed' unless system 'sudo -v'
+end
+
+After('@rest_api') do
+  run 'trema killall'
+  sleep 3
 end

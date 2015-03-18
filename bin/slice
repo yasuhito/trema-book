@@ -6,35 +6,94 @@ require 'trema'
 
 # slice command
 module Slice
-  DEFAULT_SOCKET_DIR = ENV['TREMA_SOCKET_DIR'] || Phut.socket_dir
-
   extend GLI::App
 
   desc 'Creates a new virtual slice'
   arg_name 'name'
   command :add do |c|
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: DEFAULT_SOCKET_DIR
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, args|
       fail 'slice name is required.' if args.empty?
-      Trema.controller_process(options[:socket_dir]).add_slice(args.first)
+      Trema.controller_process(options[:socket_dir]).
+        sliceable_switch.
+        add_slice(args.first)
+    end
+  end
+
+  desc 'Lists slices'
+  command :list do |c|
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, _args|
+      slices = Trema.controller_process(options[:socket_dir]).
+               sliceable_switch.
+               slices
+      slices.each_pair do |slice, ports|
+        puts slice
+        ports.each do |port, mac_addresses|
+          puts "  #{format '%#x', port[:dpid]}:#{port[:port_no]}"
+          mac_addresses.each do |each|
+            puts "    #{each}"
+          end
+        end
+      end
     end
   end
 
   desc 'Adds a host to a slice'
-  arg_name 'mac_address'
   command :add_host do |c|
+    c.desc 'MAC address'
+    c.flag [:m, :mac]
+    c.desc 'Switch port'
+    c.flag [:p, :port]
     c.desc 'Slice name'
     c.flag [:s, :slice]
     c.desc 'Location to find socket files'
-    c.flag [:S, :socket_dir], default_value: DEFAULT_SOCKET_DIR
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
 
-    c.action do |_global_options, options, args|
-      fail 'MAC address is required.' if args.empty?
-      fail '--slice option is mandatory.' if options[:slice].nil?
+    c.action do |_global_options, options, _args|
+      fail '--mac option is mandatory.' unless options[:mac]
+      fail '--port option is mandatory.' unless options[:port]
+      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
+        fail "Invalid switch port #{options[:port]}"
+      end
+      dpid_str = Regexp.last_match(1)
+      port_no = Regexp.last_match(2).to_i
+      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
+      fail '--slice option is mandatory.' unless options[:slice]
       Trema.controller_process(options[:socket_dir]).
-        add_mac_to_slice(args.first, options[:slice])
+        sliceable_switch.
+        add_host_to_slice(options[:mac], dpid, port_no, options[:slice])
+    end
+  end
+
+  desc 'Deletes a host from a slice'
+  command :delete_host do |c|
+    c.desc 'MAC address'
+    c.flag [:m, :mac]
+    c.desc 'Switch port'
+    c.flag [:p, :port]
+    c.desc 'Slice name'
+    c.flag [:s, :slice]
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, _args|
+      fail '--mac option is mandatory.' unless options[:mac]
+      fail '--port option is mandatory.' unless options[:port]
+      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
+        fail "Invalid switch port #{options[:port]}"
+      end
+      dpid_str = Regexp.last_match(1)
+      port_no = Regexp.last_match(2).to_i
+      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
+      fail '--slice option is mandatory.' unless options[:slice]
+      Trema.controller_process(options[:socket_dir]).
+        sliceable_switch.
+        delete_host_from_slice(options[:mac], dpid, port_no, options[:slice])
     end
   end
 
