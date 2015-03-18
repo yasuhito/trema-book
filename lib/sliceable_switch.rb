@@ -29,7 +29,7 @@ class SliceableSwitch < PathManager
     return unless path
     out_port = path.out_port
     send_packet_out(out_port.dpid,
-                    packet_in: message,
+                    raw_data: message.raw_data,
                     actions: SendOutPort.new(out_port.number))
   end
 end

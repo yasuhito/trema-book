@@ -1,13 +1,13 @@
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: 6fc6460d2b7038b607c85bd188dcd6121f451a5e
+  revision: 9624636c16b5ca8d44f17a5615b52b48802e95b1
   branch: develop
   specs:
     trema (0.1.0)
-      bundler (~> 1.8.4)
+      bundler (~> 1.8.5)
       gli (~> 2.13.0)
-      phut (~> 0.2.2)
-      pio (~> 0.18.0)
+      phut (~> 0.3.1)
+      pio (~> 0.18.2)
       rake
 
 GEM
@@ -65,7 +65,7 @@ GEM
     diff-lcs (1.2.5)
     docile (1.1.5)
     equalizer (0.0.9)
-    ffi (1.9.6)
+    ffi (1.9.8)
     flay (2.6.1)
       ruby_parser (~> 3.0)
       sexp_processor (~> 4.0)
@@ -88,7 +88,7 @@ GEM
       rack-accept
       rack-mount
       virtus (>= 1.0.0)
-    guard (2.12.4)
+    guard (2.12.5)
       formatador (>= 0.2.4)
       listen (~> 2.7)
       lumberjack (~> 1.0)
@@ -139,7 +139,7 @@ GEM
       shellany (~> 0.0)
     parser (2.2.0.3)
       ast (>= 1.1, < 3.0)
-    phut (0.2.4)
+    phut (0.3.1)
       gli (~> 2.13.0)
       pio (~> 0.18.2)
       pry (~> 0.10.1)
@@ -163,7 +163,7 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    reek (2.0.1)
+    reek (2.0.2)
       parser (~> 2.2)
       rainbow (~> 2.0)
       require_all (~> 1.3)

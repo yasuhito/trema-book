@@ -15,10 +15,22 @@ on VLAN ID space.
 [gemnasium]: https://gemnasium.com/trema/routing_switch
 
 
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+* [Graphviz][graphviz] (`apt-get install graphviz`)
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+[graphviz]: http://www.graphviz.org/
+
+
 Install
 -------
 
-```bash
+```
 $ git clone https://github.com/trema/routing_switch.git
 $ cd routing_switch
 $ bundle install
