@@ -6,6 +6,6 @@ begin
   end
 rescue LoadError
   task :reek do
-    $stderr.puts 'reek is disabled'
+    $stderr.puts 'Reek is disabled'
   end
 end

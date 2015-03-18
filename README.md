@@ -16,6 +16,16 @@ OpenFlow controller that emulates a software patch panel.
 [inch]: http://inch-ci.org/github/trema/patch_panel
 
 
+Prerequisites
+-------------
+
+* Ruby 2.0.0 or higher ([RVM][rvm]).
+* [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
+
+[rvm]: https://rvm.io/
+[openvswitch]: https://openvswitch.org/
+
+
 Install
 -------
 
