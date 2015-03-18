@@ -3,6 +3,11 @@
 ## develop (unreleased)
 
 
+## 0.3.0 (3/18/2015)
+### Changes
+* Phut 0.3.1.
+
+
 ## 0.2.0 (2/13/2015)
 ### Changes
 * Put patch_panel arguments (config file) after `--`.
