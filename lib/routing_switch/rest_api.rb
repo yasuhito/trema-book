@@ -2,7 +2,7 @@ $LOAD_PATH.unshift File.join(__dir__, '..')
 
 require 'grape'
 require 'trema'
-require 'routing_switch/exceptions'
+require 'sliceable_switch'
 
 class RoutingSwitch < Trema::Controller
   # REST API of RoutingSwitch
@@ -36,7 +36,7 @@ class RoutingSwitch < Trema::Controller
       begin
         sliceable_switch.find_slice(params[:slice_id])
         { name: params[:slice_id] }
-      rescue SliceNotFoundError
+      rescue SliceableSwitch::SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
       end
     end
@@ -61,7 +61,7 @@ class RoutingSwitch < Trema::Controller
         sliceable_switch.ports(params[:slice_id]).map do |each|
           each.merge(name: "#{format('%#x', each[:dpid])}:#{each[:port_no]}")
         end
-      rescue SliceNotFoundError
+      rescue SliceableSwitch::SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
       end
     end
@@ -74,9 +74,9 @@ class RoutingSwitch < Trema::Controller
           find_port(params[:slice_id],
                     dpid: dpid_str.hex, port_no: port_no_str.to_i).
           merge(name: params[:port_id])
-      rescue SliceNotFoundError
+      rescue SliceableSwitch::SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue PortNotFoundError
+      rescue SliceableSwitch::PortNotFoundError
         error! "Port named '#{params[:port_id]}' not found", 404
       end
     end
@@ -118,9 +118,9 @@ class RoutingSwitch < Trema::Controller
                                        port_no: port_no_str.to_i).map do |each|
           { name: each }
         end
-      rescue SliceNotFoundError
+      rescue SliceableSwitch::SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue PortNotFoundError
+      rescue SliceableSwitch::PortNotFoundError
         error! "Port named '#{params[:port_id]}' not found", 404
       end
     end
@@ -137,9 +137,9 @@ class RoutingSwitch < Trema::Controller
           end
         end
         error! "MAC address '#{params[:mac_address_id]}' not found", 404
-      rescue SliceNotFoundError
+      rescue SliceableSwitch::SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue PortNotFoundError
+      rescue SliceableSwitch::PortNotFoundError
         error! "Port named '#{params[:port_id]}' not found", 404
       end
     end

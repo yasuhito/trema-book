@@ -13,7 +13,7 @@ describe SliceableSwitch do
   describe '#find_slice' do
     context "with 'foo'" do
       When(:result) { sliceable_switch.find_slice('foo') }
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -41,7 +41,7 @@ describe SliceableSwitch do
           When(:result) do
             sliceable_switch.mac_addresses('foo', dpid: 0x1, port_no: 1)
           end
-          Then { result == Failure(PortNotFoundError) }
+          Then { result == Failure(SliceableSwitch::PortNotFoundError) }
         end
       end
 
@@ -122,7 +122,7 @@ describe SliceableSwitch do
   describe '#delete_slice' do
     context "with 'foo'" do
       When(:result) { sliceable_switch.delete_slice 'foo' }
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -131,7 +131,7 @@ describe SliceableSwitch do
       When(:result) do
         sliceable_switch.add_port_to_slice('foo', dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -140,7 +140,7 @@ describe SliceableSwitch do
       When(:result) do
         sliceable_switch.delete_port_from_slice('foo', dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -149,7 +149,7 @@ describe SliceableSwitch do
       When(:result) do
         sliceable_switch.mac_addresses('foo', dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -159,7 +159,7 @@ describe SliceableSwitch do
         sliceable_switch.add_mac_address_to_slice('11:11:11:11:11:11',
                                                   'foo', dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 
@@ -170,7 +170,7 @@ describe SliceableSwitch do
                                                        'foo',
                                                        dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceNotFoundError) }
+      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
     end
   end
 end

@@ -1,11 +1,14 @@
 $LOAD_PATH.unshift __dir__
 
 require 'path_manager'
-require 'pio'
-require 'routing_switch/exceptions'
 
 # L2 routing switch with virtual slicing.
 class SliceableSwitch < PathManager
+  # Slice not found.
+  class SliceNotFoundError < StandardError; end
+  # Port not found.
+  class PortNotFoundError < StandardError; end
+
   attr_reader :slices
 
   def start
