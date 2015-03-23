@@ -72,7 +72,6 @@ class SliceableSwitch < PathManager
     find_slice(slice_name)[port] -= [Pio::Mac.new(mac_address)]
   end
 
-  # This method smells of :reek:TooManyStatements but ignores them
   def packet_in(dpid, message)
     if source_and_destination_in_same_slice?(dpid, message)
       maybe_create_shortest_path_and_packet_out(message)
