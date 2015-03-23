@@ -37,8 +37,7 @@ class SliceableSwitch < PathManager
     @slices.keys
   end
 
-  def find_port(slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def find_port(slice_name, port)
     find_slice(slice_name).fetch(port)
     port
   rescue KeyError
@@ -49,32 +48,27 @@ class SliceableSwitch < PathManager
     find_slice(slice_name).keys
   end
 
-  def add_port_to_slice(slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def add_port_to_slice(slice_name, port)
     find_slice(slice_name)[port] = []
   end
 
   # TODO: update paths that contains the port
-  def delete_port_from_slice(slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def delete_port_from_slice(slice_name, port)
     find_slice(slice_name).delete port
   end
 
-  def mac_addresses(slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def mac_addresses(slice_name, port)
     find_slice(slice_name).fetch(port)
   rescue KeyError
     raise PortNotFoundError
   end
 
-  def add_mac_address_to_slice(mac_address, slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def add_mac_address_to_slice(mac_address, slice_name, port)
     find_slice(slice_name)[port] += [Pio::Mac.new(mac_address)]
   end
 
   # TODO: update paths that contains the mac address
-  def delete_mac_address_from_slice(mac_address, slice_name, dpid, port_no)
-    port = { dpid: dpid, port_no: port_no }
+  def delete_mac_address_from_slice(mac_address, slice_name, port)
     find_slice(slice_name)[port] -= [Pio::Mac.new(mac_address)]
   end
 

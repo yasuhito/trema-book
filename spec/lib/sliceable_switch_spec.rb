@@ -37,8 +37,10 @@ describe SliceableSwitch do
       end
 
       describe '#mac_addresses' do
-        context "with 'foo', 0x1, 1" do
-          When(:result) { sliceable_switch.mac_addresses('foo', 0x1, 1) }
+        context "with 'foo', dpid: 0x1, port_no: 1" do
+          When(:result) do
+            sliceable_switch.mac_addresses('foo', dpid: 0x1, port_no: 1)
+          end
           Then { result == Failure(PortNotFoundError) }
         end
       end
@@ -51,26 +53,31 @@ describe SliceableSwitch do
       end
 
       describe '#add_port_to_slice' do
-        context "with 'foo', 0x1, 1" do
-          When { sliceable_switch.add_port_to_slice('foo', 0x1, 1) }
+        context "with 'foo', dpid: 0x1, port_no: 1" do
+          When do
+            sliceable_switch.add_port_to_slice('foo', dpid: 0x1, port_no: 1)
+          end
           Then do
-            sliceable_switch.find_port('foo', 0x1, 1) ==
+            sliceable_switch.find_port('foo', dpid: 0x1, port_no: 1) ==
               { dpid: 0x1, port_no: 1 }
           end
           Then { sliceable_switch.ports('foo') == [{ dpid: 0x1, port_no: 1 }] }
 
           describe '#mac_addresses' do
-            context "with 'foo', 0x1, 1" do
+            context "with 'foo', dpid: 0x1, port_no: 1" do
               When(:initial_mac_addresses) do
-                sliceable_switch.mac_addresses('foo', 0x1, 1)
+                sliceable_switch.mac_addresses('foo', dpid: 0x1, port_no: 1)
               end
               Then { initial_mac_addresses == [] }
             end
           end
 
           describe '#delete_port_from_slice' do
-            context "with 'foo', 0x1, 1" do
-              When { sliceable_switch.delete_port_from_slice('foo', 0x1, 1) }
+            context "with 'foo', dpid: 0x1, port_no: 1" do
+              When do
+                sliceable_switch.delete_port_from_slice('foo',
+                                                        dpid: 0x1, port_no: 1)
+              end
               Then { sliceable_switch.ports('foo') == [] }
             end
           end
@@ -78,28 +85,33 @@ describe SliceableSwitch do
       end
 
       describe '#add_mac_address_to_slice' do
-        context "with '11:11:11:11:11:11', 'foo', 0x1, 1" do
+        context "with '11:11:11:11:11:11', 'foo', dpid: 0x1, port_no: 1" do
           When do
             sliceable_switch.add_mac_address_to_slice('11:11:11:11:11:11',
-                                                      'foo', 0x1, 1)
+                                                      'foo',
+                                                      dpid: 0x1, port_no: 1)
           end
           Then { sliceable_switch.ports('foo') == [{ dpid: 0x1, port_no: 1 }] }
           Then do
             sliceable_switch.
-              mac_addresses('foo', 0x1, 1) == ['11:11:11:11:11:11']
+              mac_addresses('foo',
+                            dpid: 0x1, port_no: 1) == ['11:11:11:11:11:11']
           end
 
           describe '#delete_mac_address_from_slice' do
-            context "with '11:11:11:11:11:11', 'foo', 0x1, 1" do
+            context "with '11:11:11:11:11:11', 'foo', dpid: 0x1, port_no: 1" do
               When do
                 sliceable_switch.
                   delete_mac_address_from_slice('11:11:11:11:11:11',
-                                                'foo', 0x1, 1)
+                                                'foo', dpid: 0x1, port_no: 1)
               end
               Then do
                 sliceable_switch.ports('foo') == [{ dpid: 0x1, port_no: 1 }]
               end
-              Then { sliceable_switch.mac_addresses('foo', 0x1, 1) == [] }
+              Then do
+                sliceable_switch.mac_addresses('foo',
+                                               dpid: 0x1, port_no: 1) == []
+              end
             end
           end
         end
@@ -115,31 +127,37 @@ describe SliceableSwitch do
   end
 
   describe '#add_port_to_slice' do
-    context "with 'foo', 0x1, 1" do
-      When(:result) { sliceable_switch.add_port_to_slice('foo', 0x1, 1) }
+    context "with 'foo', dpid: 0x1, port_no: 1" do
+      When(:result) do
+        sliceable_switch.add_port_to_slice('foo', dpid: 0x1, port_no: 1)
+      end
       Then { result == Failure(SliceNotFoundError) }
     end
   end
 
   describe '#delete_port_from_slice' do
-    context "with 'foo', 0x1, 1" do
-      When(:result) { sliceable_switch.delete_port_from_slice('foo', 0x1, 1) }
+    context "with 'foo', dpid: 0x1, port_no: 1" do
+      When(:result) do
+        sliceable_switch.delete_port_from_slice('foo', dpid: 0x1, port_no: 1)
+      end
       Then { result == Failure(SliceNotFoundError) }
     end
   end
 
   describe '#mac_addresses' do
-    context "with 'foo', 0x1, 1" do
-      When(:result) { sliceable_switch.mac_addresses('foo', 0x1, 1) }
+    context "with 'foo', dpid: 0x1, port_no: 1" do
+      When(:result) do
+        sliceable_switch.mac_addresses('foo', dpid: 0x1, port_no: 1)
+      end
       Then { result == Failure(SliceNotFoundError) }
     end
   end
 
   describe '#add_mac_address_to_slice' do
-    context "with '11:11:11:11:11:11', 'foo', 0x1, 1" do
+    context "with '11:11:11:11:11:11', 'foo', dpid: 0x1, port_no: 1" do
       When(:result) do
         sliceable_switch.add_mac_address_to_slice('11:11:11:11:11:11',
-                                                  'foo', 0x1, 1)
+                                                  'foo', dpid: 0x1, port_no: 1)
       end
       Then { result == Failure(SliceNotFoundError) }
     end
@@ -149,7 +167,8 @@ describe SliceableSwitch do
     context "with '11:11:11:11:11:11', 'foo', 0x1, 1" do
       When(:result) do
         sliceable_switch.delete_mac_address_from_slice('11:11:11:11:11:11',
-                                                       'foo', 0x1, 1)
+                                                       'foo',
+                                                       dpid: 0x1, port_no: 1)
       end
       Then { result == Failure(SliceNotFoundError) }
     end
