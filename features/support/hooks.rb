@@ -16,3 +16,10 @@ After('@rest_api') do
   run 'trema killall'
   sleep 3
 end
+
+After('@rack') do
+  in_current_dir do
+    rack_pid = IO.read('rack.pid').chomp
+    run "kill #{rack_pid}"
+  end
+end

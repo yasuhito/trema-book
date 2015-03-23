@@ -66,6 +66,14 @@ them with `slice add` and `slice add_host` commands.
 
 ```
 $ bundle exec ./bin/slice add foo
-$ bundle exec ./bin/slice add_host 00:00:00:00:00:01 --slice foo
-$ bundle exec ./bin/slice add_host 00:00:00:00:00:02 --slice foo
+$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo
+$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:02 --port 0x2:1 --slice foo
+```
+
+
+REST API Server
+---------------
+
+```
+$ bundle exec rackup
 ```
