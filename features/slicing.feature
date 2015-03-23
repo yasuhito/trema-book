@@ -44,7 +44,7 @@ Feature: Virtual slicing
     And I run `sleep 8`
 
   @sudo
-  Scenario: No slices
+  Scenario: no slices
     When I run `trema send_packets --source host1 --dest host2`
     And I run `trema send_packets --source host2 --dest host1`
     Then the number of packets received by "host1" should be:
@@ -55,15 +55,29 @@ Feature: Virtual slicing
       | 192.168.0.1 |        0 |
 
   @sudo
-  Scenario: Add a slice then add two hosts to it
-    When I run `slice add foo`
-    And I run `slice add_host 00:00:00:00:00:01 --slice foo`
-    And I run `slice add_host 00:00:00:00:00:02 --slice foo`
+  Scenario: add a slice then add two hosts to it
+    When I successfully run `slice add foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:02 --port 0x2:1 --slice foo`
     And I run `trema send_packets --source host1 --dest host2`
     And I run `trema send_packets --source host2 --dest host1`
     Then the number of packets received by "host1" should be:
       |      source | #packets |
       | 192.168.0.2 |        1 |
+    Then the number of packets received by "host2" should be:
+      |      source | #packets |
+      | 192.168.0.1 |        1 |
+
+  @sudo
+  Scenario: add wrong port number to a slice
+    When I successfully run `slice add foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:02 --port 0x2:2 --slice foo`
+    And I run `trema send_packets --source host1 --dest host2`
+    And I run `trema send_packets --source host2 --dest host1`
+    Then the number of packets received by "host1" should be:
+      |      source | #packets |
+      | 192.168.0.2 |        0 |
     Then the number of packets received by "host2" should be:
       |      source | #packets |
       | 192.168.0.1 |        0 |

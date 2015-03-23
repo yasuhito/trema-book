@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'grape'
 gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 
 group :development, :test do
@@ -11,6 +12,7 @@ group :development, :test do
   gem 'guard-bundler', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
+  gem 'rack-test', require: false
   gem 'rake', require: false
   gem 'reek', require: false
   gem 'rspec', require: false

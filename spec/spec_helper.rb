@@ -11,4 +11,5 @@ end
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[*formatters]
 SimpleCov.start { add_filter '/vendor/' }
 
+require 'rack/test'
 require 'rspec/given'

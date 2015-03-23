@@ -6,10 +6,15 @@ Feature: slice command
 
   Scenario: slice add_host without MAC address
     When I run `slice add_host`
-    Then the stderr should contain "MAC address is required."
+    Then the stderr should contain "--mac option is mandatory."
+    And the exit status should not be 0
+
+  Scenario: slice add_host without --port option
+    When I run `slice add_host --mac 11:22:33:44:55:66`
+    Then the stderr should contain "--port option is mandatory."
     And the exit status should not be 0
 
   Scenario: slice add_host without --slice option
-    When I run `slice add_host 11:22:33:44:55:66`
+    When I run `slice add_host --mac 11:22:33:44:55:66 --port 0x1:1`
     Then the stderr should contain "--slice option is mandatory."
     And the exit status should not be 0
