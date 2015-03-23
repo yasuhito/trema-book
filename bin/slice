@@ -66,7 +66,7 @@ module Slice
       fail '--slice option is mandatory.' unless options[:slice]
       Trema.controller_process(options[:socket_dir]).
         sliceable_switch.
-        add_host_to_slice(options[:mac], dpid, port_no, options[:slice])
+        add_mac_address_to_slice(options[:mac], options[:slice], dpid, port_no)
     end
   end
 
@@ -93,7 +93,8 @@ module Slice
       fail '--slice option is mandatory.' unless options[:slice]
       Trema.controller_process(options[:socket_dir]).
         sliceable_switch.
-        delete_host_from_slice(options[:mac], dpid, port_no, options[:slice])
+        delete_mac_address_from_slice(options[:mac],
+                                      options[:slice], dpid, port_no)
     end
   end
 

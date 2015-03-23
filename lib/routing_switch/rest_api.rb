@@ -34,7 +34,7 @@ class RoutingSwitch < Trema::Controller
     desc 'Shows a slice'
     get 'slices/:slice_id' do
       begin
-        sliceable_switch.slice(params[:slice_id])
+        sliceable_switch.find_slice(params[:slice_id])
         { name: params[:slice_id] }
       rescue SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
@@ -71,7 +71,7 @@ class RoutingSwitch < Trema::Controller
       begin
         dpid_str, port_no_str = params[:port_id].split(':')
         sliceable_switch.
-          port(params[:slice_id], dpid_str.hex, port_no_str.to_i).
+          find_port(params[:slice_id], dpid_str.hex, port_no_str.to_i).
           merge(name: params[:port_id])
       rescue SliceNotFoundError
         error! "Slice named '#{params[:slice_id]}' not found", 404
@@ -88,9 +88,9 @@ class RoutingSwitch < Trema::Controller
       dpid_str = Regexp.last_match(1)
       port_no = Regexp.last_match(2).to_i
       dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
-      sliceable_switch.add_host_to_slice(params[:name],
-                                         dpid, port_no,
-                                         params[:slice_id])
+      sliceable_switch.add_mac_address_to_slice(params[:name],
+                                                params[:slice_id],
+                                                dpid, port_no)
     end
 
     desc 'Deletes a host from a slice'
@@ -101,9 +101,9 @@ class RoutingSwitch < Trema::Controller
       dpid_str = Regexp.last_match(1)
       port_no = Regexp.last_match(2).to_i
       dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
-      sliceable_switch.delete_host_from_slice(params[:name],
-                                              dpid, port_no,
-                                              params[:slice_id])
+      sliceable_switch.delete_mac_address_from_slice(params[:name],
+                                                     params[:slice_id],
+                                                     dpid, port_no)
     end
 
     desc 'List MAC addresses'

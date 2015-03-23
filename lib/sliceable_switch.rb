@@ -14,64 +14,68 @@ class SliceableSwitch < PathManager
     logger.info 'Sliceable Switch started.'
   end
 
-  def slice(name)
+  def add_slice(name)
+    fail "Slice named #{name} already exists." if @slices[name]
+    @slices[name] = Hash.new([].freeze)
+  end
+
+  # TODO: delete all paths in the slice
+  def delete_slice(name)
+    unless @slices[name]
+      fail SliceNotFoundError, "Slice named #{name} does not exist."
+    end
+    @slices.delete name
+  end
+
+  def find_slice(name)
     @slices.fetch(name)
   rescue KeyError
-    raise SliceNotFoundError
+    raise SliceNotFoundError, "Slice named #{name} does not exist."
   end
 
   def slice_list
     @slices.keys
   end
 
-  def add_slice(name)
-    @slices[name] = Hash.new([].freeze)
-  end
-
-  # TODO: delete all paths in the slice
-  def delete_slice(name)
-    @slices.delete name
-  end
-
-  def port(slice_name, dpid, port_no)
+  def find_port(slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    slice(slice_name).fetch(port)
+    find_slice(slice_name).fetch(port)
     port
   rescue KeyError
     raise PortNotFoundError
   end
 
   def ports(slice_name)
-    slice(slice_name).keys
+    find_slice(slice_name).keys
   end
 
   def add_port_to_slice(slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    @slices.fetch(slice_name)[port] = []
+    find_slice(slice_name)[port] = []
   end
 
   # TODO: update paths that contains the port
   def delete_port_from_slice(slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    @slices.fetch(slice_name).delete port
+    find_slice(slice_name).delete port
   end
 
   def mac_addresses(slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    slice(slice_name).fetch(port)
+    find_slice(slice_name).fetch(port)
   rescue KeyError
     raise PortNotFoundError
   end
 
-  def add_host_to_slice(mac_address, dpid, port_no, slice)
+  def add_mac_address_to_slice(mac_address, slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    @slices[slice][port] += [Pio::Mac.new(mac_address)]
+    find_slice(slice_name)[port] += [Pio::Mac.new(mac_address)]
   end
 
   # TODO: update paths that contains the mac address
-  def delete_host_from_slice(mac_address, dpid, port_no, slice)
+  def delete_mac_address_from_slice(mac_address, slice_name, dpid, port_no)
     port = { dpid: dpid, port_no: port_no }
-    @slices[slice][port] -= [Pio::Mac.new(mac_address)]
+    find_slice(slice_name)[port] -= [Pio::Mac.new(mac_address)]
   end
 
   # This method smells of :reek:TooManyStatements but ignores them
