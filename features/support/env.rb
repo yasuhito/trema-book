@@ -1,6 +1,6 @@
 require 'aruba/cucumber'
-require 'routing_switch/rest_api'
+require 'sliceable_switch/rest_api'
 
 def app
-  RoutingSwitch::RestApi
+  SliceableSwitch::RestApi
 end

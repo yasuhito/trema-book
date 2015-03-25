@@ -4,7 +4,7 @@ require 'grape'
 require 'trema'
 require 'sliceable_switch'
 
-class RoutingSwitch < Trema::Controller
+class SliceableSwitch < PathManager
   # REST API of RoutingSwitch
   # rubocop:disable ClassLength
   class RestApi < Grape::API
