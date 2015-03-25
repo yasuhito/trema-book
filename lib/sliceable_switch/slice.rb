@@ -38,7 +38,7 @@ class SliceableSwitch < PathManager
     end
 
     def add_mac_address(mac_address, port)
-      if mac_address_exists?(port, mac_address)
+      if @slice[port].include? Pio::Mac.new(mac_address)
         fail(MacAddressAlreadyExistsError,
              "MAC address #{mac_address} already exists")
       end
@@ -47,10 +47,7 @@ class SliceableSwitch < PathManager
 
     # TODO: update paths that contains the mac address
     def delete_mac_address(mac_address, port)
-      find_port port
-      unless mac_address_exists?(port, mac_address)
-        fail MacAddressNotFoundError, "MAC address #{mac_address} not found"
-      end
+      find_mac_address port, mac_address
       @slice[port] -= [Pio::Mac.new(mac_address)]
     end
 
@@ -61,14 +58,17 @@ class SliceableSwitch < PathManager
       raise PortNotFoundError, "Port #{port_name} not found"
     end
 
-    def method_missing(method, *args, &block)
-      @slice.__send__ method, *args, &block
+    def find_mac_address(port, mac_address)
+      find_port port
+      if @slice[port].include? Pio::Mac.new(mac_address)
+        mac_address
+      else
+        fail MacAddressNotFoundError, "MAC address #{mac_address} not found"
+      end
     end
 
-    private
-
-    def mac_address_exists?(port, mac_address)
-      @slice[port].include? Pio::Mac.new(mac_address)
+    def method_missing(method, *args, &block)
+      @slice.__send__ method, *args, &block
     end
   end
 end
