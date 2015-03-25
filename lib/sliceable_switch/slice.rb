@@ -67,6 +67,14 @@ class SliceableSwitch < PathManager
       end
     end
 
+    def has?(port, mac)
+      @slice[port].include? mac
+    end
+
+    def mac_address?(mac)
+      @slice.values.any? { |each| each.include? mac }
+    end
+
     def method_missing(method, *args, &block)
       @slice.__send__ method, *args, &block
     end

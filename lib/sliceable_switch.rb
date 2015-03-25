@@ -37,8 +37,8 @@ class SliceableSwitch < PathManager
     @slices.keys
   end
 
-  def packet_in(dpid, message)
-    if source_and_destination_in_same_slice?(dpid, message)
+  def packet_in(_dpid, message)
+    if source_and_destination_in_same_slice?(message)
       maybe_create_shortest_path_and_packet_out(message)
     else
       flood_to_external_ports(message)
@@ -47,12 +47,15 @@ class SliceableSwitch < PathManager
 
   private
 
-  def source_and_destination_in_same_slice?(in_dpid, packet_in)
-    in_port = { dpid: in_dpid, port_no: packet_in.in_port }
-    out_port = @graph.fetch(packet_in.destination_mac).first.to_h
+  # This method smells of :reek:TooManyStatements
+  # This method smells of :reek:FeatureEnvy
+  def source_and_destination_in_same_slice?(packet_in)
+    source_mac = packet_in.source_mac
+    destination_mac = packet_in.destination_mac
+    in_port = { dpid: packet_in.dpid, port_no: packet_in.in_port }
+    out_port = @graph.fetch(destination_mac).first.to_h
     @slices.values.any? do |each|
-      each[in_port].include?(packet_in.source_mac) &&
-        each[out_port].include?(packet_in.destination_mac)
+      each.has?(in_port, source_mac) && each.has?(out_port, destination_mac)
     end
   rescue KeyError
     false
@@ -71,9 +74,7 @@ class SliceableSwitch < PathManager
   # rubocop:disable AbcSize
   def flood_to_external_ports(packet_in)
     @slices.values.each do |slice|
-      next unless slice.values.any? do |macs|
-        macs.include?(packet_in.source_mac)
-      end
+      next unless slice.mac_address?(packet_in.source_mac)
       slice.each do |port, macs|
         next unless external_ports.any? do |each|
           each.dpid == port.fetch(:dpid) && each.port_no == port.fetch(:port_no)
