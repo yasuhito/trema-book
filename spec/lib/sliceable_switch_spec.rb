@@ -32,7 +32,7 @@ describe SliceableSwitch do
       describe '#add_slice' do
         context "with 'foo'" do
           When(:result) { sliceable_switch.add_slice 'foo' }
-          Then { result == Failure(RuntimeError) }
+          Then { result == Failure(SliceableSwitch::SliceAlreadyExistsError) }
         end
       end
     end

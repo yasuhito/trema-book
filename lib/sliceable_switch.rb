@@ -15,22 +15,22 @@ class SliceableSwitch < PathManager
   end
 
   def add_slice(name)
-    fail "Slice named #{name} already exists." if @slices[name]
+    if @slices[name]
+      fail SliceAlreadyExistsError, "Slice #{name} already exists"
+    end
     @slices[name] = Slice.new
   end
 
   # TODO: delete all paths in the slice
   def delete_slice(name)
-    unless @slices[name]
-      fail SliceNotFoundError, "Slice named #{name} does not exist."
-    end
+    fail SliceNotFoundError, "Slice #{name} not found" unless @slices[name]
     @slices.delete name
   end
 
   def find_slice(name)
     @slices.fetch(name)
   rescue KeyError
-    raise SliceNotFoundError, "Slice named #{name} does not exist."
+    raise SliceNotFoundError, "Slice #{name} not found"
   end
 
   def slice_list

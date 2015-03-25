@@ -14,102 +14,116 @@ class SliceableSwitch < PathManager
       def sliceable_switch
         Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
       end
+
+      def rest_api
+        yield
+      rescue SliceableSwitch::SliceNotFoundError,
+             SliceableSwitch::PortNotFoundError,
+             MacAddressNotFoundError => exception
+        error! exception.message, 404
+      rescue SliceableSwitch::SliceAlreadyExistsError,
+             SliceableSwitch::PortAlreadyExistsError,
+             SliceableSwitch::MacAddressAlreadyExistsError => exception
+        error! exception.message, 409
+      end
     end
 
     desc 'Creates a slice'
     post :slices do
-      sliceable_switch.add_slice(params.fetch(:name))
+      rest_api { sliceable_switch.add_slice params.fetch(:name) }
     end
 
     desc 'Deletes a slice'
     delete :slices do
-      sliceable_switch.delete_slice(params.fetch(:name))
+      rest_api { sliceable_switch.delete_slice params.fetch(:name) }
     end
 
     desc 'Lists slices'
     get :slices do
-      sliceable_switch.slice_list.map { |each| { name: each } }
+      rest_api do
+        sliceable_switch.slice_list.map { |each| { name: each } }
+      end
     end
 
     desc 'Shows a slice'
     get 'slices/:slice_id' do
-      begin
-        sliceable_switch.find_slice(params[:slice_id])
-        { name: params[:slice_id] }
-      rescue SliceableSwitch::SliceNotFoundError
-        error! "Slice named '#{params[:slice_id]}' not found", 404
+      rest_api do
+        sliceable_switch.find_slice params.fetch(:slice_id)
+        { name: params.fetch(:slice_id) }
       end
     end
 
     desc 'Adds a port to a slice'
     post 'slices/:slice_id/ports' do
-      sliceable_switch.
-        find_slice(params[:slice_id]).
-        add_port(dpid: params[:dpid].to_i, port_no: params[:port_no].to_i)
+      rest_api do
+        sliceable_switch.
+          find_slice(params[:slice_id]).
+          add_port(dpid: params[:dpid].to_i, port_no: params[:port_no].to_i)
+      end
     end
 
     desc 'Deletes a port from a slice'
     delete 'slices/:slice_id/ports' do
-      sliceable_switch.
-        find_slice(params[:slice_id]).
-        delete_port(dpid: params[:dpid].to_i, port_no: params[:port_no].to_i)
+      rest_api do
+        sliceable_switch.
+          find_slice(params[:slice_id]).
+          delete_port(dpid: params[:dpid].to_i, port_no: params[:port_no].to_i)
+      end
     end
 
     desc 'Lists ports'
     get 'slices/:slice_id/ports' do
-      begin
+      rest_api do
         sliceable_switch.find_slice(params[:slice_id]).ports.map do |each|
           each.merge(name: "#{format('%#x', each[:dpid])}:#{each[:port_no]}")
         end
-      rescue SliceableSwitch::SliceNotFoundError
-        error! "Slice named '#{params[:slice_id]}' not found", 404
       end
     end
 
     desc 'Shows a port'
     get 'slices/:slice_id/ports/:port_id' do
-      begin
+      rest_api do
         dpid_str, port_no_str = params[:port_id].split(':')
         sliceable_switch.
           find_slice(params[:slice_id]).
           find_port(dpid: dpid_str.hex, port_no: port_no_str.to_i).
           merge(name: params[:port_id])
-      rescue SliceableSwitch::SliceNotFoundError
-        error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue SliceableSwitch::PortNotFoundError
-        error! "Port named '#{params[:port_id]}' not found", 404
       end
     end
 
     desc 'Adds a host to a slice'
     post '/slices/:slice_id/ports/:port_id/mac_addresses' do
-      unless /\A(\S+):(\d+)\Z/ =~ params[:port_id]
-        fail "Invalid switch port #{params[:port]}"
+      rest_api do
+        unless /\A(\S+):(\d+)\Z/ =~ params[:port_id]
+          fail "Invalid switch port #{params[:port]}"
+        end
+        dpid_str = Regexp.last_match(1)
+        port_no = Regexp.last_match(2).to_i
+        dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
+        sliceable_switch.
+          find_slice(params[:slice_id]).
+          add_mac_address(params[:name], dpid: dpid, port_no: port_no)
       end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
-      sliceable_switch.
-        find_slice(params[:slice_id]).
-        add_mac_address(params[:name], dpid: dpid, port_no: port_no)
     end
 
     desc 'Deletes a host from a slice'
     delete '/slices/:slice_id/ports/:port_id/mac_addresses' do
-      unless /\A(\S+):(\d+)\Z/ =~ params[:port_id]
-        fail "Invalid switch port #{params[:port]}"
+      rest_api do
+        unless /\A(\S+):(\d+)\Z/ =~ params[:port_id]
+          fail "Invalid switch port #{params[:port]}"
+        end
+        dpid_str = Regexp.last_match(1)
+        port_no = Regexp.last_match(2).to_i
+        dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
+        sliceable_switch.
+          find_slice(params[:slice_id]).
+          delete_mac_address(params[:name], dpid: dpid, port_no: port_no)
       end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
-      sliceable_switch.
-        find_slice(params[:slice_id]).
-        delete_mac_address(params[:name], dpid: dpid, port_no: port_no)
     end
 
     desc 'List MAC addresses'
     get 'slices/:slice_id/ports/:port_id/mac_addresses' do
-      begin
+      rest_api do
         dpid_str, port_no_str = params[:port_id].split(':')
         sliceable_switch.
           find_slice(params[:slice_id]).
@@ -117,16 +131,12 @@ class SliceableSwitch < PathManager
                         port_no: port_no_str.to_i).map do |each|
           { name: each }
         end
-      rescue SliceableSwitch::SliceNotFoundError
-        error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue SliceableSwitch::PortNotFoundError
-        error! "Port named '#{params[:port_id]}' not found", 404
       end
     end
 
     desc 'Shows a MAC address'
     get 'slices/:slice_id/ports/:port_id/mac_addresses/:mac_address_id' do
-      begin
+      rest_api do
         dpid_str, port_no_str = params[:port_id].split(':')
         sliceable_switch.
           find_slice(params[:slice_id]).
@@ -136,11 +146,7 @@ class SliceableSwitch < PathManager
             return { name: params[:mac_address_id] }
           end
         end
-        error! "MAC address '#{params[:mac_address_id]}' not found", 404
-      rescue SliceableSwitch::SliceNotFoundError
-        error! "Slice named '#{params[:slice_id]}' not found", 404
-      rescue SliceableSwitch::PortNotFoundError
-        error! "Port named '#{params[:port_id]}' not found", 404
+        error! "MAC address #{params[:mac_address_id]} not found", 404
       end
     end
   end
