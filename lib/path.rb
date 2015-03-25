@@ -1,3 +1,5 @@
+require 'trema'
+
 # List of shortest-path flow entries.
 class Path < Trema::Controller
   def self.create(shortest_path, packet_in)

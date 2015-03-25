@@ -2,6 +2,7 @@ $LOAD_PATH.unshift __dir__
 
 require 'dijkstra'
 require 'path'
+require 'trema'
 
 # L2 routing path manager
 class PathManager < Trema::Controller
