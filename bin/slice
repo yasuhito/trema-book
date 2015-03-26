@@ -36,7 +36,7 @@ module Slice
       slices.each_pair do |slice, ports|
         puts slice
         ports.each do |port, mac_addresses|
-          puts "  #{format '%#x', port[:dpid]}:#{port[:port_no]}"
+          puts "  #{port.name}"
           mac_addresses.each do |each|
             puts "    #{each}"
           end

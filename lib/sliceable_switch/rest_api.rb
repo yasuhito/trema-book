@@ -84,17 +84,14 @@ class SliceableSwitch < PathManager
     desc 'Lists ports'
     get 'slices/:slice_id/ports' do
       rest_api do
-        slice(params[:slice_id]).ports.map do |each|
-          each.merge(name: "#{format('%#x', each[:dpid])}:#{each[:port_no]}")
-        end
+        slice(params[:slice_id]).ports
       end
     end
 
     desc 'Shows a port'
     get 'slices/:slice_id/ports/:port_id' do
       rest_api do
-        slice(params[:slice_id]).find_port(port(params[:port_id])).
-          merge(name: params[:port_id])
+        slice(params[:slice_id]).find_port(port(params[:port_id]))
       end
     end
 

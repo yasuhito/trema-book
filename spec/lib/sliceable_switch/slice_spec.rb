@@ -6,10 +6,12 @@ describe SliceableSwitch::Slice, '.new' do
   describe '#add_port' do
     context 'with dpid: 0x1, port: 1' do
       When { slice.add_port dpid: 0x1, port_no: 1 }
-      Then do
-        slice.find_port(dpid: 0x1, port_no: 1) == { dpid: 0x1, port_no: 1 }
-      end
-      Then { slice.ports == [{ dpid: 0x1, port_no: 1 }] }
+      When(:found_port) { slice.find_port(dpid: 0x1, port_no: 1) }
+      Then { found_port.dpid == 0x1 }
+      Then { found_port.port_no == 1 }
+      Then { slice.ports.size == 1 }
+      Then { slice.ports.first.dpid == 0x1 }
+      Then { slice.ports.first.port_no == 1 }
 
       describe '#add_port' do
         context 'with dpid: 0x1, port: 1' do

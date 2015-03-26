@@ -77,12 +77,12 @@ class SliceableSwitch < PathManager
       next unless slice.mac_address?(packet_in.source_mac)
       slice.each do |port, macs|
         next unless external_ports.any? do |each|
-          each.dpid == port.fetch(:dpid) && each.port_no == port.fetch(:port_no)
+          each.dpid == port.dpid && each.port_no == port.port_no
         end
         next if macs.include?(packet_in.source_mac)
-        send_packet_out(port.fetch(:dpid),
+        send_packet_out(port.dpid,
                         raw_data: packet_in.raw_data,
-                        actions: SendOutPort.new(port.fetch(:port_no)))
+                        actions: SendOutPort.new(port.port_no))
       end
     end
   end
