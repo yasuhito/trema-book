@@ -26,6 +26,10 @@ class SliceableSwitch < PathManager
         %({"name": "#{name}", "dpid": #{@dpid}, "port_no": #{@port_no}})
       end
 
+      def ==(other)
+        eql? other
+      end
+
       def eql?(other)
         @dpid == other.dpid && @port_no == other.port_no
       end

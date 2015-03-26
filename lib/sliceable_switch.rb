@@ -76,9 +76,7 @@ class SliceableSwitch < PathManager
     @slices.values.each do |slice|
       next unless slice.mac_address?(packet_in.source_mac)
       slice.each do |port, macs|
-        next unless external_ports.any? do |each|
-          each.dpid == port.dpid && each.port_no == port.port_no
-        end
+        next unless external_ports.any? { |each| port == each }
         next if macs.include?(packet_in.source_mac)
         send_packet_out(port.dpid,
                         raw_data: packet_in.raw_data,
