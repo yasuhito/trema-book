@@ -1,21 +1,9 @@
 $LOAD_PATH.unshift __dir__
 
 require 'path_manager'
+require 'slice_extensions'
 require 'sliceable_switch/exceptions'
 require 'sliceable_switch/slice'
-
-module Pio
-  # Adds #slice_source
-  class PacketIn
-    def slice_source
-      { dpid: dpid, port_no: in_port, mac: source_mac }
-    end
-
-    def slice_destination(topology)
-      topology.fetch(destination_mac).first.to_h.merge(mac: destination_mac)
-    end
-  end
-end
 
 # L2 routing switch with virtual slicing.
 class SliceableSwitch < PathManager
@@ -112,18 +100,21 @@ class SliceableSwitch < PathManager
                     actions: SendOutPort.new(out_port.number))
   end
 
-  # rubocop:disable AbcSize
   def flood_to_external_ports(packet_in)
     @slices.values.each do |slice|
       next unless slice.member?(packet_in.slice_source)
-      slice.each do |port, macs|
-        next unless external_ports.any? { |each| port == each }
-        next if macs.include?(packet_in.source_mac)
+      external_ports_in_slice(slice, packet_in.source_mac).each do |port|
         send_packet_out(port.dpid,
                         raw_data: packet_in.raw_data,
                         actions: SendOutPort.new(port.port_no))
       end
     end
   end
-  # rubocop:enable AbcSize
+
+  def external_ports_in_slice(slice, packet_in_mac)
+    slice.each_with_object([]) do |(port, macs), result|
+      next unless external_ports.any? { |each| port == each }
+      result << port unless macs.include?(packet_in_mac)
+    end
+  end
 end

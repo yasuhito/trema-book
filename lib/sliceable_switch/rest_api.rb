@@ -1,32 +1,36 @@
 $LOAD_PATH.unshift File.join(__dir__, '..')
 
 require 'grape'
-require 'trema'
 require 'sliceable_switch'
+require 'trema'
 
 class SliceableSwitch < PathManager
+  # Rest API helper methods
+  module RestApiHelpers
+    # This method smells of :reek:UtilityFunction but ignores them
+    def sliceable_switch
+      Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
+    end
+
+    def rest_api
+      yield
+    rescue SliceNotFoundError,
+           PortNotFoundError,
+           MacAddressNotFoundError => not_found_error
+      error! not_found_error.message, 404
+    rescue SliceAlreadyExistsError,
+           PortAlreadyExistsError,
+           MacAddressAlreadyExistsError => already_exists_error
+      error! already_exists_error.message, 409
+    end
+  end
+
   # REST API of RoutingSwitch
   # rubocop:disable ClassLength
   class RestApi < Grape::API
     format :json
 
-    helpers do
-      def sliceable_switch
-        Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
-      end
-
-      def rest_api
-        yield
-      rescue SliceableSwitch::SliceNotFoundError,
-             SliceableSwitch::PortNotFoundError,
-             MacAddressNotFoundError => exception
-        error! exception.message, 404
-      rescue SliceableSwitch::SliceAlreadyExistsError,
-             SliceableSwitch::PortAlreadyExistsError,
-             SliceableSwitch::MacAddressAlreadyExistsError => exception
-        error! exception.message, 409
-      end
-    end
+    helpers RestApiHelpers
 
     desc 'Creates a slice'
     post :slices do

@@ -1,16 +1,8 @@
 $LOAD_PATH.unshift File.join(__dir__, '..')
 
 require 'path_manager'
+require 'slice_extensions'
 require 'sliceable_switch/exceptions'
-
-module Pio
-  # Adds #to_json
-  class Mac
-    def to_json(*_)
-      %({"name": "#{self}"})
-    end
-  end
-end
 
 # L2 routing switch with virtual slicing.
 class SliceableSwitch < PathManager
