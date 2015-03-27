@@ -112,7 +112,6 @@ class SliceableSwitch < PathManager
                     actions: SendOutPort.new(out_port.number))
   end
 
-  # rubocop:disable MethodLength
   # rubocop:disable AbcSize
   def flood_to_external_ports(packet_in)
     @slices.values.each do |slice|
@@ -126,6 +125,5 @@ class SliceableSwitch < PathManager
       end
     end
   end
-  # rubocop:enable MethodLength
   # rubocop:enable AbcSize
 end
