@@ -20,7 +20,7 @@ describe SliceableSwitch do
   describe '#add_slice' do
     context "with 'foo'" do
       When { sliceable_switch.add_slice 'foo' }
-      Then { sliceable_switch.slice_list == ['foo'] }
+      Then { sliceable_switch.slice_list.map(&:to_s) == ['foo'] }
 
       describe '#find_slice' do
         context "with 'foo'" do

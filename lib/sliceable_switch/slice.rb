@@ -1,8 +1,16 @@
 $LOAD_PATH.unshift File.join(__dir__, '..')
 
-require 'drb'
 require 'path_manager'
 require 'sliceable_switch/exceptions'
+
+module Pio
+  # Adds #to_json
+  class Mac
+    def to_json(*_)
+      %({"name": "#{self}"})
+    end
+  end
+end
 
 # L2 routing switch with virtual slicing.
 class SliceableSwitch < PathManager
@@ -10,16 +18,26 @@ class SliceableSwitch < PathManager
   class Slice
     # dpid + port number
     class Port
+      def self.parse(port_id)
+        fail "Invalid port #{port_id}" unless /\A(0x\S+):(\d+)\Z/ =~ port_id
+        { dpid: Regexp.last_match(1).hex, port_no: Regexp.last_match(2).to_i }
+      end
+
       attr_reader :dpid
       attr_reader :port_no
 
       def initialize(attrs)
+        @attrs = attrs
         @dpid = attrs.fetch(:dpid)
         @port_no = attrs.fetch(:port_no)
       end
 
       def name
         format('%#x', @dpid) + ':' + @port_no.to_s
+      end
+
+      def fetch(attr)
+        @attrs.fetch attr
       end
 
       def to_json(*_)
@@ -39,28 +57,22 @@ class SliceableSwitch < PathManager
       end
     end
 
-    include DRb::DRbUndumped
-
-    def initialize
-      @slice = Hash.new([].freeze)
+    def initialize(name)
+      @name = name
+      @ports = Hash.new([].freeze)
     end
 
     def add_port(port_attrs)
       port = Port.new(port_attrs)
-      if @slice.key?(port)
+      if @ports.key?(port)
         fail PortAlreadyExistsError, "Port #{port.name} already exists"
       end
-      @slice[port] = [].freeze
+      @ports[port] = [].freeze
     end
 
-    # TODO: update paths that contains the port
     def delete_port(port_attrs)
       find_port port_attrs
-      @slice.delete Port.new(port_attrs)
-    end
-
-    def ports
-      @slice.keys
+      @ports.delete Port.new(port_attrs)
     end
 
     def find_port(port_attrs)
@@ -68,47 +80,56 @@ class SliceableSwitch < PathManager
       Port.new(port_attrs)
     end
 
+    def ports
+      @ports.keys
+    end
+
     def add_mac_address(mac_address, port_attrs)
       port = Port.new(port_attrs)
-      if @slice[port].include? Pio::Mac.new(mac_address)
+      if @ports[port].include? Pio::Mac.new(mac_address)
         fail(MacAddressAlreadyExistsError,
              "MAC address #{mac_address} already exists")
       end
-      @slice[port] += [Pio::Mac.new(mac_address)]
+      @ports[port] += [Pio::Mac.new(mac_address)]
     end
 
     # TODO: update paths that contains the mac address
     def delete_mac_address(mac_address, port_attrs)
       find_mac_address port_attrs, mac_address
-      @slice[Port.new(port_attrs)] -= [Pio::Mac.new(mac_address)]
-    end
-
-    def mac_addresses(port_attrs)
-      port = Port.new(port_attrs)
-      @slice.fetch(port)
-    rescue KeyError
-      raise PortNotFoundError, "Port #{port.name} not found"
+      @ports[Port.new(port_attrs)] -= [Pio::Mac.new(mac_address)]
     end
 
     def find_mac_address(port_attrs, mac_address)
       find_port port_attrs
-      if @slice[Port.new(port_attrs)].include? Pio::Mac.new(mac_address)
-        mac_address
+      mac = Pio::Mac.new(mac_address)
+      if @ports[Port.new(port_attrs)].include? mac
+        mac
       else
         fail MacAddressNotFoundError, "MAC address #{mac_address} not found"
       end
     end
 
-    def has?(port_attrs, mac)
-      @slice[Port.new(port_attrs)].include? mac
+    def mac_addresses(port_attrs)
+      port = Port.new(port_attrs)
+      @ports.fetch(port)
+    rescue KeyError
+      raise PortNotFoundError, "Port #{port.name} not found"
     end
 
-    def mac_address?(mac)
-      @slice.values.any? { |each| each.include? mac }
+    def member?(host_id)
+      @ports[Port.new(host_id)].include? host_id[:mac]
+    end
+
+    def to_s
+      @name
+    end
+
+    def to_json(*_)
+      %({"name": "#{@name}"})
     end
 
     def method_missing(method, *args, &block)
-      @slice.__send__ method, *args, &block
+      @ports.__send__ method, *args, &block
     end
   end
 end

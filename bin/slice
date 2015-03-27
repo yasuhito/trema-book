@@ -67,8 +67,7 @@ module Slice
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        find_slice(options[:slice]).
-        add_port(dpid: dpid, port_no: port_no)
+        add_port_to_slice(options[:slice], dpid: dpid, port_no: port_no)
     end
   end
 
@@ -97,8 +96,8 @@ module Slice
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        find_slice(options[:slice]).
-        add_mac_address(options[:mac], dpid: dpid, port_no: port_no)
+        add_mac_address(options[:slice],
+                        options[:mac], dpid: dpid, port_no: port_no)
     end
   end
 

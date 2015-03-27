@@ -1,7 +1,7 @@
 require 'sliceable_switch/slice'
 
 describe SliceableSwitch::Slice, '.new' do
-  Given(:slice) { SliceableSwitch::Slice.new }
+  Given(:slice) { SliceableSwitch::Slice.new('slice') }
 
   describe '#add_port' do
     context 'with dpid: 0x1, port: 1' do
