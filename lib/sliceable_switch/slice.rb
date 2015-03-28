@@ -68,7 +68,7 @@ class SliceableSwitch < PathManager
     end
 
     def find_port(port_attrs)
-      mac_addresses port_attrs
+      find_mac_addresses port_attrs
       Port.new(port_attrs)
     end
 
@@ -100,11 +100,15 @@ class SliceableSwitch < PathManager
       end
     end
 
-    def mac_addresses(port_attrs)
+    def find_mac_addresses(port_attrs)
       port = Port.new(port_attrs)
       @ports.fetch(port)
     rescue KeyError
       raise PortNotFoundError, "Port #{port.name} not found"
+    end
+
+    def mac_addresses
+      @ports.values.flatten
     end
 
     def member?(host_id)

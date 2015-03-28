@@ -26,6 +26,10 @@ class SliceableSwitch < PathManager
   # TODO: delete all paths in the slice
   def delete_slice(name)
     fail SliceNotFoundError, "Slice #{name} not found" unless @slices[name]
+    paths_in_slice(name).each do |each|
+      @path.delete each
+      each.delete
+    end
     @slices.delete name
   end
 
@@ -76,7 +80,7 @@ class SliceableSwitch < PathManager
   end
 
   def mac_addresses(slice_name, port_attrs)
-    find_slice(slice_name).mac_addresses(port_attrs)
+    find_slice(slice_name).find_mac_addresses(port_attrs)
   end
 
   def packet_in(_dpid, message)
@@ -88,6 +92,14 @@ class SliceableSwitch < PathManager
   end
 
   private
+
+  def paths_in_slice(slice_name)
+    @path.select do |each|
+      find_slice(slice_name).mac_addresses.any? do |mac|
+        each.endpoint? mac
+      end
+    end
+  end
 
   def paths_containing_port(port_attrs)
     @path.select { |each| each.port?(Topology::Port.create(port_attrs)) }

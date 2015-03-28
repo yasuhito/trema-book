@@ -24,6 +24,7 @@ class Path < Trema::Controller
     path.include? port
   end
 
+  # TODO: args should be mac + port
   def endpoint?(mac)
     @full_path.first == mac || @full_path.last == mac
   end

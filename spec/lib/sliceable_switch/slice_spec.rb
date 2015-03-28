@@ -61,7 +61,7 @@ describe SliceableSwitch::Slice, '.new' do
     context "with '11:11:11:11:11:11', dpid: 0x1, port_no: 1" do
       When { slice.add_mac_address('11:11:11:11:11:11', dpid: 0x1, port_no: 1) }
       Then do
-        slice.mac_addresses(dpid: 0x1, port_no: 1) == ['11:11:11:11:11:11']
+        slice.find_mac_addresses(dpid: 0x1, port_no: 1) == ['11:11:11:11:11:11']
       end
 
       describe '#add_mac_address' do
@@ -86,9 +86,9 @@ describe SliceableSwitch::Slice, '.new' do
     end
   end
 
-  describe '#mac_addresses' do
+  describe '#find_mac_addresses' do
     context 'with dpid: 0x1, port_no: 1' do
-      When(:result) { slice.mac_addresses(dpid: 0x1, port_no: 1) }
+      When(:result) { slice.find_mac_addresses(dpid: 0x1, port_no: 1) }
       Then { result == Failure(SliceableSwitch::PortNotFoundError) }
     end
   end

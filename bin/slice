@@ -23,6 +23,20 @@ module Slice
     end
   end
 
+  desc 'Deletes a virtual slice'
+  arg_name 'name'
+  command :delete do |c|
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, args|
+      fail 'slice name is required.' if args.empty?
+      Trema.controller_process(options[:socket_dir]).
+        sliceable_switch.
+        delete_slice(args.first)
+    end
+  end
+
   desc 'Lists slices'
   command :list do |c|
     c.desc 'Location to find socket files'
