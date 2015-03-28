@@ -6,6 +6,7 @@ require 'sliceable_switch/exceptions'
 require 'sliceable_switch/slice'
 
 # L2 routing switch with virtual slicing.
+# rubocop:disable ClassLength
 class SliceableSwitch < PathManager
   attr_reader :slices
 
@@ -42,9 +43,12 @@ class SliceableSwitch < PathManager
     find_slice(slice_name).add_port(port_attrs)
   end
 
-  # TODO: update paths that contains the port
   def delete_port_from_slice(slice_name, port_attrs)
     find_slice(slice_name).delete_port(port_attrs)
+    paths_containing_port(port_attrs).each do |each|
+      @path.delete each
+      each.delete
+    end
   end
 
   def find_port(slice_name, port_attrs)
@@ -84,6 +88,10 @@ class SliceableSwitch < PathManager
   end
 
   private
+
+  def paths_containing_port(port_attrs)
+    @path.select { |each| each.port?(Topology::Port.create(port_attrs)) }
+  end
 
   def paths_containing_mac_address(mac_address)
     @path.select { |each| each.endpoint?(Pio::Mac.new(mac_address)) }
@@ -125,3 +133,4 @@ class SliceableSwitch < PathManager
     end
   end
 end
+# rubocop:enable ClassLength

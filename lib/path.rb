@@ -20,6 +20,10 @@ class Path < Trema::Controller
     flow_mod_delete_to_each_switch
   end
 
+  def port?(port)
+    path.include? port
+  end
+
   def endpoint?(mac)
     @full_path.first == mac || @full_path.last == mac
   end

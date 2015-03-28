@@ -85,7 +85,6 @@ class SliceableSwitch < PathManager
       @ports[port] += [Pio::Mac.new(mac_address)]
     end
 
-    # TODO: update paths that contains the mac address
     def delete_mac_address(mac_address, port_attrs)
       find_mac_address port_attrs, mac_address
       @ports[Port.new(port_attrs)] -= [Pio::Mac.new(mac_address)]

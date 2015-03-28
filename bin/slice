@@ -71,6 +71,32 @@ module Slice
     end
   end
 
+  desc 'Deletes a port from a slice'
+  command :delete_port do |c|
+    c.desc 'Switch port'
+    c.flag [:p, :port]
+    c.desc 'Slice name'
+    c.flag [:s, :slice]
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, _args|
+      DRb.start_service
+      fail '--port option is mandatory.' unless options[:port]
+      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
+        fail "Invalid switch port #{options[:port]}"
+      end
+      dpid_str = Regexp.last_match(1)
+      port_no = Regexp.last_match(2).to_i
+      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
+      fail '--slice option is mandatory.' unless options[:slice]
+      Trema.
+        controller_process(options[:socket_dir]).
+        sliceable_switch.
+        delete_port_from_slice(options[:slice], dpid: dpid, port_no: port_no)
+    end
+  end
+
   desc 'Adds a host to a slice'
   command :add_host do |c|
     c.desc 'MAC address'
