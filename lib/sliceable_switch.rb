@@ -59,9 +59,12 @@ class SliceableSwitch < PathManager
     find_slice(slice_name).add_mac_address(mac_address, port_attrs)
   end
 
-  # TODO: update paths that contains the mac address
   def delete_mac_address(slice_name, mac_address, port_attrs)
     find_slice(slice_name).delete_mac_address(mac_address, port_attrs)
+    paths_containing_mac_address(mac_address).each do |each|
+      @path.delete each
+      each.delete
+    end
   end
 
   def find_mac_address(slice_name, port_attrs, mac_address)
@@ -81,6 +84,10 @@ class SliceableSwitch < PathManager
   end
 
   private
+
+  def paths_containing_mac_address(mac_address)
+    @path.select { |each| each.endpoint?(Pio::Mac.new(mac_address)) }
+  end
 
   def source_and_destination_in_same_slice?(packet_in)
     @slices.values.any? do |each|

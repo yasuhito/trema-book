@@ -20,7 +20,11 @@ class Path < Trema::Controller
     flow_mod_delete_to_each_switch
   end
 
-  def has?(*link)
+  def endpoint?(mac)
+    @full_path.first == mac || @full_path.last == mac
+  end
+
+  def link?(*link)
     flows.any? { |each| each.sort == link.sort }
   end
 

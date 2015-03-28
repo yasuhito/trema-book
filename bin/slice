@@ -125,8 +125,8 @@ module Slice
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        find_slice(options[:slice]).
-        delete_mac_address(options[:mac], dpid: dpid, port_no: port_no)
+        delete_mac_address(options[:slice],
+                           options[:mac], dpid: dpid, port_no: port_no)
     end
   end
 

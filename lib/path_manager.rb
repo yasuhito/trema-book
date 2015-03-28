@@ -39,7 +39,7 @@ class PathManager < Trema::Controller
 
   def delete_link(port_a, port_b, _topology)
     delete_graph_path port_a, port_b
-    paths_containing(port_a, port_b).each do |each|
+    paths_containing_link(port_a, port_b).each do |each|
       @path.delete each
       each.delete
       maybe_create_shortest_path(each.packet_in)
@@ -68,8 +68,8 @@ class PathManager < Trema::Controller
     @graph[node_b] -= [node_a]
   end
 
-  def paths_containing(port_a, port_b)
-    @path.select { |each| each.has?(port_a, port_b) }
+  def paths_containing_link(port_a, port_b)
+    @path.select { |each| each.link?(port_a, port_b) }
   end
 
   def maybe_create_shortest_path(packet_in)

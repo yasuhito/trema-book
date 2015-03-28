@@ -69,6 +69,24 @@ Feature: Virtual slicing
       | 192.168.0.1 |        1 |
 
   @sudo
+  Scenario: delete a host then a path also deleted
+    Given I successfully run `slice add foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo`
+    And I successfully run `slice add_host --mac 00:00:00:00:00:02 --port 0x2:1 --slice foo`
+    And I run `trema send_packets --source host1 --dest host2`
+    And I run `trema send_packets --source host2 --dest host1`
+    And I run `trema send_packets --source host1 --dest host2`
+    When I run `slice delete_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo`
+    Then the file "Path.log" should contain:
+    """
+    Deleting path: 00:00:00:00:00:02 -> 0x2:1 -> 0x2:2 -> 0x1:2 -> 0x1:1 -> 00:00:00:00:00:01
+    """
+    And the file "Path.log" should contain:
+    """
+    Deleting path: 00:00:00:00:00:01 -> 0x1:1 -> 0x1:2 -> 0x2:2 -> 0x2:1 -> 00:00:00:00:00:02
+    """
+
+  @sudo
   Scenario: add wrong port number to a slice
     When I successfully run `slice add foo`
     And I successfully run `slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo`
