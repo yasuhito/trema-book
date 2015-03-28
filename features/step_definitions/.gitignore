@@ -10,6 +10,11 @@
 /tmp/
 /vendor/
 
+## Specific to RubyMotion:
+.dat*
+.repl_history
+build/
+
 ## Documentation cache and generated files:
 /.yardoc/
 /_yardoc/
@@ -22,7 +27,7 @@
 
 # for a library or gem, you might want to ignore these files since the code is
 # intended to run in multiple environments; otherwise, check them in:
-# Gemfile.lock
+Gemfile.lock
 # .ruby-version
 # .ruby-gemset
 
