@@ -6,6 +6,7 @@ class Path < Trema::Controller
     new.tap { |path| path.add(shortest_path, packet_in) }
   end
 
+  attr_accessor :slice
   attr_reader :packet_in
 
   def add(full_path, packet_in)
@@ -24,9 +25,8 @@ class Path < Trema::Controller
     path.include? port
   end
 
-  # TODO: args should be mac + port
-  def endpoint?(mac)
-    @full_path.first == mac || @full_path.last == mac
+  def endpoints
+    [@full_path[0..1], @full_path[-2..-1].reverse]
   end
 
   def link?(*link)

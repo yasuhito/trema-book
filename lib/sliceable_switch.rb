@@ -49,7 +49,7 @@ class SliceableSwitch < PathManager
 
   def delete_port_from_slice(slice_name, port_attrs)
     find_slice(slice_name).delete_port(port_attrs)
-    paths_containing_port(port_attrs).each do |each|
+    paths_containing_port(slice_name, port_attrs).each do |each|
       @path.delete each
       each.delete
     end
@@ -69,7 +69,8 @@ class SliceableSwitch < PathManager
 
   def delete_mac_address(slice_name, mac_address, port_attrs)
     find_slice(slice_name).delete_mac_address(mac_address, port_attrs)
-    paths_containing_mac_address(mac_address).each do |each|
+    paths_containing_mac_address(slice_name,
+                                 mac_address, port_attrs).each do |each|
       @path.delete each
       each.delete
     end
@@ -80,12 +81,13 @@ class SliceableSwitch < PathManager
   end
 
   def mac_addresses(slice_name, port_attrs)
-    find_slice(slice_name).find_mac_addresses(port_attrs)
+    find_slice(slice_name).mac_addresses(port_attrs)
   end
 
   def packet_in(_dpid, message)
-    if source_and_destination_in_same_slice?(message)
-      maybe_create_shortest_path_and_packet_out(message)
+    slice_name = source_and_destination_in_same_slice?(message)
+    if slice_name
+      maybe_create_shortest_path_and_packet_out(slice_name, message)
     else
       flood_to_external_ports(message)
     end
@@ -94,33 +96,37 @@ class SliceableSwitch < PathManager
   private
 
   def paths_in_slice(slice_name)
-    @path.select do |each|
-      find_slice(slice_name).mac_addresses.any? do |mac|
-        each.endpoint? mac
-      end
+    @path.select { |each| each.slice == slice_name }
+  end
+
+  def paths_containing_port(slice_name, port_attrs)
+    paths_in_slice(slice_name).select do |each|
+      each.port?(Topology::Port.create(port_attrs))
     end
   end
 
-  def paths_containing_port(port_attrs)
-    @path.select { |each| each.port?(Topology::Port.create(port_attrs)) }
-  end
-
-  def paths_containing_mac_address(mac_address)
-    @path.select { |each| each.endpoint?(Pio::Mac.new(mac_address)) }
+  def paths_containing_mac_address(slice_name, mac_address, port_attrs)
+    paths_in_slice(slice_name).select do |each|
+      each.endpoints.include? [Pio::Mac.new(mac_address),
+                               Topology::Port.create(port_attrs)]
+    end
   end
 
   def source_and_destination_in_same_slice?(packet_in)
-    @slices.values.any? do |each|
-      each.member?(packet_in.slice_source) &&
-        each.member?(packet_in.slice_destination(@graph))
+    @slices.any? do |name, each|
+      if each.member?(packet_in.slice_source) &&
+         each.member?(packet_in.slice_destination(@graph))
+        return name
+      end
     end
   rescue KeyError
     false
   end
 
-  def maybe_create_shortest_path_and_packet_out(packet_in)
+  def maybe_create_shortest_path_and_packet_out(slice_name, packet_in)
     path = maybe_create_shortest_path(packet_in)
     return unless path
+    path.slice = slice_name
     out_port = path.out_port
     send_packet_out(out_port.dpid,
                     raw_data: packet_in.raw_data,
