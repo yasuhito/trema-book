@@ -8,6 +8,10 @@ class Topology
   Port = Struct.new(:dpid, :port_no) do
     alias_method :number, :port_no
 
+    def self.create(attrs)
+      new attrs.fetch(:dpid), attrs.fetch(:port_no)
+    end
+
     def <=>(other)
       [dpid, number] <=> [other.dpid, other.number]
     end

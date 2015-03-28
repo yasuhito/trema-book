@@ -1,9 +1,12 @@
+require 'trema'
+
 # List of shortest-path flow entries.
 class Path < Trema::Controller
   def self.create(shortest_path, packet_in)
     new.tap { |path| path.add(shortest_path, packet_in) }
   end
 
+  attr_accessor :slice
   attr_reader :packet_in
 
   def add(full_path, packet_in)
@@ -18,7 +21,15 @@ class Path < Trema::Controller
     flow_mod_delete_to_each_switch
   end
 
-  def has?(*link)
+  def port?(port)
+    path.include? port
+  end
+
+  def endpoints
+    [@full_path[0..1], @full_path[-2..-1].reverse]
+  end
+
+  def link?(*link)
     flows.any? { |each| each.sort == link.sort }
   end
 
