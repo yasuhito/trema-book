@@ -12,6 +12,8 @@ group :development, :test do
   gem 'guard-bundler', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
+  gem 'pry', require: false
+  gem 'pry-doc', require: false
   gem 'rack-test', require: false
   gem 'rake', require: false
   gem 'reek', require: false

@@ -158,6 +158,9 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    pry-doc (0.6.0)
+      pry (~> 0.9)
+      yard (~> 0.8)
     rack (1.6.0)
     rack-accept (0.4.5)
       rack (>= 0.4)
@@ -258,6 +261,8 @@ DEPENDENCIES
   guard-rspec
   guard-rubocop
   inch
+  pry
+  pry-doc
   rack-test
   rake
   reek
