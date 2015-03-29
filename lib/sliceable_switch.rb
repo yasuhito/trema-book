@@ -23,7 +23,6 @@ class SliceableSwitch < PathManager
     @slices[name] = Slice.new(name)
   end
 
-  # TODO: delete all paths in the slice
   def delete_slice(name)
     fail SliceNotFoundError, "Slice #{name} not found" unless @slices[name]
     paths_in_slice(name).each do |each|
