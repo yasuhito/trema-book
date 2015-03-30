@@ -77,7 +77,7 @@ To start the REST API server:
 bundle exec rackup
 ```
 
-## Supported APIs
+### Supported APIs
 
 Read [this](https://github.com/trema/routing_switch/blob/develop/lib/rest_api.rb) for details.
 
