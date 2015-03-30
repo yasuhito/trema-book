@@ -6,6 +6,7 @@ AllCops:
     - ./Rakefile
     - tasks/*.rake
   Exclude:
+    - bin/*
     - tmp/**/*
     - vendor/**/*
 

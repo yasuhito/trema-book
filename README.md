@@ -33,7 +33,7 @@ Install
 ```bash
 git clone https://github.com/trema/routing_switch.git
 cd routing_switch
-bundle install
+bundle install --binstubs
 ```
 
 
@@ -44,27 +44,27 @@ To run without virtual slicing, run `lib/routing_switch.rb` as
 follows:
 
 ```bash
-bundle exec trema run lib/routing_switch.rb -c trema.conf
+./bin/trema run lib/routing_switch.rb -c trema.conf
 ```
 
 To run with virtual slicing support, run `lib/routing_switch.rb` with
 `-- --slicing` options as follows:
 
 ```bash
-bundle exec trema run lib/routing_switch.rb -c trema.conf -- --slicing
+./bin/trema run lib/routing_switch.rb -c trema.conf -- --slicing
 ```
 
 In another terminal, you can create virtual slices with the following
 command:
 
 ```bash
-bundle exec ./bin/slice add foo
+./bin/slice add foo
 ```
 
 Then add hosts to the slice with the following command:
 
 ```bash
-bundle exec ./bin/slice add_host --mac 11:11:11:11:11:11 --port 0x1:1 --slice foo
+./bin/slice add_host --mac 11:11:11:11:11:11 --port 0x1:1 --slice foo
 ```
 
 
@@ -74,7 +74,7 @@ REST API
 To start the REST API server:
 
 ```bash
-bundle exec rackup
+./bin/rackup
 ```
 
 ### Supported APIs

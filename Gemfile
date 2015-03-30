@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'bundler'
 gem 'grape'
 gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
 

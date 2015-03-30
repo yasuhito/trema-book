@@ -255,6 +255,7 @@ PLATFORMS
 
 DEPENDENCIES
   aruba
+  bundler
   codeclimate-test-reporter
   coveralls
   cucumber
