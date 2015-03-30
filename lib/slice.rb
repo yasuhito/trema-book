@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift File.join(__dir__, '..')
+$LOAD_PATH.unshift __dir__
 
 require 'path_manager'
 require 'slice_extensions'

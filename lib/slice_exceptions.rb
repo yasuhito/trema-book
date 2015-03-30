@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift File.join(__dir__, '..')
-
 class Slice
   # Slice not found.
   class SliceNotFoundError < StandardError; end
