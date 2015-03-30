@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'path_manager'
 require 'slice'
 require 'slice_exceptions'

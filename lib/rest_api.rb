@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'grape'
 require 'slice_exceptions'
 require 'sliceable_switch'

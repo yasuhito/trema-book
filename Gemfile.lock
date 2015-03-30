@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/trema/trema_ruby.git
-  revision: c7aeade45f1841beb8da44bb884fbdce79656746
+  revision: 084f4d74cf5d92d26e568d490d44407324a93f8f
   branch: develop
   specs:
     trema (0.1.0)
