@@ -79,13 +79,19 @@ bundle exec rackup
 
 ## Supported APIs
 
-Description                | Method | URI
----------------------------|--------|-----------------------------------
-Create a slice             | POST   | `/slices`
-Delete a slice             | DELETE | `/slices`
-List slices                | GET    | `/slices`
-Shows a slice              | GET    | `/slices/:slice_id`
-Add a port to a slice      | POST   | `/slices/:slice_id/ports`
-Delete a port from a slice | DELETE | `/slices/:slice_id/ports`
-List ports                 | GET    | `/slices/:slice_id/ports`
-Shows a port               | GET    | `/slices/:slice_id/ports/:port_id`
+Read [this](https://github.com/trema/routing_switch/blob/develop/lib/rest_api.rb) for details.
+
+Description                 | Method | URI
+----------------------------|--------|--------------------------------------------------------------
+Create a slice              | POST   | `/slices`
+Delete a slice              | DELETE | `/slices`
+List slices                 | GET    | `/slices`
+Shows a slice               | GET    | `/slices/:slice_id`
+Add a port to a slice       | POST   | `/slices/:slice_id/ports`
+Delete a port from a slice  | DELETE | `/slices/:slice_id/ports`
+List ports                  | GET    | `/slices/:slice_id/ports`
+Shows a port                | GET    | `/slices/:slice_id/ports/:port_id`
+Adds a host to a slice      | POST   | `/slices/:slice_id/ports/:port_id/mac_addresses`
+Deletes a host from a slice | DELETE | `/slices/:slice_id/ports/:port_id/mac_addresses`
+List MAC addresses          | GET    | `/slices/:slice_id/ports/:port_id/mac_addresses`
+Shows a MAC address         | GET    | `/slices/:slice_id/ports/:port_id/mac_addresses/:mac_address`
