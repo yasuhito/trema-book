@@ -24,6 +24,7 @@ end
 
 group :doc do
   gem 'inch', require: false
+  gem 'relish', require: false
   gem 'yard', require: false
 end
 

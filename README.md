@@ -79,7 +79,7 @@ bundle exec rackup
 
 ### Supported APIs
 
-Read [this](https://github.com/trema/routing_switch/blob/develop/lib/rest_api.rb) for details.
+Read [this](https://relishapp.com/trema/routing-switch/docs/rest-api) for details.
 
 Description                 | Method | URI
 ----------------------------|--------|--------------------------------------------------------------

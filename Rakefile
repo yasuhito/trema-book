@@ -1,3 +1,5 @@
+RELISH_PROJECT = 'trema/routing-switch'
+
 task default: [:test, :quality]
 task test: [:spec, :cucumber]
 task quality: [:reek, :flog, :rubocop]
