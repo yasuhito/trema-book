@@ -1,4 +1,4 @@
-routing_switch
+Routing Switch
 ==============
 [![Build Status](http://img.shields.io/travis/trema/routing_switch/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/routing_switch.svg?style=flat)][codeclimate]
