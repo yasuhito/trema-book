@@ -20,11 +20,9 @@ Prerequisites
 
 * Ruby 2.0.0 or higher ([RVM][rvm]).
 * [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
-* [Graphviz][graphviz] (`apt-get install graphviz`)
 
 [rvm]: https://rvm.io/
 [openvswitch]: https://openvswitch.org/
-[graphviz]: http://www.graphviz.org/
 
 
 Install
