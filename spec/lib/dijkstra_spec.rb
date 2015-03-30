@@ -50,28 +50,28 @@ describe Dijkstra, '.new' do
   context 'with a network topology graph' do
     Given(:graph) do
       {
-        Pio::Mac.new('00:00:00:00:00:01') => ['1:1'],
+        Pio::Mac.new('11:11:11:11:11:11') => ['1:1'],
         1 => ['1:1', '1:2'],
-        '1:1' => [Pio::Mac.new('00:00:00:00:00:01'), 1],
+        '1:1' => [Pio::Mac.new('11:11:11:11:11:11'), 1],
         '1:2' => [1, '2:2'],
         2 => ['2:1', '2:2'],
-        '2:1' => [2, Pio::Mac.new('00:00:00:00:00:02')],
+        '2:1' => [2, Pio::Mac.new('22:22:22:22:22:22')],
         '2:2' => ['1:2', 2],
-        Pio::Mac.new('00:00:00:00:00:02') => ['2:1']
+        Pio::Mac.new('22:22:22:22:22:22') => ['2:1']
       }
     end
 
     describe '#run' do
-      context("with Pio::Mac.new('00:00:00:00:00:01'),"\
-              " Pio::Mac.new('00:00:00:00:00:02')") do
+      context("with Pio::Mac.new('11:11:11:11:11:11'),"\
+              " Pio::Mac.new('22:22:22:22:22:22')") do
         When(:route) do
-          dijkstra.run(Pio::Mac.new('00:00:00:00:00:01'),
-                       Pio::Mac.new('00:00:00:00:00:02'))
+          dijkstra.run(Pio::Mac.new('11:11:11:11:11:11'),
+                       Pio::Mac.new('22:22:22:22:22:22'))
         end
         Then do
-          route == [Pio::Mac.new('00:00:00:00:00:01'),
+          route == [Pio::Mac.new('11:11:11:11:11:11'),
                     '1:1', 1, '1:2', '2:2', 2, '2:1',
-                    Pio::Mac.new('00:00:00:00:00:02')]
+                    Pio::Mac.new('22:22:22:22:22:22')]
         end
       end
     end
