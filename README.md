@@ -79,9 +79,13 @@ bundle exec rackup
 
 ## Supported APIs
 
-Description    | Method | URI
----------------|--------|--------------------
-Create a slice | POST   | `/slices`
-Delete a slice | DELETE | `/slices`
-List slices    | GET    | `/slices`
-Shows a slice  | GET    | `/slices/:slice_id`
+Description                | Method | URI
+---------------------------|--------|-----------------------------------
+Create a slice             | POST   | `/slices`
+Delete a slice             | DELETE | `/slices`
+List slices                | GET    | `/slices`
+Shows a slice              | GET    | `/slices/:slice_id`
+Add a port to a slice      | POST   | `/slices/:slice_id/ports`
+Delete a port from a slice | DELETE | `/slices/:slice_id/ports`
+List ports                 | GET    | `/slices/:slice_id/ports`
+Shows a port               | GET    | `/slices/:slice_id/ports/:port_id`
