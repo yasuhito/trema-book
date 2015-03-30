@@ -5,32 +5,29 @@ require 'slice_exceptions'
 require 'sliceable_switch'
 require 'trema'
 
-# Rest API helper methods
-module RestApiHelpers
-  def sliceable_switch
-    @sliceable_switch ||=
-      Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
-  end
-
-  def rest_api
-    yield
-  rescue Slice::SliceNotFoundError,
-         Slice::PortNotFoundError,
-         Slice::MacAddressNotFoundError => not_found_error
-    error! not_found_error.message, 404
-  rescue Slice::SliceAlreadyExistsError,
-         Slice::PortAlreadyExistsError,
-         Slice::MacAddressAlreadyExistsError => already_exists_error
-    error! already_exists_error.message, 409
-  end
-end
-
-# REST API of RoutingSwitch
+# REST API of SliceableSwitch
 # rubocop:disable ClassLength
 class RestApi < Grape::API
   format :json
 
-  helpers RestApiHelpers
+  helpers do
+    def sliceable_switch
+      @sliceable_switch ||=
+        Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
+    end
+
+    def rest_api
+      yield
+    rescue Slice::SliceNotFoundError,
+           Slice::PortNotFoundError,
+           Slice::MacAddressNotFoundError => not_found_error
+      error! not_found_error.message, 404
+    rescue Slice::SliceAlreadyExistsError,
+           Slice::PortAlreadyExistsError,
+           Slice::MacAddressAlreadyExistsError => already_exists_error
+      error! already_exists_error.message, 409
+    end
+  end
 
   desc 'Creates a slice.'
   params do
@@ -145,8 +142,7 @@ class RestApi < Grape::API
   get 'slices/:slice_id/ports/:port_id/mac_addresses' do
     rest_api do
       sliceable_switch.
-        mac_addresses(params[:slice_id],
-                      Slice::Port.parse(params[:port_id]))
+        mac_addresses(params[:slice_id], Slice::Port.parse(params[:port_id]))
     end
   end
 

@@ -30,50 +30,49 @@ Prerequisites
 Install
 -------
 
-```
-$ git clone https://github.com/trema/routing_switch.git
-$ cd routing_switch
-$ bundle install
+```bash
+git clone https://github.com/trema/routing_switch.git
+cd routing_switch
+bundle install
 ```
 
 
 Play
 ----
 
-To run without virtual slicing, run
-`lib/routing_switch.rb` as follows:
-
-```
-$ bundle exec trema run lib/routing_switch.rb -c trema.conf
-Topology started (text mode).
-Path Manager started.
-Routing Switch started.
-```
-
-To run with virtual slicing support, run
-`lib/routing_switch.rb` with `-- --slicing` options as
+To run without virtual slicing, run `lib/routing_switch.rb` as
 follows:
 
-```
-$ bundle exec trema run lib/routing_switch.rb -c trema.conf -- --slicing
-Topology started (text mode).
-Path Manager started.
-Sliceable Switch started.
+```bash
+bundle exec trema run lib/routing_switch.rb -c trema.conf
 ```
 
-In another terminal, you can create virtual slices and add hosts to
-them with `slice add` and `slice add_host` commands.
+To run with virtual slicing support, run `lib/routing_switch.rb` with
+`-- --slicing` options as follows:
 
-```
-$ bundle exec ./bin/slice add foo
-$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo
-$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:02 --port 0x2:1 --slice foo
+```bash
+bundle exec trema run lib/routing_switch.rb -c trema.conf -- --slicing
 ```
 
+In another terminal, you can create virtual slices with the following
+command:
 
-REST API Server
----------------
-
+```bash
+bundle exec ./bin/slice add foo
 ```
-$ bundle exec rackup
+
+Then add hosts to the slice with the following command:
+
+```bash
+bundle exec ./bin/slice add_host --mac 11:11:11:11:11:11 --port 0x1:1 --slice foo
+```
+
+
+REST API
+--------
+
+To start the REST API server:
+
+```bash
+bundle exec rackup
 ```
