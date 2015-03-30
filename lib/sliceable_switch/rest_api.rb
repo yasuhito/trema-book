@@ -1,6 +1,7 @@
 $LOAD_PATH.unshift File.join(__dir__, '..')
 
 require 'grape'
+require 'slice_exceptions'
 require 'sliceable_switch'
 require 'trema'
 
@@ -14,13 +15,13 @@ class SliceableSwitch < PathManager
 
     def rest_api
       yield
-    rescue SliceNotFoundError,
-           PortNotFoundError,
-           MacAddressNotFoundError => not_found_error
+    rescue Slice::SliceNotFoundError,
+           Slice::PortNotFoundError,
+           Slice::MacAddressNotFoundError => not_found_error
       error! not_found_error.message, 404
-    rescue SliceAlreadyExistsError,
-           PortAlreadyExistsError,
-           MacAddressAlreadyExistsError => already_exists_error
+    rescue Slice::SliceAlreadyExistsError,
+           Slice::PortAlreadyExistsError,
+           Slice::MacAddressAlreadyExistsError => already_exists_error
       error! already_exists_error.message, 409
     end
   end

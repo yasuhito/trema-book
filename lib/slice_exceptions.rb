@@ -1,6 +1,6 @@
 $LOAD_PATH.unshift File.join(__dir__, '..')
 
-class SliceableSwitch < PathManager
+class Slice
   # Slice not found.
   class SliceNotFoundError < StandardError; end
   # Port not found.

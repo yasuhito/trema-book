@@ -1,7 +1,7 @@
-require 'sliceable_switch/slice'
+require 'slice'
 
-describe SliceableSwitch::Slice, '.new' do
-  Given(:slice) { SliceableSwitch::Slice.new('slice') }
+describe Slice, '.new' do
+  Given(:slice) { Slice.new('slice') }
 
   describe '#add_port' do
     context 'with dpid: 0x1, port: 1' do
@@ -16,7 +16,7 @@ describe SliceableSwitch::Slice, '.new' do
       describe '#add_port' do
         context 'with dpid: 0x1, port: 1' do
           When(:result) { slice.add_port dpid: 0x1, port_no: 1 }
-          Then { result == Failure(SliceableSwitch::PortAlreadyExistsError) }
+          Then { result == Failure(Slice::PortAlreadyExistsError) }
         end
       end
 
@@ -32,7 +32,7 @@ describe SliceableSwitch::Slice, '.new' do
           When(:result) do
             slice.delete_mac_address('11:11:11:11:11:11', dpid: 0x1, port_no: 1)
           end
-          Then { result == Failure(SliceableSwitch::MacAddressNotFoundError) }
+          Then { result == Failure(Slice::MacAddressNotFoundError) }
         end
       end
     end
@@ -41,7 +41,7 @@ describe SliceableSwitch::Slice, '.new' do
   describe '#delete_port' do
     context 'with dpid: 0x1, port: 1' do
       When(:result) { slice.delete_port dpid: 0x1, port_no: 1 }
-      Then { result == Failure(SliceableSwitch::PortNotFoundError) }
+      Then { result == Failure(Slice::PortNotFoundError) }
     end
   end
 
@@ -53,7 +53,7 @@ describe SliceableSwitch::Slice, '.new' do
   describe '#find_port' do
     context 'with dpid: 0x1, port: 1' do
       When(:result) { slice.find_port dpid: 0x1, port_no: 1 }
-      Then { result == Failure(SliceableSwitch::PortNotFoundError) }
+      Then { result == Failure(Slice::PortNotFoundError) }
     end
   end
 
@@ -70,7 +70,7 @@ describe SliceableSwitch::Slice, '.new' do
             slice.add_mac_address('11:11:11:11:11:11', dpid: 0x1, port_no: 1)
           end
           Then do
-            result == Failure(SliceableSwitch::MacAddressAlreadyExistsError)
+            result == Failure(Slice::MacAddressAlreadyExistsError)
           end
         end
       end
@@ -82,14 +82,14 @@ describe SliceableSwitch::Slice, '.new' do
       When(:result) do
         slice.delete_mac_address('11:11:11:11:11:11', dpid: 0x1, port_no: 1)
       end
-      Then { result == Failure(SliceableSwitch::PortNotFoundError) }
+      Then { result == Failure(Slice::PortNotFoundError) }
     end
   end
 
   describe '#mac_addresses' do
     context 'with dpid: 0x1, port_no: 1' do
       When(:result) { slice.mac_addresses(dpid: 0x1, port_no: 1) }
-      Then { result == Failure(SliceableSwitch::PortNotFoundError) }
+      Then { result == Failure(Slice::PortNotFoundError) }
     end
   end
 end

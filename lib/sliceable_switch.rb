@@ -1,9 +1,9 @@
 $LOAD_PATH.unshift __dir__
 
 require 'path_manager'
+require 'slice'
+require 'slice_exceptions'
 require 'slice_extensions'
-require 'sliceable_switch/exceptions'
-require 'sliceable_switch/slice'
 
 # L2 routing switch with virtual slicing.
 # rubocop:disable ClassLength
@@ -18,13 +18,15 @@ class SliceableSwitch < PathManager
 
   def add_slice(name)
     if @slices[name]
-      fail SliceAlreadyExistsError, "Slice #{name} already exists"
+      fail Slice::SliceAlreadyExistsError, "Slice #{name} already exists"
     end
     @slices[name] = Slice.new(name)
   end
 
   def delete_slice(name)
-    fail SliceNotFoundError, "Slice #{name} not found" unless @slices[name]
+    unless @slices[name]
+      fail Slice::SliceNotFoundError, "Slice #{name} not found"
+    end
     paths_in_slice(name).each do |each|
       @path.delete each
       each.delete
@@ -35,7 +37,7 @@ class SliceableSwitch < PathManager
   def find_slice(name)
     @slices.fetch(name)
   rescue KeyError
-    raise SliceNotFoundError, "Slice #{name} not found"
+    raise Slice::SliceNotFoundError, "Slice #{name} not found"
   end
 
   def slice_list

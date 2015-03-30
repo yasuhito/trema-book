@@ -6,7 +6,7 @@ require 'trema'
 require 'sliceable_switch'
 
 # slice command
-module Slice
+module SliceApp
   extend GLI::App
 
   desc 'Creates a new virtual slice'
