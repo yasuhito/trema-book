@@ -75,17 +75,13 @@ module SliceApp
     c.action do |_global_options, options, _args|
       DRb.start_service
       fail '--port option is mandatory.' unless options[:port]
-      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
-        fail "Invalid switch port #{options[:port]}"
-      end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
       fail '--slice option is mandatory.' unless options[:slice]
+      port = Slice::Port.parse(options[:port])
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        add_port_to_slice(options[:slice], dpid: dpid, port_no: port_no)
+        add_port_to_slice(options[:slice],
+                          dpid: port[:dpid], port_no: port[:port_no])
     end
   end
 
@@ -101,17 +97,13 @@ module SliceApp
     c.action do |_global_options, options, _args|
       DRb.start_service
       fail '--port option is mandatory.' unless options[:port]
-      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
-        fail "Invalid switch port #{options[:port]}"
-      end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
       fail '--slice option is mandatory.' unless options[:slice]
+      port = Slice::Port.parse(options[:port])
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        delete_port_from_slice(options[:slice], dpid: dpid, port_no: port_no)
+        delete_port_from_slice(options[:slice],
+                               dpid: port[:dpid], port_no: port[:port_no])
     end
   end
 
@@ -130,18 +122,13 @@ module SliceApp
       DRb.start_service
       fail '--mac option is mandatory.' unless options[:mac]
       fail '--port option is mandatory.' unless options[:port]
-      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
-        fail "Invalid switch port #{options[:port]}"
-      end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
       fail '--slice option is mandatory.' unless options[:slice]
+      port = Slice::Port.parse(options[:port])
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        add_mac_address(options[:slice],
-                        options[:mac], dpid: dpid, port_no: port_no)
+        add_mac_address(options[:slice], options[:mac],
+                        dpid: port[:dpid], port_no: port[:port_no])
     end
   end
 
@@ -159,18 +146,13 @@ module SliceApp
     c.action do |_global_options, options, _args|
       fail '--mac option is mandatory.' unless options[:mac]
       fail '--port option is mandatory.' unless options[:port]
-      unless /\A(\S+):(\d+)\Z/ =~ options[:port]
-        fail "Invalid switch port #{options[:port]}"
-      end
-      dpid_str = Regexp.last_match(1)
-      port_no = Regexp.last_match(2).to_i
-      dpid = (/\A0x/ =~ dpid_str) ? dpid_str.hex : dpid_str.to_i
       fail '--slice option is mandatory.' unless options[:slice]
+      port = Slice::Port.parse(options[:port])
       Trema.
         controller_process(options[:socket_dir]).
         sliceable_switch.
-        delete_mac_address(options[:slice],
-                           options[:mac], dpid: dpid, port_no: port_no)
+        delete_mac_address(options[:slice], options[:mac],
+                           dpid: port[:dpid], port_no: port[:port_no])
     end
   end
 
