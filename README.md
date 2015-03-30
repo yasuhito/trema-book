@@ -76,3 +76,12 @@ To start the REST API server:
 ```bash
 bundle exec rackup
 ```
+
+## Supported APIs
+
+Description    | Method | URI
+---------------|--------|--------------------
+Create a slice | POST   | `/slices`
+Delete a slice | DELETE | `/slices`
+List slices    | GET    | `/slices`
+Shows a slice  | GET    | `/slices/:slice_id`
