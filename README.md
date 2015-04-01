@@ -36,18 +36,16 @@ Prerequisites
 Install
 -------
 
-```
-$ git clone https://github.com/trema/hello_trema.git
-$ cd hello_trema
-$ bundle install
+```bash
+git clone https://github.com/trema/hello_trema.git
+cd hello_trema
+bundle install --binstubs
 ```
 
 
 Play
 ----
 
-```
-$ bundle exec trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
-Trema started (args = ["foo", "bar", "baz"]).
-Hello 0xabc!
+```bash
+./bin/trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
 ```
