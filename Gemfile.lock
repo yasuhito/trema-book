@@ -1,7 +1,7 @@
 GIT
-  remote: git://github.com/trema/trema_ruby.git
-  revision: 084f4d74cf5d92d26e568d490d44407324a93f8f
-  branch: develop
+  remote: git://github.com/trema/trema.git
+  revision: 021c9363f1d164692360616acd063ac13edf02cb
+  branch: feature/trema_ruby
   specs:
     trema (0.1.0)
       bundler (~> 1.9.1)
@@ -39,7 +39,7 @@ GEM
     builder (3.2.2)
     celluloid (0.16.0)
       timers (~> 4.0.0)
-    childprocess (0.5.5)
+    childprocess (0.5.6)
       ffi (~> 1.0, >= 1.0.11)
     codeclimate-test-reporter (0.4.7)
       simplecov (>= 0.7.1, < 1.0.0)
@@ -49,7 +49,7 @@ GEM
     concord (0.1.5)
       adamantium (~> 0.2.0)
       equalizer (~> 0.0.9)
-    coveralls (0.7.12)
+    coveralls (0.8.0)
       multi_json (~> 1.10)
       rest-client (>= 1.6.8, < 2)
       simplecov (~> 0.9.1)
@@ -115,7 +115,7 @@ GEM
     guard-rubocop (1.2.0)
       guard (~> 2.0)
       rubocop (~> 0.20)
-    hashie (3.4.0)
+    hashie (3.4.1)
     hitimes (1.2.2)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -174,7 +174,7 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    reek (2.0.2)
+    reek (2.0.4)
       parser (~> 2.2)
       rainbow (~> 2.0)
       require_all (~> 1.3)
@@ -192,9 +192,9 @@ GEM
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
       rspec-mocks (~> 3.2.0)
-    rspec-core (3.2.2)
+    rspec-core (3.2.3)
       rspec-support (~> 3.2.0)
-    rspec-expectations (3.2.0)
+    rspec-expectations (3.2.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-given (3.7.0)
@@ -204,7 +204,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
-    rubocop (0.29.1)
+    rubocop (0.30.0)
       astrolabe (~> 1.3)
       parser (>= 2.2.0.1, < 3.0)
       powerpack (~> 0.1)
