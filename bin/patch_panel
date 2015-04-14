@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.unshift File.join(__dir__, '..', 'lib')
 
 require 'rubygems'
 require 'bundler'
@@ -7,7 +6,6 @@ Bundler.setup :default
 
 require 'gli'
 require 'trema'
-require 'patch_panel'
 
 # patch_panel command
 module PatchPanelApp
