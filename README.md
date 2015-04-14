@@ -29,39 +29,28 @@ Prerequisites
 Install
 -------
 
-```
-$ git clone https://github.com/trema/patch_panel.git
-$ cd patch_panel
-$ bundle install
+```bash
+git clone https://github.com/trema/patch_panel.git
+cd patch_panel
+bundle install --binstubs
 ```
 
 
 Play
 ----
 
-```
-% bundle exec trema run lib/patch_panel.rb -c trema.conf
-```
-
-
-Configuration
--------------
-
-When `patch_panel.rb` starts up, it will search for its configuration
-file named `patch_panel.conf` in the current working directory. If you
-want to specify a path to a configuration file, pass it to
-`patch_panel.rb` as its argument:
-
-```
-% bundle exec trema run lib/patch_panel.rb -c trema.conf -- foobar.conf
+```bash
+./bin/trema run lib/patch_panel.rb -c trema.conf -d
 ```
 
-A configuration file contains patching information. Each line has a
-pair of port numbers like so:
+To create a patch between port #1 and #2 of switch 0xabc:
 
-```
-1 2
-3 4
+```bash
+./bin/patch_panel create 0xabc 1 2
 ```
 
-The first line means that switch port #1 is connected to port #2.
+To delete the patch:
+
+```bash
+./bin/patch_panel delete 0xabc 1 2
+```
