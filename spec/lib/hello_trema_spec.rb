@@ -15,16 +15,7 @@ describe HelloTrema do
     context 'with []' do
       Given(:args) { [] }
       Then do
-        expect(logger).to(have_received(:info).
-                          with('Trema started (args = []).'))
-      end
-    end
-
-    context 'with ["foo", "bar", "baz"]' do
-      Given(:args) { %w(foo bar baz) }
-      Then do
-        expect(logger).to(have_received(:info).
-                          with('Trema started (args = ["foo", "bar", "baz"]).'))
+        expect(logger).to(have_received(:info).with('Trema started.'))
       end
     end
   end

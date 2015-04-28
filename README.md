@@ -47,5 +47,5 @@ Play
 ----
 
 ```bash
-./bin/trema run lib/hello_trema.rb -c trema.conf -- foo bar baz
+./bin/trema run lib/hello_trema.rb -c trema.conf
 ```
