@@ -14,7 +14,7 @@ Feature: "Hello Trema!" example
   Scenario: Run
     When I run `trema run ../../lib/hello_trema.rb -c trema.conf` interactively
     And I run `sleep 3`
-    And I run `trema killall`
+    And I run `trema killall HelloTrema`
     Then the output should contain:
       """
       Trema started.
@@ -34,7 +34,7 @@ Feature: "Hello Trema!" example
   Scenario: Run (OpenFlow 1.3)
     When I run `trema run ../../lib/hello_trema.rb --openflow13 -c trema.conf` interactively
     And I run `sleep 3`
-    And I run `trema killall`
+    And I run `trema killall HelloTrema`
     Then the output should contain:
       """
       Trema started.
