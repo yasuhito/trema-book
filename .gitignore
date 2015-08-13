@@ -7,6 +7,8 @@
 *.mobi
 *.pdf
 *.tex
+.DS_Store
+.Ulysses-Group.plist
 .quarto
 .sass-cache
 build
