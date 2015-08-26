@@ -1,11 +1,5 @@
 language: ruby
 
-before_install:
- - sudo apt-get update -qq
- - sudo apt-get install texinfo -qq
- - sudo apt-get install pandoc -qq
- - sudo apt-get install python-pygments -qq
-  
 script: bundle exec rake travis
 
 rvm:
