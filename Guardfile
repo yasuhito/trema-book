@@ -1,8 +1,8 @@
-guard 'rake', task: 'deliverables' do
-  watch(/.+\.org$/)
+guard 'rake', task: 'build' do
+  watch(/.+\.adoc$/)
 end
 
 guard :rubocop do
   watch(/.+\.rb$/)
-  watch(/(?:.+\/)?\.rubocop\.yml$/) { |m| File.dirname(m[0]) }
+  watch(%r{(?:.+/)?\.rubocop\.yml$}) { |m| File.dirname(m[0]) }
 end

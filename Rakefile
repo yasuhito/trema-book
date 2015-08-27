@@ -3,7 +3,8 @@ require 'asciidoctor'
 task :build do
   Asciidoctor.render_file('book.adoc',
                           in_place: true,
-                          backend: 'html5')
+                          backend: 'html5',
+                          safe: :unsafe)
 end
 
 task default: :build
