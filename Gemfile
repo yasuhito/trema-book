@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'rake'
 gem 'asciidoctor'
+gem 'coderay'
+gem 'rake'
 
 group :development, :test do
   gem 'guard', require: false
