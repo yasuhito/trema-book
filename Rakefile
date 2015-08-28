@@ -12,7 +12,12 @@ task render: ['index.html', 'book.pdf']
 task html: 'index.html'
 
 task :deploy do
-  # fail if ENV['TRAVIS_BRANCH'] != 'develop'
+  if ENV['TRAVIS_BRANCH'] != 'develop'
+    fail 'This is not a develop branch. No deployment will be done.'
+  end
+  if ENV['TRAVIS_PULL_REQUEST'] != 'false'
+    fail 'This is a pull request. No deployment will be done.'
+  end
   sh 'git checkout -B gh-pages'
   sh 'bundle exec rake html'
   sh 'git add -A .'
