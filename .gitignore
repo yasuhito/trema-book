@@ -1,13 +1,3 @@
-*.dvi
-*.epub
 *.html
-*.key
-*.log
-*.md
-*.mobi
 *.pdf
-*.tex
-.quarto
-.sass-cache
-build
-vendor
+book.xml
