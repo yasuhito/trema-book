@@ -9,8 +9,15 @@ task travis: :render
 
 task render: ['book.html', 'book.pdf']
 
+task html: 'book.html'
+
 task :deploy do
-  puts 'DEPLOY'
+  fail if ENV['TRAVIS_BRANCH'] != 'develop'
+  sh 'git checkout -B gh-pages'
+  sh 'bundle exec rake html'
+  sh 'git add -A .'
+  sh %(git commit --quiet -m "Travis build #{ENV['TRAVIS_BUILD_NUMBER']}")
+  sh %(git push --force --quiet "https://#{ENV['GH_TOKEN']}@#{ENV['GH_REF']}" gh-pages > /dev/null)
 end
 
 file 'book.pdf' => 'book.xml' do
