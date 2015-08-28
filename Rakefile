@@ -9,6 +9,10 @@ task travis: :render
 
 task render: ['book.html', 'book.pdf']
 
+task :deploy do
+  puts 'DEPLOY'
+end
+
 file 'book.pdf' => 'book.xml' do
   sh './vendor/asciidoctor-fopub/fopub book.xml -param body.font.family VL-PGothic-Regular -param dingbat.font.family VL-PGothic-Regular -param monospace.font.family VL-PGothic-Regular -param sans.font.family VL-PGothic-Regular -param title.font.family VL-PGothic-Regular'
 end
