@@ -9,6 +9,17 @@ task travis: :render
 
 task render: ['book.html', 'book.pdf']
 
+task html: 'book.html'
+
+task :deploy do
+  fail if ENV['TRAVIS_BRANCH'] != 'develop'
+  sh 'git checkout -B gh-pages'
+  sh 'bundle exec rake html'
+  sh 'git add -A .'
+  sh %(git commit --quiet -m "Travis build #{ENV['TRAVIS_BUILD_NUMBER']}")
+  sh %(git push --force --quiet "https://#{ENV['GH_TOKEN']}@#{ENV['GH_REF']}" gh-pages > /dev/null)
+end
+
 file 'book.pdf' => 'book.xml' do
   sh './vendor/asciidoctor-fopub/fopub book.xml -param body.font.family VL-PGothic-Regular -param dingbat.font.family VL-PGothic-Regular -param monospace.font.family VL-PGothic-Regular -param sans.font.family VL-PGothic-Regular -param title.font.family VL-PGothic-Regular'
 end
