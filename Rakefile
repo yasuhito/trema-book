@@ -12,7 +12,7 @@ task render: ['book.html', 'book.pdf']
 task html: 'book.html'
 
 task :deploy do
-  fail if ENV['TRAVIS_BRANCH'] != 'develop'
+  # fail if ENV['TRAVIS_BRANCH'] != 'develop'
   sh 'git checkout -B gh-pages'
   sh 'bundle exec rake html'
   sh 'git add -A .'
