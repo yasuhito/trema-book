@@ -3,6 +3,10 @@ language: ruby
 script:
   - bundle exec rake travis
 
+before_install:
+  # Prevent "Please tell me who you are" errors
+   - git config --global user.name "Travis CI"
+
 after_success:
   - bundle exec rake deploy
   
