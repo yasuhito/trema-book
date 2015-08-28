@@ -13,6 +13,9 @@ task html: 'book.html'
 
 task :deploy do
   fail if ENV['TRAVIS_BRANCH'] != 'develop'
+  if ENV['TRAVIS_PULL_REQUEST'] != 'false'
+    fail 'This is a pull request. No deployment will be done.'
+  end
   sh 'git checkout -B gh-pages'
   sh 'bundle exec rake html'
   sh 'git add -A .'
