@@ -2,14 +2,14 @@ require 'rake/clean'
 
 CLEAN << 'book.xml'
 CLOBBER << 'book.pdf'
-CLOBBER << 'book.html'
+CLOBBER << 'index.html'
 
 task default: :render
 task travis: :render
 
-task render: ['book.html', 'book.pdf']
+task render: ['index.html', 'book.pdf']
 
-task html: 'book.html'
+task html: 'index.html'
 
 task :deploy do
   # fail if ENV['TRAVIS_BRANCH'] != 'develop'
@@ -28,7 +28,7 @@ file 'book.xml' => 'book.adoc' do
   sh 'bundle exec asciidoctor -b docbook -d book -a data-uri! book.adoc'
 end
 
-file 'book.html' => 'book.adoc' do |t|
+file 'index.html' => 'book.adoc' do |t|
   sh "bundle exec asciidoctor -d book book.adoc --out-file #{t.name}"
 end
 
