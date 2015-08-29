@@ -1,5 +1,5 @@
-guard 'rake', task: 'deliverables' do
-  watch(/.+\.org$/)
+guard 'rake', task: 'build' do
+  watch(/.+\.adoc$/)
 end
 
 guard :rubocop do

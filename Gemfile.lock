@@ -60,6 +60,7 @@ PLATFORMS
 
 DEPENDENCIES
   asciidoctor
+  coderay
   guard
   guard-rake
   guard-rubocop
