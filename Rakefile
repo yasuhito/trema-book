@@ -1,13 +1,6 @@
-require 'asciidoctor'
+task default: [:rubocop, :render]
+task travis: [:rubocop, :render]
 
-task :build do
-  Asciidoctor.render_file('book.adoc',
-                          in_place: true,
-                          backend: 'html5',
-                          safe: :unsafe)
-end
-
-task default: :build
-task travis: :build
+task render: [:html, :pdf]
 
 Dir.glob('tasks/*.rake').each { |each| import each }
