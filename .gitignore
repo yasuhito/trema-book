@@ -1,4 +1,4 @@
-*.html
-*.pdf
-book.xml
+/book.pdf
+/book.xml
+/index.html
 vendor/bundle
