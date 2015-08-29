@@ -16,5 +16,4 @@ rvm:
 
 env:
   global:
-  - GH_REF: github.com/yasuhito/trema-book.git
   - secure: "fzg1kaZRs8/Cw7mqWMPbji/h5wQQLdHkyl6jAiJVxB1VctcBa0YixonSUBE2kTbx8oaVOg7cQ1+5O4/5+LrU7h3eHNdzxuaqyPb8swDLPKv3J6vqP3U5fpyYvBN0OXQp42rB6m8X7+VOUGTqTGoNZNLMs85r+CAu5rsVIYIpaQ0="    
