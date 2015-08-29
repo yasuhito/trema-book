@@ -4,6 +4,8 @@ CLOBBER << 'index.html'
 
 task html: 'index.html'
 
-file 'index.html' => 'book.adoc' do |t|
-  sh "bundle exec asciidoctor -d book book.adoc --out-file #{t.name}"
+# rubocop:disable LineLength
+file 'index.html' => 'index.adoc' do |t|
+  sh "bundle exec asciidoctor -a icons=font -a toc=left -a source-highlighter=coderay -d book index.adoc --out-file #{t.name}"
 end
+# rubocop:enable LineLength

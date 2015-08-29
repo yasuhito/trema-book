@@ -6,6 +6,7 @@ task :deploy do
   if ENV['TRAVIS_PULL_REQUEST'] != 'false'
     fail 'This is a pull request. No deployment will be done.'
   end
+  sh 'rm .gitignore'
   sh 'git checkout -B gh-pages'
   sh 'bundle exec rake html'
   sh 'git add -A .'
