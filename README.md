@@ -1,19 +1,24 @@
-![カバー](https://raw.github.com/yasuhito/trema-book/master/cover.png "本のカバー")
-
-### ご購入はこちらから
-
- * Amazon: http://www.amazon.co.jp/dp/4774154652/
- * サポートサイト: http://yasuhito.github.com/trema-book/
-
-### Badges
-
-[![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis]
-[![Dependency Status](http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat)][gemnasium]
+# Trema本 [![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis] [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
 [travis]: http://travis-ci.org/yasuhito/trema-book
+[gitter]: https://gitter.im/yasuhito/trema-book
+
+
+## 書籍版
+
+![カバー](https://raw.github.com/yasuhito/trema-book/master/cover.png "本のカバー")
+
+Amazon (http://www.amazon.co.jp/dp/4774154652/) などから購入できます.
+
+
+## Installation
+
+[![Dependency Status](http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat)][gemnasium]
+
 [gemnasium]: https://gemnasium.com/yasuhito/trema-book
 
-### License
+
+## License
 
 This book is released under the GNU General Public License version 3.0:
 
