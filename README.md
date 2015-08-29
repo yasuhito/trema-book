@@ -2,6 +2,8 @@
 
 ### ご購入はこちらから
 
+[![Join the chat at https://gitter.im/yasuhito/trema-book](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yasuhito/trema-book?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
  * Amazon: http://www.amazon.co.jp/dp/4774154652/
  * サポートサイト: http://yasuhito.github.com/trema-book/
 
