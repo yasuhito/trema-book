@@ -1,5 +1,9 @@
 # Trema本 [![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis] [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
+Tremaを使ったOpenFlowプログラミングを解説するTrema本のリポジトリです.
+
+ * Twitter: ハッシュタグは [#Trema本](https://twitter.com/hashtag/Trema%E6%9C%AC) です
+
 [travis]: http://travis-ci.org/yasuhito/trema-book
 [gitter]: https://gitter.im/yasuhito/trema-book
 
