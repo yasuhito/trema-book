@@ -12,7 +12,10 @@ Tremaを使ったOpenFlowプログラミングを解説するTrema本のリポ�
 
 ![カバー](https://raw.github.com/yasuhito/trema-book/master/cover.png "本のカバー")
 
-Amazon (http://www.amazon.co.jp/dp/4774154652/) などから購入できます.
+- Amazonで[購入](http://www.amazon.co.jp/dp/4774154652/)
+- ヨドバシ.comで[購入](http://www.yodobashi.com/ec/product/100000009001711327/index.html)
+- 7netショッピングで[購入](http://www.7netshopping.jp/books/detail/-/isbn/9784774154657)
+- hontoで[購入](http://honto.jp/netstore/pd-book_25440213.html)
 
 
 ## Installation
