@@ -2,4 +2,8 @@
 
 :leveloffset: 1
 
-include::book.adoc[]
+include::hello_trema.adoc[]
+
+include::cbench.adoc[]
+
+include::appendix.adoc[]
