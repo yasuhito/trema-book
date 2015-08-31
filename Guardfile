@@ -1,4 +1,4 @@
-guard 'rake', task: 'build' do
+guard 'rake', task: :render do
   watch(/.+\.adoc$/)
 end
 
