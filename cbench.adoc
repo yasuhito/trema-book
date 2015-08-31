@@ -1,1 +1,423 @@
-= マイクロベンチマークcbenchを動かす
+= マイクロベンチマークcbench
+
+スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールcbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
+
+== Cbenchベンチマークとは
+
+CbenchはOpenFlowコントローラのためのベンチマークです。Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。これはOpenFlowプロトコル全体のうちの局所的な部分だけを対象にしているので、ベンチマークの中でもマイクロベンチマークに分類できます。
+
+Cbenchは次のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacketInを受け取るとcbenchプロセスにFlowModを返します。cbenchは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。そしてこのスコアが大きいコントローラほど「速い」とみなします。
+
+// cbenchはOpenFlow1.0専用、という注釈を入れる
+// TODO CbenchとTremaの関係を図にする
+
+=== Cbenchの動作モード
+
+Cbenchはレイテンシモードとスループットモードという2種類のモードをサポートします。
+
+- レイテンシモードでは、cbenchプロセスはコントローラと同期的に動作します。PacketInを送ったcbenchはコントローラからFlow Modが返ってくるのを待ち、FlowModが届くとカウントします。そして次のPacketInをコントローラに送ります。
+- スループットモードでは、cbenchプロセスとコントローラは非同期的に動作します。cbenchはFlowModの到着を待たずにとにかくPacketInを送信し続け、FlowModが到着したタイミングでカウントします。
+
+一般に、スループットモードの方がベンチマーク結果は良くなります。たとえばコントローラのイベントハンドラがスレッド化されている場合、コントローラはFlowModの送信完了を待たなくても新しく届いたPacketInに対して別スレッドでFlowModを返せるからです。
+
+逆にスレッド化していない場合、レイテンシモードとスループットモードでは性能の差はほとんどありません。たとえばTremaのハンドラはシングルスレッドで動くので、スループットモードでも性能はほとんど上がりません。
+
+Tremaがこうなっているのは、スレッドに伴うプログラマの負担を避けるためです。このために性能を犠牲にしていますが、もし本当に性能を上げたい場合にはそのためのオプションも残しています。このあたりのことは後ほど詳しく見るとして、まずはCbenchをインストールして動かしてみましょう。
+
+== Cbenchのインストール
+
+cbenchの実行にはopenflow.orgの配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とcbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
+
+----
+$ git clone https://github.com/trema/cbench.git
+----
+
+ダウンロードしたソースツリー上で`bundle install`を実行すると、Tremaの`./bin/trema`コマンドとライブラリ一式を自動的にインストールできます。
+
+----
+$ cd cbench
+bundle install --binstubs
+----
+
+以上でcbenchとTremaのセットアップは完了です。
+
+== Cbenchを実行する
+
+Cbenchをレイテンシモードで実行してみましょう。まず、スイッチとして動作するcbenchプロセスと接続するコントローラを次のように起動します。
+
+----
+$ ./bin/trema run ./lib/cbench.rb
+----
+
+そして次のコマンドでcbenchプロセスを実行しベンチマークを開始します。
+
+// TODO 計測しなおして実行結果を更新。ポート番号もデフォルトで6653にする
+
+----
+$ ./bin/cbench --port 6633 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000
+cbench: controller benchmarking tool
+  running in mode 'latency'
+  connecting to controller at localhost:6633
+  faking 1 switches :: 10 tests each; 1000 ms per test
+  with 100000 unique source MACs per switch
+  starting test with 1000 ms delay after features_reply
+  ignoring first 1 "warmup" and last 0 "cooldown" loops
+  debugging info is off
+1   switches: fmods/sec:  10353   total = 10.352990 per ms
+1   switches: fmods/sec:  10142   total = 10.141990 per ms
+1   switches: fmods/sec:  10260   total = 10.259990 per ms
+1   switches: fmods/sec:  10736   total = 10.734497 per ms
+1   switches: fmods/sec:  10884   total = 10.883989 per ms
+1   switches: fmods/sec:  10752   total = 10.751989 per ms
+1   switches: fmods/sec:  10743   total = 10.742989 per ms
+1   switches: fmods/sec:  10828   total = 10.827989 per ms
+1   switches: fmods/sec:  10454   total = 10.453990 per ms
+1   switches: fmods/sec:  10642   total = 10.641989 per ms
+RESULT: 1 switches 9 tests min/max/avg/stdev = 10141.99/10883.99/10604.38/245.53 responses/s
+----
+
+この例では、10秒間のベンチマークを10回実行しその結果を表示しています。実行環境によって値は変わりますが、秒間約○○回のFlowModを打てていることがわかります。
+
+// TODO 結果の詳しい説明
+
+[WARNING]
+.Cbenchの注意点
+====
+Cbench のスコアを盲信しないようにしてください。現在、いくつかの OpenFlow コントローラフレームワークは Cbench のスコアだけを競っている ように見えます。たとえば Floodlight は 1 秒間に 100 万発の Flow Mod を 打てると宣伝しています。これはなかなかすごい数字です。きちんと計算した わけではないですが、スレッドを駆使してめいっぱい I/O を使い切るように しなければなかなかこの数字は出ません。とにかくすごい。でも、この数字に はまったく意味がありません。
+
+Flow Mod を一秒間に 100 万発打たなければならない状況を考えてみてくださ い。それは、Packet In が一秒間に 100 万発起こる状況ということになりま す。Packet In が一秒間に 100 万発起こるとはどういうことでしょうか? ス イッチに何らかのフローが設定されているが入ってきたパケットがまったくそ れにマッチせず、どうしたらいいかわからないパケットがすべてコントローラ へやってくる、これが一秒間に 100 万回起こるということです。何かがまち がっていると思えないでしょうか？
+
+コントローラが Packet In を何発さばけるかという性能は、極端に遅くない 限りは重要ではありません。データセンターのように、どこにどんなマシンが ありどういう通信をするか把握できている場合は、フローをちゃんと設計して いれば Packet In はそんなに起こらないからです。力技で Packet In をさば くよりも、いかに Packet In が起こらないネットワーク設計やフロー設計を するかの方がずっと大事です。
+
+Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか？を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
+====
+
+== Cbenchのソースコード
+
+cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
+
+[source,ruby,subs="verbatim,attributes"]
+.lib/cbench.rb
+----
+# A simple openflow controller for benchmarking.
+class Cbench < Trema::Controller
+  def start(_args)
+    logger.info 'Cbench started.'
+  end
+
+  def packet_in(datapath_id, message)
+    send_flow_mod_add(
+      datapath_id,
+      match: ExactMatch.new(message),
+      buffer_id: message.buffer_id,
+      actions: SendOutPort.new(message.in_port + 1)
+    )
+  end
+end
+----
+
+=== startハンドラ
+
+前章と同じく、`start` ハンドラでコントローラの起動をログに書き込みます。ユーザ引数は今回も使っていないので、仮引数の名前は `_args` のようにアンダースコアで始めます。
+
+// TODO: ここは、`packet_in`をスレッド化する/しないのスイッチをユーザ引数でコントロールできるようにしておく? そうしたら、パッチパネル章でユーザ引数の処理の説明を省ける。
+
+=== packet_inハンドラ
+
+コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。典型的なPacket Inハンドラは次のようになります(リスト○より抜粋)。
+
+[source,ruby,subs="verbatim,attributes"]
+.lib/cbench.rb
+----
+class Cbench < Trema::Controller
+
+  # ...
+
+  def packet_in(datapath_id, message)
+    send_flow_mod_add(
+      datapath_id,
+      match: ExactMatch.new(message),
+      buffer_id: message.buffer_id,
+      actions: SendOutPort.new(message.in_port + 1)
+    )
+  end
+end
+----
+
+`packet_in` ハンドラではPacket Inを起こしたスイッチ(cbenchプロセス)のDatapathIDとPacket Inメッセージそのものを引数として受け取ります。2番目の引数messageはPacketInクラスのインスタンスで、Packet Inメッセージをオブジェクトとしてラップしたものです。このPacketInクラスには主に次の3種類のメソッドが定義されています。
+
+- Packet Inを起こしたパケットのデータやその長さ、およびパケットが入ってきたスイッチのポート番号などOpenFlowメッセージ固有の情報を返すメソッド
+- Packet Inを起こしたパケットの種別 (TCPかUDPか? またVLANタグの有無など)を判定するための”?”で終わるメソッド
+- 送信元や宛先のMACアドレスやIPアドレスなど、パケットの各フィールドを調べるためのアクセサメソッド
+
+PacketInクラスは非常に多くのメソッドを持っており、またTremaのバージョンアップごとにその数も増え続けているためすべては紹介しきれません。そのかわり、代表的でよく使うものを以下に紹介します。
+
+// TODO メソッド名を更新
+
+- `:raw_data` パケットのデータ全体をバイナリ文字列で返す
+- `:in_port` パケットが入ってきたスイッチのポート番号を返す
+- `:total_len` パケットのデータ長を返す
+- `:buffered?` Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
+- `:macsa` パケットの送信元MACアドレスを返す
+- `:macda` パケットの宛先MACアドレスを返す
+- `:ipv4?` パケットがIPv4である場合`true`を返す
+- `:ipv4_saddr` パケットの送信元IPアドレスを返す
+- `:ipv4_daddr` パケットの宛先IPアドレスを返す
+- `:tcp?` パケットがTCPである場合`true`を返す
+- `:tcp_src_port` パケットのTCPの送信元ポート番号を返す
+- `:tcp_dst_port` パケットのTCP宛先ポート番号を返す
+- `:udp?` パケットがUDPである場合`true`を返す
+- `:udp_src_port` パケットのUDPの送信元ポート番号を返す
+- `:udp_dst_port` パケットのUDPの宛先ポート番号を返す
+- `:vtag?` パケットにVLANヘッダが付いている場合`true`を返す
+- `:vlan_vid` VLANのVIDを返す
+
+このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、第○章で紹介した `trema ruby` コマンドで最新のTrema APIドキュメントを参照してください。
+
+// TODO trema ruby コマンドはもうない。かわりにどこかを参照させる
+
+=== Flow Modの送りかた
+
+コントローラがcbenchに送るFlow Modメッセージは、次の内容にする必要があります。
+
+- マッチングルール: PacketInしたメッセージのExactMatch
+- バッファID: PacketInしたメッセージのバッファID
+- アクション: PacketInしたメッセージのin_portに+1したもの
+
+`send_flow_mod_add` メソッドにこれらのオプションを渡すことで、実際にスイッチへFlow Modを送ることができます。それぞれの指定方法を順に見ていきましょう。
+
+=== マッチングルール
+
+マッチングルールには、`:in_port` 以外にも第○章で紹介した次の12種類の条件を指定できます。
+
+// TODO `:dl_src` とかは新しいTremaで名前が変わっているので、そちらに合わせる。
+// TODO Pioのopen\_flow10/match.featureを書く
+// TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
+
+- `:in_port` スイッチの物理ポート番号
+- `:dl_src` 送信元MACアドレス
+- `:dl_dst` 宛先MACアドレス
+- `:dl_type` イーサネットの種別
+- `:nw_src` 送信元IPアドレス
+- `:nw_dst` 宛先IPアドレス
+- `:nw_proto` IPのプロトコル種別
+- `:nw_tos` IPのToSフィールド
+- `:tp_src` TCP/UDPの送信元ポート番号
+- `:tp_dst` TCP/UDPの宛先ポート番号
+- `:dl_vlan` VLAN IDの値
+- `:dl_vlan_pcp` VLANのプライオリティ
+
+=== Exact Matchの作り方
+
+マッチングルールの中でもすべての条件を指定したものをExact Matchと呼びます。たとえばPacket Inとしてコントローラに入ってきたパケットと、
+
+- パケットが入ってきたスイッチのポート番号
+- 送信元MACアドレス
+- 宛先MACアドレス
+- …
+
+などなどマッチングルールが定義する12個の条件(詳しくは第○章を参照)がすべてまったく同じ、というのがExact Matchです。
+
+もし、Exact Matchを普通に作るとどうなるでしょうか?
+
+[source,ruby,subs="verbatim,attributes"]
+----
+def packet_in(dpid, message)
+  # ...
+
+  send_flow_mod_add(
+    dpid,
+    match: Match.new(
+      in_port: message.in_port,
+      dl_src: message.macsa,
+      dl_dst: message.macda,
+   ...
+----
+
+うーん。やりたいことはわかりますが、マッチングルールを1つ作るだけでこのようにいちいち10行以上も書いていたら大変ですよね。
+
+そこで、TremaではこのようなExact Matchを楽に書ける次のショートカットを用意しています。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+def packet_out(dpid, message)
+  send_flow_mod_add(
+    dpid,
+    match: ExactMatch.new(message))
+    ...
+----
+
+なんとたった1行で書けました! Tremaではこのようにプログラムを短く書ける工夫がたくさんあります。
+
+=== アクション
+
+アクションには、`SendOutPort` をはじめとして、次の12種類のアクションを指定できます。
+
+// TODO `SendOutPort`の説明で触れている、論理ポートの説明を書く
+// TODO 章番号を埋める
+
+- `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号か、またはOpenFlowで規定されている論理ポート(第○章参照)を指定できる
+- `SetEtherSourceAddress` 送信元MACアドレスを指定した値に書き換える
+- `SetEthDstAddress` 宛先MACアドレスを指定した値に書き換える
+- `SetIpSourceAddress` 送信元のIPアドレスを指定した値に書き換える
+- `SetIpDstinationAddress` 宛先のIPアドレスを指定した値に書き換える
+- `SetIpTos` IPのToSフィールドを書き換える
+- `SetTransportSourcePort` TCP/UDPの送信元ポート番号を書き換える
+- `SetTransportDestinationPort` TCP/UDPの宛先ポート番号を書き換える
+- `StripVlanHeader` VLANのヘッダを除去する
+- `SetVlanVid` 指定したVLAN IDをセットする、または既存のものがあれば書き換える
+- `SetVlanPriority` 指定したVLANプライオリティをセットする、または既存のものがあれば書き換える
+- `VendorAction` ベンダ定義のアクションを実行する
+
+まだ使っていないアクションについては、続く章で具体的な使い方を見ていきます。
+
+=== send_flow_mod_addのオプション一覧
+
+最後に補足として、`send_flow_mod_add` で指定できるすべてのオプションを紹介しておきます。Flow Modには次にようにたくさんのパラメータがあります。
+
+// TODO ここ、Ruby2.0 のキーワード引数が使えるところだ。あとでリファクタリングしておく。
+
+- `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは`ExactMatch`オブジェクト(第○章で紹介)を指定する
+- `:actions`  フローエントリのアクションを指定する。アクションはアクションの配列または単体で指定できる
+- `:idle_timeout`  フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
+- `:hard_timeout`  フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
+- `:priority`  フローエントリの優先度(符号なし16ビット、大きいほど優先度高)。Packet Inメッセージはこの優先度淳にフローエントリのマッチングルールと照し合わされる。デフォルトは `0xffff` (最高優先度)
+- `:send_flow_rem`  タイムアウトでフローエントリが消えるときに、Flow Removedメッセージをコントローラに送るかどうかを指定する。デフォルトは `true`
+- `:check_overlap` `true` にセットすると、フローテーブルの中に同じ優先度で競合するものがあった場合、フローエントリを追加せずにエラーを起こす。デフォルトは `false`
+- `:emerg` `true` にセットすると、フローエントリを緊急エントリとして追加する。緊急エントリはスイッチが何らかの障害でコントローラと切断したときにのみ有効となる。デフォルトは `false`
+- `:cookie`  任意の用途に使える64ビットの整数。使い道としては、同じクッキー値を持つフローエントリ同士をまとめて管理するなどといった用途がある
+
+こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
+
+== Cbenchを高速化する
+
+Tremaのハンドラはシングルスレッドなので、cbenchはあまり速くありません。デフォルトでシングルスレッドとなっている理由は、最初に説明したとおり、スレッドに伴うさまざまな問題を避けるためです。
+
+もしハンドラがそれぞれ独立したスレッドで動く場合、スレッド間の同期をプログラマが正しく処理しなければなりません。たとえば以下のように `packet_in` ハンドラの中でインスタンス変数の内容を変更したい場合、インスタンス変数はすべてのスレッドで共有しているので、読み書きの間だけスレッド間で同期してやる必要があります。もしプログラマがこれを忘れると、タイミングや環境に起因するやっかいなバグが発生してしまいます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+class Foo < Trema::Controller
+  def start(_args)
+    @db = DB.new  # インスタンス変数
+  end
+
+  def packet_in(dpid, message)
+    # packet_in ハンドラがマルチスレッドで動く場合、
+    # ここで@dbの読み書きをするのは危険!!!
+  end
+end
+----
+
+スレッド間同期の代表的な手法がMutexです。たとえば上の例をMutexを使って正しく書くとこうなります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+class Foo < Trema::Controller
+  def start(_args)
+    @db = DB.new  # インスタンス変数
+    @mutex = Mutex.new  # スレッド間の同期用 Mutex
+  end
+
+  def packet_in(dpid, message)
+    @mutex.synchronize do
+      # この中で@dbを読み書きすれば安全
+    end
+  end
+end
+----
+
+このように、もしデフォルトでハンドラが別スレッドで動くと、同期のためのコードをすべてのハンドラに入れてやる必要があります。Tremaはこれを避けるため、あえてシングルスレッドにしています。
+
+もし高速化したい場合には、そのためのオプションが残されています。次のように高速化したいハンドラメソッドの中身を別スレッドで起動し、インスタンス変数へのアクセスを同期すれば高速化できます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+class Foo < Trema::Controller
+  def initialize(_args)
+    @mutex = Mutex.new
+  end
+
+  def packet_in(dpid, message)
+    Thread.start do
+      @mutex.synchronize do
+        (インスタンス変数への読み書き)
+      end
+    end
+  end
+end
+----
+
+たとえばCbenchクラスをマルチスレッド化すると次のようになります。ここでは、スレッドを新しく起動するオーバーヘッドを避けるために、スレッドプールとしてあらかじめ100個のスレッドを作っておき、`packet_in` ハンドラが呼ばれるたびにスレッドプール内のスレッドに `packet_in` の処理をまかせます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+class Cbench < Trema::Controller
+  def start(_args)
+    @thread_pool = ThreadPool.new(100)
+    logger.info 'Cbench started.'
+  end
+
+  def packet_in(datapath_id, message)
+    @thread_pool.start do
+      send_flow_mod_add(
+        datapath_id,
+        match: ExactMatch.new(message),
+        buffer_id: message.buffer_id,
+        actions: SendOutPort.new(message.in_port + 1)
+      )
+    end
+  end
+end
+----
+
+Cbenchクラスではインスタンス変数を使っていないため、Mutexによる同期なしに簡単にスレッド化できます。実際にスループットモードで性能を計測してみましょう。
+
+// TODO trema/cbench のREADMEで bundle install —binstubs していないのを直す。コマンド実行も bundle exec となってるところは直す。
+
+----
+$ ./bin/trema run lib/cbench.rb
+----
+
+別ターミナルで、
+
+----
+$ ./bin/cbench --port 6653 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000 --throughput
+----
+
+----
+cbench: controller benchmarking tool
+  running in mode 'throughput'
+  connecting to controller at localhost:6633
+  faking 1 switches :: 10 tests each; 1000 ms per test
+  with 100000 unique source MACs per switch
+  starting test with 1000 ms delay after features_reply
+  ignoring first 1 "warmup" and last 0 "cooldown" loops
+  debugging info is off
+1   switches: fmods/sec:  36883   total = 36.761283 per ms
+1   switches: fmods/sec:  36421   total = 36.398433 per ms
+1   switches: fmods/sec:  37286   total = 37.174106 per ms
+1   switches: fmods/sec:  36559   total = 36.526637 per ms
+1   switches: fmods/sec:  36072   total = 36.007331 per ms
+1   switches: fmods/sec:  34130   total = 33.993855 per ms
+1   switches: fmods/sec:  32119   total = 32.086016 per ms
+1   switches: fmods/sec:  33733   total = 33.533876 per ms
+1   switches: fmods/sec:  33270   total = 33.262582 per ms
+1   switches: fmods/sec:  32119   total = 32.107056 per ms
+RESULT: 1 switches 9 tests min/max/avg/stdev = 32086.02/37174.11/34565.54/1866.96 responses/s
+----
+
+// TODO 実行結果をアップデート
+
+たしかに元の値に比べて○%高速化できました。
+
+== まとめ
+
+PacketInとFlowModの最初の一歩として、ベンチマークツールcbenchと接続できるコーントローラを書きました。
+
+- フローエントリを追加するための `send_flow_mod_add` を使って、スイッチのフローテーブルを書き換えた
+- マッチングルールの作り方と、指定できるルールを学んだ
+- Forwardアクションによるパケットの転送と、その他のアクションを学んだ
+- コントローラをスレッドで高速化する方法を学んだ
+
+PacketInとFlowModはOpenFlowの重要なメッセージなので、続く章ではさらに使いかたに慣れていきます。コントローラにOpenFlowスイッチをつなぎ、フローエントリの書き換えとパケットの転送を実験してみます。

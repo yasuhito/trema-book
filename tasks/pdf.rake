@@ -3,10 +3,6 @@ require 'rake/clean'
 CLEAN << 'book.xml'
 CLOBBER << 'book.pdf'
 
-ADOC = Dir.glob('*.adoc')
-
-task pdf: 'book.pdf'
-
 file 'book.pdf' => 'book.xml' do
   fopub_options = %w(-param body.font.family VL-PGothic-Regular
                      -param dingbat.font.family VL-PGothic-Regular
