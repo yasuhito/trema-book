@@ -1,7 +1,7 @@
 # rubocop:disable LineLength
 task :deploy do
-  if ENV['TRAVIS_BRANCH'] != 'develop'
-    fail 'This is not a develop branch. No deployment will be done.'
+  if ENV['TRAVIS_BRANCH'] != 'master'
+    fail 'This is not a master branch. No deployment will be done.'
   end
   if ENV['TRAVIS_PULL_REQUEST'] != 'false'
     fail 'This is a pull request. No deployment will be done.'
