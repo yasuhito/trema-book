@@ -1,0 +1,7 @@
+AllCops:
+  Include:
+    - 'tasks/*.rake'
+    - Guardfile
+    - Rakefile
+  Exclude:
+    - 'vendor/**/*'

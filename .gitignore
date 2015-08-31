@@ -1,9 +1,4 @@
-Gemfile.lock
-*.dvi
-*.html
-*.log
-*.pdf
-*.tex
-*.key
-*.epub
-*.mobi
+/book.pdf
+/book.xml
+/index.html
+vendor/bundle
