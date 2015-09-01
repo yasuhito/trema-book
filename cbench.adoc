@@ -252,14 +252,15 @@ def packet_out(dpid, message)
 
 === アクション
 
-アクションには、`SendOutPort` をはじめとして、次の12種類のアクションを指定できます。
+アクションには、`SendOutPort` をはじめとして、次の13種類のアクションを指定できます。
 
+// TODO OpenFlow1.3 のそれぞれのアクションの .feature を pio に入れる
 // TODO `SendOutPort`の説明で触れている、論理ポートの説明を書く
 // TODO 章番号を埋める
 
-- `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号か、またはOpenFlowで規定されている論理ポート(第○章参照)を指定できる
+- `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号または論理ポート(第○章参照)を指定できる
 - `SetEtherSourceAddress` 送信元MACアドレスを指定した値に書き換える
-- `SetEthDstAddress` 宛先MACアドレスを指定した値に書き換える
+- `SetEtherDestinationAddress` 宛先MACアドレスを指定した値に書き換える
 - `SetIpSourceAddress` 送信元のIPアドレスを指定した値に書き換える
 - `SetIpDstinationAddress` 宛先のIPアドレスを指定した値に書き換える
 - `SetIpTos` IPのToSフィールドを書き換える
@@ -268,6 +269,7 @@ def packet_out(dpid, message)
 - `StripVlanHeader` VLANのヘッダを除去する
 - `SetVlanVid` 指定したVLAN IDをセットする、または既存のものがあれば書き換える
 - `SetVlanPriority` 指定したVLANプライオリティをセットする、または既存のものがあれば書き換える
+- `Enqueue` 指定したスイッチポートのキューにパケットを入れる
 - `VendorAction` ベンダ定義のアクションを実行する
 
 まだ使っていないアクションについては、続く章で具体的な使い方を見ていきます。
