@@ -6,4 +6,6 @@ include::how_does_openflow_work.adoc[]
 
 include::hello_trema.adoc[]
 
-include::appendix.adoc[]
+include::appendix_rvm.adoc[]
+
+include::appendix_copyright_and_license.adoc[]

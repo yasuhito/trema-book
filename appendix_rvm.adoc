@@ -1,0 +1,9 @@
+[appendix]
+= RVM を使ったTremaのインストール
+パッケージ版のRubyを使う以外の方法として、RVMfootnote:[https://rvm.io/]というRubyインストーラを使う方法があります。RVMを使うと一つのマシンにさまざまなバージョンのRubyをインストールできます。
+
+次のコマンドを実行すると、安定版のRubyを自動的にインストールします。
+
+----
+$ curl -sSL https://get.rvm.io | bash -s stable --ruby
+----
