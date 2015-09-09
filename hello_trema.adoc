@@ -136,7 +136,7 @@ RDOfootnote:[https://www.rdoproject.org/Main_Page]というRedHat系Linux用のO
 $ sudo yum update
 $ sudo yum install https://rdoproject.org/repos/rdo-release.rpm
 $ sudo yum install openvswitch
-$ sudo service openvswitch start
+$ sudo systemctl start openvswitch.service
 ----
 
 以上でTremaを使うための準備が整いました。それでは早速、入門の定番Hello, Worldを書いて実行してみましょう。
