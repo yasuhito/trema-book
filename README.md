@@ -1,16 +1,18 @@
-# Trema本 [![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis] [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
+# Trema本 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
-Tremaを使ったOpenFlowプログラミングを解説するTrema本のリポジトリです.
+[Trema][trema]を使ったOpenFlowプログラミングを解説するフリー書籍です. 対応スイッチの多いOpenFlowバージョン1.3.xを対象にしています. プログラミング言語はRubyバージョン2.0です.
 
- * Twitter: ハッシュタグは [#Trema本](https://twitter.com/hashtag/Trema%E6%9C%AC) です
-
-[travis]: http://travis-ci.org/yasuhito/trema-book
-[gitter]: https://gitter.im/yasuhito/trema-book
+* ブラウザで読む: https://github.com/yasuhito/trema-book
+* PDFで読む: (準備中)
+* Gitterチャットに参加する: https://gitter.im/yasuhito/trema-book
+* Twitterのハッシュタグ: [#Trema本](https://twitter.com/hashtag/Trema%E6%9C%AC)
 
 
 ## 書籍版
 
-![カバー](https://raw.github.com/yasuhito/trema-book/master/cover.png "本のカバー")
+OpenFlow1.0に対応した前バージョンのTrema本は、書籍として各種書店で入手可能です.
+
+![カバー](https://raw.github.com/yasuhito/trema-book/feature/readme/images/cover.png "本のカバー")
 
 印刷版:
 
@@ -28,15 +30,42 @@ Tremaを使ったOpenFlowプログラミングを解説するTrema本のリポ�
 - [Gihyo Digital Publishingで購入](https://gihyo.jp/dp/ebook/2013/978-4-7741-5516-6)
 - [楽天ブックスで購入](http://books.rakuten.co.jp/rk/63308d148b9737949f026c0e5bb1f694/)
 
-## Installation
 
+## ソースから本をビルドする
+[![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis]
 [![Dependency Status](http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat)][gemnasium]
 
-[gemnasium]: https://gemnasium.com/yasuhito/trema-book
+```
+git clone git@github.com:yasuhito/trema-book.git
+cd trema-book
+bundle install
+bundle exec rake
+```
 
 
-## License
+## 執筆に参加する
+
+誰でもいろいろな形でTrema本の執筆に参加できます. 
+
+もし誤字脱字を見つけたら, [チャット][gitter]で指摘してください. GitHubに慣れている場合はイシューを切ってもらうか, ソースコードを直接修正してPull Requestを出してもらえると助かります.
+
+もちろん, 内容についてのコメントや追加内容も歓迎します.
+
+原稿の書式は[Asciidoc](http://asciidoc.org/)です. 詳しい書き方についてはAsciidocのコンパイラである[Asciidoctorのユーザマニュアル](http://asciidoctor.org/docs/user-manual/)を参照してください.
+
+貢献していただいた方は書籍版の「謝辞」にもれなくお名前が載ります.
+
+![謝辞](https://raw.github.com/yasuhito/trema-book/feature/readme/images/acknowledgements.jpg "謝辞")
+
+
+## ライセンス
 
 This book is released under the GNU General Public License version 3.0:
 
  * http://www.gnu.org/licenses/gpl-3.0.html
+
+
+[trema]: https://github.com/trema/trema
+[travis]: http://travis-ci.org/yasuhito/trema-book
+[gitter]: https://gitter.im/yasuhito/trema-book
+[gemnasium]: https://gemnasium.com/yasuhito/trema-book
