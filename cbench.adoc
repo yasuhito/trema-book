@@ -107,8 +107,8 @@ class Cbench < Trema::Controller
     send_flow_mod_add(
       datapath_id,
       match: ExactMatch.new(message),
-      buffer_id: message.buffer_id,
-      actions: SendOutPort.new(message.in_port + 1)
+      actions: SendOutPort.new(message.in_port + 1),
+      buffer_id: message.buffer_id
     )
   end
 end
@@ -125,27 +125,20 @@ end
 
 === packet_inハンドラ
 
-コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。典型的なPacket Inハンドラは次のようになります.
+コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。Packet Inハンドラは次の形をしています。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/cbench.rb
 ----
-class Cbench < Trema::Controller
-
-  # ...
-
-  def packet_in(datapath_id, message)
-    send_flow_mod_add(
-      datapath_id,
-      match: ExactMatch.new(message),
-      buffer_id: message.buffer_id,
-      actions: SendOutPort.new(message.in_port + 1)
-    )
-  end
+def packet_in(datapath_id, message)
+  ...
 end
 ----
 
-`packet_in` ハンドラではPacket Inを起こしたスイッチ(cbenchプロセス)のDatapathIDとPacket Inメッセージそのものを引数として受け取ります。2番目の引数messageはPacketInクラスのインスタンスで、Packet Inメッセージをオブジェクトとしてラップしたものです。このPacketInクラスには主に次の3種類のメソッドが定義されています。
+`packet_in` ハンドラはその引数として、Packet Inを起こしたスイッチ(cbenchプロセス)のDatapathIDとPacket Inメッセージを受け取ります。
+
+==== PacketIn クラス
+
+`packet_in` ハンドラの2番目の引数はPacket Inメッセージオブジェクトで、`PacketIn` クラスのインスタンスです。この `PacketIn` クラスには主に次の3種類のメソッドが定義されています。
 
 - Packet Inを起こしたパケットのデータやその長さ、およびパケットが入ってきたスイッチのポート番号などOpenFlowメッセージ固有の情報を返すメソッド
 - Packet Inを起こしたパケットの種別 (TCPかUDPか? またVLANタグの有無など)を判定するための”?”で終わるメソッド
@@ -187,17 +180,44 @@ PacketInクラスは非常に多くのメソッドを持っており、またTre
 コントローラからcbenchへと送るFlowModメッセージは、次の内容にセットする必要があります。
 
 - マッチングルール: PacketInしたメッセージのExactMatch
-- バッファID: PacketInしたメッセージのバッファID
 - アクション: PacketInしたメッセージのin_portに+1したポートへ転送
+- バッファID: PacketInしたメッセージのバッファID
+
+// TODO 説明が手抜き。
 
 `send_flow_mod_add` メソッドにこれらのオプションを渡すことで、実際にスイッチへFlow Modを送ることができます。それぞれの指定方法を順に見ていきましょう。
 
-=== マッチングルール (OpenFlow 1.0)
+==== マッチングルール (OpenFlow 1.0)
 
-マッチングルールには、`:in_port` 以外にも次の12種類の条件を指定できます。
+マッチングルールを指定するには、`send_flow_mod_add` の引数に `match:` オプションとしてマッチングルールオブジェクト (`Match.new(...)` または `ExactMatch.new(...)`) を渡します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(
+  datapath_id,
+  match: Match.new(...), # <1>
+  ...
+)
+----
+<1> マッチングルールを指定する `match:` オプション
+
+マッチングルールを作るには、`Match.new` に指定したい条件のオプションを渡します。たとえば、送信元 MAC アドレスが 00:50:56:c0:00:08 で VLAN ID が 3 というルールを指定したマッチングルールを FlowMod に指定するコードは、次のようになります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(
+  dpid,
+  match: Match.new(
+           ether_source_address: '00:50:56:c0:00:08'
+           vlan_vid: 3
+         )
+  ...
+----
 
 // TODO Pioのopen\_flow10/match.featureを書く
 // TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
+
+マッチングルールを作る `Match.new` のオプションには、全部で12種類の条件を指定できます。
 
 - `:in_port` スイッチの物理ポート番号
 - `:ether_source_address` 送信元MACアドレス
@@ -212,31 +232,23 @@ PacketInクラスは非常に多くのメソッドを持っており、またTre
 - `:vlan_vid` VLAN IDの値
 - `:vlan_priority` VLANのプライオリティ
 
-=== Exact Matchの作り方 (OpenFlow 1.0)
+===== Exact Matchの作り方 (OpenFlow 1.0)
 
-マッチングルールの中でもすべての条件を指定したものをExact Matchと呼びます。たとえばPacket Inとしてコントローラに入ってきたパケットと、
-
-- パケットが入ってきたスイッチのポート番号
-- 送信元MACアドレス
-- 宛先MACアドレス
-- …
-
-などなどマッチングルールが定義する12個の条件がすべてまったく同じ、というのがExact Matchです。
+マッチングルールの中でもすべての条件を指定したものをExact Matchと呼びます。たとえばPacket Inとしてコントローラに入ってきたパケットとマッチングルールが定義する12個の条件がすべてまったく同じ、というのがExact Matchです。
 
 マッチングルールを作る構文 `Match.new` にこの12種類の条件すべてを渡せば、次のようにExact Matchを作れます。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
 def packet_in(dpid, message)
-  # ...
-
+  ...
   send_flow_mod_add(
     dpid,
     match: Match.new(
-      in_port: message.in_port,
-      ether_source_address: message.ether_source_address,
-      ether_destination_address: message.ether_destination_address,
-   ...
+             in_port: message.in_port,
+             ether_source_address: message.ether_source_address,
+             ether_destination_address: message.ether_destination_address,
+             ...
 ----
 
 しかし、マッチングルールを1つ作るだけで12行も書いていたら大変です。そこで、TremaではPacketInメッセージからExact Matchを楽に書ける次のショートカットを用意しています。
@@ -252,9 +264,42 @@ def packet_out(dpid, message)
 
 たった1行で書けました! Tremaにはこのようにコードを短く書ける工夫がたくさんあります。
 
-=== アクション (OpenFlow1.0)
+==== アクション (OpenFlow1.0)
 
-アクションには、`SendOutPort` をはじめとして、次の13種類のアクションを指定できます。
+アクションを指定するには、`send_flow_mod_add` の引数に `actions:` オプションとして単体のアクションまたはアクションのリストを渡します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(
+  datapath_id,
+  ...
+  actions: アクション # <1>
+)
+
+または
+
+send_flow_mod_add(
+  datapath_id,
+  ...
+  actions: [アクション0, アクション1, アクション2, ...] # <2>
+)
+----
+<1> `actions:` オプションでアクションを 1 つ指定
+<2> `actions:` オプションにアクションを複数指定
+
+たとえば、VLAN ヘッダを除去してポート2番に転送するアクションを FlowMod に指定するコードは、次のようになります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(
+  datapath_id,
+  ...
+  actions: [StripVlanHeader.new, SendOutPort.new(2)] # <1>
+)
+----
+<1> アクションを 2 つ指定
+
+アクションには次の13種類のアクションを単体で、または組み合わせて指定できます。
 
 // TODO マッチの名前をアクションの名前に合わせる
 // TODO OpenFlow1.3 のそれぞれのアクションの .feature を pio に入れる
@@ -276,12 +321,25 @@ def packet_out(dpid, message)
 
 まだ使っていないアクションについては、続く章で具体的な使い方を見ていきます。
 
-=== send_flow_mod_addのオプション一覧
+==== send_flow_mod_add のオプション
 
-最後に補足として、`send_flow_mod_add` で指定できるすべてのオプションを紹介しておきます。Flow Modには次にようにたくさんのパラメータがあります。
+バッファIDを指定するには、`match:` や `actions:` オプションと同じく  `buffer_id:` オプションを `send_flow_mod_add` の引数に指定します。たとえば以下のコードは、バッファ ID に Packet Inメッセージのバッファ ID を指定する典型的な例です。
 
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(
+  datapath_id,
+  match: ...,
+  actions: ...,
+  buffer_id: message.buffer_id # <1>
+)
+----
+<1> Flow Mod のオプションにバッファ ID を指定
+
+// TODO buffer_id: が抜けてる!? 実装も合わせて確認。
 // TODO それぞれのオプションの受け入れテストを書く
-// TODO ここ、Ruby2.0 のキーワード引数が使えるところだ。あとでリファクタリングしておく。
+
+`send_flow_mod_add` で指定できるすべてのオプションは次の通りです。
 
 - `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
 - `:actions`  フローエントリのアクションを指定する。アクションはアクションの配列または単体で指定できる
