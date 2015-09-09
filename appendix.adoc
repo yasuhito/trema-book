@@ -1,0 +1,5 @@
+[appendix]
+= Copyright and License
+This book is released under the GNU General Public License version 3.0:
+
+- http://www.gnu.org/licenses/gpl-3.0.html
