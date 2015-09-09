@@ -12,7 +12,7 @@
 
 OpenFlow1.0に対応した前バージョンのTrema本は、書籍として各種書店で入手可能です.
 
-![カバー](https://raw.github.com/yasuhito/trema-book/feature/readme/images/cover.png "本のカバー")
+![カバー](https://raw.github.com/yasuhito/trema-book/develop/images/cover.png "本のカバー")
 
 印刷版:
 
@@ -45,7 +45,7 @@ bundle exec rake
 
 ## 執筆に参加する
 
-誰でもいろいろな形でTrema本の執筆に参加できます. 
+誰でもいろいろな形でTrema本の執筆に参加できます.
 
 もし誤字脱字を見つけたら, [チャット][gitter]で指摘してください. GitHubに慣れている場合はイシューを切ってもらうか, ソースコードを直接修正してPull Requestを出してもらえると助かります.
 
@@ -55,7 +55,7 @@ bundle exec rake
 
 貢献していただいた方は書籍版の「謝辞」にもれなくお名前が載ります.
 
-![謝辞](https://raw.github.com/yasuhito/trema-book/feature/readme/images/acknowledgements.jpg "謝辞")
+![謝辞](https://raw.github.com/yasuhito/trema-book/develop/images/acknowledgements.jpg "謝辞")
 
 
 ## ライセンス
