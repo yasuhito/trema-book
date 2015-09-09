@@ -28,13 +28,13 @@ Tremaがこうなっているのは、スレッドに伴うプログラマの負
 
 == Cbenchのインストール
 
-cbenchの実行にはopenflow.orgの配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とcbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
+cbenchの実行にはopenflow.org footnote:[http://archive.openflow.org/] の配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とcbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
 
 ----
 $ git clone https://github.com/trema/cbench.git
 ----
 
-ダウンロードしたソースツリー上で`bundle install --binstubs`を実行すると、Tremaの`./bin/trema`コマンドとライブラリ一式を自動的にインストールできます。
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaの `./bin/trema` コマンドとライブラリ一式を自動的にインストールできます。
 
 ----
 $ cd cbench
@@ -120,11 +120,12 @@ end
 
 前章と同じく、`start` ハンドラでコントローラの起動をログに書き込みます。ユーザ引数は今回も使っていないので、仮引数の名前は `_args` のようにアンダースコアで始めます。
 
+// TODO: 2 章で _args の説明をしておく
 // TODO: ここは、`packet_in`をスレッド化する/しないのスイッチをユーザ引数でコントロールできるようにしておく? そうしたら、パッチパネル章でユーザ引数の処理の説明を省ける。
 
 === packet_inハンドラ
 
-コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。典型的なPacket Inハンドラは次のようになります(リスト○より抜粋)。
+コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。典型的なPacket Inハンドラは次のようになります.
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/cbench.rb
@@ -161,18 +162,18 @@ PacketInクラスは非常に多くのメソッドを持っており、またTre
 - `:buffered?` Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
 - `:source_mac` パケットの送信元MACアドレスを返す
 - `:destination_mac` パケットの宛先MACアドレスを返す
-- `:ipv4?` パケットがIPv4である場合`true`を返す
+- `:ipv4?` パケットがIPv4である場合 `true` を返す
 - `:ipv4_protocol` IPのプロトコル番号を返す
 - `:ipv4_source_address` パケットの送信元IPアドレスを返す
 - `:ipv4_destination_address` パケットの宛先IPアドレスを返す
 - `:ipv4_tos` IPのToSフィールドを返す
-- `:tcp?` パケットがTCPである場合`true`を返す
+- `:tcp?` パケットがTCPである場合 `true` を返す
 - `:tcp_source_port` パケットのTCPの送信元ポート番号を返す
 - `:tcp_destination_port` パケットのTCP宛先ポート番号を返す
-- `:udp?` パケットがUDPである場合`true`を返す
+- `:udp?` パケットがUDPである場合 `true` を返す
 - `:udp_source_port` パケットのUDPの送信元ポート番号を返す
 - `:udp_destination_port` パケットのUDPの宛先ポート番号を返す
-- `:vlan?` パケットにVLANヘッダが付いている場合`true`を返す
+- `:vlan?` パケットにVLANヘッダが付いている場合 `true` を返す
 - `:vlan_vid` VLANのVIDを返す
 - `:vlan_priority` VLANの優先度を返す
 - `:ether_type` イーサタイプを返す
@@ -183,17 +184,17 @@ PacketInクラスは非常に多くのメソッドを持っており、またTre
 
 === Flow Modの送りかた
 
-cbenchが受け取るFlowModメッセージは、次の内容にセットする必要があります。
+コントローラからcbenchへと送るFlowModメッセージは、次の内容にセットする必要があります。
 
 - マッチングルール: PacketInしたメッセージのExactMatch
 - バッファID: PacketInしたメッセージのバッファID
-- アクション: PacketInしたメッセージのin_portに+1したもの
+- アクション: PacketInしたメッセージのin_portに+1したポートへ転送
 
 `send_flow_mod_add` メソッドにこれらのオプションを渡すことで、実際にスイッチへFlow Modを送ることができます。それぞれの指定方法を順に見ていきましょう。
 
 === マッチングルール (OpenFlow 1.0)
 
-マッチングルールには、`:in_port` 以外にも第○章で紹介した次の12種類の条件を指定できます。
+マッチングルールには、`:in_port` 以外にも次の12種類の条件を指定できます。
 
 // TODO Pioのopen\_flow10/match.featureを書く
 // TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
@@ -249,7 +250,7 @@ def packet_out(dpid, message)
     ...
 ----
 
-なんとたった1行で書けました! Tremaにはこのようにコードを短く書ける工夫がたくさんあります。
+たった1行で書けました! Tremaにはこのようにコードを短く書ける工夫がたくさんあります。
 
 === アクション (OpenFlow1.0)
 
@@ -282,7 +283,7 @@ def packet_out(dpid, message)
 // TODO それぞれのオプションの受け入れテストを書く
 // TODO ここ、Ruby2.0 のキーワード引数が使えるところだ。あとでリファクタリングしておく。
 
-- `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは`ExactMatch`オブジェクト(第○章で紹介)を指定する
+- `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
 - `:actions`  フローエントリのアクションを指定する。アクションはアクションの配列または単体で指定できる
 - `:idle_timeout`  フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
 - `:hard_timeout`  フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
@@ -418,7 +419,7 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 32086.02/37174.11/34565.54/1866.9
 
 == まとめ
 
-PacketInとFlowModの最初の一歩として、ベンチマークツールcbenchと接続できるコーントローラを書きました。
+PacketInとFlowModの最初の一歩として、ベンチマークツールcbenchと接続できるコントローラを書きました。
 
 - フローエントリを追加するための `send_flow_mod_add` を使って、スイッチのフローテーブルを書き換えた
 - マッチングルールの作り方と、指定できるルールを学んだ
