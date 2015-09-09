@@ -18,13 +18,15 @@ Tremaを使ったOpenFlowプログラミングを解説するTrema本のリポ�
 - [ヨドバシ.comで購入](http://www.yodobashi.com/ec/product/100000009001711327/index.html)
 - [7netショッピングで購入](http://www.7netshopping.jp/books/detail/-/isbn/9784774154657)
 - [hontoで購入](http://honto.jp/netstore/pd-book_25440213.html)
+- [紀伊國屋書店で購入](https://www.kinokuniya.co.jp/f/dsg-01-9784774154657)
+- [楽天ブックスで購入](http://books.rakuten.co.jp/rb/12122925/)
 
 電子版:
 
-- [Amazon Kindle](http://www.amazon.co.jp/o/ASIN/B00CP2SFNA)
-- [Google Books](https://books.google.co.jp/books/about/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E6%99%82%E4%BB%A3%E3%81%AE%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF.html?id=Dw0-tiAvGTsC&redir_esc=y)
-- [Gihyo Digital Publishing](https://gihyo.jp/dp/ebook/2013/978-4-7741-5516-6)
-- [楽天kobo](http://books.rakuten.co.jp/rk/63308d148b9737949f026c0e5bb1f694/)
+- [Amazonで購入](http://www.amazon.co.jp/o/ASIN/B00CP2SFNA)
+- [Google Booksで購入](https://books.google.co.jp/books/about/%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E6%99%82%E4%BB%A3%E3%81%AE%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF.html?id=Dw0-tiAvGTsC&redir_esc=y)
+- [Gihyo Digital Publishingで購入](https://gihyo.jp/dp/ebook/2013/978-4-7741-5516-6)
+- [楽天ブックスで購入](http://books.rakuten.co.jp/rk/63308d148b9737949f026c0e5bb1f694/)
 
 ## Installation
 
