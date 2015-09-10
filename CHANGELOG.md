@@ -3,6 +3,14 @@
 ## develop (unreleased)
 
 
+## 0.4.0 (9/10/2015)
+### New features
+* Add new controller `lib/fast_cbench.rb`.
+
+### Changes
+* Trema 0.6.0.
+
+
 ## 0.3.0 (3/17/2015)
 ### Changes
 * Phut 0.3.0.
