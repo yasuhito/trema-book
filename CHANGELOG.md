@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 (9/10/2015)
+* index.htmlのデプロイが失敗してたのを修正.
+
+## 0.3.0 (9/10/2015)
+* [#27](https://github.com/yasuhito/trema-book/pull/27): cbench章のドラフト rev.1 を追加.
+
 ## 0.2.1 (9/6/2015)
 * [#34](https://github.com/yasuhito/trema-book/pull/34): 表現の修正.
 
