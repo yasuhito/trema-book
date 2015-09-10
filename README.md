@@ -32,7 +32,7 @@ Install
 ```
 $ git clone https://github.com/trema/cbench.git
 $ cd cbench
-$ bundle install
+$ bundle install --binstubs
 ```
 
 
@@ -42,13 +42,15 @@ Play
 Run this controller
 
 ```
-$ bundle exec trema run ./lib/cbench.rb
+$ ./bin/trema run ./lib/cbench.rb
+or
+$ ./bin/trema run ./lib/fast_cbench.rb  # multi-threaded version
 ```
 
 then, on another terminal
 
 ```
-$ bundle exec ./bin/cbench --port 6633 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000
+$ ./bin/cbench --port 6633 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000 --throughput
 ```
 
 Enjoy!
