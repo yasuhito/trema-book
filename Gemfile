@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rake'
-gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
+gem 'trema'
 
 group :development, :test do
   gem 'aruba', require: false
