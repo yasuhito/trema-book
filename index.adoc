@@ -8,4 +8,6 @@ include::how_does_openflow_work.adoc[]
 
 include::hello_trema.adoc[]
 
+include::cbench.adoc[]
+
 include::appendix.adoc[]
