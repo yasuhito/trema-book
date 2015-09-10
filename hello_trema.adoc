@@ -64,10 +64,11 @@ image::trema_logo.png[caption="図2-a",title="Tremaの公式ロゴ"]
 
 TremaはLinux用のソフトウェアです。次のLinuxディストリビューションでの動作を確認しています。
 
-- Ubuntu (i386/amd64)
-- Debian GNU/Linux (i386/amd64)
+- Ubuntu Linux
+- Debian GNU/Linux
+- CentOS 7 系, 6 系
 
-なお動作保証はしていませんが、CentOSやFedoraをはじめとするRedHat系Linuxディストリビューションでの動作も確認しています。
+// TODO @beture12 さん作の CentOS でのインストール方法を編集して入れる https://gist.github.com/betrue12/c472df7f0545df478dcb
 
 // TODO それぞれの動作バージョンを明記したい。phutで呼び出しているipコマンドとか、あまり古いカーネルを使っていると動かないはず。
 
@@ -81,13 +82,32 @@ TremaはLinux用のソフトウェアです。次のLinuxディストリビュ�
 
 // TODO ここではTremaはインストールしない、ということを書くべき?
 
-=== RubyとBundlerのインストール
+=== Rubyのインストール
 
-Rubyのインストールには、RVMfootnote:[https://rvm.io/]というRubyインストーラを使うのが手軽です。次のコマンドを実行すると、安定版のRubyを自動的にインストールしてくれます。
+Rubyのインストール方法は、Linuxディストリビューションごとに異なります。
+
+==== Ubuntu や Debian にインストール
+
+標準のパッケージマネージャ apt で以下のようにRuby関連パッケージをインストールします。
 
 ----
-$ curl -sSL https://get.rvm.io | bash -s stable --ruby
+$ sudo apt-get update
+$ sudo apt-get install ruby2.0 ruby2.0-dev build-essential
 ----
+なお build-essential パッケージは Trema が依存する外部ライブラリのインストールに必要な gcc コンパイラなどを含んでいます。
+
+==== CentOS にインストール
+
+標準のパッケージマネージャ yum で以下のようにRuby関連パッケージをインストールします。
+
+----
+$ sudo yum update
+$ sudo yum install ruby ruby-devel gcc gcc-c++
+----
+
+なお gcc と gcc-c++ パッケージは Trema が依存する外部ライブラリのインストールに必要です。
+
+=== Bundlerのインストール
 
 Bundlerは次のコマンドでインストールできます。
 
@@ -99,15 +119,26 @@ $ gem install bundler
 
 === Open vSwitchのインストール
 
-Open vSwitchは `apt-get` で簡単にインストールできます。
+Open vSwitchのインストール方法も、Linuxディストリビューションごとに異なります。
+
+==== Ubuntu や Debian にインストール
+
+Open vSwitchも `apt-get` コマンドで簡単にインストールできます。
 
 ----
 $ sudo apt-get install openvswitch-switch
 ----
 
-他のディストリビューションを使う場合は、コマンド名やパッケージ名を適宜読み替えてください。
+==== CentOS にインストール
 
-// TODO CentOSやFedoraでのインストール方法を誰かに聞いて書く
+RDOfootnote:[https://www.rdoproject.org/Main_Page]というRedHat系Linux用のOpenstackパッケージリポジトリを使うと、yumコマンドでOpen vSwitchを簡単にインストールできます。
+
+----
+$ sudo yum update
+$ sudo yum install https://rdoproject.org/repos/rdo-release.rpm
+$ sudo yum install openvswitch
+$ sudo systemctl start openvswitch.service
+----
 
 以上でTremaを使うための準備が整いました。それでは早速、入門の定番Hello, Worldを書いて実行してみましょう。
 
