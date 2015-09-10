@@ -1,19 +1,25 @@
+sudo: false
 language: ruby
-
 script:
-  - bundle exec rake travis
-
+- bundle exec rake travis
 before_install:
-  # Prevent "Please tell me who you are" errors
-  - git config --global user.email "travis@travis-ci.org"
-  - git config --global user.name "Travis CI"
-
+- git config --global user.email "travis@travis-ci.org"
+- git config --global user.name "Travis CI"
 after_success:
-  - bundle exec rake deploy
-  
+- bundle exec rake deploy
 rvm:
-  - 2.0.0
-
+- 2.0.0
+branches:
+  except:
+  - preview-html
+notifications:
+  webhooks:
+    urls:
+    - https://webhooks.gitter.im/e/ca471d52154a050db6d6
+    on_success: change
+    on_failure: always
+    on_start: never
 env:
   global:
-  - secure: "fzg1kaZRs8/Cw7mqWMPbji/h5wQQLdHkyl6jAiJVxB1VctcBa0YixonSUBE2kTbx8oaVOg7cQ1+5O4/5+LrU7h3eHNdzxuaqyPb8swDLPKv3J6vqP3U5fpyYvBN0OXQp42rB6m8X7+VOUGTqTGoNZNLMs85r+CAu5rsVIYIpaQ0="    
+  - secure: fzg1kaZRs8/Cw7mqWMPbji/h5wQQLdHkyl6jAiJVxB1VctcBa0YixonSUBE2kTbx8oaVOg7cQ1+5O4/5+LrU7h3eHNdzxuaqyPb8swDLPKv3J6vqP3U5fpyYvBN0OXQp42rB6m8X7+VOUGTqTGoNZNLMs85r+CAu5rsVIYIpaQ0=
+  - secure: lI6gfUIEPqHqhxjvmLBDjhYsshvchh008LvgtudfJ1bXNAxIsz1pVKDZJZRpjaol0zN8751/z4kcvigM3seIRWbk9C1XYwnPnH5kSC2V2GczH4g6Lsh5pQeJRjS8OFp0UKx4nA4LS3TfKTZC8T3T6ImQFhgCBrqz7akHmM5FR94=
