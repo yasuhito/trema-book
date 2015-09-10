@@ -1,9 +1,13 @@
-= Trema本
+= TremaでOpenFlowプログラミング
+高宮 安仁 <yasuhito@gmail.com>; 鈴木 一哉; 松井 暢之; 村木 暢哉; 山崎 泰宏
+:revnumber: {revnumber}
 
 :leveloffset: 1
 
 include::how_does_openflow_work.adoc[]
 
 include::hello_trema.adoc[]
+
+include::cbench.adoc[]
 
 include::appendix.adoc[]
