@@ -1,6 +1,7 @@
 = TremaでOpenFlowプログラミング
 高宮 安仁 <yasuhito@gmail.com>; 鈴木 一哉; 松井 暢之; 村木 暢哉; 山崎 泰宏
 :revnumber: {revnumber}
+:sectnums:
 
 :leveloffset: 1
 
