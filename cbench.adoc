@@ -1,34 +1,34 @@
 [[cbench]]
-= マイクロベンチマークcbench
+= マイクロベンチマークCbench
 :imagesdir: images/cbench
 
-本格的なOpenFlowプログラミングの第一歩として、スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールcbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
+本格的なOpenFlowプログラミングの第一歩として、スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールCbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
 
 == Cbenchベンチマークとは
 
 CbenchはOpenFlow1.0コントローラのためのベンチマークです。Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。これはOpenFlowプロトコル全体のうちの一部の性能だけを対象にしているので、ベンチマークの中でもマイクロベンチマークに分類できます。
 
-Cbenchは<<cbench_overview,図3-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
+Cbenchは<<cbench_overview,図3-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchプロセスは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
 
 [[cbench_overview]]
-image::cbench_overview.png[caption="図3-1",title="cbenchとコントローラの動作"]
+image::cbench_overview.png[caption="図3-1",title="cbenchプロセスとコントローラの動作"]
 
 == Cbenchのインストール
 
-cbenchの実行にはopenflow.org footnote:[http://archive.openflow.org/] の配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とcbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
+Cbenchの実行にはopenflow.org footnote:[http://archive.openflow.org/] の配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とCbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
 
 ----
 $ git clone https://github.com/trema/cbench.git
 ----
 
-ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaの `./bin/trema` コマンドと cbench の実行コマンド `./bin/cbench` など必要な実行環境一式を自動的にインストールできます。
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaの `./bin/trema` コマンドと Cbench の実行コマンド `./bin/cbench` など必要な実行環境一式を自動的にインストールできます。
 
 ----
 $ cd cbench
 bundle install --binstubs
 ----
 
-以上でcbenchとTremaのセットアップは完了です。
+以上でCbenchとTremaのセットアップは完了です。
 
 == Cbenchを実行する
 
@@ -70,16 +70,16 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 31.40/36.39/34.47/1.45 responses/
 ====
 Cbench のスコアを盲信しないようにしてください。現在、OpenFlow コントローラの多くがその性能指標として Cbench のスコアを使っているのをよく見掛けます。たとえば Floodlight (http://www.projectfloodlight.org/) は 1 秒間に 100 万発の Flow Mod を打てると宣伝しています。実際にこれはなかなかすごい数字です。スレッドを駆使してめいっぱい I/O を使い切るようにしなければなかなかこの数字は出ません。でも、この数字はほとんど無意味です。
 
-Flow Mod を一秒間に 100 万発打たなければならない状況を考えてみてください。それは、Packet In が一秒間に 100 万回起こるということになります。Packet In が一秒間に 100 万発起こるとはどういうことでしょうか? スイッチで処理できないパケットがすべてコントローラへやってくる、これが一秒間に 100 万回も起こるということです。明らかにフローテーブルの設計がうまく行っていません。
+Flow Mod を 1 秒間に 100 万発打たなければならない状況を考えてみてください。それは、Packet In が 1 秒間に 100 万回起こるということになります。Packet In が 1 秒間に 100 万発起こるとはどういうことでしょうか? スイッチで処理できないパケットがすべてコントローラへやってくる、これが 1 秒間に 100 万回も起こるということです。明らかにフローテーブルの設計がうまく行っていません。
 
 コントローラが Packet In を何発さばけるかという性能は、極端に遅くない限りは重要ではありません。データセンターのように、どこにどんなマシンがありどういう通信をするか把握できている場合は、フローテーブルをちゃんと設計していれば Packet In はそんなに起こらないからです。力技で Packet In をさばくよりも、いかに Packet In が起こらないフローテーブル設計をするかの方がずっと大事です。
 
-Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか？を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
+Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか? を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
 ====
 
 == Cbenchのソースコード
 
-cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
+Cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/cbench.rb
@@ -121,7 +121,7 @@ def packet_in(datapath_id, message)
 end
 ----
 
-`packet_in` ハンドラはその引数として、Packet Inを起こしたスイッチ(cbenchプロセス)のDatapathIDとPacket Inメッセージを受け取ります。
+`packet_in` ハンドラはその引数として、Packet Inを起こしたスイッチ(cbenchプロセス)の Datapath ID とPacket Inメッセージを受け取ります。
 
 ==== PacketIn クラス
 
@@ -165,7 +165,7 @@ end
 
 === Flow Modの送りかた
 
-コントローラからcbenchへと送るFlow Modメッセージは、次の内容にセットする必要があります。
+コントローラからCbenchへと送るFlow Modメッセージは、次の内容にセットする必要があります。
 
 - マッチングルール: Packet In メッセージのExactMatch
 - アクション: Packet In メッセージのin_portに+1したポートへ転送
@@ -194,7 +194,7 @@ send_flow_mod_add(
 [source,ruby,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
-  dpid,
+  datapath_id,
   match: Match.new(
            ether_source_address: '00:50:56:c0:00:08'
            vlan_vid: 3
@@ -228,10 +228,10 @@ send_flow_mod_add(
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-def packet_in(dpid, message)
+def packet_in(datapath_id, message)
   ...
   send_flow_mod_add(
-    dpid,
+    datapath_id,
     match: Match.new(
              in_port: message.in_port,
              ether_source_address: message.ether_source_address,
@@ -243,9 +243,9 @@ def packet_in(dpid, message)
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-def packet_out(dpid, message)
+def packet_out(datapath_id, message)
   send_flow_mod_add(
-    dpid,
+    datapath_id,
     match: ExactMatch.new(message),
     ...
 ----
@@ -344,7 +344,7 @@ send_flow_mod_add(
 
 == Cbenchを高速化する
 
-Tremaはシングルスレッドで動作するので、実のところ cbench の結果はあまり速くありません。シングルスレッドとはつまり、同時にひとつの `packet_in` ハンドラしか起動できないという意味です。たとえ cbench がたくさん Packet In メッセージを送ってきても、Trema は順に一つひとつ処理するため遅くなります。
+Tremaはシングルスレッドで動作するので、実のところ Cbench の結果はあまり速くありません。シングルスレッドとはつまり、同時にひとつの `packet_in` ハンドラしか起動できないという意味です。たとえ cbench プロセスがたくさん Packet In メッセージを送ってきても、Trema は順に 1 つひとつ処理するため遅くなります。
 
 Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえば仮に、Tremaがスレッドで動作する `multi_threaded_packet_in` というハンドラを提供するとして、この中でスレッドセーフでないインスタンス変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。インスタンス変数はすべてのスレッドで共有するので、こうしたスレッド間の競合は正しく処理してやる必要があります。
 
@@ -354,7 +354,7 @@ def start(_args)
   @db = DB.new  # <1>
 end
 
-def multi_threaded_packet_in(dpid, message)  # <2>
+def multi_threaded_packet_in(datapath_id, message)  # <2>
   # !!! ここで @db の読み書きは危険 !!!
   return if @db.lookup(message.in_port)
   @db.add message.ether_source_address, message.in_port
@@ -372,7 +372,7 @@ def start(_args)
   @mutex = Mutex.new  # <1>
 end
 
-def multi_threaded_packet_in(dpid, message)
+def multi_threaded_packet_in(datapath_id, message)
   @mutex.synchronize do  # <2>
     # この中で@dbを読み書きすれば安全
     return if @db.lookup(message.in_port)
@@ -392,7 +392,7 @@ def initialize(_args)
   @mutex = Mutex.new
 end
 
-def packet_in(dpid, message)
+def packet_in(datapath_id, message)
   Thread.start do  # <1>
     @mutex.synchronize do
       return if @db.lookup(message.in_port)
@@ -403,7 +403,7 @@ end
 ----
 <1> `packet_in` ハンドラの中身をスレッドで起動
 
-しかし、これでもまだ問題は残ります。Thread.start によるスレッド起動はそれなりにコストのかかる処理なので、Packet In が届くたびにスレッドを作っていては大して速くなりません。
+しかし、これでもまだ問題は残ります。`Thread.start` によるスレッド起動はそれなりにコストのかかる処理なので、Packet In が届くたびにスレッドを作っていては大して速くなりません。
 
 そこで、次のようにあらかじめいくつかワーカースレッドを作って待機させておく、いわゆるスレッドプールという手法が使えます。そして `packet_in` ハンドラが呼ばれるたびに待機中のスレッドに `packet_in` の処理をまかせます。
 
@@ -426,7 +426,7 @@ private
 def start_worker_thread  # <4>
   Thread.new do
     loop do
-      dpid, packet_in = @work_queue.pop  # <4>
+      datapath_id, packet_in = @work_queue.pop  # <5>
       @mutex.synchronize do
         next if @db.lookup(message.in_port)
         @db.add packet_in.ether_source_address, packet_in.in_port
@@ -437,10 +437,11 @@ end
 ----
 <1> スレッドにまかせたい仕事を入れておくキュー
 <2> スレッドプールに 10 個のスレッドを追加
-<3> Packet In が届いたら dpid と Packet In をキューに入れる
-<4> スレッドの中でキューから dpid と Packet In を取り出す。Queue クラスはスレッドセーフなので、`@mutex.synchronize do ... end` の中に入れる必要はないことに注意
+<3> Packet In が届いたら datapath_id と Packet In をキューに入れる
+<4> ワーカースレッドを起動するプライベートメソッド
+<5> スレッドの中でキューから datapath_id と Packet In を取り出す。Queue クラスはスレッドセーフなので、`@mutex.synchronize do ... end` の中に入れる必要はないことに注意
 
-最終的なマルチスレッド版 cbench コントローラは次のようになります。
+最終的なマルチスレッド版 Cbench コントローラは次のようになります。
 
 [source,ruby,subs="verbatim,attributes"]
 ./lib/fast_cbench.rb
@@ -462,8 +463,8 @@ class FastCbench < Trema::Controller
   def start_worker_thread
     Thread.new do
       loop do
-        dpid, packet_in = @work_queue.pop
-        send_flow_mod_add(dpid,
+        datapath_id, packet_in = @work_queue.pop
+        send_flow_mod_add(datapath_id,
                           match: ExactMatch.new(packet_in),
                           buffer_id: packet_in.buffer_id,
                           actions: SendOutPort.new(packet_in.in_port + 1))
@@ -508,7 +509,7 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 57.01/59.59/58.67/0.92 responses/
 
 == まとめ
 
-Packet InとFlow Modの最初の一歩として、ベンチマークツールcbenchと接続できるコントローラを書きました。
+Packet InとFlow Modの最初の一歩として、ベンチマークツールCbenchと接続できるコントローラを書きました。
 
 - フローエントリを追加するための `send_flow_mod_add` を使って、スイッチのフローテーブルを書き換えた
 - マッチングルールの作り方と、指定できるルールを学んだ
