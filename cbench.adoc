@@ -1,5 +1,6 @@
 [[cbench]]
 = マイクロベンチマークCbench
+:sourcedir: vendor/cbench
 :imagesdir: images/cbench
 
 本格的なOpenFlowプログラミングの第一歩として、スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールCbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
@@ -84,21 +85,7 @@ Cbenchが正しく実行できたところで、Cbenchのソースコードか�
 [source,ruby,subs="verbatim,attributes"]
 .lib/cbench.rb
 ----
-# A simple openflow controller for benchmarking.
-class Cbench < Trema::Controller
-  def start(_args)
-    logger.info 'Cbench started.'
-  end
-
-  def packet_in(datapath_id, message)
-    send_flow_mod_add(
-      datapath_id,
-      match: ExactMatch.new(message),
-      actions: SendOutPort.new(message.in_port + 1),
-      buffer_id: message.buffer_id
-    )
-  end
-end
+include::{sourcedir}/lib/cbench.rb
 ----
 
 // TODO Ruby 入門でハッシュとキーワード引数、.newメソッドを説明する

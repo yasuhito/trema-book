@@ -1,7 +1,8 @@
 # Changelog
 
 ## develop
-* [#54](https://github.com/yasuhito/trema-book/pull/54): hello\_trema.rbのソースコードを trema/hello_trema から include
+* [#54](https://github.com/yasuhito/trema-book/pull/54): hello\_trema.rb のソースコードを trema/hello_trema から include
+* [#56](https://github.com/yasuhito/trema-book/pull/56): cbench.rb のソースコードを trema/cbench から include
 
 
 ## 0.3.1 (9/10/2015)
