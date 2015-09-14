@@ -1,5 +1,6 @@
 [[hello_trema]]
 = Hello, Trema!
+:sourcedir: vendor/hello_trema
 :imagesdir: images/openflow_framework_trema
 
 // TODO asciidocで「トレマ」をルビ表示にする
@@ -181,24 +182,15 @@ $ cd hello_trema
 
 ==== コントローラ本体の実装
 
-エディタでhello_tremaディレクトリ内のlib/hello_trema.rbを開き次のRubyコードを入力してください。.rbはRubyプログラムの標準的な拡張子です。Rubyの文法は必要に応じておいおい説明しますので、もしわからなくても気にせずそのまま入力してください。
+エディタで hello_trema ディレクトリ内の lib/hello_trema.rb を開き、次の Ruby コードを入力してください。.rb は Ruby プログラムの標準的な拡張子です。Ruby の文法は必要に応じておいおい説明しますので、もしわからなくても気にせずそのまま入力してください。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/hello_world.rb
+.lib/hello_trema.rb
 ----
-# Hello World!
-class HelloTrema < Trema::Controller
-  def start(_args)
-    logger.info 'Trema started.'
-  end
-
-  def switch_ready(datapath_id)
-    logger.info "Hello #{datapath_id.to_hex}!"
-  end
-end
+include::{sourcedir}/lib/hello_trema.rb[]
 ----
 
-// TODO vendor/hello_trema/lib/hello_trema.rbからソースコードを直接importする
+// TODO なぜファイル名を hello_trema.rb にするのか、の説明。
 
 ==== スイッチの定義
 
