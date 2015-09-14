@@ -131,7 +131,7 @@ $ sudo apt-get install openvswitch-switch
 
 ==== CentOS にインストール
 
-RDOfootnote:[https://www.rdoproject.org/Main_Page]というRedHat系Linux用のOpenstackパッケージリポジトリを使うと、yumコマンドでOpen vSwitchを簡単にインストールできます。
+RDOfootnote:[https://www.rdoproject.org/Main_Page]というRedHat系Linux用のOpenStackパッケージリポジトリを使うと、yumコマンドでOpen vSwitchを簡単にインストールできます。
 
 ----
 $ sudo yum update
