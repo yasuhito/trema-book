@@ -7,7 +7,7 @@ Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これで�
 
 == 作ってわかるOpenFlow
 
-いよいよOpenFlowを使ってネットワークを実際にプログラムしていきます。職場や自宅のような小規模ネットワークでもすぐに試せるコードを通じてOpenFlowの世界を体験しましょう。実際に手を動かし実行してみれば「OpenFlowってどんな場面で使えるの？」というよくある疑問も徐々に氷解していくでしょう。
+いよいよOpenFlowを使ってネットワークを実際にプログラムしていきます。職場や自宅のような小規模ネットワークでもすぐに試せるコードを通じてOpenFlowの世界を体験しましょう。実際に手を動かし実行してみれば「OpenFlowってどんな場面で使えるの?」というよくある疑問も徐々に氷解していくでしょう。
 
 実装はステップバイステップで進みます。どのステップも実用的な例となっており、最初はOpenFlowやプログラミングの基礎から始めます。そしてパッチパネルやL2スイッチ、ファイアウォール、ルータの実装など徐々に複雑な機能へとステップアップし、最終的にはデータセンターでも動く本格的な「ネットワーク仮想化」の実装を目標とします。
 
@@ -43,7 +43,7 @@ Webプログラミングを多少かじったことがあれば、プログラ�
 
 この流れをOpenFlow界にも吹き込んだのがTremaです。Tremaは「OpenFlow版Rails」を合言葉として、2011年に初のOpenFlowプログラミングフレームワークとして登場しました。開発言語にはRailsと同じくRubyを採用し、また高レベルなOpenFlow APIを提供することで、プログラマはごく短いコードでOpenFlowコントローラを実装できます。また強力なOpenFlow開発ツール群を提供することで、ソフトウェアテストを中心とした反復的で段階的なアジャイル開発を可能にします。
 
-こうした強力なツールの一つがTremaの仮想ネットワーク機能です。OpenFlowスイッチを持っていない開発者でも、Tremaを使えばラップトップPC一台の中に仮想的なOpenFlowネットワークを作り、そこで自分の開発したコントローラを実行できます。この「作ったものをすぐに実行できる」という利点は、生産性の向上だけでなくSDNやOpenFlowのような新しい技術の習得にもつながります。正しい理解のためには概念の理解に加えて実践、つまり実際に手を動かすことが欠かせないからです。
+こうした強力なツールの一つがTremaの仮想ネットワーク機能です。OpenFlowスイッチを持っていない開発者でも、Tremaを使えばラップトップPC1台の中に仮想的なOpenFlowネットワークを作り、そこで自分の開発したコントローラを実行できます。この「作ったものをすぐに実行できる」という利点は、生産性の向上だけでなくSDNやOpenFlowのような新しい技術の習得にもつながります。正しい理解のためには概念の理解に加えて実践、つまり実際に手を動かすことが欠かせないからです。
 
 ここからは実際にTremaを使ってOpenFlowコントローラを作り、そして動かしていきます。まずはTremaの実行環境をセットアップしましょう。
 
@@ -64,10 +64,11 @@ image::trema_logo.png[caption="図2-a",title="Tremaの公式ロゴ"]
 
 TremaはLinux用のソフトウェアです。次のLinuxディストリビューションでの動作を確認しています。
 
-- Ubuntu (i386/amd64)
-- Debian GNU/Linux (i386/amd64)
+- Ubuntu Linux
+- Debian GNU/Linux
+- CentOS 7 系, 6 系
 
-なお動作保証はしていませんが、CentOSやFedoraをはじめとするRedHat系Linuxディストリビューションでの動作も確認しています。
+// TODO @beture12 さん作の CentOS でのインストール方法を編集して入れる https://gist.github.com/betrue12/c472df7f0545df478dcb
 
 // TODO それぞれの動作バージョンを明記したい。phutで呼び出しているipコマンドとか、あまり古いカーネルを使っていると動かないはず。
 
@@ -81,13 +82,32 @@ TremaはLinux用のソフトウェアです。次のLinuxディストリビュ�
 
 // TODO ここではTremaはインストールしない、ということを書くべき?
 
-=== RubyとBundlerのインストール
+=== Rubyのインストール
 
-Rubyのインストールには、RVMfootnote:[https://rvm.io/]というRubyインストーラを使うのが手軽です。次のコマンドを実行すると、安定版のRubyを自動的にインストールしてくれます。
+Rubyのインストール方法は、Linuxディストリビューションごとに異なります。
+
+==== Ubuntu や Debian にインストール
+
+標準のパッケージマネージャ apt で以下のようにRuby関連パッケージをインストールします。
 
 ----
-$ curl -sSL https://get.rvm.io | bash -s stable --ruby
+$ sudo apt-get update
+$ sudo apt-get install ruby2.0 ruby2.0-dev build-essential
 ----
+なお build-essential パッケージは Trema が依存する外部ライブラリのインストールに必要な gcc コンパイラなどを含んでいます。
+
+==== CentOS にインストール
+
+標準のパッケージマネージャ yum で以下のようにRuby関連パッケージをインストールします。
+
+----
+$ sudo yum update
+$ sudo yum install ruby ruby-devel gcc gcc-c++
+----
+
+なお gcc と gcc-c++ パッケージは Trema が依存する外部ライブラリのインストールに必要です。
+
+=== Bundlerのインストール
 
 Bundlerは次のコマンドでインストールできます。
 
@@ -99,15 +119,26 @@ $ gem install bundler
 
 === Open vSwitchのインストール
 
-Open vSwitchは `apt-get` で簡単にインストールできます。
+Open vSwitchのインストール方法も、Linuxディストリビューションごとに異なります。
+
+==== Ubuntu や Debian にインストール
+
+Open vSwitchも `apt-get` コマンドで簡単にインストールできます。
 
 ----
 $ sudo apt-get install openvswitch-switch
 ----
 
-他のディストリビューションを使う場合は、コマンド名やパッケージ名を適宜読み替えてください。
+==== CentOS にインストール
 
-// TODO CentOSやFedoraでのインストール方法を誰かに聞いて書く
+RDOfootnote:[https://www.rdoproject.org/Main_Page]というRedHat系Linux用のOpenStackパッケージリポジトリを使うと、yumコマンドでOpen vSwitchを簡単にインストールできます。
+
+----
+$ sudo yum update
+$ sudo yum install https://rdoproject.org/repos/rdo-release.rpm
+$ sudo yum install openvswitch
+$ sudo systemctl start openvswitch.service
+----
 
 以上でTremaを使うための準備が整いました。それでは早速、入門の定番Hello, Worldを書いて実行してみましょう。
 
