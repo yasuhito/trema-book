@@ -1,5 +1,6 @@
 [[switch_monitor]]
 = スイッチ監視ツール
+:sourcedir: vendor/switch_monitor
 :imagesdir: images/switch_monitor
 
 OpenFlowの一番の特長は、たくさんのスイッチを1つのコントローラで集中管理できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験してみましょう。
@@ -23,35 +24,7 @@ OpenFlowの特長は「たくさんのスイッチを1つのコントローラ�
 [source,ruby,subs="verbatim,attributes"]
 .lib/switch_monitor.rb
 ----
-class SwitchMonitor < Trema::Controller
-  periodic_timer_event :show_switches, 10
- 
-  def start
-    @switches = []
-  end
- 
-  def switch_ready(datapath_id)
-    @switches << datapath_id.to_hex
-    logger.info "Switch #{datapath_id.to_hex} is UP"
-    send_message datapath_id, DescriptionStats::Request.new
-  end
- 
-  def switch_disconnected(datapath_id)
-    @switches -= [datapath_id.to_hex]
-    logger.info "Switch #{datapath_id.to_hex} is DOWN"
-  end
-
-  def description_stats(datapath_id, message)
-    # TODO: loggerで適当に見やすく出力
-    pp message
-  end
-
-  private
- 
-  def show_switches
-    logger.info "All switches = " + @switches.sort.join(", ")
-  end
-end 
+include::{sourcedir}/lib/switch_monitor.rb[]
 ----
 
 // TODO vendor/switch_monitor/lib/switch_monitor.rbからソースコードを直接importする
