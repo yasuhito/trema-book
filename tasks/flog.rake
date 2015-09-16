@@ -4,13 +4,13 @@ begin
   desc 'Analyze for code complexity'
   task :flog do
     flog = Flog.new(continue: true)
-    flog.flog(*FileList['*.rb'])
-    threshold = 0
+    flog.flog(*FileList['lib/**/*.rb'])
+    threshold = 10
 
     bad_methods = flog.totals.select do |name, score|
       !(/##{flog.no_method}$/ =~ name) && score > threshold
     end
-    bad_methods.sort { |a, b| a[1] <=> b[1] }.reverse.each do |name, score|
+    bad_methods.sort { |a, b| a[1] <=> b[1] }.reverse_each do |name, score|
       printf "%8.1f: %s\n", score, name
     end
     unless bad_methods.empty?
