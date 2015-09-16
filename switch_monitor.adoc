@@ -49,15 +49,30 @@ vswitch { datapath_id 0x3 }
 
 ----
 $ ./bin/trema run ./lib/switch_monitor.rb -c switch_monitor.conf
-Switch 0x3 is UP
-Switch 0x2 is UP
-Switch 0x1 is UP
-All switches = 0x1, 0x2, 0x3
-All switches = 0x1, 0x2, 0x3
-...
+SwitchMonitor started.
+0x3 is up (all = 0x3)
+Switch 0x3 manufacturer = Nicira, Inc.
+Switch 0x3 hardware info = 
+Switch 0x3 software info = 
+Switch 0x3 serial number = 
+Switch 0x3 description = 
+0x2 is up (all = 0x2, 0x3)
+Switch 0x2 manufacturer = Nicira, Inc.
+Switch 0x2 hardware info = 
+Switch 0x2 software info = 
+Switch 0x2 serial number = 
+Switch 0x2 description = 
+0x1 is up (all = 0x1, 0x2, 0x3)
+Switch 0x1 manufacturer = Nicira, Inc.
+Switch 0x1 hardware info = 
+Switch 0x1 software info = 
+Switch 0x1 serial number = 
+Switch 0x1 description = 
 ----
 
-最初の3行(`Switch 0x1 is UP` などの行)で、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。続く行には、スイッチの詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All switches = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! `vswitch { }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
+`0x1 is UP` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。それぞれ続く行には、スイッチの製造者といった詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All switches = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! `vswitch { }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
+
+// TODO ハンドラでスイッチ一覧を表示するコードを追加
 
 
 [NOTE]
