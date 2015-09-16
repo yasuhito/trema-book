@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'trema', github: 'trema/trema', branch: 'feature/description_stats_handler'
-gem 'pio', github: 'trema/pio', branch: 'feature/stats_request'
+gem 'trema'
 
 group :development, :test do
   gem 'aruba', require: false
