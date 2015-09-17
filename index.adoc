@@ -5,6 +5,7 @@
 
 :leveloffset: 1
 
+[[how_does_openflow_work]]
 include::how_does_openflow_work.adoc[]
 
 include::hello_trema.adoc[]
@@ -12,6 +13,7 @@ include::hello_trema.adoc[]
 include::cbench.adoc[]
 
 [[switch_monitor]]
+include::switch_monitor.adoc[]
 
 include::appendix_rvm.adoc[]
 
