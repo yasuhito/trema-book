@@ -3,6 +3,8 @@
 :sourcedir: vendor/cbench
 :imagesdir: images/cbench
 
+// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
+
 本格的なOpenFlowプログラミングの第一歩として、スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールCbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
 
 == Cbenchベンチマークとは
@@ -82,13 +84,57 @@ Cbench のようなマイクロベンチマークでは、測定対象が何で�
 
 Cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
 
+[[cbench.rb]]
 [source,ruby,subs="verbatim,attributes"]
 .lib/cbench.rb
 ----
-include::{sourcedir}/lib/cbench.rb
+include::{sourcedir}/lib/cbench.rb[]
 ----
 
 // TODO Ruby 入門でハッシュとキーワード引数、.newメソッドを説明する
+
+Cbenchのソースコード (<<cbench.rb>>) を眺めると、いくつか見慣れない品詞や構文が登場していることに気付きます。この節では順にそれぞれを紹介していきますが、最初からすべてを覚える必要はありません。もし後でわからなくなったときには見直すようにしてください。
+
+=== メソッド呼び出し
+
+Cbench のソースコードにはいくつかのメソッド呼び出しがあります。
+
+- `logger.info(...)` (<<hello_trema,第1章>>で解説)
+- `ExactMatch.new(...)`
+- `message.buffer_id`
+- `SendOutPort.new(...)`
+- `message.in_port`
+
+このようにメソッドは普通、変数や定数の後にドットでつなげます。定数や変数が名詞なら、メソッドはちょうど動詞と同じです。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+door.open
+----
+
+上の例では `open` がメソッドです。英語のopenは動詞なので、当然メソッドであるとも言えます。
+
+ふつう、メソッド呼び出しによって何らかの動作をすると新しい結果が得られます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+'redrum'.reverse
+#=> "murder"
+----
+
+この場合、文字列がひっくりかえり新しい文字列が返ってきました。
+
+メソッドは引数を取るものもあります。次の例は配列の各要素の間に指定した文字をはさんで連結 (`join`) します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+['M', 'A', 'S', 'H'].join('★')
+#=> "M★A★S★H"
+----
+
+Rubyにはこのようなメソッドが何百種類もあります。それぞれの動作は名前から大体想像できるものがほとんどです。
+
+// TODO send_flow_mod_add もメソッドで、Trema::Controller オブジェクトのメソッドであることを説明
 
 === startハンドラ
 
