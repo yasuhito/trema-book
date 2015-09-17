@@ -1,6 +1,9 @@
 [[cbench]]
 = マイクロベンチマークCbench
+:sourcedir: vendor/cbench
 :imagesdir: images/cbench
+
+// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
 
 本格的なOpenFlowプログラミングの第一歩として、スイッチのフローテーブルを書き換えてみましょう。マイクロベンチマークツールCbenchを題材に、Packet InとFlow Modメッセージの使い方を学びます。
 
@@ -13,7 +16,7 @@ Cbenchは<<cbench_overview,図3-1>>のように動作します。まずcbenchプ
 [[cbench_overview]]
 image::cbench_overview.png[caption="図3-1",title="cbenchプロセスとコントローラの動作"]
 
-== Cbenchのインストール
+== インストール
 
 Cbenchの実行にはopenflow.org footnote:[http://archive.openflow.org/] の配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とCbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
 
@@ -30,7 +33,7 @@ bundle install --binstubs
 
 以上でCbenchとTremaのセットアップは完了です。
 
-== Cbenchを実行する
+== 実行してみよう
 
 さっそくCbenchを実行してみましょう。まず、コントローラを次のように起動します。
 
@@ -77,31 +80,61 @@ Flow Mod を 1 秒間に 100 万発打たなければならない状況を考え
 Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか? を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
 ====
 
-== Cbenchのソースコード
+== ソースコード解説
 
 Cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
 
+[[cbench.rb]]
 [source,ruby,subs="verbatim,attributes"]
 .lib/cbench.rb
 ----
-# A simple openflow controller for benchmarking.
-class Cbench < Trema::Controller
-  def start(_args)
-    logger.info 'Cbench started.'
-  end
-
-  def packet_in(datapath_id, message)
-    send_flow_mod_add(
-      datapath_id,
-      match: ExactMatch.new(message),
-      actions: SendOutPort.new(message.in_port + 1),
-      buffer_id: message.buffer_id
-    )
-  end
-end
+include::{sourcedir}/lib/cbench.rb[]
 ----
 
 // TODO Ruby 入門でハッシュとキーワード引数、.newメソッドを説明する
+
+Cbenchのソースコード (<<cbench.rb>>) を眺めると、いくつか見慣れない品詞や構文が登場していることに気付きます。この節では順にそれぞれを紹介していきますが、最初からすべてを覚える必要はありません。もし後でわからなくなったときには見直すようにしてください。
+
+=== メソッド呼び出し
+
+Cbench のソースコードにはいくつかのメソッド呼び出しがあります。
+
+- `logger.info(...)` (<<hello_trema,第1章>>で解説)
+- `ExactMatch.new(...)`
+- `message.buffer_id`
+- `SendOutPort.new(...)`
+- `message.in_port`
+
+このようにメソッドは普通、変数や定数の後にドットでつなげます。定数や変数が名詞なら、メソッドはちょうど動詞と同じです。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+door.open
+----
+
+上の例では `open` がメソッドです。英語のopenは動詞なので、当然メソッドであるとも言えます。
+
+ふつう、メソッド呼び出しによって何らかの動作をすると新しい結果が得られます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+'redrum'.reverse
+#=> "murder"
+----
+
+この場合、文字列がひっくりかえり新しい文字列が返ってきました。
+
+メソッドは引数を取るものもあります。次の例は配列の各要素の間に指定した文字をはさんで連結 (`join`) します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+['M', 'A', 'S', 'H'].join('★')
+#=> "M★A★S★H"
+----
+
+Rubyにはこのようなメソッドが何百種類もあります。それぞれの動作は名前から大体想像できるものがほとんどです。
+
+// TODO send_flow_mod_add もメソッドで、Trema::Controller オブジェクトのメソッドであることを説明
 
 === startハンドラ
 
@@ -330,7 +363,7 @@ send_flow_mod_add(
 `send_flow_mod_add` で指定できるすべてのオプションは次の通りです。
 
 - `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
-- `:actions`  フローエントリのアクションを指定する。アクションはアクションの配列または単体で指定できる
+- `:actions`  フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第4章>>で解説) によって指定できる
 - `:buffer_id` アクションが参照するパケットがバッファされている領域の ID を指定する
 - `:idle_timeout`  フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
 - `:hard_timeout`  フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
@@ -342,11 +375,11 @@ send_flow_mod_add(
 
 こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
 
-== Cbenchを高速化する
+== マルチスレッドで高速化
 
 Tremaはシングルスレッドで動作するので、実のところ Cbench の結果はあまり速くありません。シングルスレッドとはつまり、同時にひとつの `packet_in` ハンドラしか起動できないという意味です。たとえ cbench プロセスがたくさん Packet In メッセージを送ってきても、Trema は順に 1 つひとつ処理するため遅くなります。
 
-Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえば仮に、Tremaがスレッドで動作する `multi_threaded_packet_in` というハンドラを提供するとして、この中でスレッドセーフでないインスタンス変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。インスタンス変数はすべてのスレッドで共有するので、こうしたスレッド間の競合は正しく処理してやる必要があります。
+Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえば仮に、Tremaがスレッドで動作する `multi_threaded_packet_in` というハンドラを提供するとして、この中でスレッドセーフでない変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。すべてのスレッドで共有する値をスレッドから変更する場合に起こる競合は正しく処理してやる必要があります。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
@@ -363,7 +396,32 @@ end
 <1> スレッドセーフでないインスタンス変数
 <2> 独立したスレッドで動く Packet In ハンドラ
 
-こうした問題を解決する代表的な方法が Mutex による排他制御です。スレッド間で競合の起こる箇所を Mutex で囲むことで、その箇所へは同時に 1 つのスレッドしか入れなくなります。
+=== インスタンス変数
+
+アットマーク(`@`)で始まる語はインスタンス変数です。先ほどの例では `@db` がそれに当たります。インスタンス変数はたとえば人間の歳や身長などといった、属性を定義するときによく使われます。アットマークはアトリビュート (属性) を意味すると考えれば覚えやすいでしょう。
+
+インスタンス変数は同じクラスの中のメソッド定義内であればどこからでも使えます。具体的な例として次の `Human` クラスを見てください。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+class Human
+  def initialize
+    @age = 0 # <1>
+  end
+
+  def birthday # <2>
+    @age += 1
+  end
+end
+----
+<1> インスタンス変数を初期化。生まれたときは 0 歳
+<2> 一年に一度、歳をとる
+
+`Human` クラスで定義される `Human` オブジェクトは、初期化したときにはそのインスタンス変数 `@age` は0、つまり0歳です。`birthday` を呼び出すたびに歳をとり `@age` が 1 増えます。このように `@age` は `initialize` および `birthday` メソッドのどちらからでもその値を変更できます。
+
+=== 排他制御
+
+スレッド間の競合を解決する代表的な方法が Mutex による排他制御です。スレッド間で競合の起こる箇所を Mutex で囲むことで、その箇所へは同時に 1 つのスレッドしか入れなくなります。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
