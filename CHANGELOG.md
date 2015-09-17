@@ -1,6 +1,10 @@
 # Changelog
 
 ## develop
+
+
+## 0.4.0 (9/17/2015)
+* [#49](https://github.com/yasuhito/trema-book/pull/49): 4章を追加
 * [#54](https://github.com/yasuhito/trema-book/pull/54): hello\_trema.rb のソースコードを trema/hello_trema から include
 * [#56](https://github.com/yasuhito/trema-book/pull/56): cbench.rb のソースコードを trema/cbench から include
 
