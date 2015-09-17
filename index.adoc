@@ -11,6 +11,8 @@ include::hello_trema.adoc[]
 
 include::cbench.adoc[]
 
+[[switch_monitor]]
+
 include::appendix_rvm.adoc[]
 
 include::appendix_copyright_and_license.adoc[]
