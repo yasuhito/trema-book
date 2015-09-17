@@ -1,4 +1,3 @@
-[[how_does_openflow_work]]
 = OpenFlowの仕組み
 :imagesdir: images/how_does_openflow_work
 :table-caption!:

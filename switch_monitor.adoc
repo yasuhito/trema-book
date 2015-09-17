@@ -2,6 +2,8 @@
 :sourcedir: vendor/switch_monitor
 :imagesdir: images/switch_monitor
 
+// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
+
 OpenFlowの一番の特長は、たくさんのスイッチを1つのコントローラで集中管理できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験してみましょう。
 
 == ネットワークを集中管理しよう
@@ -174,14 +176,33 @@ timer_event show_switches, 10
 
 そこで、もしソースコード中でメソッドの名前を誰かに渡すときには、かならずシンボルにすることで実行されないようにして渡します。これがシンボルがよく使われるもう1つの用途です。
 
-=== 配列
+== SwitchMonitorのソースコード
+
+それではスイッチ監視ツールのソースコードを読み解いていきましょう。今回の肝となるのは、スイッチの接続と切断イベント、そしてスイッチの詳細情報メッセージをハンドラで取得部分と、スイッチ一覧を一定時間ごとに表示する部分です。Tremaはスイッチの接続と切断を捕捉するための2つのハンドラメソッドを提供しています。また、スイッチの詳細情報を取得するためのハンドラメソッドも提供しています。
+
+- `switch_ready`：OpenFlowスイッチは、起動するとOpenFlowコントローラへ接続しにいく。コントーラはスイッチとの接続が確立すると`switch_ready`ハンドラが呼ばれ、引数にはスイッチのDatapath IDが渡される
+- `switch_disconnected`：スイッチが障害など何らかの原因でコントローラとの接続を切った場合、コントローラの`switch_disconnected`ハンドラが呼ばれ、引数にはスイッチのDatapath IDが渡される
+- `description\_stats`: スイッチの製造者やハードウェア情報などの詳細情報を載せた`DescriptionStats::Reply`メッセージがスイッチから届いたときにこのハンドラが呼ばれる。第一引数はスイッチのDatapath ID、第二引数にはこのメッセージが渡される
+
+=== スイッチの起動を捕捉する
+
+`switch_ready` ハンドラでは、スイッチ一覧リストに新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/switch_monitor.rb[lines="5..14"]
+----
+
+`@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。新しくスイッチが起動すると `switch_ready` ハンドラが起動し、`@switches` が保持する配列の最後にそのDatapath IDを追加します。また、`logger.info` で新しいスイッチのDatapath IDを表示します。
+
+==== 配列
 
 配列は角カッコで囲まれたリストで、カンマで区切られています。
 
 - `[]` は空の配列
 - `[1, 2, 3]` は数字の配列
 - `["友太郎", "青井", "宮坂主任"]` は文字列の配列
- 
+
 Rubyの配列はとても直感的に要素を足したり取り除いたりできます。たとえば配列の最後に要素を加えるには `<<` を使います。
 
 [source,ruby,subs="verbatim,attributes"]
@@ -200,50 +221,7 @@ fruits -= [ "テレビ", "たわし" ]
 #=> [ "バナナ", "みかん", "りんご" ]
 ----
 
-配列はRubyで多用するデータ構造で、この他にもたくさんの操作があらかじめ定義されています。もし詳しく知りたい人は第○章の参考文献で紹介したRubyのサイトや書籍を参照してください。
-
-// TODO 章への参照を入れる
-
-// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
-
-さて、今回は少し長くなりましたがこれで必要なRubyの勉強は終わりです。わからなくなったらいつでも戻って読み返してください。
-
-== SwitchMonitorのソースコード
-
-それではスイッチ監視ツールのソースコードを読み解いていきましょう。今回の肝となるのは、スイッチの接続と切断イベント、そしてスイッチの詳細情報メッセージをハンドラで取得部分と、スイッチ一覧を一定時間ごとに表示する部分です。Tremaはスイッチの接続と切断を捕捉するための2つのハンドラメソッドを提供しています。また、スイッチの詳細情報を取得するためのハンドラメソッドも提供しています。
-
-- `switch_ready`：OpenFlowスイッチは、起動するとOpenFlowコントローラへ接続しにいく。コントーラはスイッチとの接続が確立すると`switch_ready`ハンドラが呼ばれ、引数にはスイッチのDatapath IDが渡される
-- `switch_disconnected`：スイッチが障害など何らかの原因でコントローラとの接続を切った場合、コントローラの`switch_disconnected`ハンドラが呼ばれ、引数にはスイッチのDatapath IDが渡される
-- `description\_stats`: スイッチの製造者やハードウェア情報などの詳細情報を載せた`DescriptionStats::Reply`メッセージがスイッチから届いたときにこのハンドラが呼ばれる。第一引数はスイッチのDatapath ID、第二引数にはこのメッセージが渡される
-
-=== スイッチの起動を捕捉する
-
-`switch_ready` ハンドラでは、スイッチ一覧リストに新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
-
-[source,ruby,subs="verbatim,attributes"]
-----
-class SwitchMonitor < Trema::Controller
- # ...
-
- def start
-   @switches = []
- end
-
- def switch_ready(datapath_id)
-   @switches << datapath_id.to_hex
-   logger.info "Switch #{datapath_id.to_hex} is UP"
-   send_message datapath_id, DescriptionStats::Request.new
- end
-
- # ...
-end
-----
-
-// TODO 新しいコードに差し替え
-
-`@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。新しくスイッチが起動すると `switch_ready` ハンドラが起動し、`@switches` が保持する配列の最後にそのDatapath IDを追加します。また、`logger.info` で新しいスイッチのDatapath IDを表示します。
-
-`DescriptionStats::Request` はスイッチの詳細情報を要求するメッセージです。`send_message` メソッドで起動してきたスイッチのDatapath IDにこのメッセージを送ることで、スイッチの製造者やハードウェア情報などの詳細を要求します。
+配列はRubyで多用するデータ構造で、この他にもたくさんの操作があらかじめ定義されています。もし詳しく知りたい人は<<how_does_openflow_work,第 1 章>>の参考文献で紹介したRubyのサイトや書籍を参照してください。
 
 === スイッチの切断を捕捉する
 
