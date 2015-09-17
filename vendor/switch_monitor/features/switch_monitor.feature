@@ -20,8 +20,8 @@ Feature: Switch Monitor example
     And the stdout should contain "0x3 is up"
     And the stdout should contain:
       """
-      0x2 is down (all = 0x1, 0x3)
-      0x2 is up (all = 0x1, 0x2, 0x3)
+      0x2 is down (All = 0x1, 0x3)
+      0x2 is up (All = 0x1, 0x2, 0x3)
       """
 
   @sudo
@@ -33,9 +33,9 @@ Feature: Switch Monitor example
     And the file "SwitchMonitor.log" should contain "0x1 is up"
     And the file "SwitchMonitor.log" should contain "0x2 is up"
     And the file "SwitchMonitor.log" should contain "0x3 is up"
-    And the file "SwitchMonitor.log" should contain "all = 0x1, 0x2, 0x3"
+    And the file "SwitchMonitor.log" should contain "All = 0x1, 0x2, 0x3"
     When I successfully run `trema stop 0x2`
-    Then the file "SwitchMonitor.log" should contain "0x2 is down (all = 0x1, 0x3)"
+    Then the file "SwitchMonitor.log" should contain "0x2 is down (All = 0x1, 0x3)"
     When I successfully run `trema start 0x2`
-    And the file "SwitchMonitor.log" should contain "0x2 is up (all = 0x1, 0x2, 0x3)"
+    And the file "SwitchMonitor.log" should contain "0x2 is up (All = 0x1, 0x2, 0x3)"
     
