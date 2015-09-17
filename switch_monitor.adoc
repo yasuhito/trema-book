@@ -229,18 +229,8 @@ fruits -= [ "テレビ", "たわし" ]
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-class SwitchMonitor < Trema::Controller
-  # ...
-
-  def switch_disconnected(datapath_id)
-    @switches -= [datapath_id.to_hex]
-    info "Switch #{datapath_id.to_hex} is DOWN"
-  end
-
-  # ...
-end
+include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
 ----
-// TODO 新しいソースコードに差し替え
 
 ここでは `switch_ready` とは逆に、配列の引き算 (`-=`) で切断したスイッチのDatapath IDを `@switches` から除いていることに注意してください。
 
