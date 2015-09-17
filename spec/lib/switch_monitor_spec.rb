@@ -25,7 +25,7 @@ describe SwitchMonitor do
           Given(:dpid1) { 0xabc }
           Then do
             expect(logger).to(have_received(:info).
-                              with('0xabc is up (all = 0xabc)'))
+                              with('0xabc is up (All = 0xabc)'))
           end
 
           describe '#switch_ready' do
@@ -35,7 +35,7 @@ describe SwitchMonitor do
               Given(:dpid2) { 0xdef }
               Then do
                 expect(logger).to(have_received(:info).
-                                  with('0xdef is up (all = 0xabc, 0xdef)'))
+                                  with('0xdef is up (All = 0xabc, 0xdef)'))
               end
 
               describe '#switch_disconnected' do
@@ -45,7 +45,7 @@ describe SwitchMonitor do
                   Given(:dpid3) { 0xabc }
                   Then do
                     expect(logger).to(have_received(:info).
-                                      with('0xabc is down (all = 0xdef)'))
+                                      with('0xabc is down (All = 0xdef)'))
                   end
                 end
               end
