@@ -157,20 +157,20 @@ Switch 0x3 is UP
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-periodic_timer_event :show_switches, 10
+timer_event :show_switches, 10
 ----
 
-この `:show_switches` は `SwitchMonitor` クラスのメソッド名です。ここでやっていることを簡単に言うと、`periodic_timer_event` の引数として `show_switches` メソッドの名前を渡しています。
+この `:show_switches` は `SwitchMonitor` クラスのメソッド名です。ここでやっていることを簡単に言うと、`timer_event` の引数として `show_switches` メソッドの名前を渡しています。
 
 もしここでシンボルを使わずに、直接次のように指定するとどうなるでしょうか？
 
 [source,ruby,subs="verbatim,attributes"]
 ----
 # まちがい!
-periodic_timer_event show_switches, 10
+timer_event show_switches, 10
 ----
 
-これではうまく動きません。なぜならば、ソースコードの中に `show_switches` とメソッドの名前を書いた時点でそのメソッドが実行されてしまい、その返り値が `periodic_timer_event` へと渡されてしまうからです。
+これではうまく動きません。なぜならば、ソースコードの中に `show_switches` とメソッドの名前を書いた時点でそのメソッドが実行されてしまい、その返り値が `timer_event` へと渡されてしまうからです。
 
 そこで、もしソースコード中でメソッドの名前を誰かに渡すときには、かならずシンボルにすることで実行されないようにして渡します。これがシンボルがよく使われるもう1つの用途です。
 
@@ -270,14 +270,16 @@ end
 
 // TODO クラスメソッドの説明
 
-スイッチの一覧を一定時間ごとに表示するには、Tremaのタイマー機能を使います。次のように `periodic_timer_event` に続いて一定間隔ごとに呼び出したいメソッドのシンボル名、間隔を秒数で指定しておくと、指定したメソッドが指定された間隔ごとに呼ばれます。
+スイッチの一覧を一定時間ごとに表示するには、Tremaのタイマー機能を使います。次のように `timer_event` に続いて一定間隔ごとに呼び出したいメソッドのシンボル名、間隔を秒数で指定しておくと、指定したメソッドが指定された間隔ごとに呼ばれます。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
 class Human < Trema::Controller
-  # 1年(31536000 秒)ごとにbirthdayメソッドを呼ぶ
-  periodic_timer_event :birthday, 31536000
+  # 1年ごとにbirthdayメソッドを呼ぶ
+  timer_event :birthday, 1.year
 ----
+
+// TODO 1.year が動くかどうかチェック
 
 この定義はクラス名定義の直後に来るので、まるでクラス属性としてタイマーがセットされているように読めることに注目してください。このようにTremaではタイマー処理も短く読みやすく書けるのです。
 
@@ -286,9 +288,9 @@ class Human < Trema::Controller
 [source,ruby,subs="verbatim,attributes"]
 ----
 class Human < Trema::Controller
-  periodic_timer_event :birthday, 31536000
+  timer_event :birthday, 1.year
 
-  # ...
+  ...
 
   private
 
@@ -302,7 +304,7 @@ class Human < Trema::Controller
 [source,ruby,subs="verbatim,attributes"]
 ----
 class SwitchMonitor < Trema::Controller
-  periodic_timer_event :show_switches, 10
+  timer_event :show_switches, 10
 
   # ...
 
@@ -322,7 +324,7 @@ end
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-include::{sourcedir}/lib/switch_monitor.rb[lines="8..12,18..27"]
+include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
 ----
 
 スイッチの詳細情報のほかにも、さまざまな統計情報を取得できます。OpenFlow 1.0がサポートしている統計情報の一覧は次のとおりです。
@@ -346,7 +348,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="8..12,18..27"]
 
 - スイッチの起動と切断を捕捉するには、`switch_ready` と `switch_disconnected` ハンドラメソッドを定義する
 - スイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージをスイッチへ送信し `description_stats` ハンドラでリプライを受信する
- - タイマー (`periodic_timer_event`) を使うと一定間隔ごとに指定したメソッドを起動できる
+ - タイマー (`timer_event`) を使うと一定間隔ごとに指定したメソッドを起動できる
 - 仮想ネットワーク機能を使うとOpenFlowスイッチを持っていなくてもコントローラのテストができる
 
 // TODO 学んだことをまとめなおす
