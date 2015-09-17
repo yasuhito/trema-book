@@ -16,7 +16,7 @@ Cbenchは<<cbench_overview,図3-1>>のように動作します。まずcbenchプ
 [[cbench_overview]]
 image::cbench_overview.png[caption="図3-1",title="cbenchプロセスとコントローラの動作"]
 
-== Cbenchのインストール
+== インストール
 
 Cbenchの実行にはopenflow.org footnote:[http://archive.openflow.org/] の配布するベンチマークスイートOflopsが必要です。Tremaが公開するtrema/cbenchにはOflops一式とCbenchコントローラのソースコードが含まれています。次のコマンドでダウンロードしてください。
 
@@ -33,7 +33,7 @@ bundle install --binstubs
 
 以上でCbenchとTremaのセットアップは完了です。
 
-== Cbenchを実行する
+== 実行してみよう
 
 さっそくCbenchを実行してみましょう。まず、コントローラを次のように起動します。
 
@@ -80,7 +80,7 @@ Flow Mod を 1 秒間に 100 万発打たなければならない状況を考え
 Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか? を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
 ====
 
-== Cbenchのソースコード
+== ソースコード解説
 
 Cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
 
@@ -375,7 +375,7 @@ send_flow_mod_add(
 
 こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
 
-== Cbenchを高速化する
+== マルチスレッドで高速化
 
 Tremaはシングルスレッドで動作するので、実のところ Cbench の結果はあまり速くありません。シングルスレッドとはつまり、同時にひとつの `packet_in` ハンドラしか起動できないという意味です。たとえ cbench プロセスがたくさん Packet In メッセージを送ってきても、Trema は順に 1 つひとつ処理するため遅くなります。
 
