@@ -33,51 +33,49 @@ include::{sourcedir}/lib/switch_monitor.rb[]
 
 新しい品詞や構文がいくつかありますが、今までに学んだ知識だけでこのRubyソースコードの構成はなんとなくわかったはずです。まず、スイッチ監視ツールの本体は `SwitchMonitor` という名前のクラスです。そしてこのクラスにはいくつかハンドラメソッドが定義してあるようです。おそらくそれぞれがスイッチの接続や切断、そして統計情報イベントを処理しているんだろう、ということが想像できれば上出来です。
 
-=== 実行してみよう
+== 実行してみよう
 
 試しに仮想スイッチ3台の構成でスイッチ監視ツールを起動してみましょう。次の内容の設定ファイルを `switch_monitor.conf` として保存してください。なお、それぞれの `datapath_id` がかぶらないように `0x1`, `0x2`, `0x3` と連番を振っていることに注意してください。
 
-// TODO ファイルを include する
+// TODO trema.conf → switch_monitor.conf にファイル名を変更
 
 [source,ruby,subs="verbatim,attributes"]
 .switch_monitor.conf
 ----
-vswitch { datapath_id 0x1 }
-vswitch { datapath_id 0x2 }
-vswitch { datapath_id 0x3 }
+include::{sourcedir}/trema.conf[]
 ----
 
 この構成でスイッチ監視ツールを起動するには、この設定ファイルを `trema run` の `-c` オプションに渡すのでした。スイッチ監視ツールの出力は次のようになります。
 
-// TODO 出力をアップデートして、重要な行にマーカーで解説する
+// TODO 重要な行にマーカーで解説する (?)
 
 ----
 $ ./bin/trema run ./lib/switch_monitor.rb -c switch_monitor.conf
 SwitchMonitor started.
-0x3 is up (all = 0x3)
+All =
+0x3 is up (All = 0x3)
 Switch 0x3 manufacturer = Nicira, Inc.
-Switch 0x3 hardware info = 
-Switch 0x3 software info = 
-Switch 0x3 serial number = 
-Switch 0x3 description = 
-0x2 is up (all = 0x2, 0x3)
-Switch 0x2 manufacturer = Nicira, Inc.
-Switch 0x2 hardware info = 
-Switch 0x2 software info = 
-Switch 0x2 serial number = 
-Switch 0x2 description = 
-0x1 is up (all = 0x1, 0x2, 0x3)
+Switch 0x3 hardware info =
+Switch 0x3 software info =
+Switch 0x3 serial number =
+Switch 0x3 description =
+0x1 is up (All = 0x1, 0x3)
 Switch 0x1 manufacturer = Nicira, Inc.
-Switch 0x1 hardware info = 
-Switch 0x1 software info = 
-Switch 0x1 serial number = 
-Switch 0x1 description = 
+Switch 0x1 hardware info =
+Switch 0x1 software info =
+Switch 0x1 serial number =
+Switch 0x1 description =
+0x2 is up (All = 0x1, 0x2, 0x3)
+Switch 0x2 manufacturer = Nicira, Inc.
+Switch 0x2 hardware info =
+Switch 0x2 software info =
+Switch 0x2 serial number =
+Switch 0x2 description =
+All = 0x1, 0x2, 0x3
+All = 0x1, 0x2, 0x3
 ----
 
-`0x1 is UP` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。それぞれ続く行には、スイッチの製造者といった詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All switches = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! `vswitch { }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
-
-// TODO ハンドラでスイッチ一覧を表示するコードを追加
-
+`0x1 is UP` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。それぞれ続く行には、スイッチの製造者といった詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All switches = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! 設定ファイルの `vswitch { }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
 
 [NOTE]
 .Datapath ってどういう意味？
