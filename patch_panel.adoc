@@ -1,3 +1,294 @@
 = インテリジェントなパッチパネル
 :sourcedir: vendor/patch_panel
 :imagesdir: images/patch_panel
+
+日々のネットワーク管理に役立ち、さらにSDNの入門にもなるのがこのOpenFlowで作るパッチパネルです。その上ソースコードも簡単とくれば、試さない手はありません。
+
+== 便利なインテリジェント・パッチパネル
+
+無計画にネットワークを構築すると、ケーブルの配線は悲惨なまでにごちゃごちゃになります。からみあったケーブルのせいで見通しが悪くなり、そのままさらにスイッチやサーバを増築していくと配線のやり直しとなります。こうなってしまう一番の原因は、スイッチとスイッチ、スイッチとサーバをケーブルで直接つないでしまうことです。これでは、つなぐものを増やせば増やすほどごちゃごちゃになっていくのは当然です。
+
+これを解消するのがパッチパネルという装置です。パッチパネルの仕組みはシンプルで、ケーブルを挿すためのコネクタがずらりと並んでいて、配線をいったんパッチパネルで中継できるようになっています。スイッチやサーバーをいったん中継点となるパッチパネルにつなぎ、パッチパネル上の変更だけで全体の配線を自由に変更できるので、ケーブルがすっきりし拡張性も向上します。
+
+[[patch_panel]]
+image::patch_panel.png[caption="図5-1",title="ごちゃごちゃした配線をパッチパネルですっきりと"]
+
+パッチパネルをネットワーク経由で操作できるようにしたのがいわゆるインテリジェント・パッチパネルです。パッチパネルによってメンテナンス性が向上できるとしても、配線を変更するたびにサーバ室まで足を運ぶのは面倒です。そこでインテリジェント・パッチパネルを使えば、ネットワーク経由でパッチパネルの配線を変更できるようになります。
+
+== OpenFlow版インテリジェント・パッチパネル
+
+インテリジェント・パッチパネルはOpenFlowで簡単に実装できます。パッチパネルでの中継のように、パケットを指定したコネクタからコネクタへ転送するというのは、フローエントリの代表的な使い方の一つだからです。
+
+OpenFlowで実装したパッチパネルは図?-?のようになります。OpenFlowスイッチをパッチパネルに見立てて、接続を中継したいデバイス(ホストまたはスイッチ)をつなげます。コントローラはパケット転送のルールをフローエントリとしてOpenFlowスイッチに書き込むことで、仮想的なパッチを作ります。
+
+[[openflow_patch_panel]]
+image::openflow_patch_panel.png[caption="図5-2",title="OpenFlowで実現するパッチパネルの仕組み"]
+
+たとえば<<openflow_patch_panel,図5-2>>について、ポート1番と4番をつなげる場合を考えましょう。必要なフローエントリは次の2つです。
+
+- ポート1番に入力したパケットをポート4番に出力する
+- ポート4番に入力したパケットをポート1番に出力する
+
+フローエントリを構成する要素には、「こういうパケットが届いたとき」というマッチングルールと、「こうする」というアクションがあるのでした。パッチパネルの場合、「ポートx番に入力」がマッチングルールで、「ポートy番に出力」がアクションです。
+
+それでは仕組みがわかったところで、パッチパネルコントローラを動かしてみましょう。
+
+== 実行してみよう
+
+それでは早速実行してみましょう。でも、OpenFlow版パッチパネルを試すにはOpenFlowスイッチが何台か必要です。OpenFlowスイッチを持っていない人はどうすればよいでしょうか?
+
+// TODO 仮装ネットワークは前の章ですでに使っているので、以下の説明を必要な章に移動する。
+
+なんと、Tremaを使えばOpenFlowスイッチを持っていなくてもこうしたコントローラを実環境さながらに実行できます。その秘密はTremaの協力な機能の1つ、仮想ネットワーク機能にあります。これは仮想的なスイッチやホストからなる仮想ネットワークを開発マシン内に作ってしまう機能です。この仮想ネットワークを使えば、実際のOpenFlowスイッチを用意しなくとも開発マシン内でコントローラをテストできるのです。しかも、こうして開発したコントローラは実際のネットワークでもそのまま動作します!
+
+この仮想ネットワーク機能を使うには、まずはそのネットワーク構成を設定ファイルとして書く必要があります。たとえば、仮想スイッチ1台からなる仮想ネットワークの設定ファイルは次のように書きます。
+
+----
+vswitch { datapath_id 0xabc }
+----
+
+`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一位に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一位な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
+
+仮想スイッチ以外にも、仮想ホストと仮想リンクを作ることができます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+vswitch('patch_panel') { datapath_id 0xabc }
+
+vhost ('host1') { ip '192.168.0.1' }
+vhost ('host2') { ip '192.168.0.2' }
+vhost ('host3') { ip '192.168.0.3' }
+
+link 'patch_panel', 'host1'
+link 'patch_panel', 'host2'
+link 'patch_panel', 'host3'
+----
+
+// TODO 設定ファイルとの対応がわかるような仮想ネットワーク図を入れる
+
+ここで、`vhost` は仮想ホストの設定です。この設定ファイルでは host1, host2, そして host3 とslinkいう名前の3つの仮想ホストを起動しています。また、`link` は仮想リンクで、指定した仮想スイッチと仮想ホスト同士を接続できます。この例では、仮想スイッチ `patch_nanel` と仮想ホスト host1, host2, host3 をそれぞれ仮想リンクで接続しています。
+
+// TODO どのホストがどのポート番号につながるかの説明を入れる
+
+=== パッチパネルのインストール
+では仮想スイッチ3台の構成でパッチパネルを起動してみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/patch_panelからダウンロードできます。
+
+----
+$ git clone https://github.com/trema/patch_panel.git
+----
+
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaとパッチパネルのソースコード一式を自動的にインストールできます。
+
+----
+$ cd cbench
+$ bundle install --binstubs
+----
+
+- `lib/patch_panel.rb`: パッチパネル本体
+- `trema.conf`: 仮想ネットワーク設定ファイル
+- `bin/patch`: パッチパネルの操作コマンド
+
+以上でパッチパネルとTremaのセットアップは完了です。
+
+パッチパネルを仮想ネットワーク内で実行するには、仮想ネットワーク設定ファイルを `trema run` の `-c` オプションに渡します。次のように `trema run` コマンドでパッチパネルコントローラを起動してください。
+
+----
+$ ./bin/trema run ./lib/patch_panel.rb -c trema.conf
+----
+
+パッチパネルは起動しただけではまだパッチングされていないので、ホスト間でのパケットは通りません。これを確認するために、`trema send_packets` コマンドを使ってhost1とhost2の間でテストパケットを送ってみましょう。
+
+----
+$ ./bin/trema send_packets --source host1 --dest host2
+$ ./bin/trema send_packets --source host2 --dest host1
+----
+
+正常に動いていれば、それぞれのホストでの受信パケット数は0になっているはずです。これを確認できるのが `trema show_stats` コマンドです。
+
+----
+$ ./bin/trema show_stats host1
+(TODO 実行結果をここに入れる)
+$ ./bin/trema show_stats host2
+----
+
+たしかに、どちらのホストにもまだパケットは届いていません。
+
+パッチパネルの設定は `./bin/patch` コマンドで指定できます。たとえば、ポート1番とポート2番をつなぐには次のコマンドを実行します。
+
+----
+$ ./bin/patch add 1 2
+----
+
+これで、host1とhost2が通信できるはずです。実際に `trema send_packets` を試してみましょう。
+
+----
+$ ./bin/trema send_packets --source host1 --dest host2
+$ ./bin/trema send_packets --source host2 --dest host1
+$ ./bin/trema show_stats host1
+(TODO 実行結果をここに入れる)
+$ ./bin/trema show_stats host2
+(TODO 実行結果をここに入れる)
+----
+
+たしかにパケットが通っていることを確認できました。パッチパネルの動作イメージがわかったところで、ソースコードを見ていきます。
+
+== PatchPanelのソースコード
+パッチパネルのソースコードは<<patch_panel.rb>>になります。
+
+[[patch_panel.rb]]
+[source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb
+----
+include::{sourcedir}/lib/patch_panel.rb[]
+----
+
+// TODO パッチパネルではコントローラを外部コマンドから操作する方法も説明する
+
+今までに学んだ知識で、このコードをできるだけ解読してみましょう。
+
+- パッチパネルの本体はPatchPanelという名前の小さなクラスである
+- このクラスには第?章で学んだ `switch_ready` ハンドラが定義されており、この中で `delete_flow_entries` と `add_flow_entries` いうプライベートメソッドを呼んでいる。どうやらこれがパッチ処理の本体だ
+- `create_patch` と `delete_patch` というメソッドが定義されている。これらがパッチの作成と削除に対応していると予想できる
+- `add_flow_entries` メソッドでは `send_flow_mod_add` というFlow Modメッセージに関係ありそうなメソッドを2回呼んでいる。1つのパッチを作るのに2つのフローエントリが必要なので、2回呼んでいるのだろうと推測できる 
+
+ここまでわかればしめたものです。あらかじめパッチパネルの仕組みを押さえていたので、ソースコードを読むのも簡単です。それでは、各部分のソースコードを詳しく見ていきましょう。
+
+=== startハンドラ
+startハンドラではコントローラを初期化します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
+----
+
+`@patch` は現在のパッチング情報を入れておくインスタンス変数です。たとえばスイッチ0x1のポート1番と2番、および3番と4番をパッチングする場合、この中身は `{0x1 => [[1, 2], [3,4]}` となります。startハンドラは起動時にこれを空のハッシュで初期化するので、起動直後にはパケットの送受信はできません。
+
+=== switch_readyハンドラ
+`switch_ready` ハンドラでは、起動してきたスイッチに対してパッチング用のフローエントリを書き込みます。すでにパッチ情報 `@patch` にフローエントリ情報が入っていた場合(スイッチがいったん停止して再接続した場合など)のみ、フローエントリを入れ直します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="8..17"]
+----
+
+- `@patch[dpid].each` はパッチング設定をひとつずつ処理するイテレータ。仮引数は `port_a` と `port_b` の2つで、それぞれにパッチでつなぐポート番号がひとつずつ入る
+- プライベートメソッド `delete_flow_entries` は古いフローエントリを消す。
+- プライベートメソッド `add_flow_entries` がパッチング追加処理の本体。起動してきたスイッチのDatapath ID、およびパッチングするポート番号2つを引数に取る
+
+=== add_flow_entriesメソッド
+1つのパッチ(2つのフローエントリ)を実際に書き込むのが `add_flow_entries` プライベートメソッドです。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
+----
+
+最初の `check_dpid` もまたプライベートメソッドで、`dpid` で指定したスイッチがコントローラに接続しているかを確認します。すでに接続している場合には `switch_ready` ハンドラの中で `@patch` インスタンス変数のキーとして `dpid` が登録されているはずなので、`@patch.key?(dpid)` をチェックすればよいことになります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="47..49"]
+----
+
+`add_flow_entries` の中で2回呼び出している `send_flow_mod_add` がフローエントリを書き込むためのメソッドです。このメソッドは次の2つの引数を取ります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_flow_mod_add(dpid, options)
+----
+
+それぞれの引数の意味は次の通りです。
+
+- dpid: Flow Mod メッセージの届け先となるスイッチの Datapath ID
+- options: Flow Mod メッセージの中身を決めるためのオプション
+
+オプションの具体例として、最初の `send_flow_mod_add` の呼び出し部分を見てみましょう。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
+----
+
+ここでは、ポート `port_a` 番へ上がってきたパケットをポート `port_b` 番へ出力するフローエントリを書き込んでいます。cbenchの実装で見たように、このためには次の2つのオプションが必要です。
+
+- `match:` オプションにはマッチングルールを指定する。ここでは、「入力ポート(`:in_port`)が `port_a` であった場合」というマッチングルールを指定した `Match` オブジェクトを渡している
+- `actions:` オプションにはアクションを指定する。ここでは、「ポート `port_b` 番へ出力する」というForwardアクションを `SendOutPort` クラスで作って指定している
+
+=== delete_flow_entriesメソッド
+`delete_flow_entries` は古いフローエントリを消すメソッドです。`add_flow_entries` でフローエントリを足す前に、いったん `delete_flow_entries` で古いフローエントリを消すことでフローエントリが重複しないようにします。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="41..45"]
+----
+
+ここで呼び出している `send_flow_mod_delete` は `send_flow_mod_add` とは逆のメソッドで、`match:` に対応するフローエントリを削除します。
+
+=== create_patch, delete_patchメソッド
+`create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `PatchPanel` クラス内から呼び出されるのではなく、`bin/patch_panel` コマンドから呼び出されます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="19..22"]
+----
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/lib/patch_panel.rb[lines="24..27"]
+----
+
+== patch_panelコマンドのソースコード
+
+`bin/patch_panel` コマンドは `create` と `delete` という2つのサブコマンドを持っており、それぞれが `PatchPanel#create`、`PatchPanel#delete` メソッドを呼び出します。
+
+[[patch_panel_command]]
+[source,ruby,subs="verbatim,attributes"]
+./bin/patch_panel
+----
+include::{sourcedir}/bin/patch_panel[]
+----
+
+それぞれのサブコマンドの実装にはgliというRubyライブラリを使っています。gliを使うと、いわゆるコマンドスイートを簡単に実装できます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+# patch_panelコマンド
+module PatchPanelApp
+  extend GLI::App
+
+  desc 'Creates a new patch'
+  arg_name 'dpid port#1 port#2'
+  command :create do |c|
+    # createサブコマンドのオプションと動作
+  end
+
+  desc 'Deletes a patch'
+  arg_name 'dpid port#1 port#2'
+  command :delete do |c|
+    # deleteサブコマンドのオプションと動作
+  end
+
+  # patch_panelコマンドの実行
+  exit run(ARGV)
+end
+----
+
+ここでのポイントは、それぞれのサブコマンド内での `PatchPanel` クラスのメソッド呼び出し部分です。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+Trema.controller_process(options[:socket_dir]).create_patch(dpid, port1, port2)
+----
+
+この `Trema.controller_process` メソッドは現在動いているコントローラオブジェクト(`PatchPanel` クラスオブジェクト)を返します。そしてその返り値に対して `create_patch` などのメソッドを呼び出すことができます。
+
+== まとめ
+フローを使ってパケットを転送する方法の入門編として、OpenFlowで実現するインテリジェントなパッチパネルを書きました。
+
+- Tremaで作ったコントローラを仮想ネットワーク上で動かした
+- Rubyプログラミングで多用するイテレータを学んだ
+- コントローラ操作用の外部コマンドの書き方を学んだ
+
+実は、今回作ったOpenFlow版パッチパネルはSDNの一種です。なぜならば、ネットワークの構成をソフトウェアで自由に変更できるからです。第2章で紹介したように、OpenFlow版パッチパネルを使えばホストの所属するネットワークをソフトウェア的に切り替えられます。これは、物理ネットワークの上にそれぞれ独立したネットワークをいくつも作れるという意味で、最も単純なネットワーク仮想化に他なりません。より高度な仮想化については、第○章および第○章でも紹介します。
+
+続く章では、Flow Modに並んで重要なOpenFlowメッセージである、Packet InとPacket Outを使ってみましょう。
