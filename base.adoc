@@ -8,6 +8,9 @@ include::cbench.adoc[]
 [[switch_monitor]]
 include::switch_monitor.adoc[]
 
+[[patch_panel]]
+include::patch_panel.adoc[]
+
 include::appendix_rvm.adoc[]
 
 include::appendix_copyright_and_license.adoc[]

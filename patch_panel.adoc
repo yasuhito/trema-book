@@ -1,0 +1,3 @@
+= インテリジェントなパッチパネル
+:sourcedir: vendor/patch_panel
+:imagesdir: images/patch_panel
