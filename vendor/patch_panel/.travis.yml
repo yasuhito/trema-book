@@ -1,0 +1,24 @@
+language: ruby
+
+bundler_args: --without development
+
+script: bundle exec rake travis
+
+rvm:
+  - 2.0
+  - 2.1
+  - 2.2
+  - ruby-head
+
+before_install:
+  - gem update bundler
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+  fast_finish: true
+
+env:
+  global:
+    - secure: K8XOn6irNlcpwwXsTJYH5jA7Iu3JM329kl8lzKIeku+5ypVTOBoknVr7NHQJEJvC/RWUmXh9IxPSo2xUVfO6gVum9rjCRzG+m7dVvhvM7I4E0nnCn/ouTkY+ksSBcPJ34UDb7Z4NzyrrG04MtJKLwbBtD61hRseeo3hOO9uAH6Y=
+    - secure: lDefP7JDN2SBO/21Sm+TBIvXRYm6sTbyuJDaX76HXIX/ccf/oxYYuqfrxe32SgZuMXVHQcNKjl55kQMz0LtgSVLgKPhn2AaBn96j19F84FdcTV3wMJZURMGIrIgW7uKpc6KLGlQtAHnPcmKSm7/6Vhz2IbtlnZdEEC/jYagVOeY=
