@@ -50,7 +50,6 @@ link 'patch_panel', 'host2'
 link 'patch_panel', 'host3'
 ----
 
-// TODO vendor/patch_panel から設定ファイルを include する
 // TODO 設定ファイルとの対応がわかるような仮想ネットワーク図を入れる
 
 この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
