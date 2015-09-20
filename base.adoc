@@ -11,6 +11,10 @@ include::switch_monitor.adoc[]
 [[patch_panel]]
 include::patch_panel.adoc[]
 
+[[routing_switch]]
+
+[[sliceable_switch]]
+
 include::appendix_rvm.adoc[]
 
 include::appendix_copyright_and_license.adoc[]
