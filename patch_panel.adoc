@@ -58,7 +58,8 @@ link 'patch_panel', 'host3'
 // TODO どのホストがどのポート番号につながるかの説明を入れる
 
 === パッチパネルのインストール
-では仮想スイッチ3台の構成でパッチパネルを起動してみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/patch_panelからダウンロードできます。
+
+では仮想スイッチ3台の構成でパッチパネルを起動してみましょう。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/patch_panelリポジトリ (https://github.com/trema/patch_panel) からダウンロードできます。
 
 ----
 $ git clone https://github.com/trema/patch_panel.git
