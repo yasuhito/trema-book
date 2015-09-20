@@ -55,8 +55,6 @@ link 'patch_panel', 'host3'
 
 この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
 
-// TODO どのホストがどのポート番号につながるかの説明を入れる
-
 === パッチパネルのインストール
 
 では仮想スイッチ3台の構成でパッチパネルを起動してみましょう。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/patch_panelリポジトリ (https://github.com/trema/patch_panel) からダウンロードできます。
