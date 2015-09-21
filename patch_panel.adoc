@@ -61,8 +61,9 @@ $ bundle install --binstubs
 仮想ネットワーク設定ファイル `patch_panel.conf` では、パッチパネルの動作テストのためにパケットを送受信できる仮想ホストを定義しています。`vhost` で始まる行が仮想ホスト、そして `link` で始まる行がスイッチやホストをつなげるための仮想リンクです。
 
 [source,ruby,subs="verbatim,attributes"]
+./patch_panel.conf
 ----
-include::{sourcedir}/trema.conf[]
+include::{sourcedir}/patch_panel.conf[]
 ----
 
 この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
@@ -134,6 +135,7 @@ include::{sourcedir}/lib/patch_panel.rb[]
 startハンドラではコントローラを初期化します。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#start`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
 ----
@@ -144,6 +146,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
 `switch_ready` ハンドラでは、起動してきたスイッチに対してパッチング用のフローエントリを書き込みます。すでにパッチ情報 `@patch` にフローエントリ情報が入っていた場合(スイッチがいったん停止して再接続した場合など)のみ、フローエントリを入れ直します。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#switch_ready`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="8..17"]
 ----
@@ -156,6 +159,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="8..17"]
 1つのパッチ(2つのフローエントリ)を実際に書き込むのが `add_flow_entries` プライベートメソッドです。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#add_flow_entries`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
 ----
@@ -163,6 +167,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
 最初の `check_dpid` もまたプライベートメソッドで、`dpid` で指定したスイッチがコントローラに接続しているかを確認します。すでに接続している場合には `switch_ready` ハンドラの中で `@patch` インスタンス変数のキーとして `dpid` が登録されているはずなので、`@patch.key?(dpid)` をチェックすればよいことになります。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#check_dpid`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="47..49"]
 ----
@@ -182,6 +187,7 @@ send_flow_mod_add(dpid, options)
 オプションの具体例として、最初の `send_flow_mod_add` の呼び出し部分を見てみましょう。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#send_flow_mod_add`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
 ----
@@ -195,6 +201,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
 `delete_flow_entries` は古いフローエントリを消すメソッドです。`add_flow_entries` でフローエントリを足す前に、いったん `delete_flow_entries` で古いフローエントリを消すことでフローエントリが重複しないようにします。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#delete_flow_entries`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="41..45"]
 ----
@@ -205,11 +212,13 @@ include::{sourcedir}/lib/patch_panel.rb[lines="41..45"]
 `create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `PatchPanel` クラス内から呼び出されるのではなく、`bin/patch_panel` コマンドから呼び出されます。
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#create_patch`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="19..22"]
 ----
 
 [source,ruby,subs="verbatim,attributes"]
+./lib/patch_panel.rb (`PatchPanel#delete_patch`)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="24..27"]
 ----
@@ -228,6 +237,7 @@ include::{sourcedir}/bin/patch_panel[]
 それぞれのサブコマンドの実装にはgliというRubyライブラリを使っています。gliを使うと、いわゆるコマンドスイートを簡単に実装できます。
 
 [source,ruby,subs="verbatim,attributes"]
+./bin/patch_panel
 ----
 # patch_panelコマンド
 module PatchPanelApp
