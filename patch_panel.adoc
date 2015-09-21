@@ -35,18 +35,7 @@ image::openflow_patch_panel.png[caption="図5-2",title="OpenFlowで実現する�
 
 == 実行してみよう
 
-パッチパネルの動作テストのために、仮想スイッチにいくつか仮想ホストをつなげてみましょう。`vhost` で始まる行が仮想ホスト、そして `link` で始まる行がスイッチやホストをつなげるための仮想リンクです。
-
-[source,ruby,subs="verbatim,attributes"]
-----
-include::{sourcedir}/trema.conf[]
-----
-
-この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
-
-=== パッチパネルのインストール
-
-では仮想スイッチ3台の構成でパッチパネルを起動してみましょう。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/patch_panelリポジトリ (https://github.com/trema/patch_panel) からダウンロードできます。
+パッチパネルのソースコードはGitHubのtrema/patch_panelリポジトリ (https://github.com/trema/patch_panel) からダウンロードできます。
 
 ----
 $ git clone https://github.com/trema/patch_panel.git
@@ -59,13 +48,26 @@ $ cd cbench
 $ bundle install --binstubs
 ----
 
+パッチパネルのソースコードで主なファイルは次の 3 つです。
+
 - `lib/patch_panel.rb`: パッチパネル本体
 - `patch_panel.conf`: 仮想ネットワーク設定ファイル
 - `bin/patch`: パッチパネルの操作コマンド
 
 以上でパッチパネルとTremaのセットアップは完了です。
 
-パッチパネルを仮想ネットワーク内で実行するには、仮想ネットワーク設定ファイルを `trema run` の `-c` オプションに渡します。次のように `trema run` コマンドでパッチパネルコントローラを起動してください。
+=== 仮想ネットワークの設定
+
+仮想ネットワーク設定ファイル `patch_panel.conf` では、パッチパネルの動作テストのためにパケットを送受信できる仮想ホストを定義しています。`vhost` で始まる行が仮想ホスト、そして `link` で始まる行がスイッチやホストをつなげるための仮想リンクです。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+include::{sourcedir}/trema.conf[]
+----
+
+この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
+
+パッチパネルをこの仮想ネットワーク内で実行するには、仮想ネットワーク設定ファイルを `trema run` の `-c` オプションに渡します。次のように `trema run` コマンドでパッチパネルコントローラを起動してください。
 
 ----
 $ ./bin/trema run ./lib/patch_panel.rb -c patch_panel.conf
