@@ -39,15 +39,7 @@ image::openflow_patch_panel.png[caption="図5-2",title="OpenFlowで実現する�
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-vswitch('patch_panel') { datapath_id 0xabc }
-
-vhost ('host1') { ip '192.168.0.1' }
-vhost ('host2') { ip '192.168.0.2' }
-vhost ('host3') { ip '192.168.0.3' }
-
-link 'patch_panel', 'host1'
-link 'patch_panel', 'host2'
-link 'patch_panel', 'host3'
+include::{sourcedir}/trema.conf[]
 ----
 
 この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
