@@ -60,7 +60,7 @@ $ bundle install --binstubs
 ----
 
 - `lib/patch_panel.rb`: パッチパネル本体
-- `trema.conf`: 仮想ネットワーク設定ファイル
+- `patch_panel.conf`: 仮想ネットワーク設定ファイル
 - `bin/patch`: パッチパネルの操作コマンド
 
 以上でパッチパネルとTremaのセットアップは完了です。
@@ -68,7 +68,7 @@ $ bundle install --binstubs
 パッチパネルを仮想ネットワーク内で実行するには、仮想ネットワーク設定ファイルを `trema run` の `-c` オプションに渡します。次のように `trema run` コマンドでパッチパネルコントローラを起動してください。
 
 ----
-$ ./bin/trema run ./lib/patch_panel.rb -c trema.conf
+$ ./bin/trema run ./lib/patch_panel.rb -c patch_panel.conf
 ----
 
 パッチパネルは起動しただけではまだパッチングされていないので、ホスト間でのパケットは通りません。これを確認するために、`trema send_packets` コマンドを使ってhost1とhost2の間でテストパケットを送ってみましょう。
