@@ -5,7 +5,7 @@ Feature: "Patch Panel" example
       | TREMA_LOG_DIR    | .     |
       | TREMA_PID_DIR    | .     |
       | TREMA_SOCKET_DIR | .     |
-    And a file named "trema.conf" with:
+    And a file named "patch_panel.conf" with:
       """
       vswitch('patch_panel') { datapath_id 0xabc }
 
@@ -17,7 +17,7 @@ Feature: "Patch Panel" example
       link 'patch_panel', 'host2'
       link 'patch_panel', 'host3'
       """
-    Given I successfully run `trema run ../../lib/patch_panel.rb -c trema.conf -d`
+    Given I successfully run `trema run ../../lib/patch_panel.rb -c patch_panel.conf -d`
     And I run `sleep 2`
 
   @sudo
