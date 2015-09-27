@@ -132,12 +132,10 @@ Packets received:
 include::{sourcedir}/lib/patch_panel.rb[]
 ----
 
-// TODO パッチパネルではコントローラを外部コマンドから操作する方法も説明する
-
 今までに学んだ知識で、このコードをできるだけ解読してみましょう。
 
 - パッチパネルの本体はPatchPanelという名前の小さなクラスである
-- このクラスには第?章で学んだ `switch_ready` ハンドラが定義されており、この中で `delete_flow_entries` と `add_flow_entries` いうプライベートメソッドを呼んでいる。どうやらこれがパッチ処理の本体だ
+- このクラスには<<hello_trema,第2章>>で学んだ `switch_ready` ハンドラが定義されており、この中で `delete_flow_entries` と `add_flow_entries` いうプライベートメソッドを呼んでいる。どうやらこれがパッチ処理の本体だ
 - `create_patch` と `delete_patch` というメソッドが定義されている。これらがパッチの作成と削除に対応していると予想できる
 - `add_flow_entries` メソッドでは `send_flow_mod_add` というFlow Modメッセージに関係ありそうなメソッドを2回呼んでいる。1つのパッチを作るのに2つのフローエントリが必要なので、2回呼んでいるのだろうと推測できる 
 
@@ -160,7 +158,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
 [source,ruby,subs="verbatim,attributes"]
 ./lib/patch_panel.rb (`PatchPanel#switch_ready`)
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="8..17"]
+include::{sourcedir}/lib/patch_panel.rb[lines="8..13"]
 ----
 
 - `@patch[dpid].each` はパッチング設定をひとつずつ処理するイテレータ。仮引数は `port_a` と `port_b` の2つで、それぞれにパッチでつなぐポート番号がひとつずつ入る
@@ -173,15 +171,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="8..17"]
 [source,ruby,subs="verbatim,attributes"]
 ./lib/patch_panel.rb (`PatchPanel#add_flow_entries`)
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
-----
-
-最初の `check_dpid` もまたプライベートメソッドで、`dpid` で指定したスイッチがコントローラに接続しているかを確認します。すでに接続している場合には `switch_ready` ハンドラの中で `@patch` インスタンス変数のキーとして `dpid` が登録されているはずなので、`@patch.key?(dpid)` をチェックすればよいことになります。
-
-[source,ruby,subs="verbatim,attributes"]
-./lib/patch_panel.rb (`PatchPanel#check_dpid`)
-----
-include::{sourcedir}/lib/patch_panel.rb[lines="47..49"]
+include::{sourcedir}/lib/patch_panel.rb[lines="27..34"]
 ----
 
 `add_flow_entries` の中で2回呼び出している `send_flow_mod_add` がフローエントリを書き込むためのメソッドです。このメソッドは次の2つの引数を取ります。
@@ -199,9 +189,9 @@ send_flow_mod_add(dpid, options)
 オプションの具体例として、最初の `send_flow_mod_add` の呼び出し部分を見てみましょう。
 
 [source,ruby,subs="verbatim,attributes"]
-./lib/patch_panel.rb (`PatchPanel#send_flow_mod_add`)
+./lib/patch_panel.rb
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
+include::{sourcedir}/lib/patch_panel.rb[lines="28..30"]
 ----
 
 ここでは、ポート `port_a` 番へ上がってきたパケットをポート `port_b` 番へ出力するフローエントリを書き込んでいます。cbenchの実装で見たように、このためには次の2つのオプションが必要です。
@@ -215,29 +205,33 @@ include::{sourcedir}/lib/patch_panel.rb[lines="31..39"]
 [source,ruby,subs="verbatim,attributes"]
 ./lib/patch_panel.rb (`PatchPanel#delete_flow_entries`)
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="41..45"]
+include::{sourcedir}/lib/patch_panel.rb[lines="36..39"]
 ----
 
 ここで呼び出している `send_flow_mod_delete` は `send_flow_mod_add` とは逆のメソッドで、`match:` に対応するフローエントリを削除します。
 
 === create_patch, delete_patchメソッド
-`create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `PatchPanel` クラス内から呼び出されるのではなく、`bin/patch_panel` コマンドから呼び出されます。
+`create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `bin/patch_panel` コマンドから呼び出されます。
 
 [source,ruby,subs="verbatim,attributes"]
 ./lib/patch_panel.rb (`PatchPanel#create_patch`)
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="19..22"]
+include::{sourcedir}/lib/patch_panel.rb[lines="15..18"]
 ----
+
+`create_patch` メソッドは、`add_flow_entries` メソッドでフローエントリを追加し、パッチ設定 `@patch` にパッチ情報を追加します。
 
 [source,ruby,subs="verbatim,attributes"]
 ./lib/patch_panel.rb (`PatchPanel#delete_patch`)
 ----
-include::{sourcedir}/lib/patch_panel.rb[lines="24..27"]
+include::{sourcedir}/lib/patch_panel.rb[lines="20..23"]
 ----
+
+逆に `delete_patch` メソッドはフローエントリを削除しパッチ設定からパッチ情報を削除します。
 
 == patch_panelコマンドのソースコード
 
-`bin/patch_panel` コマンドは `create` と `delete` という2つのサブコマンドを持っており、それぞれが `PatchPanel#create`、`PatchPanel#delete` メソッドを呼び出します。
+`PatchPanel` クラスの `create_patch` と `delete_patch` メソッドを呼び出すコマンドが `bin/patch_panel` です。`create` と `delete` という 2 つのサブコマンドを持っています。
 
 [[patch_panel_command]]
 [source,ruby,subs="verbatim,attributes"]
@@ -246,7 +240,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="24..27"]
 include::{sourcedir}/bin/patch_panel[]
 ----
 
-それぞれのサブコマンドの実装にはgliというRubyライブラリを使っています。gliを使うと、いわゆるコマンドスイートを簡単に実装できます。
+それぞれのサブコマンドの実装には gli (https://github.com/davetron5000/gli) というRubyライブラリを使っています。gliを使うと、いわゆるコマンドスイートを簡単に実装できます。以下のように、サブコマンドごとに `command サブコマンド名 do ... end` のブロックを記述することで、サブコマンドを作ることができます。
 
 [source,ruby,subs="verbatim,attributes"]
 ./bin/patch_panel
@@ -276,16 +270,16 @@ end
 
 [source,ruby,subs="verbatim,attributes"]
 ----
-Trema.controller_process(options[:socket_dir]).create_patch(dpid, port1, port2)
+Trema.trema_process('PatchPanel', options[:socket_dir]).controller.create_patch(dpid, port1, port2)
 ----
 
-この `Trema.controller_process` メソッドは現在動いているコントローラオブジェクト(`PatchPanel` クラスオブジェクト)を返します。そしてその返り値に対して `create_patch` などのメソッドを呼び出すことができます。
+この `Trema.trema_process.controller` メソッドは現在動いているコントローラオブジェクト(`PatchPanel` クラスオブジェクト)を返します。そしてその返り値に対して `create_patch` などのメソッドを呼び出すことで、コントローラのメソッドを呼び出せます。
 
 == まとめ
 フローを使ってパケットを転送する方法の入門編として、OpenFlowで実現するインテリジェントなパッチパネルを書きました。
 
-- Tremaで作ったコントローラを仮想ネットワーク上で動かした
-- Rubyプログラミングで多用するイテレータを学んだ
+- 仮想スイッチに仮想ホストを接続してテストパケットを送信する方法を学んだ
+- フローエントリの削除方法を学んだ
 - コントローラ操作用の外部コマンドの書き方を学んだ
 
 実は、今回作ったOpenFlow版パッチパネルはSDNの一種です。なぜならば、ネットワークの構成をソフトウェアで自由に変更できるからです。第2章で紹介したように、OpenFlow版パッチパネルを使えばホストの所属するネットワークをソフトウェア的に切り替えられます。これは、物理ネットワークの上にそれぞれ独立したネットワークをいくつも作れるという意味で、最も単純なネットワーク仮想化に他なりません。より高度な仮想化については、<<routing_switch,第13章>>および<<sliceable_switch,第14章>>でも紹介します。

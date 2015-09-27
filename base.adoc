@@ -1,6 +1,7 @@
 [[how_does_openflow_work]]
 include::how_does_openflow_work.adoc[]
 
+[[hello_trema]]
 include::hello_trema.adoc[]
 
 include::cbench.adoc[]
