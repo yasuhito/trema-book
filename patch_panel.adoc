@@ -66,7 +66,10 @@ $ bundle install --binstubs
 include::{sourcedir}/patch_panel.conf[]
 ----
 
-この設定ファイルでは `host1`, `host2`, そして `host3` という3つの仮想ホストを定義しています。また、仮想リンクによって仮想スイッチ `patch_nanel` と仮想ホスト `host1`, `host2`, `host3` をそれぞれ接続しています。
+この設定ファイルでは仮想スイッチ `0xabc` に 3 つの仮想ホスト `host1`, `host2`, `host3` を接続しています (<<patch_panel_configuration,図5-3>>)。仮想スイッチと仮想ホストの接続は、仮想リンク (`link` で始まる行) によって記述できます。`link` を書いた順で、それぞれのホストはスイッチのポート 1 番、ポート 2 番、ポート 3 番... に接続されます。
+
+[[patch_panel_configuration]]
+image::configuration.png[caption="図5-3",title="設定ファイル patch_panel.conf で作られる仮想ネットワークの構成"]
 
 パッチパネルをこの仮想ネットワーク内で実行するには、仮想ネットワーク設定ファイルを `trema run` の `-c` オプションに渡します。次のように `trema run` コマンドでパッチパネルコントローラを起動してください。
 
