@@ -21,7 +21,7 @@ module PatchPanelApp
       dpid = args[0].hex
       port1 = args[1].to_i
       port2 = args[2].to_i
-      Trema.controller_process(options[:socket_dir]).
+      Trema.trema_process('PatchPanel', options[:socket_dir]).controller.
         create_patch(dpid, port1, port2)
     end
   end
@@ -36,7 +36,7 @@ module PatchPanelApp
       dpid = args[0].hex
       port1 = args[1].to_i
       port2 = args[2].to_i
-      Trema.controller_process(options[:socket_dir]).
+      Trema.trema_process('PatchPanel', options[:socket_dir]).controller.
         delete_patch(dpid, port1, port2)
     end
   end

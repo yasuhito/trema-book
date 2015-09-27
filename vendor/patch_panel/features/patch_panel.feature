@@ -46,8 +46,8 @@ Feature: "Patch Panel" example
   @sudo
   Scenario: patches still exist after switch restart
     Given I successfully run `patch_panel create 0xabc 1 2`
-    When I run `trema kill patch_panel`
-    And I run `trema up patch_panel`
+    When I run `trema stop patch_panel`
+    And I run `trema start patch_panel`
     And I run `sleep 1`
     When I run `trema send_packets --source host1 --dest host2`
     And I run `trema send_packets --source host2 --dest host1`
@@ -83,15 +83,3 @@ Feature: "Patch Panel" example
     And the number of packets received by "host2" should be:
       |      source | #packets |
       | 192.168.0.1 |        0 |
-
-  @sudo
-  Scenario: unknown dpid error (patch_panel create)
-    When I run `patch_panel create 0xdef 1 2`
-    Then the exit status should not be 0
-    And the stderr should contain "error: Unknown dpid: 0xdef"
-
-  @sudo
-  Scenario: unknown dpid error (patch_panel delete)
-    When I run `patch_panel delete 0xdef 1 2`
-    Then the exit status should not be 0
-    And the stderr should contain "error: Unknown dpid: 0xdef"
