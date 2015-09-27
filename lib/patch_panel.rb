@@ -14,12 +14,12 @@ class PatchPanel < Trema::Controller
 
   def create_patch(dpid, port_a, port_b)
     add_flow_entries dpid, port_a, port_b
-    @patch[dpid] << [port_a, port_b].sort
+    @patch[dpid] += [port_a, port_b].sort
   end
 
   def delete_patch(dpid, port_a, port_b)
     delete_flow_entries dpid, port_a, port_b
-    @patch[dpid].delete [port_a, port_b].sort
+    @patch[dpid] -= [port_a, port_b].sort
   end
 
   private
