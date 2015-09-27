@@ -52,7 +52,7 @@ $ bundle install --binstubs
 
 - `lib/patch_panel.rb`: パッチパネル本体
 - `patch_panel.conf`: 仮想ネットワーク設定ファイル
-- `bin/patch`: パッチパネルの操作コマンド
+- `bin/patch_panel`: パッチパネルの操作コマンド
 
 以上でパッチパネルとTremaのセットアップは完了です。
 
@@ -85,27 +85,36 @@ $ ./bin/trema send_packets --source host2 --dest host1
 
 ----
 $ ./bin/trema show_stats host1
-(TODO 実行結果をここに入れる)
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
 $ ./bin/trema show_stats host2
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
 ----
 
-たしかに、どちらのホストにもまだパケットは届いていません。
+`trema show_stats` コマンドは引数として渡したホストの送受信パケットを表示します。host1 と host2 の両ホストともパケットを 1 つ送信していますが、どちらにもパケットは届いていません。
 
-パッチパネルの設定は `./bin/patch` コマンドで指定できます。たとえば、ポート1番とポート2番をつなぐには次のコマンドを実行します。
+パッチパネルの設定は `./bin/patch_panel` コマンドで指定できます。たとえば、スイッチ 0xabc のポート 1 番とポート 2 番をつなぐには次のコマンドを実行します。
 
 ----
-$ ./bin/patch add 1 2
+$ ./bin/patch_panel create 0xabc 1 2
 ----
 
-これで、host1とhost2が通信できるはずです。実際に `trema send_packets` を試してみましょう。
+これで、host1 と host2 が通信できるはずです。もういちどパケットの送受信を試してみましょう。
 
 ----
 $ ./bin/trema send_packets --source host1 --dest host2
 $ ./bin/trema send_packets --source host2 --dest host1
 $ ./bin/trema show_stats host1
-(TODO 実行結果をここに入れる)
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+Packets received:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
 $ ./bin/trema show_stats host2
-(TODO 実行結果をここに入れる)
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+Packets received:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
 ----
 
 たしかにパケットが通っていることを確認できました。パッチパネルの動作イメージがわかったところで、ソースコードを見ていきます。
