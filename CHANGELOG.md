@@ -1,6 +1,9 @@
 # Changelog
 
 ## develop
+
+
+## 0.5.0 (9/28/2015)
 * [#63](https://github.com/yasuhito/trema-book/pull/63): 5章を追加
 
 
