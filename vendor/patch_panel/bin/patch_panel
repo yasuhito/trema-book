@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler'
+Bundler.setup :default
+
+require 'gli'
+require 'trema'
+
+# patch_panel command
+module PatchPanelApp
+  extend GLI::App
+
+  desc 'Creates a new patch'
+  arg_name 'dpid port#1 port#2'
+  command :create do |c|
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, args|
+      dpid = args[0].hex
+      port1 = args[1].to_i
+      port2 = args[2].to_i
+      Trema.trema_process('PatchPanel', options[:socket_dir]).controller.
+        create_patch(dpid, port1, port2)
+    end
+  end
+
+  desc 'Deletes a patch'
+  arg_name 'dpid port#1 port#2'
+  command :delete do |c|
+    c.desc 'Location to find socket files'
+    c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
+
+    c.action do |_global_options, options, args|
+      dpid = args[0].hex
+      port1 = args[1].to_i
+      port2 = args[2].to_i
+      Trema.trema_process('PatchPanel', options[:socket_dir]).controller.
+        delete_patch(dpid, port1, port2)
+    end
+  end
+
+  exit run(ARGV)
+end
