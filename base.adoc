@@ -12,6 +12,9 @@ include::switch_monitor.adoc[]
 [[patch_panel]]
 include::patch_panel.adoc[]
 
+[[learning_switch]]
+include::learning_switch.adoc[]
+
 [[routing_switch]]
 
 [[sliceable_switch]]

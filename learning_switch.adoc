@@ -1,0 +1,4 @@
+= すべての基本、ラーニングスイッチ
+:sourcedir: vendor/learning_switch
+:imagesdir: images/learning_switch
+
