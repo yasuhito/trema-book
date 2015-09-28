@@ -109,7 +109,7 @@ GEM
       gli (~> 2.13.2)
       pio (~> 0.27.0)
       pry (~> 0.10.1)
-    pio (0.27.0)
+    pio (0.27.1)
       bindata (~> 2.1.0)
     powerpack (0.1.1)
     private_attr (1.1.0)
@@ -172,11 +172,11 @@ GEM
     thor (0.19.1)
     thread_safe (0.3.5)
     tins (1.6.0)
-    trema (0.7.0)
+    trema (0.7.1)
       bundler (~> 1.10.6)
       gli (~> 2.13.2)
       phut (~> 0.6.10)
-      pio (~> 0.27.0)
+      pio (~> 0.27.1)
       rake
     unf (0.1.4)
       unf_ext
