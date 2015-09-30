@@ -1,11 +1,6 @@
 Feature: "Multi Learning Switch" example
   Background:
-    Given I set the environment variables to:
-      | variable         | value |
-      | TREMA_LOG_DIR    | .     |
-      | TREMA_PID_DIR    | .     |
-      | TREMA_SOCKET_DIR | .     |
-    And a file named "trema.conf" with:
+    Given a file named "trema.conf" with:
     """
     vswitch('lsw1') { datapath_id 0x1 }
     vswitch('lsw2') { datapath_id 0x2 }

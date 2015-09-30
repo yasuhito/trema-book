@@ -1,11 +1,6 @@
 Feature: "Learning Switch" example
   Background:
-    Given I set the environment variables to:
-      | variable         | value |
-      | TREMA_LOG_DIR    | .     |
-      | TREMA_PID_DIR    | .     |
-      | TREMA_SOCKET_DIR | .     |
-    And a file named "trema.conf" with:
+    Given a file named "trema.conf" with:
       """
       vswitch('learning') { datapath_id 0xabc }
 
