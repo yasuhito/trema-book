@@ -15,6 +15,8 @@ OpenFlowの世界では、コントローラとしてソフトウェア実装し
 
 このおかげで、ラーニングスイッチを作れるようになれば、それを改造することでいろいろなアプリケーションを作れるようになります。
 
+// TODO 複数スイッチ対応ラーニングスイッチはこの章で紹介してしまう？
+
 - 複数スイッチ対応ラーニングスイッチ（第?章で紹介）
 - トラフィックモニタ（第?章で紹介）
 - ルーティングスイッチ（第?章で紹介）
@@ -81,3 +83,272 @@ OpenFlowによるスイッチの構成は図○のようになります。一般
 さて、ここまでの段階でフローテーブルには「ホスト2からホスト1へのパケットはポート1へ出力せよ」というフローエントリが入りました。もし、ホスト2がホスト1へふたたびパケットを送信すると、今度はPacket Inがコントローラまで上がることはなく、スイッチ側だけでパケットを転送します。
 
 残りのホスト1からホスト2へのフローエントリはどうでしょう。すでにFDBはすべてのホストのMACアドレスとポート番号を学習してあります。もし、ふたたびホスト1からホスト2へパケットを送信すると、図○と同様にコントローラが「ホスト1からホスト2へのパケットはポート4へ出力せよ」というフローエントリを書き込みます。もちろん、それ以降の通信ではPacket Inはまったく上がらずにすべてスイッチ側だけでパケットを処理します。
+
+== LearningSwitchコントローラ
+
+まずはラーニングスイッチのソースコード(リスト○)をざっと眺めてみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。とくに、`private`の行よりも上のパブリックなメソッドに注目してください。
+
+// TODO “$LOAD\_PATH.unshift …” の行を実装からなくす
+// TODO エイジングの説明
+// TODO reserved? の処理の説明
+// TODO OpenFlow 1.3 にしたときにExactMatchをなくす
+
+[source,ruby,subs="verbatim,attributes"]
+./lib/learning_switch.rb
+----
+include::{sourcedir}/lib/learning_switch.rb[]
+----
+
+今までの知識だけでも、このソースコードからいろいろなことがわかります。
+
+- ラーニングスイッチの本体はLearningSwitchという名前のクラス
+- 起動時に呼ばれる `start` ハンドラでFDBのインスタンス変数を作っている。FDBの実装は別ファイル `lib/fdb.rb` に分かれている
+- `packet_in` はPacket Inメッセージを捕捉するためのハンドラ。スイッチのフローエントリにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれる
+- `packet_in` ハンドラから呼ばれる `flow_mod_and_packet_out` メソッドの中では、`@fdb` を使ってポート番号を調べたり、`flow_mod` と `packet_out` メソッドでそれぞれFlow ModとPacket Outメッセージを送っている。また、先述した「パケットをばらまく(フラッディング)」処理に対応する `:flood` も見つかる
+
+learning_switch.rb から require している fdb.rb も見てみましょう。
+
+[source,ruby,subs="verbatim,attributes"]
+./lib/fdb.rb
+----
+include::{sourcedir}/lib/fdb.rb[]
+----
+
+- FDBクラスは3つのメソッド `lookup`、`learn`、`age` を持つ。
+- `lookup` メソッドを使うとMACアドレスからポート番号を検索できる
+- `learn` メソッドでMACアドレスとポート番号の組をFDBに学習させる
+- `age` メソッドでFDBのエントリをエージングする
+
+ラーニングスイッチの心臓部は `packet_in` ハンドラだけで、その中身もやっていることはなんとなくわかると思います。細かい実装の解説は後回しにして、さっそく実行してみましょう。
+
+=== 実行してみよう
+
+今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル`trema.conf`が含まれています。
+
+[source,ruby,subs="verbatim,attributes"]
+.trema.conf
+----
+include::{sourcedir}/trema.conf[]
+----
+
+// TODO githubのファイルと上の内容を合わせる
+
+次のように `trema run` の `-c` オプションにこの設定ファイルを渡してラーニングスイッチを実行します。
+
+----
+$ ./bin/trema run ./lib/learning_switch.rb -c learning_switch.conf
+----
+
+別ターミナルを開き、`trema send_packets` コマンドを使ってhost1とhost2の間でテストパケットを送ってみます。
+
+----
+$ ./bin/trema send_packets --source host1 --dest host2
+$ ./bin/trema send_packets --source host2 --dest host1
+----
+
+`trema show_stats`コマンドでhost1とhost2の受信パケット数をチェッックし、それぞれでパケットを受信していれば成功です。
+
+----
+$ ./bin/trema show_stats host1
+(出力をここに)
+$ ./bin/trema show_stats host2
+(出力をここに)
+----
+
+// TODO show_stats の出力を更新しておく
+
+ラーニングスイッチの動作イメージがわかったところで、ソースコードの解説に移りましょう。まずはこの章で新しく登場したRubyの構文を紹介します。
+
+== 即席Ruby入門
+
+// TODO ひょっとしたらハッシュを前の章ですでに使っているかもしれないので、そしたらこの部分をその章に移動する
+
+ラーニングスイッチのソースコード(リスト○)で新しく登場した構文はたった1つだけです。`start` ハンドラの中で登場したFDBの本体 `{}` がそれですが、カンの良い読者ならこれはハッシュテーブルでは?と気付いているでしょう。
+
+### ハッシュテーブル
+
+// TODO パッチパネルで先にハッシュを使っているのでそちらに移動
+
+ハッシュテーブルは中カッコで囲まれた辞書です。辞書とは「言葉をその定義に対応させたデータベース」です。Rubyでは、この対応を”:”という記号で次のように表します。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+animals = { armadillo: 'アルマジロ', boar: 'イノシシ' }
+----
+
+たとえば”boar”を日本語で言うと何だろう?と辞書で調べたくなったら、次のようにして辞書を引きます。
+
+// TODO ここでシンボルを使うことの説明
+
+[source,ruby,subs="verbatim,attributes"]
+----
+animals[:boar] #=> "イノシシ"
+----
+
+この辞書を引くときに使う言葉(この場合はboar)をキーと言います。そして、見つかった定義(この場合はイノシシ)をバリューと言います。
+
+新しい動物を辞書に加えるのも簡単です。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+animals[:cow] = 'ウシ'
+----
+
+Rubyのハッシュテーブルはとても高機能なので、文字列だけでなく好きなオブジェクトを格納できます。たとえば、FDBではMACアドレスをキーとして、ポート番号をバリューにします。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+fdb['11:11:11:11:11:11'] = 1
+----
+
+実は、すでにいろんなところでハッシュテーブルを使ってきました。たとえば、`send_flow_mod_add` などの省略可能なオプションは、コロン (`:`) を使っていることからもわかるように実はハッシュテーブルなのです。Rubyでは、引数の最後がハッシュテーブルである場合、その中カッコを次のように省略できます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+def flow_mod(message, port_no)
+  send_flow_mod_add(
+    message.datapath_id,
+    match: ExactMatch.new(message),
+    actions: SendOutPort.new(port_no)
+  )
+end
+ 
+# これと同じ
+def flow_mod(message, port_no)
+  send_flow_mod_add(
+    message.datapath_id,
+    { 
+      match: ExactMatch.new(message),
+      actions: SendOutPort.new(port_no)
+    }
+  )
+end
+----
+
+== LearningSwitchのソースコード
+
+それではラーニングスイッチのソースコードを読み解いていきましょう。今回の肝となるのは、Packet Inハンドラでの次の処理です。
+
+- FDBの更新とポート番号の検索
+- ポート番号が見つかった場合の、Flow ModとPacket Outの処理
+- ポート番号が見つからなかった場合のフラッディング処理
+
+それでは、最初にPacket Inハンドラの定義方法から見ていきましょう。
+
+=== 未知のパケット(Packet In)の処理
+
+知らないパケットがPacket Inとして入ってきたとき、ラーニングスイッチは次のようにFDBにホストの位置情報を学習し、宛先のポート番号を調べます。
+
+1. パケットの送信元MACアドレスとパケットが入ってきたポート番号をPacket Inメッセージから取り出し、FDB(@fdb)に保存する
+2. パケットの宛先MACアドレスとFDBから、パケットを出力するポート番号を調べる (`flow_mod_and_packet_out` メソッド)
+
+
+[source,ruby,subs="verbatim,attributes"]
+./lib/learning_switch.rb
+----
+include::{sourcedir}/lib/learning_switch.rb[lines="14..19,26..30"]
+----
+
+==== 宛先ポート番号が見つかった場合(FlowModとPacket Out)
+
+もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、というフローエントリをスイッチに書き込みます (flow_modメソッド)。また、Packet Inを起こしたパケットも忘れずにそのポートへ出力します (packet_outメソッド)。
+
+[source,ruby,subs="verbatim,attributes"]
+./lib/learning_switch.rb
+----
+include::{sourcedir}/lib/learning_switch.rb[lines="26..30"]
+----
+
+このflow_modメソッドとpacket_outメソッドはそれぞれTrema\::Controllerクラスのsend_flow_mod_add(第○章で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
+
+[source,ruby,subs="verbatim,attributes"]
+./lib/learning_switch.rb
+----
+include::{sourcedir}/lib/learning_switch.rb[lines="32..46"]
+----
+
+// TODO ここでオプションの説明
+
+=== Packet Out API
+
+Packet OutはOpenFlowメッセージの1つで、スイッチの指定したポートからパケットを送信させるためのものです。TremaでPacket Outを送るためのメソッド、send_packet_outは次の2つの引数を取ります。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_packet_out(datapath_id, options)
+----
+
+それぞれの引数の意味は次のとおりです。
+
+- datapath_id: Packet Outの届け先となるスイッチのDatapath ID
+- options: Packet Outメッセージの中身を決めるためのオプションで、アクションによるパケットの書き換えや出力するポートをハッシュテーブルで指定する。それぞれのオプションにはデフォルト値が設定されているので、必要なオプションのみを指定すればよい
+
+Packet Outの使い道は、Packet Inメッセージとして入ってきたパケットをそのままスイッチのポートから送り出す場合がほとんどです。この場合、パケットの送信にスイッチのバッファを使う場合と使わない場合とで呼び出しかたが変わります。
+
+==== スイッチのバッファを使ってPacket Outする場合
+
+パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように:buffer_idオプションでバッファに乗っているパケットデータのIDを指定してやることでPacket Outできます。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_packet_out(
+  datapath_id,
+  buffer_id: message.buffer_id,
+  data: message.data,
+  actions: SendOutPort.new(port_number)
+)
+----
+
+// TODO data => raw_data だっけ? APIを変えた気がするので、githubのほうも合わせてアップデートしておく
+
+この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、○○のコラムで説明したとおり、バッファの中身は予測不能でデータがいつ消えるかわからないため、この方法は推奨しません。
+
+==== スイッチのバッファを使わずにPacketOutする場合
+
+スイッチのバッファを使わずにPacket Outする場合、次のように:dataオプションでパケットのデータを指定する必要があります。バッファに乗っているかいないかにかかわらずPacket Outできるので、若干遅くはなりますが安全です。
+
+// TODO バッファに「乗っている」?それとも「残っている」?
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_packet_out(
+  datapath_id,
+  data: message.data,
+  actions: SendOutPort.new(port_number)
+)
+----
+
+これは、次のように:packet_inオプションを使うことで若干短くできます (.dataを書かなくてよくなります)。
+
+[source,ruby,subs="verbatim,attributes"]
+----
+send_packet_out(
+  datapath_id,
+  packet_in: message,
+  actions: SendOutPort.new(port_number)
+)
+----
+
+=== 主なオプション一覧
+
+optionsに指定できる主なオプションは次のとおりです。
+
+- :buffer_id スイッチでバッファされているパケットのIDを指定する。この値を使うと、スイッチでバッファされているパケットを指定してPacket Outできるので効率が良くなる (ただし、スイッチにバッファされていない時はエラーになる)
+- :data Packet Out するパケットの中身を指定する。もし :buffer_id オプションが指定されておりスイッチにバッファされたパケットをPacket Outする場合、この値は使われない
+- :packet_in :dataおよび:in_portオプションを指定するためのショートカット。packet_inハンドラの引数として渡されるPacketInメッセージを指定する
+- :actions Packet Outのときに実行したいアクションの配列を指定する。アクションが1つの場合は配列でなくてかまわない
+
+==== 宛先ポート番号が見つからなかった場合 (フラッディング)
+
+もし宛先ポートが見つからなかった場合、コントローラはPacket Inしたメッセージをフラッディングしてばらまきます。これをやっているのがpacket_outメソッドで、ポート番号に仮想ポート番号として:floodを指定しているだけです。このポート番号を指定したPacketOutメッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
+
+// TODO ソースコードの対応する部分をここに
+
+== まとめ
+
+実用的なOpenFlowアプリケーションのベースとなるラーニングスイッチの動作と作り方を学びました。
+
+- コントローラは、Packet Inメッセージから送信元ホストのMACアドレスとホストのつながるスイッチポート番号をFDBに学習する
+- Packet Inの転送先がFDBからわかる場合、Flow Modで以降の転送情報をスイッチに書き込みPacketOutする。FDBで決定できない場合は、入力ポート以外のすべてのポートにPacket Outでフラッディングする
+
+続く章ではさっそくこのラーニングスイッチを少し改造してトラフィック集計機能を加えます。第○章で紹介した「フローでできる4つのこと」のうち、"流量を調べる"の実装例です。
