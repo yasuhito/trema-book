@@ -15,6 +15,14 @@ include::patch_panel.adoc[]
 [[learning_switch]]
 include::learning_switch.adoc[]
 
+[[learning_switch13]]
+
+[[traffic_monitor]]
+
+[[router_part1]]
+
+[[router_part2]]
+
 [[routing_switch]]
 
 [[sliceable_switch]]
