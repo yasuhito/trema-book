@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.5.2 (10/1/2015)
+* [#88](https://github.com/yasuhito/trema-book/pull/88): 誤字脱字の修正
+
+
 ## 0.5.1 (9/30/2015)
 * [#85](https://github.com/yasuhito/trema-book/pull/85): 誤字脱字の修正
 
