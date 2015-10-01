@@ -180,11 +180,20 @@ include::{sourcedir}/lib/switch_monitor.rb[]
 `switch_ready` ハンドラでは、スイッチ一覧リストに新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
 
 [source,ruby,subs="verbatim,attributes"]
+.SwitchMonitor#switch_ready (lib/switch_monitor.rb)
 ----
-include::{sourcedir}/lib/switch_monitor.rb[lines="5..14"]
+include::{sourcedir}/lib/switch_monitor.rb[lines="10..14"]
 ----
 
-`@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。新しくスイッチが起動すると `switch_ready` ハンドラが起動し、`@switches` が保持する配列の最後にそのDatapath IDを追加します。また、`logger.info` で新しいスイッチのDatapath IDを表示します。
+`@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。
+
+[source,ruby,subs="verbatim,attributes"]
+.SwitchMonitor#start (lib/switch_monitor.rb)
+----
+include::{sourcedir}/lib/switch_monitor.rb[lines="5..8"]
+----
+
+新しくスイッチが起動すると `switch_ready` ハンドラが起動し、`@switches` が保持する配列の最後にそのDatapath IDを追加します。また、`logger.info` で新しいスイッチのDatapath IDを表示します。
 
 ==== 配列
 
@@ -219,6 +228,7 @@ fruits -= [ "テレビ", "たわし" ]
 `switch_disconnected` ハンドラでは、スイッチ一覧リストから切断したスイッチのDatapath IDを削除し、切断したスイッチの情報を画面に表示します。
 
 [source,ruby,subs="verbatim,attributes"]
+.SwitchMonitor#switch_disconnected (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
 ----
@@ -295,6 +305,7 @@ timer_event show_all_switches, 10.sec
 スイッチの情報を取得するには、取得したい情報をリクエストするメッセージを `send_message` でスイッチに送信し、そのリプライメッセージをハンドラで受け取ります。たとえば、今回のようにスイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージを送信し、対応するハンドラ `description_stats_reply` でメッセージを受け取ります。
 
 [source,ruby,subs="verbatim,attributes"]
+.SwitchMonitor#switch_ready, SwitchMonitor#description_stats_reply (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
 ----
