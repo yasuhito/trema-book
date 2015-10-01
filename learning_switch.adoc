@@ -89,44 +89,9 @@ image::host2to1_openflow.png[caption="図6-6",title="同様にホスト2のMAC�
 
 残りのホスト1からホスト2へのフローエントリはどうでしょう。すでにFDBはすべてのホストのMACアドレスとポート番号を学習してあります。もし、ふたたびホスト1からホスト2へパケットを送信すると、<<host2to1_openflow,図6-6>>と同様にコントローラが「ホスト1からホスト2へのパケットはポート4へ出力せよ」というフローエントリを書き込みます。もちろん、それ以降の通信ではPacket Inはまったく上がらずにすべてスイッチ側だけでパケットを処理します。
 
-== LearningSwitchコントローラ
+== 実行してみよう
 
-ラーニングスイッチのソースコードは <<learning_switch.rb,lib/learning_switch.rb>> と <<fdb.rb,lib/fdb.rb>> の 2 つからなります。まずはメインのソースコード (<<learning_switch.rb,lib/learning_switch.rb>>) をざっと眺めてみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。とくに、`private` の行よりも上のパブリックなメソッドに注目してください。
-
-[[learning_switch.rb]]
-[source,ruby,subs="verbatim,attributes"]
-.lib/learning_switch.rb
-----
-include::{sourcedir}/lib/learning_switch.rb[]
-----
-
-今までの知識だけでも、このソースコードからいろいろなことがわかります。
-
-- ラーニングスイッチの本体はLearningSwitchという名前のクラス
-- 起動時に呼ばれる `start` ハンドラでFDBのインスタンス変数を作っている。FDBの実装は別ファイル `lib/fdb.rb` に分かれている
-- `packet_in` はPacket Inメッセージを捕捉するためのハンドラ。スイッチのフローエントリにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれる
-- `packet_in` ハンドラから呼ばれる `flow_mod_and_packet_out` メソッドの中では、`@fdb` を使ってポート番号を調べたり、`flow_mod` と `packet_out` メソッドでそれぞれFlow ModとPacket Outメッセージを送っている。また、先述した「パケットをばらまく(フラッディング)」処理に対応する `:flood` も見つかる
-
-learning_switch.rb の一行目の `require` は、ご想像の通り fdb.rb を読み込んでいます。`require` はちょうど、C の `#include` や Java の `import` みたいなものと思ってください。Ruby では、たとえば fdb.rb というファイルを読み込みたいときは、拡張子の .rb を外して `require 'fdb'` と書きます。読み込む対象のファイルは、lib/ ディレクトリを起点とした相対パスで書きます。たとえば lib/learning_switch/extensions.rb を読み込みたいときには `require 'learning_switch/extensions'` と書きます。
-
-fdb.rb の中身も読んでみましょう。
-
-[source,ruby,subs="verbatim,attributes"]
-.lib/fdb.rb
-----
-include::{sourcedir}/lib/fdb.rb[]
-----
-
-- FDBクラスは3つのメソッド `lookup`、`learn`、`age` を持つ。
-- `lookup` メソッドを使うとMACアドレスからポート番号を検索できる
-- `learn` メソッドでMACアドレスとポート番号の組をFDBに学習させる
-- `age` メソッドでFDBのエントリをエージングする
-
-ラーニングスイッチの心臓部は `packet_in` ハンドラだけで、その中身もやっていることはなんとなくわかると思います。細かい実装の解説は後回しにして、さっそく実行してみましょう。
-
-=== 実行してみよう
-
-今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
+今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
 
 [source,ruby,subs="verbatim,attributes"]
 .trema.conf
@@ -164,9 +129,44 @@ Packets received:
 
 ラーニングスイッチの動作イメージがわかったところで、ソースコードの解説に移りましょう。
 
+== LearningSwitchコントローラ
+
+ラーニングスイッチのソースコードは <<learning_switch.rb,lib/learning_switch.rb>> と <<fdb.rb,lib/fdb.rb>> の 2 つからなります。まずはメインのソースコード (<<learning_switch.rb,lib/learning_switch.rb>>) をざっと眺めてみましょう。 とくに、`private` の行よりも上のパブリックなメソッドに注目してください。
+
+[[learning_switch.rb]]
+[source,ruby,subs="verbatim,attributes"]
+.lib/learning_switch.rb
+----
+include::{sourcedir}/lib/learning_switch.rb[]
+----
+
+今までの知識だけでも、このソースコードからいろいろなことがわかります。
+
+- ラーニングスイッチの本体はLearningSwitchという名前のクラス
+- 起動時に呼ばれる `start` ハンドラでFDBのインスタンス変数を作っている。FDBの実装は別ファイル `lib/fdb.rb` に分かれている
+- `packet_in` はPacket Inメッセージを捕捉するためのハンドラ。スイッチのフローエントリにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれる
+- `packet_in` ハンドラから呼ばれる `flow_mod_and_packet_out` メソッドの中では、`@fdb` を使ってポート番号を調べたり、`flow_mod` と `packet_out` メソッドでそれぞれFlow ModとPacket Outメッセージを送っている。また、先述した「パケットをばらまく(フラッディング)」処理に対応する `:flood` も見つかる
+
+learning_switch.rb の一行目の `require` は、ご想像の通り fdb.rb を読み込んでいます。`require` はちょうど、C の `#include` や Java の `import` みたいなものと思ってください。Ruby では、たとえば fdb.rb というファイルを読み込みたいときは、拡張子の .rb を外して `require 'fdb'` と書きます。読み込む対象のファイルは、lib/ ディレクトリを起点とした相対パスで書きます。たとえば lib/learning_switch/extensions.rb を読み込みたいときには `require 'learning_switch/extensions'` と書きます。
+
+fdb.rb の中身も読んでみましょう。
+
+[source,ruby,subs="verbatim,attributes"]
+.lib/fdb.rb
+----
+include::{sourcedir}/lib/fdb.rb[]
+----
+
+- FDBクラスは3つのメソッド `lookup`、`learn`、`age` を持つ。
+- `lookup` メソッドを使うとMACアドレスからポート番号を検索できる
+- `learn` メソッドでMACアドレスとポート番号の組をFDBに学習させる
+- `age` メソッドでFDBのエントリをエージングする
+
+ラーニングスイッチの心臓部は `packet_in` ハンドラだけで、その中身も 3 行だけと単純です。ラーニングスイッチの仕組みを思い出しながら、ソースコードを詳しく読み解いていきましょう。
+
 == ソースコード解説
 
-それではラーニングスイッチのソースコードを読み解いていきましょう。今回の肝となるのは、Packet Inハンドラでの次の処理です。
+今回の肝となるのは、Packet In ハンドラでの次の処理です。
 
 - FDBの更新とポート番号の検索
 - ポート番号が見つかった場合の、Flow ModとPacket Outの処理
