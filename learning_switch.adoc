@@ -181,7 +181,7 @@ Packets received:
 
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/learning_switch.rb (LearningSwitch#packet_in, LearningSwitch#flow_mod_and_packet_out)
+.LearningSwitch#packet_in, LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 ----
@@ -191,7 +191,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、というフローエントリをスイッチに書き込みます (flow_modメソッド)。また、Packet Inを起こしたパケットも忘れずにそのポートへ出力します (packet_outメソッド)。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/learning_switch.rb (LearningSwitch#flow_mod_and_packet_out)
+.LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 ----
@@ -199,7 +199,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第3章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/learning_switch.rb (LearningSwitch#flow_mod, LearningSwitch#packet_out)
+.LearningSwitch#flow_mod, LearningSwitch#packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
 ----
