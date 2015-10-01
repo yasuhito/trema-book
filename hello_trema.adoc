@@ -360,6 +360,7 @@ end # <2>
 Tremaではすべてのコントローラはクラスとして定義し、Tremaの提供する `Trema::Controller` クラスをかならず継承します。クラスを継承するには、`class クラス名 < 親クラス名` と書きます.
 
 [source,ruby,subs="verbatim,attributes"]
+.lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
   ...
@@ -378,9 +379,10 @@ end
 ハンドラの定義は `def` に続く名前から `end` までのブロックです。たとえば `HelloTrema` の例では `start` と `switch_ready` ハンドラを定義しています。
 
 [source,ruby,subs="verbatim,attributes"]
+.lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller
-  def start(args) # <1>
+  def start(_args) # <1>
     logger.info "Trema started."
   end
 
@@ -442,6 +444,7 @@ return self super then true undef unless until when while yield
 新しくスイッチが起動すると `switch_ready` メソッドが起動します。
 
 [source,ruby,subs="verbatim,attributes"]
+.HelloTrema#switch_ready (lib/hello_trema.rb)
 ----
 def switch_ready(dpid)
   logger.info "Hello #{dpid.to_hex}!"
@@ -480,6 +483,7 @@ image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起�
 ログメッセージを出力するには、`logger` を使います。
 
 [source,ruby,subs="verbatim,attributes"]
+.HelloTrema#start (lib/hello_trema.rb)
 ----
 def start(_args)
   logger.info 'Trema started.'
