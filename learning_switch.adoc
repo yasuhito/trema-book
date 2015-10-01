@@ -249,7 +249,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 [source,ruby,subs="verbatim,attributes"]
 ./lib/learning_switch.rb
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="26..30"]
+include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 ----
 
 このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第3章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
@@ -257,7 +257,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="26..30"]
 [source,ruby,subs="verbatim,attributes"]
 ./lib/learning_switch.rb
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="32..46"]
+include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
 ----
 
 // TODO ここでオプションの説明
