@@ -144,7 +144,7 @@ $ ./bin/trema send_packets --source host1 --dest host2
 $ ./bin/trema send_packets --source host2 --dest host1
 ----
 
-`trema show_stats`コマンドでhost1とhost2の受信パケット数をチェッックし、それぞれでパケットを受信していれば成功です。
+`trema show_stats` コマンドでhost1とhost2の受信パケット数をチェックし、それぞれでパケットを受信していれば成功です。
 
 ----
 $ ./bin/trema show_stats host1
