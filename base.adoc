@@ -4,6 +4,7 @@ include::how_does_openflow_work.adoc[]
 [[hello_trema]]
 include::hello_trema.adoc[]
 
+[[cbench]]
 include::cbench.adoc[]
 
 [[switch_monitor]]

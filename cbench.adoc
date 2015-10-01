@@ -1,4 +1,3 @@
-[[cbench]]
 = マイクロベンチマークCbench
 :sourcedir: vendor/cbench
 :imagesdir: images/cbench
