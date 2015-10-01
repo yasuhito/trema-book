@@ -91,7 +91,7 @@ image::host2to1_openflow.png[caption="図6-6",title="同様にホスト2のMAC�
 
 == LearningSwitchコントローラ
 
-まずはラーニングスイッチのソースコード(リスト○)をざっと眺めてみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。とくに、`private`の行よりも上のパブリックなメソッドに注目してください。
+まずはラーニングスイッチのソースコード (<<learning_switch.rb,lib/learning_switch.rb>>) をざっと眺めてみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。とくに、`private` の行よりも上のパブリックなメソッドに注目してください。
 
 [[learning_switch.rb]]
 [source,ruby,subs="verbatim,attributes"]
@@ -259,8 +259,6 @@ include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
 ----
-
-// TODO ここでオプションの説明
 
 === Packet Out API
 
