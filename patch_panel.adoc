@@ -146,7 +146,7 @@ include::{sourcedir}/lib/patch_panel.rb[]
 startハンドラではコントローラを初期化します。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#start)
+.PatchPanel#start (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
 ----
@@ -222,7 +222,7 @@ end
 `switch_ready` ハンドラでは、起動してきたスイッチに対してパッチング用のフローエントリを書き込みます。すでにパッチ情報 `@patch` にフローエントリ情報が入っていた場合(スイッチがいったん停止して再接続した場合など)のみ、フローエントリを入れ直します。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#switch_ready)
+.PatchPanel#switch_ready (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="8..13"]
 ----
@@ -235,7 +235,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="8..13"]
 1つのパッチ(2つのフローエントリ)を実際に書き込むのが `add_flow_entries` プライベートメソッドです。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#add_flow_entries)
+.PatchPanel#add_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="27..34"]
 ----
@@ -255,7 +255,7 @@ send_flow_mod_add(dpid, options)
 オプションの具体例として、最初の `send_flow_mod_add` の呼び出し部分を見てみましょう。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#add_flow_entries)
+.PatchPanel#add_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="28..30"]
 ----
@@ -269,7 +269,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="28..30"]
 `delete_flow_entries` は古いフローエントリを消すメソッドです。`add_flow_entries` でフローエントリを足す前に、いったん `delete_flow_entries` で古いフローエントリを消すことでフローエントリが重複しないようにします。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#delete_flow_entries)
+.PatchPanel#delete_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="36..39"]
 ----
@@ -280,7 +280,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="36..39"]
 `create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `bin/patch_panel` コマンドから呼び出されます。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#create_patch)
+.PatchPanel#create_patch (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="15..18"]
 ----
@@ -288,7 +288,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="15..18"]
 `create_patch` メソッドは、`add_flow_entries` メソッドでフローエントリを追加し、パッチ設定 `@patch` にパッチ情報を追加します。
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/patch_panel.rb (PatchPanel#delete_patch)
+.PatchPanel#delete_patch (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="20..23"]
 ----
