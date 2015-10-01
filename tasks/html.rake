@@ -2,6 +2,10 @@ require 'rake/clean'
 
 CLOBBER << 'index.html'
 
+task :html do
+  Rake::Task['index.html'].invoke
+end
+
 file 'index.html' => ADOC do |t|
   revnumber = `git describe --abbrev=0`.chomp
   sh 'bundle exec asciidoctor '\
