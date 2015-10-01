@@ -135,7 +135,7 @@ include::{sourcedir}/trema.conf[]
 次のように `trema run` の `-c` オプションにこの設定ファイルを渡してラーニングスイッチを実行します。
 
 ----
-$ ./bin/trema run ./lib/learning_switch.rb -c learning_switch.conf
+$ ./bin/trema run ./lib/learning_switch.rb -c trema.conf
 ----
 
 別ターミナルを開き、`trema send_packets` コマンドを使ってhost1とhost2の間でテストパケットを送ってみます。
@@ -149,9 +149,15 @@ $ ./bin/trema send_packets --source host2 --dest host1
 
 ----
 $ ./bin/trema show_stats host1
-(出力をここに)
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+Packets received:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
 $ ./bin/trema show_stats host2
-(出力をここに)
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+Packets received:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
 ----
 
 ラーニングスイッチの動作イメージがわかったところで、ソースコードの解説に移りましょう。
