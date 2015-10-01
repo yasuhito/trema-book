@@ -501,7 +501,7 @@ end
 最終的なマルチスレッド版 Cbench コントローラは次のようになります。
 
 [source,ruby,subs="verbatim,attributes"]
-./lib/fast_cbench.rb
+.lib/fast_cbench.rb
 ----
 # A simple openflow controller for benchmarking (multi-threaded version).
 class FastCbench < Trema::Controller
