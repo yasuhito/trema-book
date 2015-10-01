@@ -239,7 +239,7 @@ end
 [source,ruby,subs="verbatim,attributes"]
 ./lib/learning_switch.rb
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="14..19,26..30"]
+include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 ----
 
 ==== 宛先ポート番号が見つかった場合(FlowModとPacket Out)
