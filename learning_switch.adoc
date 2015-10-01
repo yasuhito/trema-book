@@ -218,7 +218,7 @@ def flow_mod(message, port_no)
 end
 ----
 
-== LearningSwitchのソースコード
+== ソースコード解説
 
 それではラーニングスイッチのソースコードを読み解いていきましょう。今回の肝となるのは、Packet Inハンドラでの次の処理です。
 

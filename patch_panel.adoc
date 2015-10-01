@@ -229,7 +229,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="20..23"]
 
 逆に `delete_patch` メソッドはフローエントリを削除しパッチ設定からパッチ情報を削除します。
 
-== patch_panelコマンドのソースコード
+== ソースコード解説
 
 `PatchPanel` クラスの `create_patch` と `delete_patch` メソッドを呼び出すコマンドが `bin/patch_panel` です。`create` と `delete` という 2 つのサブコマンドを持っています。
 
