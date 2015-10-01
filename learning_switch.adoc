@@ -93,10 +93,6 @@ image::host2to1_openflow.png[caption="図6-6",title="同様にホスト2のMAC�
 
 まずはラーニングスイッチのソースコード(リスト○)をざっと眺めてみましょう。 ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。とくに、`private`の行よりも上のパブリックなメソッドに注目してください。
 
-// TODO エイジングの説明
-// TODO reserved? の処理の説明
-// TODO OpenFlow 1.3 にしたときにExactMatchをなくす
-
 [source,ruby,subs="verbatim,attributes"]
 ./lib/learning_switch.rb
 ----
