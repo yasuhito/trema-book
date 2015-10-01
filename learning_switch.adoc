@@ -273,7 +273,13 @@ optionsに指定できる主なオプションは次のとおりです。
 
 ==== 宛先ポート番号が見つからなかった場合 (フラッディング)
 
-もし宛先ポートが見つからなかった場合、コントローラはPacket Inしたメッセージをフラッディングしてばらまきます。これをやっているのがpacket_outメソッドで、ポート番号に仮想ポート番号として:floodを指定しているだけです。このポート番号を指定したPacketOutメッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
+もし宛先ポートが見つからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが flow_mod_and_packet_out メソッドで、ポート番号に仮想ポート番号の `:flood` を指定して packet_out メソッドを呼び出します。`:flood` を指定した PacketOut メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
+----
+include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
+----
 
 == まとめ
 
