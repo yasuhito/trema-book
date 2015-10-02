@@ -227,7 +227,7 @@ Packet Outの使い道は、Packet Inメッセージとして入ってきたパ�
 send_packet_out(
   datapath_id,
   buffer_id: message.buffer_id,
-  data: message.data,
+  raw_data: message.raw_data,
   actions: SendOutPort.new(port_number)
 )
 ----
@@ -236,18 +236,18 @@ send_packet_out(
 
 ==== スイッチのバッファを使わずにPacketOutする場合
 
-スイッチのバッファを使わずにPacket Outする場合、次のように:dataオプションでパケットのデータを指定する必要があります。バッファに乗っているかいないかにかかわらずPacket Outできるので、若干遅くはなりますが安全です。
+スイッチのバッファを使わずに Packet Out する場合、次のように `raw_data` オプションでパケットのデータを指定する必要があります。バッファに乗っているかいないかにかかわらず Packet Out できるので、若干遅くはなりますが安全です。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
 send_packet_out(
   datapath_id,
-  data: message.data,
+  raw_data: message.raw_data,
   actions: SendOutPort.new(port_number)
 )
 ----
 
-これは、次のように:packet_inオプションを使うことで若干短くできます (.dataを書かなくてよくなります)。
+これは、次のように `packet_in` オプションを使うことで若干短くできます (`.raw_data` を書かなくてよくなります)。
 
 [source,ruby,subs="verbatim,attributes"]
 ----
@@ -260,12 +260,12 @@ send_packet_out(
 
 === 主なオプション一覧
 
-optionsに指定できる主なオプションは次のとおりです。
+`options` に指定できる主なオプションは次のとおりです。
 
-- :buffer_id スイッチでバッファされているパケットのIDを指定する。この値を使うと、スイッチでバッファされているパケットを指定してPacket Outできるので効率が良くなる (ただし、スイッチにバッファされていない時はエラーになる)
-- :data Packet Out するパケットの中身を指定する。もし :buffer_id オプションが指定されておりスイッチにバッファされたパケットをPacket Outする場合、この値は使われない
-- :packet_in :dataおよび:in_portオプションを指定するためのショートカット。packet_inハンドラの引数として渡されるPacketInメッセージを指定する
-- :actions Packet Outのときに実行したいアクションの配列を指定する。アクションが1つの場合は配列でなくてかまわない
+- `buffer_id` スイッチでバッファされているパケットの ID を指定する。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなる (ただし、スイッチにバッファされていない時はエラーになる)
+- `raw_data` Packet Out するパケットの中身を指定する。もし `buffer_id` オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われない
+- `packet_in` `raw_data` および `in_port` オプションを指定するためのショートカット。Packet In ハンドラの引数として渡される Packet In メッセージを指定する
+- `actions` Packet Out のときに実行したいアクションの配列を指定する。アクションが 1 つの場合は配列でなくてかまわない
 
 ==== 宛先ポート番号が見つからなかった場合 (フラッディング)
 
