@@ -1,4 +1,3 @@
-[[cbench]]
 = マイクロベンチマークCbench
 :sourcedir: vendor/cbench
 :imagesdir: images/cbench
@@ -11,10 +10,10 @@
 
 CbenchはOpenFlow1.0コントローラのためのベンチマークです。Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。これはOpenFlowプロトコル全体のうちの一部の性能だけを対象にしているので、ベンチマークの中でもマイクロベンチマークに分類できます。
 
-Cbenchは<<cbench_overview,図3-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchプロセスは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
+Cbenchは<<cbench_overview,図4-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchプロセスは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
 
 [[cbench_overview]]
-image::cbench_overview.png[caption="図3-1",title="cbenchプロセスとコントローラの動作"]
+image::cbench_overview.png[caption="図4-1",title="cbenchプロセスとコントローラの動作"]
 
 == インストール
 
@@ -363,11 +362,11 @@ send_flow_mod_add(
 `send_flow_mod_add` で指定できるすべてのオプションは次の通りです。
 
 - `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
-- `:actions`  フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第4章>>で解説) によって指定できる
+- `:actions`  フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第3章>>で解説) によって指定できる
 - `:buffer_id` アクションが参照するパケットがバッファされている領域の ID を指定する
 - `:idle_timeout`  フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
 - `:hard_timeout`  フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
-- `:priority`  フローエントリの優先度(符号なし16ビット、大きいほど優先度高)。Packet Inメッセージはこの優先度淳にフローエントリのマッチングルールと照し合わされる。デフォルトは `0xffff` (最高優先度)
+- `:priority`  フローエントリの優先度(符号なし16ビット、大きいほど優先度高)。Packet Inメッセージはこの優先度順にフローエントリのマッチングルールと照らし合わされる。デフォルトは `0xffff` (最高優先度)
 - `:send_flow_removed`  タイムアウトでフローエントリが消えるときに、Flow Removedメッセージをコントローラに送るかどうかを指定する。デフォルトは `true`
 - `:check_overlap` `true` にセットすると、フローテーブルの中に同じ優先度で競合するものがあった場合、フローエントリを追加せずにエラーを起こす。デフォルトは `false`
 - `:emerg` `true` にセットすると、フローエントリを緊急エントリとして追加する。緊急エントリはスイッチが何らかの障害でコントローラと切断したときにのみ有効となる。デフォルトは `false`
@@ -502,7 +501,7 @@ end
 最終的なマルチスレッド版 Cbench コントローラは次のようになります。
 
 [source,ruby,subs="verbatim,attributes"]
-./lib/fast_cbench.rb
+.lib/fast_cbench.rb
 ----
 # A simple openflow controller for benchmarking (multi-threaded version).
 class FastCbench < Trema::Controller
@@ -574,4 +573,4 @@ Packet InとFlow Modの最初の一歩として、ベンチマークツールCbe
 - SendOutPort アクションによるパケットの転送と、その他のアクションを学んだ
 - コントローラをスレッドで高速化する方法を学んだ
 
-これまではコントローラにつなぐスイッチは一台だけでしたが、続く章ではスイッチをたくさんつなぎ集中管理を始めてみます。
+OpenFlow プログラミングの基礎はできたので、そろそろ実用的なツールを作ってみましょう。続く章では、遠隔操作可能なソフトウェアパッチパネルを作ります。ネットワークケーブルを挿し替えるためだけにラックのあるサーバルームまで出向く必要はなくなります。

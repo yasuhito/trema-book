@@ -4,13 +4,25 @@ include::how_does_openflow_work.adoc[]
 [[hello_trema]]
 include::hello_trema.adoc[]
 
-include::cbench.adoc[]
-
 [[switch_monitor]]
 include::switch_monitor.adoc[]
 
+[[cbench]]
+include::cbench.adoc[]
+
 [[patch_panel]]
 include::patch_panel.adoc[]
+
+[[learning_switch]]
+include::learning_switch.adoc[]
+
+[[learning_switch13]]
+
+[[traffic_monitor]]
+
+[[router_part1]]
+
+[[router_part2]]
 
 [[routing_switch]]
 

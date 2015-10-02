@@ -1,6 +1,18 @@
 # Changelog
 
-## develop
+## developep
+
+
+## 0.6.0 (10/2/2015)
+* [#84](https://github.com/yasuhito/trema-book/pull/84): 6章を追加
+
+
+## 0.5.2 (10/1/2015)
+* [#88](https://github.com/yasuhito/trema-book/pull/88): 誤字脱字の修正
+
+
+## 0.5.1 (9/30/2015)
+* [#85](https://github.com/yasuhito/trema-book/pull/85): 誤字脱字の修正
 
 
 ## 0.5.0 (9/28/2015)
@@ -9,8 +21,6 @@
 
 ## 0.4.0 (9/17/2015)
 * [#49](https://github.com/yasuhito/trema-book/pull/49): 4章を追加
-* [#54](https://github.com/yasuhito/trema-book/pull/54): hello\_trema.rb のソースコードを trema/hello_trema から include
-* [#56](https://github.com/yasuhito/trema-book/pull/56): cbench.rb のソースコードを trema/cbench から include
 
 
 ## 0.3.1 (9/10/2015)

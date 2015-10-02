@@ -3,6 +3,10 @@ require 'rake/clean'
 CLEAN << 'book.xml'
 CLOBBER << 'book.pdf'
 
+task :pdf do
+  Rake::Task['book.pdf'].invoke
+end
+
 file 'book.pdf' => 'book.xml' do
   fopub_options = %w(-param body.font.family VL-PGothic-Regular
                      -param dingbat.font.family VL-PGothic-Regular

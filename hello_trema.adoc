@@ -13,17 +13,19 @@ Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これで�
 実装はステップバイステップで進みます。どのステップも実用的な例となっており、最初はOpenFlowやプログラミングの基礎から始めます。そしてパッチパネルやL2スイッチ、ファイアウォール、ルータの実装など徐々に複雑な機能へとステップアップし、最終的にはデータセンターでも動く本格的な「ネットワーク仮想化」の実装を目標とします。
 
  - Hello Trema (本章): OpenFlow 版 Hello World
- - cbenchベンチマーク (<<cbench,3章>>): OpenFlow のマイクロベンチマークツール
- - スイッチ監視ツール (<<switch_monitor,4章>>): スイッチの死活監視ツール
+ - スイッチ監視ツール (<<switch_monitor,3章>>): スイッチの死活監視ツール
+ - cbenchベンチマーク (<<cbench,4章>>): OpenFlow のマイクロベンチマークツール
  - パッチパネル (<<patch_panel,5章>>): ソフトウェアとして実装したインテリジェント・パッチパネル
- - ラーニングスイッチ  (6章): レイヤ2スイッチをエミュレートするコントローラ
- - テスト駆動開発 (7章): リピータハブのテスト駆動開発
- - ブリッジ (8章): レガシーなネットワークとOpenFlowネットワークのブリッジ
- - ファイアウォール (9章): 透過型ファイアウォール
- - ルータ (10章,11章): 基本的なレイヤ3スイッチ (ルータ)
- - トポロジ (12章): 中規模〜大規模ネットワークのトポロジ検知
- - ルーティングスイッチ (13章): 中規模〜大規模ネットワーク用の仮想レイヤ2スイッチ
- - スライサブルスイッチ (14章): ルーティングスイッチに仮想ネットワーク機能を追加
+ - ラーニングスイッチ  (<<learning_switch,6章>>): レイヤ2スイッチをエミュレートするコントローラ
+ - ラーニングスイッチ OpenFlow1.3 (<<learning_switch13,7章>>): ラーニングスイッチの OpenFlow1.3 による実装
+ - トラフィックモニタ (<<traffic_monitor,8章>>): 統計情報の表示機能をラーニングスイッチに追加
+ - テスト駆動開発 (9章): リピータハブのテスト駆動開発
+ - ブリッジ (10章): レガシーなネットワークとOpenFlowネットワークのブリッジ
+ - ファイアウォール (11章): 透過型ファイアウォール
+ - ルータ (12章,13章): 基本的なレイヤ3スイッチ (ルータ)
+ - トポロジ (14章): 中規模〜大規模ネットワークのトポロジ検知
+ - ルーティングスイッチ (<<routing_switch,15章>>): 中規模〜大規模ネットワーク用の仮想レイヤ2スイッチ
+ - ネットワークスライス (16章): ルーティングスイッチに仮想ネットワーク機能を追加
 
 まずは、OpenFlowプログラミングのためのフレームワーク、Tremaを改めて紹介します。
 
@@ -358,6 +360,7 @@ end # <2>
 Tremaではすべてのコントローラはクラスとして定義し、Tremaの提供する `Trema::Controller` クラスをかならず継承します。クラスを継承するには、`class クラス名 < 親クラス名` と書きます.
 
 [source,ruby,subs="verbatim,attributes"]
+.lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
   ...
@@ -376,9 +379,10 @@ end
 ハンドラの定義は `def` に続く名前から `end` までのブロックです。たとえば `HelloTrema` の例では `start` と `switch_ready` ハンドラを定義しています。
 
 [source,ruby,subs="verbatim,attributes"]
+.lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller
-  def start(args) # <1>
+  def start(_args) # <1>
     logger.info "Trema started."
   end
 
@@ -440,6 +444,7 @@ return self super then true undef unless until when while yield
 新しくスイッチが起動すると `switch_ready` メソッドが起動します。
 
 [source,ruby,subs="verbatim,attributes"]
+.HelloTrema#switch_ready (lib/hello_trema.rb)
 ----
 def switch_ready(dpid)
   logger.info "Hello #{dpid.to_hex}!"
@@ -478,6 +483,7 @@ image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起�
 ログメッセージを出力するには、`logger` を使います。
 
 [source,ruby,subs="verbatim,attributes"]
+.HelloTrema#start (lib/hello_trema.rb)
 ----
 def start(_args)
   logger.info 'Trema started.'
