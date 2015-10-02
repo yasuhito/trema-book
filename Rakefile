@@ -1,6 +1,6 @@
 task default: [:rubocop, :render]
 task travis: [:rubocop, :render]
-task render: ['index.html', 'book.pdf']
+task render: [:html, :pdf]
 
 ADOC = Dir.glob('*.adoc')
 
