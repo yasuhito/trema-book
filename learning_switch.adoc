@@ -194,7 +194,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 ----
 
-このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第3章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
+このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第4章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
 
 [source,ruby,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod, LearningSwitch#packet_out (lib/learning_switch.rb)
@@ -232,7 +232,7 @@ send_packet_out(
 )
 ----
 
-この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、<<cbench,第3章>>のコラムで説明したとおり、バッファの中身は予測不能でデータがいつ消えるかわからないため、この方法は推奨しません。
+この場合コントローラからスイッチへのパケットデータのコピーが起こらないため、若干のスピードアップが期待できます。ただし、<<cbench,第4章>>のコラムで説明したとおり、バッファの中身は予測不能でデータがいつ消えるかわからないため、この方法は推奨しません。
 
 ==== スイッチのバッファを使わずにPacketOutする場合
 
