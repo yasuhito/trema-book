@@ -147,21 +147,6 @@ include::{sourcedir}/lib/learning_switch.rb[]
 - `packet_in` はPacket Inメッセージを捕捉するためのハンドラ。スイッチのフローエントリにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれる
 - `packet_in` ハンドラから呼ばれる `flow_mod_and_packet_out` メソッドの中では、`@fdb` を使ってポート番号を調べたり、`flow_mod` と `packet_out` メソッドでそれぞれFlow ModとPacket Outメッセージを送っている。また、先述した「パケットをばらまく(フラッディング)」処理に対応する `:flood` も見つかる
 
-learning_switch.rb の一行目の `require` は、ご想像の通り fdb.rb を読み込んでいます。`require` はちょうど、C の `#include` や Java の `import` みたいなものと思ってください。Ruby では、たとえば fdb.rb というファイルを読み込みたいときは、拡張子の .rb を外して `require 'fdb'` と書きます。読み込む対象のファイルは、lib/ ディレクトリを起点とした相対パスで書きます。たとえば lib/learning_switch/extensions.rb を読み込みたいときには `require 'learning_switch/extensions'` と書きます。
-
-fdb.rb の中身も読んでみましょう。
-
-[source,ruby,subs="verbatim,attributes"]
-.lib/fdb.rb
-----
-include::{sourcedir}/lib/fdb.rb[]
-----
-
-- FDBクラスは3つのメソッド `lookup`、`learn`、`age` を持つ。
-- `lookup` メソッドを使うとMACアドレスからポート番号を検索できる
-- `learn` メソッドでMACアドレスとポート番号の組をFDBに学習させる
-- `age` メソッドでFDBのエントリをエージングする
-
 ラーニングスイッチの心臓部は `packet_in` ハンドラだけで、その中身も 3 行だけと単純です。ラーニングスイッチの仕組みを思い出しながら、ソースコードを詳しく読み解いていきましょう。今回の肝となるのは、Packet In ハンドラでの次の処理です。
 
 - FDBの更新とポート番号の検索
@@ -276,6 +261,20 @@ send_packet_out(
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 ----
+
+=== FDB の実装
+
+learning_switch.rb の一行目の `require 'fdb'` は、同じディレクトリ内の fdb.rb を読み込みます。`require` はちょうど、C の `#include` や Java の `import` みたいなものと思ってください。Ruby では、たとえば fdb.rb というファイルを読み込みたいときは、拡張子の .rb を外して `require 'fdb'` と書きます。読み込む対象のファイルは、lib/ ディレクトリを起点とした相対パスで書きます。たとえば lib/learning_switch/extensions.rb を読み込みたいときには `require 'learning_switch/extensions'` と書きます。
+
+fdb.rb もざっと目を通してみましょう。このファイルは FDB の機能をカプセル化する `FDB` クラスを提供します。
+
+[source,ruby,subs="verbatim,attributes"]
+.lib/fdb.rb
+----
+include::{sourcedir}/lib/fdb.rb[]
+----
+
+`FDB` クラスは3つのメソッド `lookup`、`learn`、`age` を持ちます。`lookup` メソッドを使うと MAC アドレスからポート番号を検索できます。逆に `learn` メソッドでは MAC アドレスとポート番号の組を学習できます。タイマで定期的に呼ばれる `age` メソッドでは、FDB に入っているすべてのエントリをエージングし、寿命を過ぎたもの (`FDB::Entry#aged_out?` で判定) を消します。
 
 == まとめ
 
