@@ -1,0 +1,3 @@
+= OpenFlow1.3版ラーニングスイッチ
+:sourcedir: vendor/learning_switch
+:imagesdir: images/learning_switch
