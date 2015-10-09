@@ -1,3 +1,24 @@
 = OpenFlow1.3版ラーニングスイッチ
 :sourcedir: vendor/learning_switch
 :imagesdir: images/learning_switch
+
+== インストラクション一覧
+
+[[instructions]]
+.表 7-? OpenFlow 1.3 で使えるインストラクション一覧
+|===
+| インストラクション | Tremaでのクラス名 | 説明
+
+| Goto Table | `GotoTable` | マッチしたパケットの処理を指定したテーブルに引き継ぐ
+| Write Metadata | `WriteMetadata` | テーブル間で引き継げる 64bit のメタデータをセット
+| Write Actions | `WriteActions` | アクションセットに指定したアクションを追加する
+| Apply Actions | `Apply` | 指定したアクションを実行する
+| Clear Actions | `Clear` | アクションセットを空にする
+| Meter | `Meter` | パケットを指定したメーターに適用する
+|===
+
+// TODO: それぞれの詳しい説明を独立した節に書く
+// TODO: それぞれが初登場する章へのリンクを張る
+// TODO: クラス名を考え直す。Apply -> ApplyActions? Clear -> ClearActionSet? などなど
+// TODO: WriteActions インストラクションは未実装
+// TODO: Clear インストラクションは未実装
