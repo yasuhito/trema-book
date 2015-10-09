@@ -2,19 +2,46 @@
 :sourcedir: vendor/learning_switch
 :imagesdir: images/learning_switch
 
+== アクション一覧
+
+[[actions1.3]]
+.表 7-? OpenFlow 1.3 で使えるアクション一覧
+|===
+| アクションのクラス名 | 説明
+
+| `SendOutPort` | 指定したスイッチの (論理) ポートにパケットを出力する
+| `CopyTtlOut` | 二番目に外側のTTLの値を一番外側のTTLにコピーする
+| `CopyTtlIn` | 一番外側のTTLの値を一つ内側のTTLにコピーする
+| `SetMplsTtl` | MPLSのTTLをセットする
+| `DecrementMplsTtl` | MPLSのTTLを1つ減らす
+| `PushVlanHeader` | 新しいVLANヘッダをパケットに追加する
+| `PopVlanHeader` | 一番外側のVLANヘッダをパケットから取り除く
+| `PushMpls` | 新しいMPLSシムヘッダをパケットに追加する
+| `PopMpls` | 一番外側のMPLSタグまたはシムヘッダをパケットから取り除く
+| `SetQueue` | `SendOutPort`で指定したポートの指定したキューにパケットを追加する
+| `Group` | 指定したグループテーブルでパケットを処理する
+| `SetIpTtl` | IPv4のTTLまたはIPv6のhop limitをセットする
+| `DecrementIpTtl` | IPv4のTTLまたはIPv6のhop limitを1つ減らす
+| `SetField` | 指定したフィールドをパケットにセットする
+| `PushPbb` | 新しいPBBサービスインスタンスヘッダ (I-TAG TCI) をパケットに追加する
+| `PopPbb` | 一番外側のPBBサービスインスタンスヘッダ (I-TAG TCI) をパケットから取り除く
+|===
+
+// TODO SemdOutPort 以外を実装する
+
 == インストラクション一覧
 
-[[instructions]]
+[[instructions1.3]]
 .表 7-? OpenFlow 1.3 で使えるインストラクション一覧
 |===
-| インストラクション | Tremaでのクラス名 | 説明
+| インストラクションのクラス名 | 説明
 
-| Goto Table | `GotoTable` | マッチしたパケットの処理を指定したテーブルに引き継ぐ
-| Write Metadata | `WriteMetadata` | テーブル間で引き継げる 64bit のメタデータをセット
-| Write Actions | `WriteActions` | アクションセットに指定したアクションを追加する
-| Apply Actions | `Apply` | 指定したアクションを実行する
-| Clear Actions | `Clear` | アクションセットを空にする
-| Meter | `Meter` | パケットを指定したメーターに適用する
+| `GotoTable` | マッチしたパケットの処理を指定したテーブルに引き継ぐ
+| `WriteMetadata` | テーブル間で引き継げる 64bit のメタデータをセット
+| `WriteActions` | アクションセットに指定したアクションを追加する
+| `Apply` | 指定したアクションを実行する
+| `Clear` | アクションセットを空にする
+| `Meter` | パケットを指定したメーターに適用する
 |===
 
 // TODO: それぞれの詳しい説明を独立した節に書く
