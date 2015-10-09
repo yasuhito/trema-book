@@ -2,7 +2,88 @@
 :sourcedir: vendor/learning_switch
 :imagesdir: images/learning_switch
 
-== アクション一覧
+== OpenFlow1.3版ラーニングスイッチの仕組み
+
+== ソースコード解説
+
+OpenFlow1.3版パッチパネルのソースコードは<<learning_switch13.rb>>になります。
+
+[[learning_switch13.rb]]
+[source,ruby,subs="verbatim,attributes"]
+.lib/learning_switch13.rb
+----
+include::{sourcedir}/lib/learning_switch13.rb[]
+----
+
+=== switch_ready ハンドラ
+
+`switch_ready` ハンドラでは、まだ学習していないパケットのデフォルト処理を新しく起動したスイッチのフローテーブルに書き込みます。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch13#switch_ready (lib/learning_switch13.rb)
+----
+include::{sourcedir}/lib/learning_switch13.rb[lines="12..16"]
+----
+
+最初に呼び出す `add_multicast_mac_drop_flow_entry` では、IP マルチキャストフレームをドロップするフローエントリを書き込みます。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch13#add_multicast_mac_drop_flow_entry (lib/learning_switch13.rb)
+----
+include::{sourcedir}/lib/learning_switch13.rb[lines="47..56"]
+----
+
+Flow Mod に指定するパラメータのうちポイントとなるのは次の 3 つです。
+
+- `table_id`: スイッチに入ってきたパケットの種類を見てドロップするかどうかを最初にフィルタリングする必要があるので、`table_id` には 0 (`INGRESS_FILTERING_TABLE_ID`) を指定します。
+- `idle_timeout`: IPマルチキャストフレームのドロップはスイッチの起動中はずっと有効なので、`idle_timeout` には 0 (フローエントリを消さない) を指定します。
+- `priority`: ドロップ処理は入ってきたパケットに対して最初に行うフィルタリングなので、テーブルID = 0 のフローエントリのうち最大優先度にします。ここでは 2 を指定します。
+
+続く `add_default_forwarding_flow_entry` では、IP マルチキャストフレーム以外のパケットを `FORWARDING_TABLE_ID` で処理します。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch13#add_default_forwarding_flow_entry (lib/learning_switch13.rb)
+----
+include::{sourcedir}/lib/learning_switch13.rb[lines="58..67"]
+----
+
+ここで重要なパラメータは次の 3 つです。
+
+- `priority` を 1 に設定することで、より優先度の高いIPマルチキャストフレーム処理 (優先度 = 2) が終わったあとにこの処理を行います。
+- `match` 空のマッチを指定するので、IPマルチキャストフレームでないパケットをすべてこのフローエントリで拾います。
+- `instructions` では `GotoTable(FORWARDING_TABLE_ID)` を指定することで、以降の処理をテーブル 1 に移します。
+
+// TODO ソースコードの優先度がまちがってるのであとで修正する
+
+最後の `add_default_flooding_flow_entry` では、宛先 MAC アドレスをまだ学習していない場合のデフォルト処理をフローテーブルに書き込みます。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch13#add_default_flooding_flow_entry (lib/learning_switch13.rb)
+----
+include::{sourcedir}/lib/learning_switch13.rb[lines="35..45"]
+----
+
+- `table_id`: ここで追加するフローエントリは、直前の GotoTable でテーブル ID INGRESS_FILTERING_TABLE_ID から FORWARDING_TABLE_ID に移動した後に処理されます。ですので、`table_id` には `FORWARDING_TABLE_ID` を指定します。
+- `priority`: フラッディング処理は宛先 MAC アドレスをまだ学習していなかった場合のデフォルト処理なので、優先度は低めの 1 を指定します。
+- `instructions`: フラッディングのための `SendOutPort.new(:flood)` アクションと、Packet In を起こするための `SendOutPort.new(:controller)` を `Apply` インストラクションで適用します。
+
+=== packet_in ハンドラ
+
+`packet_in` ハンドラでは、Packet In したパケットの送信元 MAC アドレス + In Port の組を学習します。
+
+[source,ruby,subs="verbatim,attributes"]
+.LearningSwitch13#switch_ready (lib/learning_switch13.rb)
+----
+include::{sourcedir}/lib/learning_switch13.rb[lines="24..33"]
+----
+
+ここでの Flow Mod パラメータのポイントは次のとおりです。
+
+- `priority`: 優先度を `FORWARDING_TABLE_ID` の他のフローエントリ (フラッディング) よりも高くすることで、このフローエントリにマッチしない場合だけフラッディングするようにします。
+- `idle_timeout`: フローエントリの寿命を指定しておくことで、OpenFlow1.0 版のラーニングスイッチで行ったタイマによるエイジングと同じ効果を出せます。
+- `match`, `instructions`: 宛先が Packet In の送信元 MAC アドレスと同じだったら、Packet In の `in_port` から入ったパケットをそちらに送る、というエントリを入れています。
+
+=== アクション一覧
 
 [[actions1.3]]
 .表 7-? OpenFlow 1.3 で使えるアクション一覧
@@ -29,7 +110,7 @@
 
 // TODO SemdOutPort 以外を実装する
 
-== インストラクション一覧
+=== インストラクション一覧
 
 [[instructions1.3]]
 .表 7-? OpenFlow 1.3 で使えるインストラクション一覧
@@ -49,3 +130,5 @@
 // TODO: クラス名を考え直す。Apply -> ApplyActions? Clear -> ClearActionSet? などなど
 // TODO: WriteActions インストラクションは未実装
 // TODO: Clear インストラクションは未実装
+
+== まとめ
