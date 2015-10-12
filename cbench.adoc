@@ -324,6 +324,7 @@ send_flow_mod_add(
 // TODO マッチの名前をアクションの名前に合わせる
 // TODO OpenFlow1.3 のそれぞれのアクションの .feature を pio に入れる
 // TODO `SendOutPort`の説明で触れている、論理ポートの説明を書く
+// TODO ラーニングスイッチ1.3章と同じく、箇条書きではなくて章にまとめる
 
 - `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号または論理ポート(第○章参照)を指定できる
 - `SetEtherSourceAddress` 送信元MACアドレスを指定した値に書き換える

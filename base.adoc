@@ -17,6 +17,7 @@ include::patch_panel.adoc[]
 include::learning_switch.adoc[]
 
 [[learning_switch13]]
+include::learning_switch13.adoc[]
 
 [[traffic_monitor]]
 
