@@ -107,7 +107,7 @@ send_flow_mod_add(
 
 `WriteActions` は指定したアクションを後でまとめて適用するために使います。GotoTable でテーブルを移動しながらパケットに `WriteACtions` で指定したアクションを「後で適用するアクション」に追加していきます。そして GotoTable を含まないフローエントリにパケットがマッチしたタイミングで、そのパケットの「後で適用するアクション」をまとめて適用します。
 
-[[pipeline_goto]]
+[[pipeline_write_actions]]
 image::pipeline_write_actions.png[caption="図7-3",title="WriteActions でアクションを後でまとめて適用"]
 
 「この後で適用するアクション」をアクションセットと呼びます。アクションセットはいわゆる集合なので、同じアクションを複数入れることはできません。`WriteActions` 以外にも、アクションセットを空にする `Clear` インストラクションがあります。ここまでのインストラクションを含めてインストラクション一覧を紹介しましょう。
