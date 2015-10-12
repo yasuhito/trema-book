@@ -1,6 +1,11 @@
 # Change log
 
 ## develop (unreleased)
+### New features
+* [#3](https://github.com/trema/learning_switch/pull/3): Add a new learning_switch implementation which supports OpenFlow 1.3.
+
+### Changes
+* [#2](https://github.com/trema/learning_switch/pull/2): Trema 0.7.1.
 
 
 ## 0.4.0 (3/18/2015)
