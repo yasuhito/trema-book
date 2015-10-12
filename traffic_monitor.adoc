@@ -1,0 +1,3 @@
+= いろんな統計情報を表示
+:sourcedir: vendor/traffic_monitor
+:imagesdir: images/traffic_monitor
