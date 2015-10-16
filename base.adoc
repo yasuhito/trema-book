@@ -20,6 +20,10 @@ include::learning_switch.adoc[]
 include::learning_switch13.adoc[]
 
 [[traffic_monitor]]
+include::traffic_monitor.adoc[]
+
+[[tdd]]
+include::tdd.adoc[]
 
 [[router_part1]]
 

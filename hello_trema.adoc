@@ -1,4 +1,3 @@
-[[hello_trema]]
 = Hello, Trema!
 :sourcedir: vendor/hello_trema
 :imagesdir: images/openflow_framework_trema
@@ -19,7 +18,7 @@ Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これで�
  - ラーニングスイッチ  (<<learning_switch,6章>>): レイヤ2スイッチをエミュレートするコントローラ
  - ラーニングスイッチ OpenFlow1.3 (<<learning_switch13,7章>>): ラーニングスイッチの OpenFlow1.3 による実装
  - トラフィックモニタ (<<traffic_monitor,8章>>): 統計情報の表示機能をラーニングスイッチに追加
- - テスト駆動開発 (9章): リピータハブのテスト駆動開発
+ - テスト駆動開発 (<<tdd,9章>>): リピータハブのテスト駆動開発
  - ブリッジ (10章): レガシーなネットワークとOpenFlowネットワークのブリッジ
  - ファイアウォール (11章): 透過型ファイアウォール
  - ルータ (12章,13章): 基本的なレイヤ3スイッチ (ルータ)
