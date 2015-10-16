@@ -1,3 +1,15 @@
+GIT
+  remote: git://github.com/trema/trema.git
+  revision: 73281944328b8eee5aa83c35a48e55e75f3b2110
+  branch: develop
+  specs:
+    trema (0.7.1)
+      bundler (~> 1.10.6)
+      gli (~> 2.13.2)
+      phut (~> 0.6.11)
+      pio (~> 0.27.1)
+      rake
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -114,7 +126,7 @@ GEM
     powerpack (0.1.1)
     private_attr (1.1.0)
     procto (0.0.2)
-    pry (0.10.2)
+    pry (0.10.3)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
@@ -172,12 +184,6 @@ GEM
     thor (0.19.1)
     thread_safe (0.3.5)
     tins (1.6.0)
-    trema (0.7.1)
-      bundler (~> 1.10.6)
-      gli (~> 2.13.2)
-      phut (~> 0.6.10)
-      pio (~> 0.27.1)
-      rake
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.1)
@@ -206,11 +212,12 @@ DEPENDENCIES
   guard-rspec
   guard-rubocop
   inch
+  rake
   reek
   rspec
   rspec-given
   rubocop
-  trema
+  trema!
   yard
 
 BUNDLED WITH

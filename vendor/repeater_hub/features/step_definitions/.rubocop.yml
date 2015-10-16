@@ -1,9 +1,3 @@
-AllCops:
-  Exclude:
-    - bin/*
-    - tmp/**/*
-    - vendor/**/*
-
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 

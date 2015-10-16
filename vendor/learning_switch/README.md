@@ -43,15 +43,15 @@ The `lib/learning_switch.rb` is an OpenFlow controller implementation
 that emulates a layer 2 switch. Run this like so:
 
 ```
-$ bundle exec trema run lib/learning_switch.rb -c trema.conf
+$ ./bin/trema run ./lib/learning_switch.rb -c trema.conf
 ```
 
 Then send some packets from host1 to host2, and show received packet
 stats of host2:
 
 ```
-$ bundle exec trema send_packets --source host1 --dest host2 --npackets 10
-$ bundle exec trema show_stats host2
+$ ./bin/trema send_packets --source host1 --dest host2 --npackets 10
+$ ./bin/trema show_stats host2
 Packets received:
  192.168.0.1 -> 192.168.0.2 = 10 packets
 ```
@@ -60,8 +60,7 @@ The `lib/multi_learning_switch.rb` is an extension to
 `lib/learning_switch.rb`. It can emulate multiple OpenFlow switches.
 
 ```
-$ trema run ./lib/multi_learning_switch.rb -c trema.multi.conf
+$ ./bin/trema run ./lib/multi_learning_switch.rb -c trema.multi.conf
 ```
-
 
 Enjoy!

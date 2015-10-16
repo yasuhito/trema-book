@@ -3,6 +3,14 @@
 ## developep
 
 
+## 0.8.0 (10/16/2015)
+* [#109](https://github.com/yasuhito/trema-book/pull/109): 9章を追加
+
+
+## 0.7.0 (10/12/2015)
+* [#104](https://github.com/yasuhito/trema-book/pull/104): 7章を追加
+
+
 ## 0.6.0 (10/2/2015)
 * [#84](https://github.com/yasuhito/trema-book/pull/84): 6章を追加
 
