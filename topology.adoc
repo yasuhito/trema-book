@@ -157,11 +157,11 @@ TopologyController はトポロジ情報に関する OpenFlow メッセージの
 
 LLDPパケットの定期送信は、`flood_lldp_frames` メソッドが行います。`@topology` に入っている現在見つかっているポートすべてに対して、LLDPパケットを送信するようにPacket Outを行います。
 
-// [source,ruby,subs="verbatim,attributes"]
-// .lib/topology_controller.rb
-// ----
-// include::{sourcedir}/lib/topology_controller.rb[]
-// ----
+[source,ruby,subs="verbatim,attributes"]
+.lib/topology_controller.rb
+----
+include::{sourcedir}/lib/topology_controller.rb[]
+----
 
 ### トポロジ情報
 
@@ -176,11 +176,11 @@ LLDPパケットの定期送信は、`flood_lldp_frames` メソッドが行い�
 
 // TODO: ここの図がほしい。
 
-// [source,ruby,subs="verbatim,attributes"]
-// .lib/topology.rb
-// ----
-// include::{sourcedir}/lib/topology.rb[]
-// ----
+[source,ruby,subs="verbatim,attributes"]
+.lib/topology.rb
+----
+include::{sourcedir}/lib/topology.rb[]
+----
 
 == まとめ
 
