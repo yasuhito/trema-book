@@ -8,6 +8,11 @@
 * [#2](https://github.com/trema/learning_switch/pull/2): Trema 0.7.1.
 
 
+## 0.4.1 (10/21/2015)
+### Bugs fixed
+* Fix [trema/phut#31](https://github.com/trema/phut/pull/31).
+
+
 ## 0.4.0 (3/18/2015)
 ### Changes
 * Phut 0.3.1.
