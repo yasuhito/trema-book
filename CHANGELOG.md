@@ -1,6 +1,6 @@
 # Changelog
 
-## developep
+## develop
 
 
 ## 0.8.0 (10/16/2015)
