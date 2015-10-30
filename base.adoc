@@ -32,7 +32,7 @@ include::tdd.adoc[]
 = NFVを作ろう: ファイアウォール
 
 [[router_part1]]
-= NFVを作ろう: ルータ (前編)
+include::router_part1.adoc[]
 
 [[router_part2]]
 = NFVを作ろう: ルータ (後編)
