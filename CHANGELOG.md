@@ -3,6 +3,14 @@
 ## develop
 
 
+## 0.10.0 (10/10/2015)
+* [#112](https://github.com/yasuhito/trema-book/pull/112): 12章を追加
+
+
+## 0.9.1 (10/9/2015)
+* トポロジ章の図とコピーライトを最新版に更新
+
+
 ## 0.9.0 (10/23/2015)
 * [#111](https://github.com/yasuhito/trema-book/pull/111): 14章を追加
 
