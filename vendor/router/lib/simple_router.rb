@@ -32,7 +32,7 @@ class SimpleRouter < Trema::Controller
     when Parser::IPv4Packet
       packet_in_ipv4 datapath_id, message
     else
-      fail "Unsupported packet_in data type: #{message.data.inspect}"
+      logger.debug "Dropping unsupported packet type: #{message.data.inspect}"
     end
   end
   # rubocop:enable MethodLength
@@ -69,7 +69,7 @@ class SimpleRouter < Trema::Controller
       icmp = Icmp.read(message.raw_data)
       packet_in_icmpv4_echo_request(datapath_id, message) if icmp.icmp_type == 8
     else
-      fail "Failed to handle ipv4 packet: #{message.data}"
+      logger.debug "Dropping unsupported IPv4 packet: #{message.data}"
     end
   end
 
@@ -82,9 +82,9 @@ class SimpleRouter < Trema::Controller
                       actions: SendOutPort.new(message.in_port))
     else
       send_later(datapath_id,
-                 message.ip_source_address,
-                 @interfaces.find_by(port_number: message.in_port),
-                 create_icmp_reply(icmp_request))
+                 interface: @interfaces.find_by(port_number: message.in_port),
+                 destination_ip: message.ip_source_address,
+                 data: create_icmp_reply(icmp_request))
     end
   end
   # rubocop:enable MethodLength
@@ -124,7 +124,10 @@ class SimpleRouter < Trema::Controller
                       raw_data: message.raw_data,
                       actions: actions)
     else
-      send_later(datapath_id, next_hop, interface, message.data)
+      send_later(datapath_id,
+                 interface: interface,
+                 destination_ip: next_hop,
+                 data: message.data)
     end
   end
   # rubocop:enable AbcSize
