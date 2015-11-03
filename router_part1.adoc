@@ -95,15 +95,15 @@ include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
 
 ==== 自分宛のパケットかを判定する
 
-イーサネットにはルータ以外のホストがつながっている可能性があります。そこで Packet In メッセージが上がってきたときには、まずそのパケットが自分宛かどうかを判断します (`to_me?` メソッド)。もし自分宛でない場合にはパケットを破棄します。
+イーサネットにはルータ以外のホストがつながっている可能性があります。そこで Packet In メッセージが上がってきたときには、まずそのパケットが自分宛かどうかを判断します (`sent_to_router?` メソッド)。もし自分宛でない場合にはパケットを破棄します。
 
 [source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#to_me? (lib/simple_router.rb)
+.SimpleRouter#sent_to_router? (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="40..45"]
+include::{sourcedir}/lib/simple_router.rb[lines="120..124"]
 ----
 
-この `to_me?` メソッドはパケットの宛先 MAC アドレスをチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`message.in_port`) に割り当てられている MAC アドレスと同じである場合、自分宛と判断します。
+この `sent_to_router?` メソッドはパケットの宛先 MAC アドレス (`message.destination_mac`) をチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`message.in_port`) に割り当てられている MAC アドレス (`interface.mac_address`) と同じである場合、自分宛と判断します。
 
 ==== パケットの種類によって処理を切り替え
 
@@ -111,54 +111,61 @@ include::{sourcedir}/lib/simple_router.rb[lines="40..45"]
 
 ==== ARP リクエストのハンドル
 
-ARP リクエストパケットを受信すると `handle_arp_request` メソッドを呼びます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
+ARP リクエストパケットを受信すると `packet_in_arp_request` メソッドを呼びます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
 
 [source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#handle_arp_request (lib/simple_router.rb)
+.SimpleRouter#packet_in_arp_request (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="47..54"]
+include::{sourcedir}/lib/simple_router.rb[lines="39..53"]
 ----
 
-// TODO: arp_request というハンドラを定義してしまったほうが分かりやすいかも
 // TODO: 長いので短くする
 
 ==== ARP リプライのハンドル
 
-ARP リプライパケットを受信すると、ARP テーブル (`@arp_table`) に MAC アドレスを記録します。
+ARP リプライパケットを受信すると、ARP テーブル (`@arp_table`) に MAC アドレスを記録します。ここでは `PacketIn#sender_protocol` メソッドを使って ARP パケット中の送信元 IP アドレスを取り出しています。
 
 [source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#handle_arp_reply (lib/simple_router.rb)
+.SimpleRouter#packet_in_arp_reply (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="56..60"]
+include::{sourcedir}/lib/simple_router.rb[lines="56..61"]
 ----
 
-ここでは `PacketIn#sender_protocol` メソッドを使って ARP パケット中の送信元 IP アドレスを取り出しています。
+そして、`maybe_send_unresolved_packets` メソッドで宛先 MAC アドレスが解決していないパケットを送ります。この処理については後述します。
 
 ==== IPv4 パケットのハンドル
 
-IPv4 パケットを受信すると、`handler_ipv4` メソッドを呼びます。ルータに届く IPv4 パケットには次の 3 種類があり、それぞれで処理が異なります。
+IPv4 パケットを受信すると、`packet_in_ipv4` メソッドを呼びます。ルータに届く IPv4 パケットには次の 3 種類があり、それぞれで処理が異なります。
 
  1. パケットの転送が必要な場合
  2. 宛先 IP アドレスが自分宛だった場合
  3. それ以外だった場合 (パケットを破棄)
 
-[source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#handle_ipv4 (lib/simple_router.rb)
-----
-include::{sourcedir}/lib/simple_router.rb[lines="63..76"]
-----
-
-パケットを転送するかどうかの判定は `should_forward?` メソッドです。転送が必要な場合とはつまり、パケットの宛先 IPv4 アドレスが、ルータのインタフェースに割り当てた IPv4 アドレスと異なる場合です。
+// TODO: 今の実装では破棄してないので、破棄するようにする
 
 [source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#should_forward? (lib/simple_router.rb)
+.SimpleRouter#packet_in_ipv4 (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="79..81"]
+include::{sourcedir}/lib/simple_router.rb[lines="63..72"]
 ----
 
-パケットの宛先 IP アドレスがルータである場合、ルータ自身が応答します。シンプルルータでは、ICMP Echo リクエスト (ping) に応答する機能だけ実装しています。`handle_icmpv4_echo_request` メソッドは次のように ICMP Echo リクエストに応答します。
+パケットを転送するかどうかの判定は `forward?` メソッドです。転送が必要な場合とは、次のようにパケットの宛先 IPv4 アドレスがルータのインタフェースに割り当てた IPv4 アドレスと異なる場合です。
 
-まず送信元 IP アドレス (`message.data.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmpv4_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`handle_unresolved_packet` メソッドで ARP リクエストによる MAC アドレスの問合せを行います。
+[source,ruby,subs="verbatim,attributes"]
+.SimpleRouter#forward? (lib/simple_router.rb)
+----
+include::{sourcedir}/lib/simple_router.rb[lines="126..128"]
+----
+
+パケットの宛先 IP アドレスがルータである場合、ルータ自身が応答します。シンプルルータでは、ICMP Echo リクエスト (ping) に応答する機能だけ実装しています。`packet_in_icmpv4_echo_request` メソッドは次のように ICMP Echo リクエストに応答します。
+
+[source,ruby,subs="verbatim,attributes"]
+.SimpleRouter#packet_in_icmpv4_echo_request? (lib/simple_router.rb)
+----
+include::{sourcedir}/lib/simple_router.rb[lines="76..92"]
+----
+
+まず送信元 IP アドレス (`message.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、ARP が解決したときに後で転送するパケットのリストである `@unresolved` に応答メッセージを追加します。これについても詳細は後述します。
 
 === パケットを書き換えて転送する
 
@@ -167,7 +174,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="79..81"]
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="97..113"]
+include::{sourcedir}/lib/simple_router.rb[lines="132..163"]
 ----
 
 この `forward` メソッドは、次の 5 つの処理を行います。
@@ -176,18 +183,17 @@ include::{sourcedir}/lib/simple_router.rb[lines="97..113"]
  2. 次の転送先に送るための、出力インタフェースを決める
  3. インタフェースが見つかった場合、ARP アドレスから宛先 MAC アドレスを探す
  4. MAC アドレスが見つかった場合、転送用のフローエンントリを書き込み、受信パケットを Packet Out する
- 5. MAC アドレスが見つからなかった場合、MAC アドレスを問い合わせるための ARP リクエストを作り、Packet Out する
+ 5. MAC アドレスが見つからなかった場合、パケットを「後で転送するリスト」である `@unresolved` に追加し、MAC アドレスを問い合わせるための ARP リクエストを送る
 
 このうち重要なのは 1 と 4 の処理です。1 で次の転送先を決める処理は `resolve_next_hop` メソッドです。このメソッドの詳細については次章で見ていきます。ここでは 4 の処理を詳しく見ていきましょう。
 
 ==== パケットの書き換えと転送 (Flow Mod と Packet Out)
 
-ARP テーブルから宛先の MAC アドレスがわかると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。<<forward,図 12-1>> で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。`create_action_from` はこのためのメソッドで、送信元と宛先 MAC アドレスの書き換え、そして該当するポートからの出力というアクションの配列を作ります。このアクションは Flow Mod と Packet Out メッセージの送信に使います。
+ARP テーブルから宛先の MAC アドレスがわかると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。<<forward,図 12-1>> で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。`action` はこのためのアクションリストで、送信元と宛先 MAC アドレスの書き換え、そして該当するポートからの出力というアクションの配列です。このアクションは Flow Mod と Packet Out メッセージの送信に使います。
 
 [source,ruby,subs="verbatim,attributes"]
-.SimpleRouter#create_action_from (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="155..161"]
+include::{sourcedir}/lib/simple_router.rb[lines="140..151"]
 ----
 
 == まとめ
@@ -199,8 +205,8 @@ include::{sourcedir}/lib/simple_router.rb[lines="155..161"]
  - いくつものルータを経由してパケットを転送するために、ルータはルーティングテーブルを使って次の転送先を決める
  - Packet In したパケットの判別や ARP、そして ICMP 等の処理を行うためのヘルパメソッドを、Trema はたくさん提供している
 
-// TTL 減算を実装する
+// TODO: TTL 減算を実装する
 
-続く第 11 章では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
+続く第 13 章では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
 
 
