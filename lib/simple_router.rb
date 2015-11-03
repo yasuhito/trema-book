@@ -1,13 +1,15 @@
 require 'arp_table'
 require 'interfaces'
 require 'routing_table'
+require 'unresolved_packet_queue'
 
 # Simple implementation of L3 switch in OpenFlow1.0
 # rubocop:disable ClassLength
 class SimpleRouter < Trema::Controller
+  include UnresolvedPacketQueue
+
   def start(_args)
     load File.join(__dir__, '..', 'simple_router.conf')
-    @unresolved = Hash.new { [] }
     @interfaces = Interfaces.new(Configuration::INTERFACES)
     @arp_table = ArpTable.new
     @routing_table = RoutingTable.new(Configuration::ROUTES)
@@ -57,7 +59,7 @@ class SimpleRouter < Trema::Controller
     @arp_table.update(message.in_port,
                       message.sender_protocol_address,
                       message.source_mac)
-    maybe_send_unresolved_packets datapath_id, message.data
+    maybe_flush_unsent_packets(datapath_id, message.data)
   end
 
   def packet_in_ipv4(datapath_id, message)
@@ -71,7 +73,6 @@ class SimpleRouter < Trema::Controller
     end
   end
 
-  # rubocop:disable AbcSize
   # rubocop:disable MethodLength
   def packet_in_icmpv4_echo_request(datapath_id, message)
     icmp_request = Icmp.read(message.raw_data)
@@ -80,42 +81,15 @@ class SimpleRouter < Trema::Controller
                       raw_data: create_icmp_reply(icmp_request).to_binary,
                       actions: SendOutPort.new(message.in_port))
     else
-      @unresolved[message.ip_source_address] +=
-        [[create_icmp_reply(icmp_request), [SendOutPort.new(message.in_port)]]]
-      interface = @interfaces.find_by(port_number: message.in_port)
-      send_arp_request(datapath_id,
-                       port_number: interface.port_number,
-                       source_mac: interface.mac_address,
-                       source_ip: interface.ip_address,
-                       destination_ip: message.ip_source_address)
+      send_later(datapath_id,
+                 message.ip_source_address,
+                 @interfaces.find_by(port_number: message.in_port),
+                 create_icmp_reply(icmp_request))
     end
   end
-  # rubocop:enable AbcSize
   # rubocop:enable MethodLength
 
   private
-
-  def maybe_send_unresolved_packets(datapath_id, arp_reply)
-    @unresolved[arp_reply.sender_protocol_address].each do |packet, actions|
-      set_router_mac_actions =
-        [SetEtherDestinationAddress.new(arp_reply.sender_hardware_address)] +
-        actions
-      send_packet_out(datapath_id,
-                      raw_data: packet.to_binary_s,
-                      actions: set_router_mac_actions)
-    end
-    @unresolved[arp_reply.sender_protocol_address] = []
-  end
-
-  def send_arp_request(datapath_id, options)
-    arp_request =
-      Arp::Request.new(source_mac: options.fetch(:source_mac),
-                       sender_protocol_address: options.fetch(:source_ip),
-                       target_protocol_address: options.fetch(:destination_ip))
-    send_packet_out(datapath_id,
-                    raw_data: arp_request.to_binary,
-                    actions: SendOutPort.new(options.fetch(:port_number)))
-  end
 
   def sent_to_router?(message)
     return true if message.destination_mac.broadcast?
@@ -150,15 +124,7 @@ class SimpleRouter < Trema::Controller
                       raw_data: message.raw_data,
                       actions: actions)
     else
-      @unresolved[next_hop] +=
-        [[message.data,
-          [SetEtherSourceAddress.new(interface.mac_address),
-           SendOutPort.new(interface.port_number)]]]
-      send_arp_request(datapath_id,
-                       port_number: interface.port_number,
-                       source_mac: interface.mac_address,
-                       source_ip: interface.ip_address,
-                       destination_ip: next_hop)
+      send_later(datapath_id, next_hop, interface, message.data)
     end
   end
   # rubocop:enable AbcSize
