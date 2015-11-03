@@ -196,6 +196,36 @@ ARP テーブルから宛先の MAC アドレスがわかると、パケット�
 include::{sourcedir}/lib/simple_router.rb[lines="114..125"]
 ----
 
+=== ARP の解決後にパケットを転送する
+
+ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐ分からない場合、次のように `send_later` メソッドを呼び出していました。
+
+[source,ruby,subs="verbatim,attributes"]
+.SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
+----
+include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
+----
+
+`send_later` メソッドは `data:` で渡したパケットデータを ARP 解決後に自動的に転送します。転送に使うルータのインタフェースは `interface:` オプション、また送信先 IP アドレスは `destination_ip:` オプションでそれぞれ指定します。
+
+`send_later` メソッドでは、ARP が未解決なパケットを宛先 IP アドレスごとにキュー (`queue`) に入れます。キューにはパケットのデータに加え、ルータでの書き換えに必要なアクションの一部も入ります。この時点では宛先 MAC アドレスはまだ分からないので、`SetEtherDestinationAddress` アクションは入っていません。キューへの追加後に ARP リクエストを送ることで宛先の MAC アドレスを解決します。
+
+[source,ruby,subs="verbatim,attributes"]
+.UnresolvedPacketQueue#send_later (lib/unresolved_packet_queue.rb)
+----
+include::{sourcedir}/lib/unresolved_packet_queue.rb[lines="7..15"]
+----
+
+キューにためたパケットを転送するのは ARP リプライが Packet In したタイミングです。`packet_in_arp_reply` の最後に呼び出している `maybe_flush_unsent_packets` がこの処理を行います。
+
+[source,ruby,subs="verbatim,attributes"]
+.UnresolvedPacketQueue#maybe_flush_unsent_packets (lib/unresolved_packet_queue.rb)
+----
+include::{sourcedir}/lib/unresolved_packet_queue.rb[lines="17..28"]
+----
+
+ここでは MAC アドレスが解決したパケットそれぞれに対して、宛先 MAC アドレスを書き換える `SetEtherDestinationaddress` アクションを追加したアクションリストを作り Packet Out しています。
+
 == まとめ
 
 従来のネットワーク専用機器をソフトウェアで実装した、いわゆる NFV の最初の例としてシンプルなルータの仕組みを学びました。
