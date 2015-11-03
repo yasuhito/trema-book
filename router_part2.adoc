@@ -1,0 +1,3 @@
+= NFVを作ろう: ルータ (後編)
+:sourcedir: vendor/router
+:imagesdir: images/router
