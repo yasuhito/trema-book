@@ -1,32 +1,26 @@
+require 'pio'
+
 # Routing table
 class RoutingTable
-  ADDR_LEN = 32
+  include Pio
 
-  def initialize(route = [])
-    @db = Array.new(ADDR_LEN + 1) { Hash.new }
-    route.each do |each|
-      add(each)
-    end
+  MAX_NETMASK_LENGTH = 32
+
+  def initialize(route)
+    @db = Array.new(MAX_NETMASK_LENGTH + 1) { Hash.new }
+    route.each { |each| add(each) }
   end
 
   def add(options)
-    dest = IPAddr.new(options.fetch(:destination))
-    mask_length = options.fetch(:mask_length)
-    prefix = dest.mask(mask_length)
-    @db[mask_length][prefix.to_i] = IPAddr.new(options.fetch(:next_hop))
+    netmask_length = options.fetch(:netmask_length)
+    prefix = IPv4Address.new(options.fetch(:destination)).mask(netmask_length)
+    @db[netmask_length][prefix.to_i] = IPv4Address.new(options.fetch(:next_hop))
   end
 
-  def delete(options)
-    dest = IPAddr.new(options.fetch(:destination))
-    mask_length = options.fetch(:mask_length)
-    prefix = dest.mask(mask_length)
-    @db[mask_length].delete(prefix.to_i)
-  end
-
-  def lookup(dest)
-    (0..ADDR_LEN).reverse_each do |mask_length|
-      prefix = dest.mask(mask_length)
-      entry = @db[mask_length][prefix.to_i]
+  def lookup(ip_destination_address)
+    MAX_NETMASK_LENGTH.downto(0).each do |each|
+      prefix = ip_destination_address.mask(each)
+      entry = @db[each][prefix.to_i]
       return entry if entry
     end
     nil
