@@ -71,7 +71,9 @@ image::default_route.png[caption="図13-5",title="0.0.0.0/0 は、すべての�
 include::{sourcedir}/lib/simple_router.rb[lines="106..129"]
 ----
 
-宛先アドレス (`message.ipv4_daddr`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
+宛先アドレス (`message.ip_destination_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
+
+// TODO: 以下のコードと説明が食い違っているので直す
 
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#resolve_next_hop (lib/simple_router.rb)
@@ -79,13 +81,9 @@ include::{sourcedir}/lib/simple_router.rb[lines="106..129"]
 include::{sourcedir}/lib/simple_router.rb[lines="136..143"]
 ----
 
-このメソッドでは、まずルーティングテーブル (`@routing_table`) を `lookup` メソッドで検索し、次の転送先を返します。もし、次の転送先が見つからなかった場合は、宛先アドレス (`daddr`) をそのまま返します。これは、<<router_address,図13-2>> で説明したように、宛先ホストとルータが直接接続している可能性があるからです。
+このメソッドでは、まずルーティングテーブル (`@routing_table`) を lookup メソッドで検索し、次の転送先を返します。もし、次の転送先が見つからなかった場合は、宛先アドレス (`ip_destination_address`) をそのまま返します。これは、<<router_address,図13-2>> で説明したように、宛先ホストとルータが直接接続している可能性があるからです。
 
-その後 `forward` メソッドへ戻り、決定した次の転送先がルータのインターフェースに接続しているかを判定します。
-
-// TODO: forward メソッドの該当箇所を include
-
-この判定は、`Interfaces` クラスの `find_by_prefix` メソッドで行います。このメソッドは、次の転送先と同一のネットワークアドレスであるインターフェースを、ルータが持っているかを調べます。もし、該当するインターフェースがない場合、ルータはそのパケットを転送できないので、パケットを破棄して転送処理を終えます。
+その後 forward メソッドへ戻り、決定した次の転送先がルータのインターフェースに接続しているかを判定します。
 
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
@@ -93,9 +91,13 @@ include::{sourcedir}/lib/simple_router.rb[lines="136..143"]
 include::{sourcedir}/lib/simple_router.rb[lines="109..110"]
 ----
 
+この判定は、`Interfaces` クラスの `find_by_prefix` メソッドで行います。このメソッドは、次の転送先と同一のネットワークアドレスであるインターフェースを、ルータが持っているかを調べます。もし、該当するインターフェースがない場合、ルータはそのパケットを転送できないので、パケットを破棄して転送処理を終えます。
+
 === ルーティングテーブル (`RoutingTable` クラス) の実装
 
 次にルーティングテーブルのソースコードを見ていきます。
+
+// TODO: ルーティングテーブルのリファクタリング
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/routing_table.rb
@@ -117,9 +119,9 @@ include::{sourcedir}/lib/routing_table.rb[]
 include::{sourcedir}/simple_router.conf[]
 ----
 
-インターフェースの設定では、そのインターフェースの MAC アドレス (`:hwaddr`)、IP アドレス (`:ipaddr`)、ネットマスク長 (`:masklen`) と、このインターフェースが OpenFlow スイッチのどのポート (`:port`) に対応しているかを指定します。
+インターフェースの設定では、そのインターフェースの MAC アドレス (`:mac_address`)、IP アドレス (`:ip_address`)、ネットマスク長 (`:mask_length`) と、このインターフェースが OpenFlow スイッチのどのポート (`:port`) に対応しているかを指定します。
 
-ルーティングテーブルの設定では、宛先 (`:destination`)、ネットマスク長 (`:masklen`) と次の転送先 (`:nexthop`) を指定します。
+ルーティングテーブルの設定では、宛先 (`:destination`)、ネットマスク長 (`:mask_length`) と次の転送先 (`:next_hop`) を指定します。
 
 == 実行してみよう
 
@@ -240,5 +242,4 @@ TCP window size: 85.0 KByte (default)
  * こうしてまとめられたエントリは、ネットワークアドレスの一部が同じ他のエントリとまとめることで、さらにエントリ数を減らせる
  * パケットの宛先にマッチするエントリがルーティングテーブルに複数ある場合は、ネットマスクが最も長いエントリを優先 (ロンゲストマッチ) する
  * ルーティングテーブルの宛先に0.0.0.0/0を指定することで、パケットがエントリにマッチしなかった場合のデフォルトの宛先、つまりデフォルトルートを設定できる
-
-次章では、第II部プログラミング編の最終章として、今まで使ってきたTremaの内部構造を解き明かします。
+ * ネットワークネームスペースを使えば、任意のアプリケーションを使ってコントローラをテストできる
