@@ -68,7 +68,7 @@ image::default_route.png[caption="図13-5",title="0.0.0.0/0 は、すべての�
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="106..129"]
+include::{sourcedir}/lib/simple_router.rb[lines="108..134"]
 ----
 
 宛先アドレス (`message.ip_destination_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
@@ -78,7 +78,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="106..129"]
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#resolve_next_hop (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="136..143"]
+include::{sourcedir}/lib/simple_router.rb[lines="138..145"]
 ----
 
 このメソッドでは、まずルーティングテーブル (`@routing_table`) を lookup メソッドで検索し、次の転送先を返します。もし、次の転送先が見つからなかった場合は、宛先アドレス (`ip_destination_address`) をそのまま返します。これは、<<router_address,図13-2>> で説明したように、宛先ホストとルータが直接接続している可能性があるからです。
@@ -88,7 +88,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="136..143"]
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="109..110"]
+include::{sourcedir}/lib/simple_router.rb[lines="111..112"]
 ----
 
 この判定は、`Interfaces` クラスの `find_by_prefix` メソッドで行います。このメソッドは、次の転送先と同一のネットワークアドレスであるインターフェースを、ルータが持っているかを調べます。もし、該当するインターフェースがない場合、ルータはそのパケットを転送できないので、パケットを破棄して転送処理を終えます。
