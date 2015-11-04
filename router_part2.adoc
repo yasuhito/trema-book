@@ -119,9 +119,9 @@ include::{sourcedir}/lib/routing_table.rb[]
 include::{sourcedir}/simple_router.conf[]
 ----
 
-インターフェースの設定では、そのインターフェースの MAC アドレス (`:mac_address`)、IP アドレス (`:ip_address`)、ネットマスク長 (`:mask_length`) と、このインターフェースが OpenFlow スイッチのどのポート (`:port`) に対応しているかを指定します。
+インターフェースの設定では、そのインターフェースの MAC アドレス (`:mac_address`)、IP アドレス (`:ip_address`)、ネットマスク長 (`:netmask_length`) と、このインターフェースが OpenFlow スイッチのどのポート (`:port`) に対応しているかを指定します。
 
-ルーティングテーブルの設定では、宛先 (`:destination`)、ネットマスク長 (`:mask_length`) と次の転送先 (`:next_hop`) を指定します。
+ルーティングテーブルの設定では、宛先 (`:destination`)、ネットマスク長 (`:netmask_length`) と次の転送先 (`:next_hop`) を指定します。
 
 == 実行してみよう
 
