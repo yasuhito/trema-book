@@ -59,7 +59,9 @@ class SimpleRouter < Trema::Controller
     @arp_table.update(message.in_port,
                       message.sender_protocol_address,
                       message.source_mac)
-    maybe_flush_unsent_packets(datapath_id, message.data)
+    flush_unsent_packets(datapath_id,
+                         message.data,
+                         @interfaces.find_by(port_number: message.in_port))
   end
 
   def packet_in_ipv4(datapath_id, message)
