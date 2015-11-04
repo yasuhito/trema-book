@@ -158,36 +158,44 @@ $ ./bin/trema run ./lib/simple-router.rb -c ./trema.conf
 
 === pingで動作を確認する
 
-それでは ping を使ってシンプルルータが正しく動作しているかを順に確認して行きましょう。まずは、シンプルルータが ping に応答するかの確認です。ホスト1にログインし、次のようにシンプルルータのIPアドレス192.168.1.1に ping を打ってみます。
+それでは ping を使ってシンプルルータが正しく動作しているかを順に確認して行きましょう。まずは、シンプルルータが ping に応答するかどうかの確認です。ホスト 1 にログインし、次のようにシンプルルータの IP アドレス 192.168.1.1 に ping を打ってみます。
 
 ----
-% ping 192.168.1.1
-PING 192.168.1.1 (192.168.1.1): 56 data bytes
-Request timeout for icmp_seq 0
-Request timeout for icmp_seq 1
-64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=1.806 ms
-64 bytes from 192.168.1.1: icmp_seq=3 ttl=64 time=3.629 ms
-64 bytes from 192.168.1.1: icmp_seq=4 ttl=64 time=1.475 ms
-...
+$ ./bin/trema netns host1
+$ ping 192.168.1.1                                                                                                                           
+PING 192.168.1.1 (192.168.1.1) 56(84) bytes of data.
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=128 time=47.4 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=128 time=15.0 ms
+64 bytes from 192.168.1.1: icmp_seq=3 ttl=128 time=15.0 ms
+64 bytes from 192.168.1.1: icmp_seq=4 ttl=128 time=19.3 ms
+64 bytes from 192.168.1.1: icmp_seq=5 ttl=128 time=14.8 ms
+64 bytes from 192.168.1.1: icmp_seq=6 ttl=128 time=14.4 ms
+64 bytes from 192.168.1.1: icmp_seq=7 ttl=128 time=15.1 ms
+^C
+--- 192.168.1.1 ping statistics ---
+7 packets transmitted, 7 received, 0% packet loss, time 6008ms
+rtt min/avg/max/mdev = 14.425/20.189/47.473/11.245 ms
 ----
 
-ちゃんと ping が返ってきました。次に、シンプルルータをまたいだ二つのホスト間で通信できることも確認してみましょう。ホスト2のIPアドレス192.168.2.2に対して、ホスト1から ping を送ります。
+ちゃんと ping が返ってきました。次に、シンプルルータをまたいだ二つのホスト間で通信できることも確認してみましょう。ホスト 2 の IP アドレス 192.168.2.2 に対して、ホスト 1 から ping を送ります。
 
 ----
-host1% ping 192.168.2.2
-PING 192.168.2.2 (192.168.2.2): 56 data bytes
-64 bytes from 192.168.2.2: icmp_seq=0 ttl=64 time=3.715 ms
-64 bytes from 192.168.2.2: icmp_seq=1 ttl=64 time=3.271 ms
-64 bytes from 192.168.2.2: icmp_seq=2 ttl=64 time=3.367 ms
-64 bytes from 192.168.2.2: icmp_seq=3 ttl=64 time=3.545 ms
-64 bytes from 192.168.2.2: icmp_seq=4 ttl=64 time=2.153 ms
+$ ping 192.168.2.2                                                                                                                            
+PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
+64 bytes from 192.168.2.2: icmp_seq=1 ttl=64 time=75.5 ms
+64 bytes from 192.168.2.2: icmp_seq=2 ttl=64 time=82.3 ms
+64 bytes from 192.168.2.2: icmp_seq=3 ttl=64 time=101 ms
+64 bytes from 192.168.2.2: icmp_seq=4 ttl=64 time=83.3 ms
+64 bytes from 192.168.2.2: icmp_seq=5 ttl=64 time=78.2 ms
+64 bytes from 192.168.2.2: icmp_seq=6 ttl=64 time=76.4 ms
+64 bytes from 192.168.2.2: icmp_seq=7 ttl=64 time=70.9 ms
 ^C
 --- 192.168.2.2 ping statistics ---
-5 packets transmitted, 5 packets received, 0.0% packet loss
-round-trip min/avg/max/stddev = 2.153/3.210/3.715/0.550 ms
+7 packets transmitted, 7 received, 0% packet loss, time 6008ms
+rtt min/avg/max/mdev = 70.995/81.159/101.180/9.050 ms
 ----
 
-ちゃんと ping が返ってきました。もちろん、sshやhttpなど今回試した ping 以外の通信も通りますので、いろいろ試してみるとよいでしょう。
+ちゃんと ping が返ってきました。もちろん、ssh や http など今回試した ping 以外の通信も通りますので、いろいろ試してみるとよいでしょう。
 
 == まとめ
 
