@@ -41,6 +41,7 @@ include::router_part1.adoc[]
 include::topology.adoc[]
 
 [[routing_switch]]
+include::routing_switch.adoc[]
 
 [[sliceable_switch]]
 
