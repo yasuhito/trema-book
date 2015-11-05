@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.11.0 (11/6/2015)
+* [#114](https://github.com/yasuhito/trema-book/pull/114): 13章を追加
+
+
 ## 0.10.1 (11/3/2015)
 * [#113](https://github.com/yasuhito/trema-book/pull/113): パケロス問題を解決したルータ実装に合わせて12章を更新
 

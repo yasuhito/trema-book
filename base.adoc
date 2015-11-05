@@ -35,7 +35,7 @@ include::tdd.adoc[]
 include::router_part1.adoc[]
 
 [[router_part2]]
-= NFVを作ろう: ルータ (後編)
+include::router_part2.adoc[]
 
 [[topology]]
 include::topology.adoc[]
