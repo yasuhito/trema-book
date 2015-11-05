@@ -1,0 +1,20 @@
+*.gem
+*.rbc
+.bundle
+.config
+InstalledFiles
+coverage
+lib/bundler/man
+pkg
+rdoc
+spec/reports
+test/tmp
+test/version_tmp
+tmp
+topology.png
+/vendor/
+
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
