@@ -6,14 +6,14 @@ class Interface
 
   attr_reader :mac_address
   attr_reader :ip_address
-  attr_reader :mask_length
+  attr_reader :netmask_length
   attr_reader :port_number
 
   def initialize(options)
     @port_number = options.fetch(:port)
     @mac_address = Mac.new(options.fetch(:mac_address))
     @ip_address = IPv4Address.new(options.fetch(:ip_address))
-    @mask_length = options.fetch(:mask_length)
+    @netmask_length = options.fetch(:netmask_length)
   end
 end
 
@@ -35,8 +35,8 @@ class Interfaces
 
   def find_by_prefix(ip_address)
     @list.find do |each|
-      mask_length = each.mask_length
-      each.ip_address.mask(mask_length) == ip_address.mask(mask_length)
+      netmask_length = each.netmask_length
+      each.ip_address.mask(netmask_length) == ip_address.mask(netmask_length)
     end
   end
 end
