@@ -68,17 +68,17 @@ image::default_route.png[caption="図13-5",title="0.0.0.0/0 は、すべての�
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="108..134"]
+include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
 ----
 
-宛先アドレス (`message.ip_destination_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
+宛先アドレス (`message.destination_ip_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
 
 // TODO: 以下のコードと説明が食い違っているので直す
 
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#resolve_next_hop (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="138..145"]
+include::{sourcedir}/lib/simple_router.rb[lines="129..136"]
 ----
 
 このメソッドでは、まず宛先アドレスと同じネットワークアドレスを持つインタフェースを探します。もしみつかった場合には、次の転送先として宛先アドレスをそのまま返します。みつからなった場合には、ルーティングテーブルから次の転送先を検索します。
@@ -88,7 +88,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="138..145"]
 [source,ruby,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="111..112"]
+include::{sourcedir}/lib/simple_router.rb[lines="109..110"]
 ----
 
 この判定は、次の転送先と同一のネットワークアドレスを持つインターフェースがあるかどうかを調べればわかります。もし、該当するインターフェースがない場合、ルータはそのパケットを転送できないので、パケットを破棄して転送処理を終えます。
@@ -107,7 +107,7 @@ include::{sourcedir}/lib/routing_table.rb[]
 
 インスタンス変数 `@db` はルーティングテーブルで、ネットマスク長ごと (0 〜 32) に経路を管理します。経路情報はネットワークアドレスをキーとし、次の転送先 IP アドレスを値とするハッシュテーブルです。
 
-ルーティングテーブルの検索は、`lookup` メソッドで行います。このメソッドでは、宛先 `ip_destination_address` に該当する次の転送先 IP アドレスを `@db` 中から探します。ロンゲストマッチを行うために、ネットマスク長が長い順 (32…0) に `@db` から次の転送先 IP アドレスを探索します。
+ルーティングテーブルの検索は、`lookup` メソッドで行います。このメソッドでは、宛先 `destination_ip_address` に該当する次の転送先 IP アドレスを `@db` 中から探します。ロンゲストマッチを行うために、ネットマスク長が長い順 (32…0) に `@db` から次の転送先 IP アドレスを探索します。
 
 === コンフィグ
 
