@@ -3,6 +3,11 @@
 ## develop
 
 
+## 0.12.0 (11/13/2015)
+* [#120](https://github.com/yasuhito/trema-book/pull/120): 付録Bを追加
+* [#118](https://github.com/yasuhito/trema-book/pull/118): 誤字の修正
+
+
 ## 0.11.0 (11/6/2015)
 * [#114](https://github.com/yasuhito/trema-book/pull/114): 13章を追加
 
