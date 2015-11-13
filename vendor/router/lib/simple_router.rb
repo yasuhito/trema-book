@@ -1,5 +1,5 @@
 require 'arp_table'
-require 'interface'
+require 'interfaces'
 require 'routing_table'
 
 # Simple implementation of L3 switch in OpenFlow1.0
@@ -7,182 +7,170 @@ require 'routing_table'
 class SimpleRouter < Trema::Controller
   def start(_args)
     load File.join(__dir__, '..', 'simple_router.conf')
-    @interfaces = Interfaces.new(Config::INTERFACE)
+    @interfaces = Interfaces.new(Configuration::INTERFACES)
     @arp_table = ArpTable.new
-    @routing_table = RoutingTable.new(Config::ROUTE)
+    @routing_table = RoutingTable.new(Configuration::ROUTES)
+    @unresolved_packet_queue = Hash.new { [] }
     logger.info "#{name} started."
   end
 
-  def switch_ready(datapath_id)
-    logger.info "#{datapath_id.to_hex} is connected"
-    send_flow_mod_delete(datapath_id, match: Match.new)
+  def switch_ready(dpid)
+    send_flow_mod_delete(dpid, match: Match.new)
   end
 
   # rubocop:disable MethodLength
-  def packet_in(datapath_id, message)
-    return unless to_me?(message)
+  def packet_in(dpid, message)
+    return unless sent_to_router?(message)
 
     case message.data
     when Arp::Request
-      handle_arp_request(datapath_id, message)
+      packet_in_arp_request dpid, message.in_port, message.data
     when Arp::Reply
-      handle_arp_reply(message)
+      packet_in_arp_reply dpid, message
     when Parser::IPv4Packet
-      handle_ipv4(datapath_id, message)
+      packet_in_ipv4 dpid, message
     else
-      fail 'Failed to handle packet_in data type'
+      logger.debug "Dropping unsupported packet type: #{message.data.inspect}"
+    end
+  end
+  # rubocop:enable MethodLength
+
+  # rubocop:disable MethodLength
+  def packet_in_arp_request(dpid, in_port, arp_request)
+    interface =
+      @interfaces.find_by(port_number: in_port,
+                          ip_address: arp_request.target_protocol_address)
+    return unless interface
+    send_packet_out(
+      dpid,
+      raw_data: Arp::Reply.new(
+        destination_mac: arp_request.source_mac,
+        source_mac: interface.mac_address,
+        sender_protocol_address: arp_request.target_protocol_address,
+        target_protocol_address: arp_request.sender_protocol_address
+      ).to_binary,
+      actions: SendOutPort.new(in_port))
+  end
+  # rubocop:enable MethodLength
+
+  def packet_in_arp_reply(dpid, message)
+    @arp_table.update(message.in_port,
+                      message.sender_protocol_address,
+                      message.source_mac)
+    flush_unsent_packets(dpid,
+                         message.data,
+                         @interfaces.find_by(port_number: message.in_port))
+  end
+
+  def packet_in_ipv4(dpid, message)
+    if forward?(message)
+      forward(dpid, message)
+    elsif message.ip_protocol == 1
+      icmp = Icmp.read(message.raw_data)
+      packet_in_icmpv4_echo_request(dpid, message) if icmp.icmp_type == 8
+    else
+      logger.debug "Dropping unsupported IPv4 packet: #{message.data}"
+    end
+  end
+
+  # rubocop:disable MethodLength
+  def packet_in_icmpv4_echo_request(dpid, message)
+    icmp_request = Icmp.read(message.raw_data)
+    if @arp_table.lookup(message.source_ip_address)
+      send_packet_out(dpid,
+                      raw_data: create_icmp_reply(icmp_request).to_binary,
+                      actions: SendOutPort.new(message.in_port))
+    else
+      send_later(dpid,
+                 interface: @interfaces.find_by(port_number: message.in_port),
+                 destination_ip: message.source_ip_address,
+                 data: create_icmp_reply(icmp_request))
     end
   end
   # rubocop:enable MethodLength
 
   private
 
-  def to_me?(message)
+  def sent_to_router?(message)
     return true if message.destination_mac.broadcast?
-
-    interface = @interfaces.find_by_port(message.in_port)
-    return true if interface && interface.has?(message.destination_mac)
+    interface = @interfaces.find_by(port_number: message.in_port)
+    interface && interface.mac_address == message.destination_mac
   end
 
-  def handle_arp_request(datapath_id, message)
-    port = message.in_port
-    destination_mac = message.data.target_protocol_address
-    interface = @interfaces.find_by_port_and_ip_address(port, destination_mac)
-    return unless interface
-    arp_reply = create_arp_reply_from(message, interface.mac_address)
-    packet_out_raw(datapath_id, arp_reply, SendOutPort.new(interface.port))
-  end
-
-  def handle_arp_reply(message)
-    @arp_table.update(message.in_port,
-                      message.sender_protocol_address,
-                      message.source_mac)
-  end
-
-  # rubocop:disable MethodLength
-  def handle_ipv4(datapath_id, message)
-    if should_forward?(message)
-      forward(datapath_id, message)
-    elsif message.data.ip_protocol == 1
-      icmp = Icmp.read(message.raw_data)
-      if icmp.icmp_type == 8
-        handle_icmpv4_echo_request(datapath_id, message)
-      else
-        fail 'Failed to handle icmp type'
-      end
-    else
-      fail 'Failed to handle ipv4 packet'
-    end
-  end
-  # rubocop:enable MethodLength
-
-  def should_forward?(message)
-    !@interfaces.find_by_ip_address(message.data.ip_destination_address)
-  end
-
-  def handle_icmpv4_echo_request(datapath_id, message)
-    interface = @interfaces.find_by_port(message.in_port)
-    ip_source_address = message.data.ip_source_address
-    arp_entry = @arp_table.lookup(ip_source_address)
-    if arp_entry
-      icmpv4_reply = create_icmpv4_reply(message)
-      packet_out_raw(datapath_id, icmpv4_reply, SendOutPort.new(interface.port))
-    else
-      handle_unresolved_packet(datapath_id, interface, ip_source_address)
-    end
+  def forward?(message)
+    !@interfaces.find_by(ip_address: message.destination_ip_address)
   end
 
   # rubocop:disable MethodLength
   # rubocop:disable AbcSize
-  def forward(datapath_id, message)
-    next_hop = resolve_next_hop(message.data.ip_destination_address)
+  def forward(dpid, message)
+    next_hop = resolve_next_hop(message.destination_ip_address)
 
     interface = @interfaces.find_by_prefix(next_hop)
-    return if !interface || interface.port == message.in_port
+    return if !interface || (interface.port_number == message.in_port)
 
     arp_entry = @arp_table.lookup(next_hop)
     if arp_entry
-      macsa = interface.mac_address
-      macda = arp_entry.mac_address
-      action = create_action_from(macsa, macda, interface.port)
-      flow_mod(datapath_id, message, action)
-      packet_out(datapath_id, message, action)
+      actions = [SetSourceMacAddress.new(interface.mac_address),
+                 SetDestinationMacAddress.new(arp_entry.mac_address),
+                 SendOutPort.new(interface.port_number)]
+      send_flow_mod_add(dpid, match: ExactMatch.new(message), actions: actions)
+      send_packet_out(dpid, raw_data: message.raw_data, actions: actions)
     else
-      handle_unresolved_packet(datapath_id, interface, next_hop)
+      send_later(dpid,
+                 interface: interface,
+                 destination_ip: next_hop,
+                 data: message.data)
     end
   end
   # rubocop:enable AbcSize
   # rubocop:enable MethodLength
 
-  def resolve_next_hop(ip_destination_address)
-    interface = @interfaces.find_by_prefix(ip_destination_address)
+  def resolve_next_hop(destination_ip_address)
+    interface = @interfaces.find_by_prefix(destination_ip_address)
     if interface
-      ip_destination_address
+      destination_ip_address
     else
-      @routing_table.lookup(ip_destination_address)
+      @routing_table.lookup(destination_ip_address)
     end
   end
 
-  def flow_mod(datapath_id, message, action)
-    send_flow_mod_add(
-      datapath_id,
-      match: ExactMatch.new(message),
-      actions: action
-    )
-  end
-
-  def packet_out(datapath_id, packet, action)
-    send_packet_out(
-      datapath_id,
-      packet_in: packet,
-      actions: action
-    )
-  end
-
-  def packet_out_raw(datapath_id, raw_data, action)
-    send_packet_out(
-      datapath_id,
-      raw_data: raw_data,
-      actions: action
-    )
-  end
-
-  def handle_unresolved_packet(datapath_id, interface, ip_address)
-    arp_request = create_arp_request_from(interface, ip_address)
-    packet_out_raw(datapath_id, arp_request, SendOutPort.new(interface.port))
-  end
-
-  def create_action_from(source_mac, destination_mac, port)
-    [
-      SetEtherSourceAddress.new(source_mac),
-      SetEtherDestinationAddress.new(destination_mac),
-      SendOutPort.new(port)
-    ]
-  end
-
-  def create_arp_request_from(interface, addr)
-    Arp::Request.new(source_mac: interface.mac_address,
-                     sender_protocol_address: interface.ip_address,
-                     target_protocol_address: addr).to_binary
-  end
-
-  def create_arp_reply_from(message, replyaddr)
-    Arp::Reply.new(
-      destination_mac: message.data.source_mac,
-      source_mac: replyaddr,
-      sender_protocol_address: message.data.target_protocol_address,
-      target_protocol_address: message.data.sender_protocol_address).to_binary
-  end
-
-  def create_icmpv4_reply(message)
-    icmp_request = Icmp.read(message.raw_data)
+  def create_icmp_reply(icmp_request)
     Icmp::Reply.new(identifier: icmp_request.icmp_identifier,
-                    source_mac: message.destination_mac,
-                    destination_mac: message.source_mac,
-                    ip_destination_address: message.ip_source_address,
-                    ip_source_address: message.ip_destination_address,
+                    source_mac: icmp_request.destination_mac,
+                    destination_mac: icmp_request.source_mac,
+                    destination_ip_address: icmp_request.source_ip_address,
+                    source_ip_address: icmp_request.destination_ip_address,
                     sequence_number: icmp_request.icmp_sequence_number,
-                    echo_data: icmp_request.echo_data).to_binary
+                    echo_data: icmp_request.echo_data)
+  end
+
+  def send_later(dpid, options)
+    destination_ip = options.fetch(:destination_ip)
+    @unresolved_packet_queue[destination_ip] += [options.fetch(:data)]
+    send_arp_request(dpid, destination_ip, options.fetch(:interface))
+  end
+
+  def flush_unsent_packets(dpid, arp_reply, interface)
+    destination_ip = arp_reply.sender_protocol_address
+    @unresolved_packet_queue[destination_ip].each do |each|
+      rewrite_mac =
+        [SetDestinationMacAddress.new(arp_reply.sender_hardware_address),
+         SetSourceMacAddress.new(interface.mac_address),
+         SendOutPort.new(interface.port_number)]
+      send_packet_out(dpid, raw_data: each.to_binary_s, actions: rewrite_mac)
+    end
+    @unresolved_packet_queue[destination_ip] = []
+  end
+
+  def send_arp_request(dpid, destination_ip, interface)
+    arp_request =
+      Arp::Request.new(source_mac: interface.mac_address,
+                       sender_protocol_address: interface.ip_address,
+                       target_protocol_address: destination_ip)
+    send_packet_out(dpid,
+                    raw_data: arp_request.to_binary,
+                    actions: SendOutPort.new(interface.port_number))
   end
 end
 # rubocop:enable ClassLength
