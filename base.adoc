@@ -46,4 +46,8 @@ include::topology.adoc[]
 
 include::appendix_rvm.adoc[]
 
+[[openflow_spec]]
+include::appendix_openflow_spec.adoc[]
+
 include::appendix_copyright_and_license.adoc[]
+
