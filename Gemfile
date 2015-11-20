@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'ruby-graphviz'
-gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
+gem 'trema'
 
 group :development, :test do
   gem 'aruba', require: false
@@ -13,6 +13,7 @@ group :development, :test do
   gem 'guard-cucumber', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
+  gem 'rake', require: false
   gem 'reek', require: false
   gem 'rspec', require: false
   gem 'rspec-given', require: false

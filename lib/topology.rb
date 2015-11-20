@@ -1,17 +1,21 @@
-$LOAD_PATH.unshift __dir__
-
 require 'link'
 
 # Topology information containing the list of known switches, ports,
 # and links.
 class Topology
-  Port = Struct.new(:dpid, :number) do
+  Port = Struct.new(:dpid, :port_no) do
+    alias_method :number, :port_no
+
+    def self.create(attrs)
+      new attrs.fetch(:dpid), attrs.fetch(:port_no)
+    end
+
     def <=>(other)
-      number <=> other.number
+      [dpid, number] <=> [other.dpid, other.number]
     end
 
     def to_s
-      "Switch #{format '%#x', dpid} (port=#{number})"
+      "#{format '%#x', dpid}:#{number}"
     end
   end
 
