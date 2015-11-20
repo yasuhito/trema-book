@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'command_line'
 require 'topology'
 
