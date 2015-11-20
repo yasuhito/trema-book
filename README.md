@@ -4,14 +4,12 @@ topology
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/topology.svg?style=flat)][codeclimate]
 [![Coverage Status](http://img.shields.io/codeclimate/coverage/github/trema/topology.svg?style=flat)][codeclimate]
 [![Dependency Status](http://img.shields.io/gemnasium/trema/topology.svg?style=flat)][gemnasium]
-[![Gitter chat](https://badges.gitter.im/trema/topology.png)][gitter]
 
 Topology discovery controller in Trema.
 
 [travis]: http://travis-ci.org/trema/topology
 [codeclimate]: https://codeclimate.com/github/trema/topology
 [gemnasium]: https://gemnasium.com/trema/topology
-[gitter]: https://gitter.im/trema/topology
 
 
 Prerequisites
