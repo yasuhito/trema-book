@@ -32,7 +32,7 @@ Install
 ```
 $ git clone https://github.com/trema/topology.git
 $ cd topology
-$ bundle install
+$ bundle install --binstubs
 ```
 
 
@@ -46,38 +46,38 @@ outputs the current topology information in ASCII format.
 The triangle topology configuration with three switches:
 
 ```
-$ bundle exec trema run ./lib/topology_controller.rb -c triangle.conf
+$ ./bin/trema run ./lib/topology_controller.rb -c triangle.conf
 ```
 
 The full mesh with 10 switches:
 
 ```
-$ bundle exec trema run ./lib/topology_controller.rb -c fullmesh.conf
+$ ./bin/trema run ./lib/topology_controller.rb -c fullmesh.conf
 ```
 
 In another terminal, you can make changes to the current topology by
-adding or deleting switches with `trema kill` and `trema up` commands.
+adding or deleting switches with `trema stop` and `trema start` commands.
 
 ```
-$ bundle exec trema kill 0x1
-$ bundle exec trema up 0x1
+$ ./bin/trema stop 0x1
+$ ./bin/trema start 0x1
 ```
 
 To turn switch ports on/off,
 
 ```
-$ bundle exec trema port_down --switch 0x1 --port 1
-$ bundle exec trema port_up --switch 0x1 --port 1
+$ ./bin/trema port_down --switch 0x1 --port 1
+$ ./bin/trema port_up --switch 0x1 --port 1
 ```
 
 To view the current topology graphically,
 
 ```
-$ bundle exec trema run ./lib/topology_controller.rb -c fullmesh.conf -- graphviz /tmp/topology.png
+$ ./bin/trema run ./lib/topology_controller.rb -c fullmesh.conf -- graphviz /tmp/topology.png
 ```
 
 To change the LLDP destination MAC,
 
 ```
-$ bundle exec trema run ./lib/topology_controller.rb -c fullmesh.conf -- --destination_mac 11:22:33:44:55:66
+$ ./bin/trema run ./lib/topology_controller.rb -c fullmesh.conf -- --destination_mac 11:22:33:44:55:66
 ```
