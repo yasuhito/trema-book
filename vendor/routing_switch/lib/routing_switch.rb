@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift File.join(__dir__, '../vendor/topology/lib')
-
 require 'forwardable'
 require 'optparse'
 require 'path_manager'
@@ -39,20 +37,9 @@ class RoutingSwitch < Trema::Controller
     logger.info 'Routing Switch started.'
   end
 
-  # @!method switch_ready
-  #   @return (see TopologyController#switch_ready)
   def_delegators :@topology, :switch_ready
-
-  # @!method features_reply
-  #   @return (see TopologyController#features_reply)
   def_delegators :@topology, :features_reply
-
-  # @!method switch_disconnected
-  #   @return (see TopologyController#switch_disconnected)
   def_delegators :@topology, :switch_disconnected
-
-  # @!method port_modify
-  #   @return (see TopologyController#port_modify)
   def_delegators :@topology, :port_modify
 
   def packet_in(dpid, message)
