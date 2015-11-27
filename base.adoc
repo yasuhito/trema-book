@@ -41,8 +41,10 @@ include::router_part2.adoc[]
 include::topology.adoc[]
 
 [[routing_switch]]
+include::routing_switch.adoc[]
 
 [[sliceable_switch]]
+include::sliceable_switch.adoc[]
 
 include::appendix_rvm.adoc[]
 
