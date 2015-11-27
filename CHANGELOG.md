@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.15.0 (11/27/2015)
+* [#122](https://github.com/yasuhito/trema-book/pull/122): ルーティングスイッチ章をアップデート
+
+
 ## 0.14.0 (11/27/2015)
 * [#121](https://github.com/yasuhito/trema-book/pull/121): 16章を追加
 
