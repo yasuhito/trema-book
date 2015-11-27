@@ -1,6 +1,7 @@
 # Changelog
 
 ## develop
+* [#121](https://github.com/yasuhito/trema-book/pull/121): 16章を追加
 
 
 ## 0.13.0 (11/26/2015)
