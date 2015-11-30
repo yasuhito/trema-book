@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'bundler'
 gem 'grape'
-gem 'trema', github: 'trema/trema', branch: 'develop'
+gem 'trema'
 
 group :development, :test do
   gem 'aruba', require: false
