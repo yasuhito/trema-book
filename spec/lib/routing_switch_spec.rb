@@ -49,7 +49,7 @@ describe RoutingSwitch do
 
   describe '#packet_in' do
     context 'with 0xabc, :packet_in (LLDP)' do
-      Given(:packet_in) { double('packet_in', :lldp? => true) }
+      Given(:packet_in) { double('packet_in', lldp?: true) }
       When { routing_switch.packet_in(0xabc, packet_in) }
       Then do
         expect(topology).to have_received(:packet_in).with(0xabc, packet_in)

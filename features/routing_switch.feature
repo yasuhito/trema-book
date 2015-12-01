@@ -1,12 +1,7 @@
 Feature: routing switch
   @sudo
   Scenario: Create flow entries for shortest path
-    Given I set the environment variables to:
-      | variable         | value |
-      | TREMA_LOG_DIR    | .     |
-      | TREMA_PID_DIR    | .     |
-      | TREMA_SOCKET_DIR | .     |
-    And a file named "trema.conf" with:
+    Given a file named "trema.conf" with:
       """
       vswitch('switch1') { datapath_id 0x1 }
       vswitch('switch2') { datapath_id 0x2 }

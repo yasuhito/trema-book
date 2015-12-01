@@ -1,4 +1,4 @@
-routing_switch
+Routing Switch
 ==============
 [![Build Status](http://img.shields.io/travis/trema/routing_switch/develop.svg?style=flat)][travis]
 [![Code Climate](http://img.shields.io/codeclimate/github/trema/routing_switch.svg?style=flat)][codeclimate]
@@ -20,60 +20,76 @@ Prerequisites
 
 * Ruby 2.0.0 or higher ([RVM][rvm]).
 * [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
-* [Graphviz][graphviz] (`apt-get install graphviz`)
 
 [rvm]: https://rvm.io/
 [openvswitch]: https://openvswitch.org/
-[graphviz]: http://www.graphviz.org/
 
 
 Install
 -------
 
-```
-$ git clone https://github.com/trema/routing_switch.git
-$ cd routing_switch
-$ bundle install
+```bash
+git clone https://github.com/trema/routing_switch.git
+cd routing_switch
+bundle install --binstubs
 ```
 
 
 Play
 ----
 
-To run without virtual slicing, run
-`lib/routing_switch.rb` as follows:
-
-```
-$ bundle exec trema run lib/routing_switch.rb -c trema.conf
-Topology started (text mode).
-Path Manager started.
-Routing Switch started.
-```
-
-To run with virtual slicing support, run
-`lib/routing_switch.rb` with `-- --slicing` options as
+To run without virtual slicing, run `lib/routing_switch.rb` as
 follows:
 
-```
-$ bundle exec trema run lib/routing_switch.rb -c trema.conf -- --slicing
-Topology started (text mode).
-Path Manager started.
-Sliceable Switch started.
+```bash
+./bin/trema run lib/routing_switch.rb -c trema.conf
 ```
 
-In another terminal, you can create virtual slices and add hosts to
-them with `slice add` and `slice add_host` commands.
+To run with virtual slicing support, run `lib/routing_switch.rb` with
+`-- --slicing` options as follows:
 
-```
-$ bundle exec ./bin/slice add foo
-$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:01 --port 0x1:1 --slice foo
-$ bundle exec ./bin/slice add_host --mac 00:00:00:00:00:02 --port 0x2:1 --slice foo
+```bash
+./bin/trema run lib/routing_switch.rb -c trema.conf -- --slicing
 ```
 
+In another terminal, you can create virtual slices with the following
+command:
 
-REST API Server
----------------
+```bash
+./bin/slice add foo
+```
 
+Then add hosts to the slice with the following command:
+
+```bash
+./bin/slice add_host --mac 11:11:11:11:11:11 --port 0x1:1 --slice foo
 ```
-$ bundle exec rackup
+
+
+REST API
+--------
+
+To start the REST API server:
+
+```bash
+./bin/rackup
 ```
+
+### Supported APIs
+
+Read [this](https://relishapp.com/trema/routing-switch/docs/rest-api) for details.
+
+Description                 | Method | URI
+----------------------------|--------|--------------------------------------------------------------
+Create a slice              | POST   | `/slices`
+Delete a slice              | DELETE | `/slices`
+List slices                 | GET    | `/slices`
+Shows a slice               | GET    | `/slices/:slice_id`
+Add a port to a slice       | POST   | `/slices/:slice_id/ports`
+Delete a port from a slice  | DELETE | `/slices/:slice_id/ports`
+List ports                  | GET    | `/slices/:slice_id/ports`
+Shows a port                | GET    | `/slices/:slice_id/ports/:port_id`
+Adds a host to a slice      | POST   | `/slices/:slice_id/ports/:port_id/mac_addresses`
+Deletes a host from a slice | DELETE | `/slices/:slice_id/ports/:port_id/mac_addresses`
+List MAC addresses          | GET    | `/slices/:slice_id/ports/:port_id/mac_addresses`
+Shows a MAC address         | GET    | `/slices/:slice_id/ports/:port_id/mac_addresses/:mac_address`

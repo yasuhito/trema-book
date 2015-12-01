@@ -2,7 +2,7 @@
 
 Then(/^the number of packets sent from "(.*?)" should be:$/) do |host_name, table|
   command = "trema show_stats #{host_name}"
-  step "I successfully run `#{command}`"
+  step "I run `#{command}`"
 
   result = {}
   in_current_dir do

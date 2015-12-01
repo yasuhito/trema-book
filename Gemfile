@@ -1,10 +1,11 @@
 source 'https://rubygems.org'
 
+gem 'bundler'
 gem 'grape'
-gem 'trema', github: 'trema/trema_ruby', branch: 'develop'
+gem 'trema'
 
 group :development, :test do
-  gem 'aruba', require: false
+  gem 'aruba', '~> 0.6.2', require: false
   gem 'cucumber', require: false
   gem 'flay', require: false
   gem 'flog', require: false
@@ -12,6 +13,8 @@ group :development, :test do
   gem 'guard-bundler', require: false
   gem 'guard-rspec', require: false
   gem 'guard-rubocop', require: false
+  gem 'pry', require: false
+  gem 'pry-doc', require: false
   gem 'rack-test', require: false
   gem 'rake', require: false
   gem 'reek', require: false
@@ -22,6 +25,7 @@ end
 
 group :doc do
   gem 'inch', require: false
+  gem 'relish', require: false
   gem 'yard', require: false
 end
 

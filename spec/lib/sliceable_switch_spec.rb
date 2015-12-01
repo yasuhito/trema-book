@@ -13,7 +13,7 @@ describe SliceableSwitch do
   describe '#find_slice' do
     context "with 'foo'" do
       When(:result) { sliceable_switch.find_slice('foo') }
-      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
+      Then { result == Failure(Slice::SliceNotFoundError) }
     end
   end
 
@@ -32,7 +32,7 @@ describe SliceableSwitch do
       describe '#add_slice' do
         context "with 'foo'" do
           When(:result) { sliceable_switch.add_slice 'foo' }
-          Then { result == Failure(SliceableSwitch::SliceAlreadyExistsError) }
+          Then { result == Failure(Slice::SliceAlreadyExistsError) }
         end
       end
     end
@@ -41,7 +41,7 @@ describe SliceableSwitch do
   describe '#delete_slice' do
     context "with 'foo'" do
       When(:result) { sliceable_switch.delete_slice 'foo' }
-      Then { result == Failure(SliceableSwitch::SliceNotFoundError) }
+      Then { result == Failure(Slice::SliceNotFoundError) }
     end
   end
 end

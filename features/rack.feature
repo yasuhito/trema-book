@@ -11,4 +11,4 @@ Feature: rack
     And I successfully run `bash -c 'rackup ../../config.ru -P rack.pid &'`
     And I run `sleep 3`
     When I run `curl -s http://localhost:9292/slices`
-    Then the output should contain exactly "[]"
+    Then the stdout should contain "[]"
