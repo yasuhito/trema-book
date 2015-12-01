@@ -11,7 +11,7 @@ class RestApi < Grape::API
   helpers do
     def sliceable_switch
       @sliceable_switch ||=
-        Trema.controller_process(ENV['TREMA_SOCKET_DIR']).sliceable_switch
+        Trema.trema_process('RoutingSwitch', ENV['TREMA_SOCKET_DIR'] || Trema::DEFAULT_SOCKET_DIR).controller.sliceable_switch
     end
 
     def rest_api
