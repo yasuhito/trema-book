@@ -1,4 +1,5 @@
 = 生活ネットワークをOpenFlowに移行する
+:sourcedir: vendor/one_way_bridge
 :imagesdir: images/one_way_bridge
 
 あとは実践あるのみ!今までの知識を総動員し、自宅や職場のネットワークをOpenFlow化していろいろ実験してみましょう。
@@ -45,9 +46,10 @@ image::failure_analysis.png[caption="図10-2",title="レガシーネットワー
 
  1. host1がhost2へパケットを送信する
  2. BuggyControllerはOpenFlowスイッチポート1番からのPacket Inを受け取り、OpenFlowスイッチのスイッチポート1番にhost1がつながっていると学習する
- 3. host2がhost1へパケットを送信する
- 4. BuggyControllerはスイッチポート1番から「宛先＝host1」のPacket Inを受け取る。ここで、host1はOpenFlowスイッチのスイッチポート1番にあると学習しているので、スイッチポート1番にPacket Outする
- 5. 結果的に、host1はポート2と3の両方から同じパケットを受け取る。レガシーネットワークのスイッチから見ると、host2がスイッチポート2番と3番を高速に移動しているように見える
+ 3. レガシーネットワークスイッチが覚えている host1 の情報がエージアウトし消える footnote:[厳密に言うと以下のステップが発生するには、レガシーネットワークスイッチのエージアウト間隔よりも OpenFlow スイッチのエージアウト間隔が長い、という前提条件があります]
+ 4. host2がhost1へパケットを送信する
+ 5. BuggyControllerはスイッチポート1番から「宛先＝host1」のPacket Inを受け取る。ここで、host1はOpenFlowスイッチのスイッチポート1番にあると学習しているので、スイッチポート1番にPacket Outする
+ 6. 結果的に、host1はポート2と3の両方から同じパケットを受け取る。レガシーネットワークのスイッチから見ると、host2がスイッチポート2番と3番を高速に移動しているように見える
 
 つまり、BuggyControllerがレガシーネットワークにパケットを逆流させたおかげでネットワークが大混乱し、通信できない状況が起きたのです。
 
@@ -104,65 +106,17 @@ image::pattern3.png[caption="図10-5",title="レガシーネットワークとOp
 
 === ソースコード
 
-逆流防止フィルタ（OneWayBridge コントローラ）のソースコードをリスト○○に示します。このコントローラは、Packet InとFlow Removedのハンドラを定義しています。
-
-// TODO リスト「逆流防止フィルタ (OneWayBridge コントローラ)」
-// TODO 新Tremaのリポジトリを完成 (trema/one_way_bridge)
+逆流防止フィルタ（OneWayBridge コントローラ）のソースコードは GitHub の trema/one_way_bridge リポジトリ (https://github.com/trema/one_way_bridge) からダウンロードできます。このコントローラは、Packet In と Flow Removed のハンドラだけを定義したとてもシンプルなものです。
 
 [source,ruby,subs="verbatim,attributes"]
+.lib/one_way_bridge.rb
 ----
-# Safety-net bridge controller between legacy and OpenFlow networks.
-class OneWayBridge < Trema::Controller
-  def packet_in(datapath_id, message)
-    out_port = { 1 => 2, 2 => 1 }.fetch(message.in_port)
-    add_flow datapath_id, message.source_mac, message.in_port, out_port
-    send_packet datapath_id, message, out_port
-    add_drop_flow datapath_id, message.source_mac, out_port
-  end
-
-  def flow_removed(datapath_id, message)
-    delete_flow datapath_id, message.match.ether_source_address
-  end
-
-  private
-
-  def add_flow(datapath_id, source_mac, in_port, out_port)
-    send_flow_mod_add(
-      datapath_id,
-      idle_timeout: 10 * 60,
-      match: Match.new(in_port: in_port, ether_source_address: source_mac),
-      actions: SendOutPort.new(out_port)
-    )
-  end
-
-  def add_drop_flow(datapath_id, source_mac, in_port)
-    send_flow_mod_add(
-      datapath_id,
-      idle_timeout: 10 * 60,
-      match: Match.new(in_port: in_port, ether_source_address: source_mac)
-    )
-  end
-
-  def send_packet(datapath_id, message, out_port)
-    send_packet_out(
-      datapath_id,
-      packet_in: message,
-      actions: SendOutPort.new(out_port)
-    )
-  end
-
-  def delete_flow(datapath_id, source_mac)
-    send_flow_mod_delete(
-      datapath_id,
-      match: Match.new(ether_source_address: source_mac)
-    )
-  end
-end
+include::{sourcedir}/lib/one_way_bridge.rb[]
 ----
 
 `packet_in` ハンドラでは、Packet Inしたスイッチポートとは別のポートへパケットを転送するフローエントリを設定し（`add_flow` メソッド）、Packet Inを起こしたパケットを転送します（`send_packet` メソッド）。また、同じパケットが逆向きに流れないようにするフローエントリを設定することで逆流を防ぎます（`add_drop_flow` メソッド）。同じパケットかどうかは送信元のMACアドレスが同じかどうかで判断します。
 
-`flow_removed` ハンドラは、順方向または逆方向のフローエントリが消えたときに呼ばれます。これらのフローエントリはどちらも `:dl_src` に同じMACアドレスを指定しているので、`delete_flow` メソッドでもう片方の対になるフローエントリを消します。
+`flow_removed` ハンドラは、順方向または逆方向のフローエントリが消えたときに呼ばれます。これらのフローエントリはどちらも `:source_mac_address` に同じMACアドレスを指定しているので、`delete_flow` メソッドでもう片方の対になるフローエントリを消します。
 
 === 実行してみよう
 
@@ -171,23 +125,23 @@ end
 [[oneway_bridge_setup]]
 image::oneway_bridge.png[caption="図10-6",title="逆流防止フィルタ（OneWayBridgeコントローラ）を実行するための物理構成例"]
 
-この物理構成をTrema設定ファイルにしたものがリスト○○（one-way-bridge.conf）です。仮想リンク（`link` で始まる行）の端点にインターフェース名eth0、eth1を指定していることに注目してください。
+この物理構成をTrema設定ファイルにしたものが以下です。仮想リンク（`link` で始まる行）の端点にインターフェース名eth0、eth1を指定していることに注目してください。
 
 [source,ruby,subs="verbatim,attributes"]
 .逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル
 ----
-vswitch ( "bridge" ) {
+vswitch ('bridge') {
   datapath_id 0xabc
 }
 
-link "bridge", "eth0"
-link "bridge", "eth1"
+link 'bridge', 'eth0'
+link 'bridge', 'eth1'
 ----
 
 実行するには、この設定ファイルを `trema run` の `-c` オプションに渡します。
 
 ----
-$ ./bin/trema run ./one-way-bridge.rb -c ./one-way-bridge.conf
+$ ./bin/trema run ./lib/one-way-bridge.rb -c ./trema.conf
 ----
 
 === 職場で使ってみた
