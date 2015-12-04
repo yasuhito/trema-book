@@ -7,6 +7,15 @@
 
 コントローラの起動イベントを捕捉するハンドラ。引数 `args` は trema run で `--` の後に渡した引数の配列。
 
+==== 凡例
+
+[source,ruby,subs="verbatim,attributes"]
+----
+def start(args)
+  # ...
+end
+----
+
 たとえばコントローラを次のように起動した場合、`args` の中身は `['graphviz', '/tmp/topology.png']` となる。
 
 .trema/topology の起動例より

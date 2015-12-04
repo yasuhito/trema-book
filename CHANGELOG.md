@@ -5,6 +5,7 @@
 
 ## 0.16.0 (12/4/2015)
 * [#124](https://github.com/yasuhito/trema-book/pull/124): 10章を追加
+* [#123](https://github.com/yasuhito/trema-book/pull/123): startハンドラのリファレンスを追加
 
 
 ## 0.15.0 (11/27/2015)
