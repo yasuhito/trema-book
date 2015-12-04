@@ -25,8 +25,8 @@ include::traffic_monitor.adoc[]
 [[tdd]]
 include::tdd.adoc[]
 
-[[bridge]]
-= 生活ネットワークをOpenFlowに移行する
+[[one_way_bridge]]
+include::one_way_bridge.adoc[]
 
 [[firewall]]
 = NFVを作ろう: ファイアウォール
@@ -50,6 +50,9 @@ include::appendix_rvm.adoc[]
 
 [[openflow_spec]]
 include::appendix_openflow_spec.adoc[]
+
+[[trema_api_reference]]
+include::appendix_trema_api_reference.adoc[]
 
 include::appendix_copyright_and_license.adoc[]
 
