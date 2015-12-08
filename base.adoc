@@ -46,6 +46,9 @@ include::routing_switch.adoc[]
 [[sliceable_switch]]
 include::sliceable_switch.adoc[]
 
+[[openvnet]]
+include::openvnet.adoc[]
+
 include::appendix_rvm.adoc[]
 
 [[openflow_spec]]
