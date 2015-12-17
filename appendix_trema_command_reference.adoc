@@ -1,0 +1,43 @@
+== trema コマンド
+=== trema dump_flows
+
+指定したスイッチのすべてのフローエントリを表示する。
+
+----
+$ trema dump_flows [コマンドオプション] スイッチ名
+----
+
+=== 使い方
+
+仮想ネットワーク設定で `of_switch` という名前のスイッチを定義し、コントローラを実行したとする。
+
+[source,ruby,subs="verbatim,attributes"]
+.trema.conf
+----
+vswitch('of_switch') { datapath_id 0xabc }
+----
+
+.コントローラを実行する
+----
+$ trema run my_controller.rb -c trema.conf
+----
+
+このときコントローラがスイッチ `of_switch` に書き込んだフローエントリを表示するには、次のように `trema dump_flows of_switch` を実行する。
+
+// TODO 最初の行の OFPST_FLOW reply... の行はいらないので、Trema を変更して表示されないようにする
+
+----
+$ trema dump_flows of_switch
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=10.727s, table=0, n_packets=0, n_bytes=0, priority=0 actions=drop
+----
+
+出力フォーマットは Open vSwitch の `ovs-ofctl dump-flows` コマンドと同じ。詳しくは `man ovs-ofctl` の Table Entry Output を参照。
+
+=== コマンドオプション一覧
+
+|===
+| コマンドオプション | 説明 | デフォルト値
+
+| `-S`, `--socket_dir` | コントローラプロセスのソケットファイル (`trema.コントローラ名.ctl`) があるディレクトリを指定する。これは `trema run` コマンドの `-S`, `--socket_dir` オプションで指定した値を指定すればよい | `/tmp`
+|===

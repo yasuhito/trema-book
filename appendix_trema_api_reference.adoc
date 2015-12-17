@@ -1,13 +1,10 @@
-[appendix]
-= Tremaリファレンス
-
 == ハンドラ
 
 === start(args)
 
 コントローラの起動イベントを捕捉するハンドラ。引数 `args` は trema run で `--` の後に渡した引数の配列。
 
-==== 凡例
+==== 概要
 
 [source,ruby,subs="verbatim,attributes"]
 ----
