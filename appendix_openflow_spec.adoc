@@ -1,5 +1,5 @@
 [appendix]
-= OpenFlow の仕組み
+= OpenFlow の仕様
 :imagesdir: images/openflow_spec
 
 実用重視で OpenFlow バージョン 1.3 仕様のポイントとよく使う用語を押さえます。
