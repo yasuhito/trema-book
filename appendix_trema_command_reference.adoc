@@ -7,7 +7,7 @@
 $ trema dump_flows [コマンドオプション] スイッチ名
 ----
 
-=== 使い方
+==== 使い方
 
 仮想ネットワーク設定で `of_switch` という名前のスイッチを定義し、コントローラを実行したとする。
 
@@ -34,7 +34,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 
 出力フォーマットは Open vSwitch の `ovs-ofctl dump-flows` コマンドと同じ。詳しくは `man ovs-ofctl` の Table Entry Output を参照。
 
-=== コマンドオプション一覧
+==== コマンドオプション一覧
 
 |===
 | コマンドオプション | 説明 | デフォルト値
