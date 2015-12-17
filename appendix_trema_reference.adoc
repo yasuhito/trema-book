@@ -1,0 +1,4 @@
+[appendix]
+= Tremaリファレンス
+include::appendix_trema_command_reference.adoc[]
+include::appendix_trema_api_reference.adoc[]
