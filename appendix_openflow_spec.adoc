@@ -1,4 +1,4 @@
-~[appendix]
+[appendix]
 = OpenFlow の仕様
 :imagesdir: images/openflow_spec
 
