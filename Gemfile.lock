@@ -68,3 +68,6 @@ DEPENDENCIES
   guard-rubocop
   rake
   rubocop
+
+BUNDLED WITH
+   1.11.2
