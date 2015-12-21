@@ -6,13 +6,13 @@ class LearningSwitch < Trema::Controller
 
   def start(_argv)
     @fdb = FDB.new
-    logger.info 'LearningSwitch started.'
+    logger.info "#{name} started."
   end
 
-  def packet_in(_datapath_id, message)
-    return if message.destination_mac.reserved?
-    @fdb.learn message.source_mac, message.in_port
-    flow_mod_and_packet_out message
+  def packet_in(_datapath_id, packet_in)
+    return if packet_in.destination_mac.reserved?
+    @fdb.learn packet_in.source_mac, packet_in.in_port
+    flow_mod_and_packet_out packet_in
   end
 
   def age_fdb
@@ -21,24 +21,24 @@ class LearningSwitch < Trema::Controller
 
   private
 
-  def flow_mod_and_packet_out(message)
-    port_no = @fdb.lookup(message.destination_mac)
-    flow_mod(message, port_no) if port_no
-    packet_out(message, port_no || :flood)
+  def flow_mod_and_packet_out(packet_in)
+    port_no = @fdb.lookup(packet_in.destination_mac)
+    flow_mod(packet_in, port_no) if port_no
+    packet_out(packet_in, port_no || :flood)
   end
 
-  def flow_mod(message, port_no)
+  def flow_mod(packet_in, port_no)
     send_flow_mod_add(
-      message.datapath_id,
-      match: ExactMatch.new(message),
+      packet_in.datapath_id,
+      match: ExactMatch.new(packet_in),
       actions: SendOutPort.new(port_no)
     )
   end
 
-  def packet_out(message, port_no)
+  def packet_out(packet_in, port_no)
     send_packet_out(
-      message.datapath_id,
-      packet_in: message,
+      packet_in.datapath_id,
+      packet_in: packet_in,
       actions: SendOutPort.new(port_no)
     )
   end

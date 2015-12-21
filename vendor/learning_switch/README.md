@@ -19,10 +19,9 @@ An OpenFlow controller that emulates layer 2 switches.
 Prerequisites
 -------------
 
-* Ruby 2.0.0 or higher ([RVM][rvm]).
+* Ruby 2.0.0 or higher.
 * [Open vSwitch][openvswitch] (`apt-get install openvswitch-switch`).
 
-[rvm]: https://rvm.io/
 [openvswitch]: https://openvswitch.org/
 
 
