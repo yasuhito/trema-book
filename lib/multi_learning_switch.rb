@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'fdb'
 
 # An OpenFlow controller that emulates multiple layer-2 switches.
@@ -8,17 +6,17 @@ class MultiLearningSwitch < Trema::Controller
 
   def start(_argv)
     @fdbs = {}
-    logger.info 'MultiLearningSwitch started.'
+    logger.info "#{name} started."
   end
 
   def switch_ready(datapath_id)
     @fdbs[datapath_id] = FDB.new
   end
 
-  def packet_in(datapath_id, message)
-    return if message.destination_mac.reserved?
-    @fdbs.fetch(datapath_id).learn(message.source_mac, message.in_port)
-    flow_mod_and_packet_out message
+  def packet_in(datapath_id, packet_in)
+    return if packet_in.destination_mac.reserved?
+    @fdbs.fetch(datapath_id).learn(packet_in.source_mac, packet_in.in_port)
+    flow_mod_and_packet_out packet_in
   end
 
   def age_fdbs
@@ -27,24 +25,24 @@ class MultiLearningSwitch < Trema::Controller
 
   private
 
-  def flow_mod_and_packet_out(message)
-    port_no = @fdbs.fetch(message.dpid).lookup(message.destination_mac)
-    flow_mod(message, port_no) if port_no
-    packet_out(message, port_no || :flood)
+  def flow_mod_and_packet_out(packet_in)
+    port_no = @fdbs.fetch(packet_in.dpid).lookup(packet_in.destination_mac)
+    flow_mod(packet_in, port_no) if port_no
+    packet_out(packet_in, port_no || :flood)
   end
 
-  def flow_mod(message, port_no)
+  def flow_mod(packet_in, port_no)
     send_flow_mod_add(
-      message.datapath_id,
-      match: ExactMatch.new(message),
+      packet_in.datapath_id,
+      match: ExactMatch.new(packet_in),
       actions: SendOutPort.new(port_no)
     )
   end
 
-  def packet_out(message, port_no)
+  def packet_out(packet_in, port_no)
     send_packet_out(
-      message.datapath_id,
-      packet_in: message,
+      packet_in.datapath_id,
+      packet_in: packet_in,
       actions: SendOutPort.new(port_no)
     )
   end
