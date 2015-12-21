@@ -40,7 +40,7 @@ Play
 ----
 
 ```bash
-./bin/trema run lib/patch_panel.rb -c trema.conf -d
+./bin/trema run lib/patch_panel.rb -c patch_panel.conf -d
 ```
 
 To create a patch between port #1 and #2 of switch 0xabc:
