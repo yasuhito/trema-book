@@ -211,8 +211,8 @@ Packet Outの使い道は、Packet Inメッセージとして入ってきたパ�
 ----
 send_packet_out(
   datapath_id,
-  buffer_id: message.buffer_id,
-  raw_data: message.raw_data,
+  buffer_id: packet_in.buffer_id,
+  raw_data: packet_in.raw_data,
   actions: SendOutPort.new(port_number)
 )
 ----
@@ -227,7 +227,7 @@ send_packet_out(
 ----
 send_packet_out(
   datapath_id,
-  raw_data: message.raw_data,
+  raw_data: packet_in.raw_data,
   actions: SendOutPort.new(port_number)
 )
 ----
@@ -238,7 +238,7 @@ send_packet_out(
 ----
 send_packet_out(
   datapath_id,
-  packet_in: message,
+  packet_in: packet_in,
   actions: SendOutPort.new(port_number)
 )
 ----
