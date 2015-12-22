@@ -6,6 +6,7 @@ include::trema_run.adoc[]
 include::trema_dump_flows.adoc[]
 include::trema_killall.adoc[]
 include::trema_stop.adoc[]
+include::trema_start.adoc[]
 include::trema_netns.adoc[]
 
 
