@@ -4,7 +4,7 @@ require 'slice_exceptions'
 require 'slice_extensions'
 
 # L2 routing switch with virtual slicing.
-class SliceManager < PathManager
+class PathInSliceManager < PathManager
   def start
     super
     logger.info "#{name} started."

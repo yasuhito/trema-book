@@ -6,8 +6,8 @@ require 'bundler'
 Bundler.setup :default
 
 require 'gli'
+require 'path_in_slice_manager'
 require 'trema'
-require 'slice_manager'
 
 # slice command
 # rubocop:disable ModuleLength
