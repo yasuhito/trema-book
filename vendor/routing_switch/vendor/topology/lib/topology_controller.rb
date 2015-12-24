@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'command_line'
 require 'topology'
 
@@ -9,12 +7,18 @@ class TopologyController < Trema::Controller
 
   attr_reader :topology
 
-  def start(args)
+  def initialize(&block)
+    super
     @command_line = CommandLine.new(logger)
-    @command_line.parse(args)
     @topology = Topology.new
+    block.call self
+  end
+
+  def start(args = [])
+    @command_line.parse(args)
     @topology.add_observer @command_line.view
     logger.info "Topology started (#{@command_line.view})."
+    self
   end
 
   def add_observer(observer)
@@ -50,7 +54,7 @@ class TopologyController < Trema::Controller
       @topology.maybe_add_link Link.new(dpid, packet_in)
     else
       @topology.maybe_add_host(packet_in.source_mac,
-                               packet_in.ip_source_address,
+                               packet_in.source_ip_address,
                                dpid,
                                packet_in.in_port)
     end

@@ -5,10 +5,9 @@ Feature: rack
       | variable         | value |
       | TREMA_LOG_DIR    | .     |
       | TREMA_PID_DIR    | .     |
-      | TREMA_SOCKET_DIR | .     |
-    And I successfully run `trema run ../../lib/routing_switch.rb -d -- --slicing`
-    And I run `sleep 3`
+      | TREMA_SOCKET_DIR | .     | 
+    And I trema run "./lib/routing_switch.rb" with args "-d -- --slicing"
     And I successfully run `bash -c 'rackup ../../config.ru -P rack.pid &'`
     And I run `sleep 3`
     When I run `curl -s http://localhost:9292/slices`
-    Then the output should contain exactly "[]"
+    Then the stdout from "curl -s http://localhost:9292/slices" should contain exactly "[]"

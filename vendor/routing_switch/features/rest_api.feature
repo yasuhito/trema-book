@@ -6,14 +6,14 @@ Feature: REST API
       | TREMA_LOG_DIR    | .     |
       | TREMA_PID_DIR    | .     |
       | TREMA_SOCKET_DIR | .     |
-    And I successfully run `trema run ../../lib/routing_switch.rb -d -- --slicing`
+    And I trema run "./lib/routing_switch.rb" with args "-d -- --slicing"
 
   @rest_api
   Scenario: POST /slices
     When I send a POST request for "/slices" with body "{name: 'foo'}"
     Then the response should be "201"
     When I successfully run `slice list`
-    Then the output should contain exactly "foo\n"
+    Then the stdout from "slice list" should contain exactly "foo\n"
 
   @rest_api
   Scenario: POST /slices x2 (409 Conflict)
@@ -31,7 +31,7 @@ Feature: REST API
     When I send a DELETE request for "/slices" with body "{name: 'foo'}"
     Then the response should be "200"
     When I successfully run `slice list`
-    Then the output should contain exactly ""
+    Then the stdout from "slice list" should contain exactly ""
 
   @rest_api
   Scenario: DELETE /slices (404 slice)
@@ -95,7 +95,7 @@ Feature: REST API
     And I send a POST request for "/slices/foo/ports" with body "{dpid: 1, port_no: 1}"
     Then the response should be "201"
     When I successfully run `slice list`
-    Then the output should contain exactly:
+    Then the stdout from "slice list" should contain exactly:
       """
       foo
         0x1:1
@@ -129,7 +129,7 @@ Feature: REST API
     When I send a DELETE request for "/slices/foo/ports" with body "{dpid: 1, port_no: 1}"
     Then the response should be "200"
     When I successfully run `slice list`
-    Then the output should contain exactly "foo\n"
+    Then the stdout from "slice list" should contain exactly "foo\n"
 
   @rest_api
   Scenario: DELETE /slices/:slice_id/ports (404 :slice_id)
@@ -227,7 +227,7 @@ Feature: REST API
     And I send a POST request for "/slices/foo/ports/0x1:1/mac_addresses" with body "{name: '11:11:11:11:11:11'}"
     Then the response should be "201"
     When I successfully run `slice list`
-    Then the output should contain exactly:
+    Then the stdout from "slice list" should contain exactly:
       """
       foo
         0x1:1
@@ -262,7 +262,7 @@ Feature: REST API
     When I send a DELETE request for "/slices/foo/ports/0x1:1/mac_addresses" with body "{name: '11:11:11:11:11:11'}"
     Then the response should be "200"
     When I successfully run `slice list`
-    Then the output should contain exactly:
+    Then the stdout from "slice list" should contain exactly:
       """
       foo
         0x1:1
