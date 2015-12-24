@@ -1,4 +1,5 @@
 require 'active_support/core_ext/class/attribute_accessors'
+require 'drb'
 require 'json'
 require 'path_manager'
 require 'port'
