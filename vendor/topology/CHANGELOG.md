@@ -3,6 +3,16 @@
 ## develop (unreleased)
 
 
+## 0.2.2 (11/30/2015)
+### Bugs fixed
+* [handai-trema/syllabus#18](https://github.com/handai-trema/syllabus/issues/18) Fixed NoMethodError.
+
+
+## 0.2.1 (11/20/2015)
+### Changes
+* Trema 0.8.3.
+
+
 ## 0.2.0 (3/18/2015)
 ### Changes
 * Phut 0.3.0.

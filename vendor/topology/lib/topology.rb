@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'link'
 
 # Topology information containing the list of known switches, ports,

@@ -18,9 +18,8 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Detect switch to switch links
-    When I run `trema run ../../lib/topology_controller.rb -c triangle.conf` interactively
-    And I run `sleep 5`
-    And I run `trema killall`
+    When I trema run "lib/topology_controller.rb" interactively with the configuration "triangle.conf"
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       0x1-0x2, 0x1-0x3, 0x2-0x3
@@ -28,9 +27,8 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Run (args = graphviz)
-    When I run `trema run ../../lib/topology_controller.rb -c triangle.conf -- graphviz` interactively
-    And I run `sleep 5`
-    And I run `trema killall`
+    When I trema run "lib/topology_controller.rb" interactively with args "-c triangle.conf -- graphviz"
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       Topology started (Graphviz mode, output = topology.png)
@@ -39,9 +37,8 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Run (args = graphviz foobar.png)
-    When I run `trema run ../../lib/topology_controller.rb -c triangle.conf -- graphviz foobar.png` interactively
-    And I run `sleep 5`
-    And I run `trema killall`
+    When I trema run "lib/topology_controller.rb" interactively with args "-c triangle.conf -- graphviz foobar.png"
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       Topology started (Graphviz mode, output = foobar.png)
@@ -50,11 +47,10 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Kill a switch then the topology updated
-    Given I run `trema run ../../lib/topology_controller.rb -c triangle.conf` interactively
-    And I run `sleep 5`
-    When I run `trema kill 0x3`
-    And I run `sleep 2`
-    And I run `trema killall`
+    Given I trema run "lib/topology_controller.rb" interactively with the configuration "triangle.conf"
+    When I run `trema stop 0x3`
+    And sleep 2
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       Switch 0x3 deleted: 0x1, 0x2
@@ -70,11 +66,10 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Bring a port down then the topology updated
-    Given I run `trema run ../../lib/topology_controller.rb -c triangle.conf` interactively
-    And I run `sleep 5`
+    Given I trema run "lib/topology_controller.rb" interactively with the configuration "triangle.conf"
     When I run `trema port_down --switch 0x3 --port 1`
-    And I run `sleep 2`
-    And I run `trema killall`
+    And sleep 2
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       Port 0x3:1 deleted: 2
@@ -82,12 +77,11 @@ Feature: Detect network topology
 
   @sudo
   Scenario: Bring a port down and up then the topology updated
-    Given I run `trema run ../../lib/topology_controller.rb -c triangle.conf` interactively
-    And I run `sleep 5`
+    Given I trema run "lib/topology_controller.rb" interactively with the configuration "triangle.conf"
     When I run `trema port_down --switch 0x3 --port 1`
     And I run `trema port_up --switch 0x3 --port 1`
-    And I run `sleep 2`
-    And I run `trema killall`
+    And sleep 2
+    And I run `trema killall TopologyController`
     Then the stdout should contain:
       """
       Port 0x3:1 added: 1, 2
