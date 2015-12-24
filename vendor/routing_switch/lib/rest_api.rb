@@ -27,7 +27,7 @@ class Slice
   end
 end
 
-# REST API of SliceManager
+# REST API of Slice
 # rubocop:disable ClassLength
 class RestApi < Grape::API
   format :json

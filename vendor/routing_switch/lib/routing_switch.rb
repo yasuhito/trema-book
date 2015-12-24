@@ -2,8 +2,8 @@ $LOAD_PATH.unshift File.join(__dir__, '../vendor/topology/lib')
 
 require 'active_support/core_ext/module/delegation'
 require 'optparse'
+require 'path_in_slice_manager'
 require 'path_manager'
-require 'slice_manager'
 require 'topology_controller'
 
 # L2 routing switch
@@ -49,7 +49,7 @@ class RoutingSwitch < Trema::Controller
 
   def start_path_manager
     fail unless @options
-    (@options.slicing ? SliceManager : PathManager).new.tap(&:start)
+    (@options.slicing ? PathInSliceManager : PathManager).new.tap(&:start)
   end
 
   def start_topology
