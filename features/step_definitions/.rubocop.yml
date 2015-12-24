@@ -1,10 +1,6 @@
 AllCops:
-  Include:
-    - ./*.conf
-    - ./Gemfile
-    - ./Guardfile
-    - ./Rakefile
-    - tasks/*.rake
+  Exclude:
+    - vendor/**/*
 
 Style/StringLiterals:
   EnforcedStyle: single_quotes

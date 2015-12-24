@@ -4,5 +4,6 @@ Before('@sudo') do
 end
 
 After('@sudo') do
-  run 'trema killall'
+  run 'trema killall TopologyController'
+  sleep 3
 end
