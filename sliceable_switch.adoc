@@ -10,7 +10,7 @@
 
 クラウドが仮想化するリソースは主にネットワークとサーバがありますが、このうちネットワークの仮想化は OpenFlow の得意分野です。OpenFlow でネットワークを仮想化してやることで、ユーザごとに専用のネットワークをオンデマンドで提供できます。
 
-SliceableSwitch は、仮想ネットワークを提供するコントローラです。ひとつの物理ネットワークを論理的なネットワーク (スライス) に分割します。これによって、たくさんのユーザが専用のネットワークを使えるようになります。たとえば IaaS のようなたくさんのユーザを集約するサービスでは、物理サーバを仮想マシンで、またネットワークをスライスでそれぞれ分割することで、ユーザに仮想的な専用環境 (仮想マシン + 仮想ネットワーク) を提供します。
+スライス機能付きスイッチは、仮想ネットワークを提供するコントローラです。ひとつの物理ネットワークを論理的なネットワーク (スライス) に分割します。これによって、たくさんのユーザが専用のネットワークを使えるようになります。たとえば IaaS のようなたくさんのユーザを集約するサービスでは、物理サーバを仮想マシンで、またネットワークをスライスでそれぞれ分割することで、ユーザに仮想的な専用環境 (仮想マシン + 仮想ネットワーク) を提供します。
 
 [[slice]]
 image::slice.png[caption="図16-1",title="スライスとは 1 つの物理ネットワークをいくつかの独立した仮想ネットワークに分割したもの"]
@@ -23,11 +23,11 @@ image::slice.png[caption="図16-1",title="スライスとは 1 つの物理ネ�
 
 一方 OpenFlow によるスライスではこの制約はありません。フローエントリによって同じスライス内にあるホスト同士のみが通信できるようにすれば、既存の VLAN の仕組みを使わなくてもフローエントリだけでスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限のない仮想ネットワーク」を作れます。
 
-SliceableSwitch は OpenFlow によるスライスの実装です。これは<<routing_switch,15章>>で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
+スライス機能付きスイッチ は OpenFlow によるスライスの実装です。これは<<routing_switch,15章>>で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
 
 == インストール
 
-スライス機能付きスイッチを使ってネットワーク仮想化を実際に試してみましょう。スライス機能付きスイッチは Routing Switch の機能として実装されています。もし Routing Switch をまだインストールしていなければ、次のコマンドでインストールしてください。
+スライサブルスイッチ (以下ではスライサブルスイッチと呼びます) を使ってネットワーク仮想化を実際に試してみましょう。スライサブルスイッチは Routing Switch の機能として実装されています。もし Routing Switch をまだインストールしていなければ、次のコマンドでインストールしてください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
@@ -35,9 +35,9 @@ $ cd routing_switch
 $ bundle install --binstubs
 ----
 
-=== スライス機能付きスイッチを起動する
+=== スライサブルスイッチを起動する
 
-スライス機能付きスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、図のネットワークを作ります。Routing Switch のソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
+スライサブルスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、図のネットワークを作ります。Routing Switch のソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
 
 image::sliceable_switch_network.png[]
 
@@ -47,7 +47,7 @@ image::sliceable_switch_network.png[]
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -- --slicing
 ----
 
-それでは起動したスライス機能付きスイッチを使って、さっそくいくつかスライスを作ってみましょう。
+それでは起動したスライサブルスイッチを使って、さっそくいくつかスライスを作ってみましょう。
 
 === スライスを作る
 
@@ -115,15 +115,15 @@ Packets sent:
 
 == REST API を使う
 
-スライス機能付きスイッチは OpenStack など
-のミドルウェアと連携するための REST API を提供しています。REST API はプログラミング言語を問わず使えるため、スライス機能付きスイッチの持つ仮想ネットワーク機能をさまざまなミドルウェアに簡単に組込めます。
+スライサブルスイッチは OpenStack など
+のミドルウェアと連携するための REST API を提供しています。REST API はプログラミング言語を問わず使えるため、スライサブルスイッチの持つ仮想ネットワーク機能をさまざまなミドルウェアに簡単に組込めます。
 
-スライス機能付きスイッチの REST API は Rack (http://rack.github.io) で動作します （<<rest_overview,図16-2>>)。外部ミドルウェアから HTTP で Rack にアクセスすると、リクエストをスライス機能付きスイッチへ送信し、スライス機能付きスイッチはこの内容をネットワークへと反映します。
+スライサブルスイッチの REST API は Rack (http://rack.github.io) で動作します （<<rest_overview,図16-2>>)。外部ミドルウェアから HTTP で Rack にアクセスすると、リクエストをスライサブルスイッチへ送信し、スライサブルスイッチはこの内容をネットワークへと反映します。
 
 [[rest_overview]]
-image::rest_overview.png[caption="図16-2",title="スライス機能付きスイッチの REST API 構成"]
+image::rest_overview.png[caption="図16-2",title="スライサブルスイッチの REST API 構成"]
 
-REST API の起動は次のコマンドです。スライス機能付きスイッチを起動した後に `rackup` コマンドを実行します。
+REST API の起動は次のコマンドです。スライサブルスイッチを起動した後に `rackup` コマンドを実行します。
 
 ----
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -d -- --slicing
@@ -262,10 +262,10 @@ REST API は今回紹介した以外にも便利な API を提供しています
 
 == スライスの実現方法
 
-実はこのスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの機能追加だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライス機能付きスイッチは次のように動作します（<<sliceable_switch_internals,図16-3>>）。
+実はこのスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの機能追加だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライサブルスイッチは次のように動作します（<<sliceable_switch_internals,図16-3>>）。
 
 [[sliceable_switch_internals]]
-image::sliceable_switch_internals.png[caption="図16-3",title="スライス機能付きスイッチの動作"]
+image::sliceable_switch_internals.png[caption="図16-3",title="スライサブルスイッチの動作"]
 
 1. パケットの道順を指定するためのトポロジ情報を収集する
 2. スイッチが受信したパケットをPacket Inメッセージで受け取る
@@ -275,54 +275,60 @@ image::sliceable_switch_internals.png[caption="図16-3",title="スライス機�
 6. この最短パスに沿ってパケットが転送されるよう、パス上のスイッチそれぞれにFlow Modを送りフローエントリを書き込む
 7. 最初のPacket Inを起こしたパケットも宛先に送るために、出口となるスイッチにPacket Outを送る
 
-スライス機能付きスイッチがルーティングスイッチと異なるのは、ステップ4が付け加えられている点だけです。ステップ4では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ以外はルーティングスイッチとまったく同じです。
+スライサブルスイッチがルーティングスイッチと異なるのは、ステップ4が付け加えられている点だけです。ステップ4では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ以外はルーティングスイッチとまったく同じです。
 
 == スライサブルスイッチのソースコード
 
-スライサブルスイッチは<<routing_switch,15章>>で紹介したルーティングスイッチのエクステンションとして動作します。ルーティングスイッチを構成するPathManagerクラスをSliceableSwitchクラスに置き換えることで、ルーティングスイッチがスライサブルスイッチにグレードアップします。SliceableSwitchはPathManagerの機能に加えて、同じスライスに所属するホスト間のみでパケットを転送するという機能を備えています。
+スライサブルスイッチは<<routing_switch,15章>>で紹介したルーティングスイッチのエクステンションとして動作します。ルーティングスイッチにスライスを管理するSliceクラスを新たに導入し、パスを管理するPathManagerクラスをスライスに対応したPathInSliceManagerクラスに置き換えることで、ルーティングスイッチがスライサブルスイッチにグレードアップします。
 
-SliceableSwitchクラスの主な仕事は次の2つです。
+// TODO: クラス構造の図を載せる
+// TODO: ルーティングスイッチのクラス図もこれに合わせて更新
 
-1. スライスの管理
-2. Packet Inメッセージの処理
+Sliceクラスはスライスの追加・削除や検索といったクラスメソッドのほか、スライスへのポートやホストの追加・削除といったスライスの管理機能を提供します。
 
-スライスの管理メソッド (スライスの追加/削除とスライスへのホスト追加/削除等) はスライス管理コマンドsliceから呼び出される形になっています。
-
-[source,ruby,subs="verbatim,attributes"]
-.スライスの追加 (lib/sliceable_switch.rb)
-----
-include::{sourcedir}/lib/sliceable_switch.rb[lines="17..22"]
-----
+// TODO: 各コードに簡単な説明を追加
 
 [source,ruby,subs="verbatim,attributes"]
-.スライスのへのポートとホストの追加 (lib/sliceable_switch.rb)
+.スライスの追加 (lib/slice.rb)
 ----
-include::{sourcedir}/lib/sliceable_switch.rb[lines="45..48,65..67"]
+include::{sourcedir}/lib/slice.rb[lines="17..22"]
 ----
 
-実際のスライスへのポートやホスト追加処理は、スライスを管理するSliceオブジェクトのメソッドを呼び出すだけです。Sliceクラスはスライスに属するポートとMACアドレスの管理、そしてそれぞれの追加と削除や検索用メソッドを提供します。
+[source,ruby,subs="verbatim,attributes"]
+.スライスの削除 (lib/slice.rb)
+----
+include::{sourcedir}/lib/slice.rb[lines="40..44"]
+----
+
+[source,ruby,subs="verbatim,attributes"]
+.スライスの検索 (lib/slice.rb)
+----
+include::{sourcedir}/lib/slice.rb[lines="25..38"]
+----
 
 [source,ruby,subs="verbatim,attributes"]
 .スライスへのポートの追加 (lib/slice.rb)
 ----
-include::{sourcedir}/lib/slice.rb[lines="53..59"]
+include::{sourcedir}/lib/slice.rb[lines="58..64"]
 ----
 
 [source,ruby,subs="verbatim,attributes"]
 .スライスへのホストの追加 (lib/slice.rb)
 ----
-include::{sourcedir}/lib/slice.rb[lines="75..82"]
+include::{sourcedir}/lib/slice.rb[lines="89..96"]
 ----
 
-Packet InメッセージがSliceableSwitchへ到着すると、SliceableSwitchは次の方法でパケットを宛先へと届けます。
+// TODO: 以下、書き直し
+
+PathInSliceManager クラスは同じスライスに所属するホスト間のみでパケットを転送するという機能を備えています。Packet InメッセージがPathInSliceManagerへ到着すると、PathInSliceManagerは次の方法でパケットを宛先へと届けます。
 
 1. パケットの送信元MACアドレスと宛先MACアドレスが同じスライスに族するかどうか判定する。もし同じスライスだった場合には、PathManagerと同じ方法で宛先ホストへパケットを届ける
 2. もし同じスライスでなかった場合、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする。つまり、スライスに属していないホストへとばらまく。
 
 [source,ruby,subs="verbatim,attributes"]
-.SliceableSwitch#packet_in
+.PathInSliceManager#packet_in
 ----
-include::{sourcedir}/lib/sliceable_switch.rb[lines="86..93"]
+include::{sourcedir}/lib/path_in_slice_manager.rb[lines="14..26"]
 ----
 
 なお 2 つめの処理から分かるように、スライスに属していないホスト同士は通信できる仕様となっています。
@@ -331,7 +337,7 @@ include::{sourcedir}/lib/sliceable_switch.rb[lines="86..93"]
 
 Hello Tremaから始めたTremaプログラミングも、いつの間にか本格的なクラウドを作れるまでになりました！
 
-- ネットワークを仮想的に分割して使うためのスライス機能付きスイッチが、同一のスライス内の通信のみを許可する仕組み
+- ネットワークを仮想的に分割して使うためのスライサブルスイッチが、同一のスライス内の通信のみを許可する仕組み
 - クラウド構築ミドルウェアからスライスを設定するためのREST APIの使い方
 
-次章ではTremaを使った商用IaaSの1つであるOpenVNetのアーキテクチャを紹介します。本章で解説したスライス機能付きスイッチとはまったく異なる「分散Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
+次章ではTremaを使った商用IaaSの1つであるOpenVNetのアーキテクチャを紹介します。本章で解説したスライサブルスイッチとはまったく異なる「分散Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
