@@ -29,21 +29,20 @@ Feature: routing switch
       link 'switch2', 'switch4'
       link 'switch3', 'switch4'
       """
-    When I run `trema run ../../lib/routing_switch.rb -c trema.conf -d`
-    And I run `sleep 8`
+    When I trema run "./lib/routing_switch.rb" with the configuration "trema.conf"
     And I run `trema send_packets --source host1 --dest host2`
     And I run `trema send_packets --source host2 --dest host1`
     Then the number of packets received by "host1" should be:
       |      source | #packets |
       | 192.168.0.2 |        1 |
-    Then the number of packets received by "host2" should be:
+    And the number of packets received by "host2" should be:
       |      source | #packets |
       | 192.168.0.1 |        1 |
-    Then the number of packets received by "host3" should be:
+    And the number of packets received by "host3" should be:
       |      source | #packets |
       | 192.168.0.1 |        0 |
       | 192.168.0.2 |        0 |
-    Then the number of packets received by "host4" should be:
+    And the number of packets received by "host4" should be:
       |      source | #packets |
       | 192.168.0.1 |        0 |
       | 192.168.0.2 |        0 |

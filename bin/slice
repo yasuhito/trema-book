@@ -7,11 +7,16 @@ Bundler.setup :default
 
 require 'gli'
 require 'trema'
-require 'sliceable_switch'
+require 'slice_manager'
 
 # slice command
+# rubocop:disable ModuleLength
 module SliceApp
   extend GLI::App
+
+  def self.slice(socket_dir)
+    Trema.trema_process('RoutingSwitch', socket_dir).controller.slice
+  end
 
   desc 'Creates a new virtual slice'
   arg_name 'name'
@@ -21,9 +26,7 @@ module SliceApp
 
     c.action do |_global_options, options, args|
       fail 'slice name is required.' if args.empty?
-      Trema.controller_process(options[:socket_dir]).
-        sliceable_switch.
-        add_slice(args.first)
+      slice(options[:socket_dir]).create(args.first)
     end
   end
 
@@ -35,9 +38,7 @@ module SliceApp
 
     c.action do |_global_options, options, args|
       fail 'slice name is required.' if args.empty?
-      Trema.controller_process(options[:socket_dir]).
-        sliceable_switch.
-        delete_slice(args.first)
+      slice(options[:socket_dir]).destroy(args.first)
     end
   end
 
@@ -48,12 +49,9 @@ module SliceApp
 
     c.action do |_global_options, options, _args|
       DRb.start_service
-      slices = Trema.controller_process(options[:socket_dir]).
-               sliceable_switch.
-               slices
-      slices.each_pair do |slice, ports|
+      slice(options[:socket_dir]).all.each do |slice|
         puts slice
-        ports.each do |port, mac_addresses|
+        slice.each do |port, mac_addresses|
           puts "  #{port.name}"
           mac_addresses.each do |each|
             puts "    #{each}"
@@ -73,15 +71,12 @@ module SliceApp
     c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, _args|
-      DRb.start_service
       fail '--port option is mandatory.' unless options[:port]
       fail '--slice option is mandatory.' unless options[:slice]
-      port = Slice::Port.parse(options[:port])
-      Trema.
-        controller_process(options[:socket_dir]).
-        sliceable_switch.
-        add_port_to_slice(options[:slice],
-                          dpid: port[:dpid], port_no: port[:port_no])
+      port = Port.parse(options[:port])
+      slice(options[:socket_dir]).
+        find_by!(name: options[:slice]).
+        add_port(dpid: port.fetch(:dpid), port_no: port.fetch(:port_no))
     end
   end
 
@@ -95,15 +90,12 @@ module SliceApp
     c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, _args|
-      DRb.start_service
       fail '--port option is mandatory.' unless options[:port]
       fail '--slice option is mandatory.' unless options[:slice]
-      port = Slice::Port.parse(options[:port])
-      Trema.
-        controller_process(options[:socket_dir]).
-        sliceable_switch.
-        delete_port_from_slice(options[:slice],
-                               dpid: port[:dpid], port_no: port[:port_no])
+      port = Port.parse(options[:port])
+      slice(options[:socket_dir]).
+        find_by!(name: options[:slice]).
+        delete_port(dpid: port.fetch(:dpid), port_no: port.fetch(:port_no))
     end
   end
 
@@ -119,16 +111,14 @@ module SliceApp
     c.flag [:S, :socket_dir], default_value: Trema::DEFAULT_SOCKET_DIR
 
     c.action do |_global_options, options, _args|
-      DRb.start_service
       fail '--mac option is mandatory.' unless options[:mac]
       fail '--port option is mandatory.' unless options[:port]
       fail '--slice option is mandatory.' unless options[:slice]
-      port = Slice::Port.parse(options[:port])
-      Trema.
-        controller_process(options[:socket_dir]).
-        sliceable_switch.
-        add_mac_address(options[:slice], options[:mac],
-                        dpid: port[:dpid], port_no: port[:port_no])
+      port = Port.parse(options[:port])
+      slice(options[:socket_dir]).
+        find_by!(name: options[:slice]).
+        add_mac_address(options[:mac],
+                        dpid: port.fetch(:dpid), port_no: port.fetch(:port_no))
     end
   end
 
@@ -147,14 +137,15 @@ module SliceApp
       fail '--mac option is mandatory.' unless options[:mac]
       fail '--port option is mandatory.' unless options[:port]
       fail '--slice option is mandatory.' unless options[:slice]
-      port = Slice::Port.parse(options[:port])
-      Trema.
-        controller_process(options[:socket_dir]).
-        sliceable_switch.
-        delete_mac_address(options[:slice], options[:mac],
-                           dpid: port[:dpid], port_no: port[:port_no])
+      port = Port.parse(options[:port])
+      slice(options[:socket_dir]).
+        find_by!(name: options[:slice]).
+        delete_mac_address(options[:mac],
+                           dpid: port.fetch(:dpid),
+                           port_no: port.fetch(:port_no))
     end
   end
 
   exit run(ARGV)
 end
+# rubocop:enable ModuleLength
