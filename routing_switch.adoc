@@ -42,9 +42,9 @@ image::routing_switch_packetin_flowmod_packetout.png[caption="図15-3",title="�
 ダイクストラ法を使った最短パス計算のアルゴリズムは、基本的には次のとおりです。まず、出発点から 1 ホップで到達できるスイッチをすべて探します。次に、見つかったスイッチから出発して 1 ホップで行けるスイッチ、つまり最初の出発点から 2 ホップで到達できるスイッチをすべて探します。これを繰り返して、出発点から 3 ホップ、 4 ホップ……というように距離を広げながら次々とスイッチを探していきます。途中で目的地のスイッチに到達したら探索完了で、そこまでのパスを最短パスとして返します。footnote:[ダイクストラ法はリンクに重み（距離）がある場合の最短路を求めることができるので、実際にはもう少し複雑な手順になります。ネットワーク上の最短パスではそれぞれのリンクは“重み1”として考えるので、このように単純化できます。]
 
 [[dijkstra]]
-image::dijkstra.png[caption="図15-3",title="最短パスをダイクストラ方で計算する"]
+image::dijkstra.png[caption="図15-4",title="最短パスをダイクストラ方で計算する"]
 
-実際に<<flow_mod_routing_switch,図 15-2>>のネットワークでスイッチ 1 からスイッチ 6 までの最短パスをダイクストラ方で探索する手順は<<dijkstra,図 15-3>>のようになります:
+実際に<<routing_switch_flow_mod,図 15-2>>のネットワークでスイッチ 1 からスイッチ 6 までの最短パスをダイクストラ方で探索する手順は<<dijkstra,図 15-4>>のようになります:
 
 1. 始点となるスイッチ 1 を 0 ホップとする
 2. スイッチ 1 から 1 ホップで行けるすべてのスイッチを見つける。これはスイッチ 1 から出るリンクの先に繋がっているスイッチ 2, 4, 5 である
@@ -55,13 +55,13 @@ image::dijkstra.png[caption="図15-3",title="最短パスをダイクストラ�
 
 == 実行してみよう
 
-ルーティングスイッチを使って実際のトポロジ検出や最短路計算の動作を見ていきましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開されています。次のようにソースコードを取得してください。
+動作原理が分かったところで、実際のトポロジ検出や最短路計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
 ----
 
-依存する gem のインストールは、いつも通り次のコマンドです。
+依存する gem のインストールは、いつも通り `bundle install` コマンドです。
 
 ----
 $ cd routing_switch
@@ -72,11 +72,10 @@ $ bundle install --binstubs
 
 === ルーティングスイッチを動かす
 
-それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、次のネットワークを作ります。
+それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、<<routing_switch_sample_network,図 15-5>>のネットワークを作ります。
 
-image::fullmesh.png[caption="図15-4",title="図スイッチ4台からなるネットワーク"]
-
-// TODO 図スイッチ?台からなるネットワーク
+[[routing_switch_sample_network]]
+image::routing_switch_sample_network.png[caption="図15-5",title="ホスト 4 台、スイッチ 6 台からなるネットワーク"]
 
 この構成を実現する設定ファイルは、ルーティングスイッチのソースツリーの中に含まれています (`trema.conf`)。この設定ファイルを指定して、次のようにルーティングスイッチを起動します。
 
@@ -93,43 +92,46 @@ $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf
 
 === 最短パスを通すフローエントリを確認する
 
-次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行っていないので、host1 から host2 へとパケットを送っただけではフローエントリは設定されません。ラーニングスイッチと同じく、次のように両方向でパケットを送った段階でフローエントリが設定されます。
+次に host1 と host4 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行っていないので、host1 から host4 へとパケットを送っただけではフローエントリは設定されません。ラーニングスイッチと同じく、次のように両方向でパケットを送った段階でフローエントリが設定されます。
 
 ----
-$ ./bin/trema send_packets --source host1 --dest host2
-$ ./bin/trema send_packets --source host2 --dest host1
-$ ./bin/trema send_packets --source host1 --dest host2
+$ ./bin/trema send_packets --source host1 --dest host4
+$ ./bin/trema send_packets --source host4 --dest host1
+$ ./bin/trema send_packets --source host1 --dest host4
 ----
 
-すると、ルーティングスイッチを起動したターミナルには host2 → host1 と host1 → host2 の 2 つの最短路パスを発見した、というメッセージが表示されているはずです。
+すると、ルーティングスイッチを起動したターミナルには host4 → host1 と host1 → host4 の 2 つの最短路パスを発見した、というメッセージが表示されているはずです。
 
 ----
-Creating path: 22:22:22:22:22:22 -> 0x2:1 -> 0x2:2 -> 0x1:2 -> 0x1:1 -> 11:11:11:11:11:11
-Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:2 -> 0x2:2 -> 0x2:1 -> 22:22:22:22:22:22
+Creating path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
+Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
 ----
 
-実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は、`trema dump_flows [スイッチの Datapath ID]` コマンドです。まずは host1 から host2 への最短パスであるスイッチ 0x1, 0x2 のフローテーブルを見てみましょう。
+実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は、`trema dump_flows [スイッチの Datapath ID]` コマンドです。まずは host1 から host4 への最短パスである switch1, switch5, switch6 のフローテーブルをそれぞれ見てみましょう。
 
 ----
 $ ./bin/trema dump_flows switch1
-NXST_FLOW reply (xid=0x4):
- cookie=0x0, duration=11.522s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=11, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=22:22:22:22:22:22,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
- cookie=0x0, duration=6.835s, table=0, n_packets=1, n_bytes=42, hard_timeout=60, idle_age=6, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=22:22:22:22:22:22,nw_src=192.168.0.1,nw_dst=192.168.0.2,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=8.949s, table=0, n_packets=0, n_bytes=0, idle_age=8, priority=65535,udp,in_port=4,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
+cookie=0x0, duration=4.109s, table=0, n_packets=0, n_bytes=0, idle_age=4, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:4
+$ ./bin/trema dump_flows switch5
+cookie=0x0, duration=14.230s, table=0, n_packets=0, n_bytes=0, idle_age=14, priority=65535,udp,in_port=5,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=9.320s, table=0, n_packets=0, n_bytes=0, idle_age=9, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:5
+$ ./bin/trema dump_flows switch6
+cookie=0x0, duration=18.688s, table=0, n_packets=0, n_bytes=0, idle_age=18, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=13.723s, table=0, n_packets=0, n_bytes=0, idle_age=13, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
+----
+
+たしかに switch1, switch5, switch6 それぞれについて、host1 と host4 間の 2 つの最短パス用のフローエントリが設定されています。
+
+一方で、最短パス上にない switch2, switch3, switch4 はパケットが通らないため、次のようにフローエントリがありません。
+
+----
 $ ./bin/trema dump_flows switch2
-NXST_FLOW reply (xid=0x4):
- cookie=0x0, duration=18.474s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=18, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=22:22:22:22:22:22,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
- cookie=0x0, duration=13.737s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=13, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=22:22:22:22:22:22,nw_src=192.168.0.1,nw_dst=192.168.0.2,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
-----
 
-たしかにスイッチ 0x1 と 0x2 それぞれについて、host1 と host2 間の 2 つの最短パス用のフローエントリが設定されています。
+$ ./bin/trema dump_flows switch3
 
-一方で、最短パス上にないスイッチ 0x3, 0x4 はパケットが通らないため、次のようにフローエントリがありません。
+$ ./bin/trema dump_flows switch4
 
-----
-$ ./bin/trema dump_flows 0x3
-NXST_FLOW reply (xid=0x4):
-$ ./bin/trema dump_flows 0x4
-NXST_FLOW reply (xid=0x4):
 ----
 
 以上でルーティングスイッチにおけるトポロジ検出と最短パス計算の動作を見てきました。いずれも OpenFlow で大規模なネットワークを扱う際の基本的なテクニックですので、ぜひ習得してください。
