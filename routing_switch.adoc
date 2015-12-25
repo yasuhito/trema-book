@@ -160,28 +160,23 @@ Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:3 -> 0x4:2 -> 0x4:3 -> 0x5:4 ->
 
 == ルーティングスイッチのソースコード
 
-ルーティングスイッチは次の3つのコントローラクラスが協調して動作します (<<routing_switch_architecture,図15-5>>)。
+ルーティングスイッチは次の 4 つのクラスが協調して動作します (<<routing_switch_architecture,図15-7>>)。
 
-- RoutingSwitchクラス
-- Topologyクラス (<<topology,第14章>>で紹介)
-- PathManagerクラス
+- RoutingSwitch クラス: OpenFlow メッセージの振り分け
+- Topology クラス (<<topology,第14章>>で紹介): トポロジ情報を PathManager へ送る
+- PathManager クラス: 最短パスの作成と更新を Path に指示
+- Path クラス: パスを構成するフローエントリの生成と削除
 
 [[routing_switch_architecture]]
-image::routing_switch_architecture.png[caption="図15-5",title="ルーティングスイッチのクラス構成"]
+image::routing_switch_architecture.png[caption="図15-7",title="ルーティングスイッチのクラス構成"]
 
-RoutingSwitchクラスの主な仕事はOpenFlowメッセージの振り分けです。OpenFlowスイッチと接続し、スイッチから上がってくるOpenFlowメッセージをその種類に応じて Topology または PathManager へと振り分けます。
+RoutingSwitch クラスの主な仕事は OpenFlow メッセージの振り分けです。OpenFlow スイッチと接続し、スイッチから上がってくる OpenFlow メッセージをその種類に応じて Topology または PathManager へと振り分けます。
 
-Topologyコントローラは、トポロジ情報に関連する次のOpenFlowイベントをRoutingSwitchコントローラから受け取ります。
+Topology コントローラは、トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch コントローラから受け取ります。そしてこの受け取った OpenFlow メッセージをネットワークトポロジ上のイベントへ変換し、PathManager へ渡します。
 
-- `switch_ready`
-- `features_reply`
-- `switch_disconnected`
-- `port_modify`
-- `packet_in`
+PathManager がルーティングスイッチの本体です。RoutingSwitch コントローラから Packet In メッセージを受け取ると、Topology コントローラから受け取るトポロジ情報を元に最短パスを計算または再計算し、Path クラスを通じて新しい最短パスをスイッチに反映します。
 
-Topologyコントローラはこの受け取った OpenFlow メッセージをネットワークトポロジ上のイベントへ変換し、PathManager へ渡します。
-
-PathManagerがルーティングスイッチの本体です。RoutingSwitchコントローラからpacket_inイベントを受け取ると、Topologyコントローラから受け取るトポロジ情報を元に最短路を計算し、パスに沿ってフローエントリを各スイッチへと打ち込みます。また Packet Out することで宛先へとパケットを届けます。
+Path クラスはフローエントリの管理を一手に引き受けます。FlowMod や FlowModDelete といった OpenFlow メッセージの詳細を PathManager から隠蔽します。
 
 === ルーティングスイッチのソースコード (routing_switch.rb)
 
