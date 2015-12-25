@@ -100,14 +100,14 @@ $ ./bin/trema send_packets --source host4 --dest host1
 $ ./bin/trema send_packets --source host1 --dest host4
 ----
 
-すると、ルーティングスイッチを起動したターミナルには host4 → host1 と host1 → host4 の 2 つの最短路パスを発見した、というメッセージが表示されているはずです。
+すると、ルーティングスイッチを起動したターミナルには host4 → host1 と host1 → host4 の 2 つの最短パスを発見した、というメッセージが表示されているはずです。
 
 ----
 Creating path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
 Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
 ----
 
-実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は、`trema dump_flows [スイッチの Datapath ID]` コマンドです。まずは host1 から host4 への最短パスである switch1, switch5, switch6 のフローテーブルをそれぞれ見てみましょう。
+実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は `trema dump_flows` コマンドです。まずは host1 から host4 への最短パスである switch1, switch5, switch6 のフローテーブルをそれぞれ見てみましょう。
 
 ----
 $ ./bin/trema dump_flows switch1
@@ -134,7 +134,29 @@ $ ./bin/trema dump_flows switch4
 
 ----
 
-以上でルーティングスイッチにおけるトポロジ検出と最短パス計算の動作を見てきました。いずれも OpenFlow で大規模なネットワークを扱う際の基本的なテクニックですので、ぜひ習得してください。
+=== 最短パスの再計算を確認する
+
+トポロジが変化した場合、ルーティングスイッチは自動的に最短パスを作り直します。たとえば<<routing_switch_sample_network,図 15-5>> において、switch1 と switch5 の間のリンクが切れた場合を考えます。このときルーティングスイッチは古い最短パス (host1 ⇔ switch1 ⇔ switch5 ⇔ switch6 ⇔ host4) のフローエントリを消し、新たな最短パス (host1 ⇔ switch1 ⇔ switch4 ⇔ switch5 ⇔ switch6) のフローエントリを追加します (<<routing_switch_update_shortest_path, 図 15-6>>)。
+
+[[routing_switch_update_shortest_path]]
+image::routing_switch_update_shortest_path.png[caption="図15-6",title="トポロジの変化に応じて最短パスを作り直す"]
+
+この動作も実際に動かして確認してみましょう。リンクの削除は `trema delete_link` コマンドです。
+
+----
+$ ./bin/trema delete_link switch1 switch5
+----
+
+すると、ルーティングスイッチを起動したターミナルには host1 ⇔ host4 の 2 つの最短パスを削除し、新たに最短パスを作りなおしたというメッセージが表示されます。
+
+----
+Deleting path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
+Creating path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:4 -> 0x4:3 -> 0x4:2 -> 0x1:3 -> 0x1:1 -> 11:11:11:11:11:11
+Deleting path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
+Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:3 -> 0x4:2 -> 0x4:3 -> 0x5:4 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
+----
+
+以上でルーティングスイッチの最短パス計算と再計算の動作を見てきました。いよいよ実装に移りましょう。
 
 == ルーティングスイッチのソースコード
 
