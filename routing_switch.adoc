@@ -1,62 +1,67 @@
-= いくつものスイッチをルーティングスイッチで制御する
+= たくさんのスイッチを制御する
 :sourcedir: vendor/routing_switch
 :imagesdir: images/routing_switch
 
+大規模なネットワークを構成するたくさんのスイッチを連携させ、うまく制御する仕組みを見て行きましょう。
+
 == 複数のスイッチを制御する
-ルーティングスイッチは、複数台の OpenFlow スイッチを連動させ 1 つの大きなスイッチとして動作させるためのコントローラです (<<fig_routing_switch,図15-1>>)。同じスイッチ機能を提供するコントローラとしては<<learning_switch,第 6 章>>、<<learning_switch13,第 7 章>>で紹介したラーニングスイッチがありました。これとの大きな違いは制御できるスイッチの台数です。ラーニングスイッチは 1 台の OpenFlow スイッチしか扱えません。一方で、ルーティングスイッチは複数の OpenFlow スイッチを制御できます。
+
+たくさんの OpenFlow スイッチがつながった環境では、パケットを目的地まで転送するためにスイッチを連携させる必要があります。複数の OpenFlow スイッチを連携し 1 台の大きな仮想スイッチにするコントローラが、本章で紹介するルーティングスイッチです (<<fig_routing_switch,図 15-1>>)。同じスイッチ機能を提供するコントローラとしては、<<learning_switch,第 6 章>>や<<learning_switch13,第 7 章>>で紹介したラーニングスイッチがありました。ラーニングスイッチとルーティングスイッチの大きな違いは、連携できるスイッチの台数です。ラーニングスイッチは OpenFlow スイッチを独立した 1 台のスイッチとして扱います。一方で、ルーティングスイッチは複数の OpenFlow スイッチを連携させることで、仮想的な 1 台のスイッチとして扱います。
 
 [[fig_routing_switch]]
-image::routing_switch.png[caption="図15-1",title="いくつもの OpenFlow スイッチを 1 つの大きなスイッチとして動作させる"]
+image::routing_switch.png[caption="図15-1",title="ルーティングスイッチはたくさんの OpenFlow スイッチを連携し 1 台の仮想スイッチとして動作させる"]
 
-ルーティングスイッチの名前は、複数のOpenFlowスイッチを使い、まさにルーティングするようにパケットを転送することから来ています。ただし、ルーティングスイッチはルータではありません。ラーニングスイッチと同じく、スイッチ機能を実現するコントローラであることに注意が必要です。
+注意すべきは、ルーティングスイッチはルータではなく、あくまでスイッチであるという点です。**ルーティング**スイッチという名前は、複数のOpenFlowスイッチを経由し、まさにルーティングするようにパケットを転送することから来ています。このようにスイッチ機能を実現するという点では、ラーニングスイッチとの機能的な違いはありません。ただし制御できるネットワーク規模においては、ルーティングスイッチは複数の OpenFlow スイッチを扱えるという違いがあります。
 
 === ルーティングスイッチの動作
 
-ルーティングスイッチではたくさんのスイッチを接続するため、パケットの転送が複雑になります。宛先のホストまでいくつものスイッチを経由してパケットを届けなくてはならないため、宛先までの道順をスイッチに指示してやる必要があるのです。
+ルーティングスイッチではたくさんのスイッチを接続するため、パケットの転送が複雑になります。宛先のホストまでいくつものスイッチを経由してパケットを届けなくてはならないため、宛先までの道順をスイッチに指示してやる必要があります。
 
 [[routing_switch_flow_mod]]
-image::routing_switch_flow_mod.png[caption="図15-2",title="最短パスでパケットを転送するためにフローエントリを書き込む"]
+image::routing_switch_flow_mod.png[caption="図15-2",title="最短パスでパケットを転送するフローエントリを書き込む"]
 
-たとえば<<routing_switch_flow_mod,図15-2>>において、ホスト 1 からホスト 4 へとパケットを送信する場合を考えてみます。もしパケットを最短のパスで届けたい場合、スイッチ 1 → スイッチ 5 → スイッチ 6 → ホスト 4 の順にパケットを転送します。ルーティングスイッチはこの転送をするフローエントリを最短パス上のスイッチ 1, 5, 6 へ書き込む必要があります。
+たとえば<<routing_switch_flow_mod,図15-2>>において、ホスト 1 からホスト 4 へとパケットを送信する場合を考えてみましょう。もしパケットを最短のパスで届けたい場合、ホスト 1 → スイッチ 1 → スイッチ 5 → スイッチ 6 → ホスト 4 の順にパケットを転送します。ルーティングスイッチはこの転送をするフローエントリを最短パス上のスイッチ 1, 5, 6 へそれぞれ書き込みます。
 
-ルーティングスイッチの詳しい動作は次の通りです:
+このとき、実際にルーティングスイッチとスイッチ間でやりとりする OpenFlow メッセージは<<routing_switch_packetin_flowmod_packetout,図 15-3>>のようになります:
 
-1. パケットの道順を指定するため、スイッチ同士の接続情報であるトポロジ情報を収集する (<<topology,第14章>>)
-2. ホスト 1 からホスト 4 宛てのパケットをスイッチ 1 から Packet In として受け取る
-3. トポロジ情報を検索し、宛先のホスト 4 が接続するスイッチとポート番号を得る。その結果、スイッチ 6 とホスト 4 が接続するポート番号を得る。
-4. Packet In を出したスイッチ 1 から出口となるスイッチ 6 までの最短パスをステップ 1 で収集したトポロジ情報を使って計算する。その結果、スイッチ 1 → スイッチ 5 → スイッチ 6 というパスを得る
-5. この最短パスに沿ってパケットが転送されるようにパス上のスイッチそれぞれに Flow Mod を送りフローエントリを書き込む
-6. 最初の Packet In を起こしたパケットも宛先に送るために、スイッチ 6 に Packet Out を送る。
+1. ホスト 1 がホスト 4 宛てにパケットを送信すると、ルーティングスイッチはこのパケットを Packet In としてスイッチ 1 から受け取る (この Packet In の in_port をポート s とする)
+2. ルーティングスイッチはあらかじめ収集しておいたトポロジ情報 (<<topology,第14章>>) を検索し、宛先のホスト 4 が接続するスイッチ (スイッチ 6) とポート番号 (ポート g とする) を得る
+3. ポート s から宛先のポート g までの最短パスをトポロジ情報から計算する。その結果、ポート s → スイッチ 1 → スイッチ 5 → スイッチ 6 → ポート g というパスを得る
+4. この最短パスに沿ってパケットを転送するフローエントリを書き込むために、ルーティングスイッチはパス上のスイッチそれぞれに Flow Mod を送る
+5. Packet In を起こしたパケットを宛先に送るために、ルーティングスイッチはスイッチ 6 に Packet Out (ポート g) を送る
 
-ここでキーとなるのは、ステップ 4 の最短パスの計算方法です。
+[[routing_switch_packetin_flowmod_packetout]]
+image::routing_switch_packetin_flowmod_packetout.png[caption="図15-3",title="ルーティングスイッチでパケットを送信したときの OpenFlow メッセージ"]
+
+ここで使っている OpenFlow メッセージはいずれも、今まで使ってきた Packet In や Flow Mod, Packet Out などおなじみの物ばかりです。ステップ 3 で新たに登場した、最短パスの計算方法を詳しく見て行きましょう。
 
 === 最短パスを計算する
 
-最短パスの計算でよく使われるのがダイクストラ法というアルゴリズムです。これは、出発点から目的地までの最短路を求める汎用アルゴリズムの 1 つで、カーナビの経路検索や鉄道の乗換案内などにも使われています。
+最短パスの計算でよく使われるのがダイクストラ法というアルゴリズムです。これは、出発点から目的地までの最短パスを求める汎用アルゴリズムの 1 つで、カーナビの経路検索や鉄道の乗換案内などにも使われています。
 
-ダイクストラ法を使った最短パス計算のアルゴリズムは、基本的には次のとおりです。まず、出発点から 1 ホップで到達できるスイッチをすべて探します。次に、見つかったスイッチから出発して 1 ホップで行けるスイッチ、つまり最初の出発点から 2 ホップで到達できるスイッチをすべて探します。これを繰り返して、出発点から 3 ホップ、 4 ホップ……というように距離を広げながら次々とスイッチを探していきます。途中で目的地のスイッチに到達したら探索完了で、そこまでのパスを最短パスとして返します。footnote:[ダイクストラ法はリンクに重み（距離）がある場合の最短路を求めることができるので、実際にはもう少し複雑な手順になります。ネットワーク上の最短パスではそれぞれのリンクは“重み1”として考えるので、このように単純化できます。]
+ダイクストラ法を使った最短パス計算のアルゴリズムは、基本的には次のとおりです。まず、出発点から 1 ホップで到達できるスイッチをすべて探します。次に、見つかったスイッチから出発して 1 ホップで行けるスイッチ、つまり最初の出発点から 2 ホップで到達できるスイッチをすべて探します。これを繰り返して、出発点から 3 ホップ、 4 ホップ……というように距離を広げながら次々とスイッチを探していきます。途中で目的地のスイッチに到達したら探索完了で、そこまでのパスを最短パスとして返します。footnote:[ダイクストラ法はリンクに重み（距離）がある場合の最短パスを求めることができるので、実際にはもう少し複雑な手順になります。ネットワーク上の最短パスではそれぞれのリンクは“重み1”として考えるので、このように単純化できます。]
 
 [[dijkstra]]
-image::dijkstra.png[caption="図15-3",title="最短パスをダイクストラ方で計算する"]
+image::dijkstra.png[caption="図15-4",title="最短パスをダイクストラ方で計算する"]
 
-実際に<<flow_mod_routing_switch,図 15-2>>のネットワークでスイッチ 1 からスイッチ 6 までの最短パスをダイクストラ方で探索する手順は次のようになります (<<dijkstra,図 15-3>>)。
+実際に<<routing_switch_flow_mod,図 15-2>>のネットワークでスイッチ 1 からスイッチ 6 までの最短パスをダイクストラ方で探索する手順は<<dijkstra,図 15-4>>のようになります:
 
-1. 視点となるスイッチ 1 に着目し、ここを 0 ホップとする
-2. 視点のスイッチ 1 から 1 ホップで行けるすべてのスイッチを見つける。これはスイッチ1 から出るリンクの先に繋がっているスイッチで、スイッチ 2 と スイッチ 5 が見つかる
-3. ステップ 2 で見つかったスイッチから 1 ホップで行けるすべてのスイッチを見つける。これはつまり、始点からのホップ数が 2 のすべてのスイッチということになる。今度はスイッチ 3, 4, 6 が見つかる
-4. ゴールであるスイッチ 6 が見つかったので探索を終わる。最短パスは最終的にスイッチ 1 → スイッチ 5 → スイッチ 6 とわかる
+1. 始点となるスイッチ 1 を 0 ホップとする
+2. スイッチ 1 から 1 ホップで行けるすべてのスイッチを見つける。これはスイッチ 1 から出るリンクの先に繋がっているスイッチ 2, 4, 5 である
+3. 同様にステップ 2 で見つかったスイッチから 1 ホップで行けるすべてのスイッチを探し、スイッチ 3, 6 が見つかる。これらは始点からのホップ数が 2 のスイッチである
+4. ステップ 3 でゴールのスイッチ 6 が見つかったので探索を終わる。最短パスは最終的にスイッチ 1 → スイッチ 5 → スイッチ 6 とわかる
 
-// TODO (dijkstra.rb の実装をここで解説する??)
+// TODO (dijkstra.rb の実装をここで解説する？)
 
 == 実行してみよう
 
-ルーティングスイッチを使って実際のトポロジ検出や最短路計算の動作を見ていきましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開されています。次のようにソースコードを取得してください。
+動作原理が分かったところで、実際のトポロジ検出や最短パス計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
 ----
 
-依存する gem のインストールは、いつも通り次のコマンドです。
+依存する gem のインストールは、いつも通り `bundle install` コマンドです。
 
 ----
 $ cd routing_switch
@@ -67,11 +72,10 @@ $ bundle install --binstubs
 
 === ルーティングスイッチを動かす
 
-それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、次のネットワークを作ります。
+それでは、ルーティングスイッチを動かしてみましょう。Trema のネットワークエミュレータ機能を用いて、<<routing_switch_sample_network,図 15-5>>のネットワークを作ります。
 
-image::fullmesh.png[caption="図15-4",title="図スイッチ4台からなるネットワーク"]
-
-// TODO 図スイッチ?台からなるネットワーク
+[[routing_switch_sample_network]]
+image::routing_switch_sample_network.png[caption="図15-5",title="ホスト 4 台、スイッチ 6 台からなるネットワーク"]
 
 この構成を実現する設定ファイルは、ルーティングスイッチのソースツリーの中に含まれています (`trema.conf`)。この設定ファイルを指定して、次のようにルーティングスイッチを起動します。
 
@@ -88,123 +92,165 @@ $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf
 
 === 最短パスを通すフローエントリを確認する
 
-次に host1 と host2 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行っていないので、host1 から host2 へとパケットを送っただけではフローエントリは設定されません。ラーニングスイッチと同じく、次のように両方向でパケットを送った段階でフローエントリが設定されます。
+次に host1 と host4 の間でパケットを送受信し、最短パスを通すフローエントリがうまく設定されることを確認しましょう。ルーティングスイッチ起動直後は、まだ MAC アドレスの学習を行っていないので、host1 から host4 へとパケットを送っただけではフローエントリは設定されません。ラーニングスイッチと同じく、次のように両方向でパケットを送った段階でフローエントリが設定されます。
 
 ----
-$ ./bin/trema send_packets --source host1 --dest host2
-$ ./bin/trema send_packets --source host2 --dest host1
-$ ./bin/trema send_packets --source host1 --dest host2
+$ ./bin/trema send_packets --source host1 --dest host4
+$ ./bin/trema send_packets --source host4 --dest host1
+$ ./bin/trema send_packets --source host1 --dest host4
 ----
 
-すると、ルーティングスイッチを起動したターミナルには host2 → host1 と host1 → host2 の 2 つの最短路パスを発見した、というメッセージが表示されているはずです。
+すると、ルーティングスイッチを起動したターミナルには host4 → host1 と host1 → host4 の 2 つの最短パスを発見した、というメッセージが表示されているはずです。
 
 ----
-Creating path: 22:22:22:22:22:22 -> 0x2:1 -> 0x2:2 -> 0x1:2 -> 0x1:1 -> 11:11:11:11:11:11
-Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:2 -> 0x2:2 -> 0x2:1 -> 22:22:22:22:22:22
+Creating path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
+Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
 ----
 
-実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は、`trema dump_flows [スイッチの Datapath ID]` コマンドです。まずは host1 から host2 への最短パスであるスイッチ 0x1, 0x2 のフローテーブルを見てみましょう。
+実際にどのようなフローエントリが設定されたか見てみましょう。フローエントリの確認は `trema dump_flows` コマンドです。まずは host1 から host4 への最短パスである switch1, switch5, switch6 のフローテーブルをそれぞれ見てみましょう。
 
 ----
 $ ./bin/trema dump_flows switch1
-NXST_FLOW reply (xid=0x4):
- cookie=0x0, duration=11.522s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=11, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=22:22:22:22:22:22,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
- cookie=0x0, duration=6.835s, table=0, n_packets=1, n_bytes=42, hard_timeout=60, idle_age=6, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=22:22:22:22:22:22,nw_src=192.168.0.1,nw_dst=192.168.0.2,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=8.949s, table=0, n_packets=0, n_bytes=0, idle_age=8, priority=65535,udp,in_port=4,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
+cookie=0x0, duration=4.109s, table=0, n_packets=0, n_bytes=0, idle_age=4, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:4
+$ ./bin/trema dump_flows switch5
+cookie=0x0, duration=14.230s, table=0, n_packets=0, n_bytes=0, idle_age=14, priority=65535,udp,in_port=5,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=9.320s, table=0, n_packets=0, n_bytes=0, idle_age=9, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:5
+$ ./bin/trema dump_flows switch6
+cookie=0x0, duration=18.688s, table=0, n_packets=0, n_bytes=0, idle_age=18, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=44:44:44:44:44:44,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.4,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
+cookie=0x0, duration=13.723s, table=0, n_packets=0, n_bytes=0, idle_age=13, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=44:44:44:44:44:44,nw_src=192.168.0.1,nw_dst=192.168.0.4,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
+----
+
+たしかに switch1, switch5, switch6 それぞれについて、host1 と host4 間の 2 つの最短パス用のフローエントリが設定されています。
+
+一方で、最短パス上にない switch2, switch3, switch4 はパケットが通らないため、次のようにフローエントリがありません。
+
+----
 $ ./bin/trema dump_flows switch2
-NXST_FLOW reply (xid=0x4):
- cookie=0x0, duration=18.474s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=18, priority=65535,udp,in_port=1,vlan_tci=0x0000,dl_src=22:22:22:22:22:22,dl_dst=11:11:11:11:11:11,nw_src=192.168.0.2,nw_dst=192.168.0.1,nw_tos=0,tp_src=0,tp_dst=0 actions=output:2
- cookie=0x0, duration=13.737s, table=0, n_packets=0, n_bytes=0, hard_timeout=60, idle_age=13, priority=65535,udp,in_port=2,vlan_tci=0x0000,dl_src=11:11:11:11:11:11,dl_dst=22:22:22:22:22:22,nw_src=192.168.0.1,nw_dst=192.168.0.2,nw_tos=0,tp_src=0,tp_dst=0 actions=output:1
-----
 
-たしかにスイッチ 0x1 と 0x2 それぞれについて、host1 と host2 間の 2 つの最短パス用のフローエントリが設定されています。
+$ ./bin/trema dump_flows switch3
 
-一方で、最短パス上にないスイッチ 0x3, 0x4 はパケットが通らないため、次のようにフローエントリがありません。
+$ ./bin/trema dump_flows switch4
 
 ----
-$ ./bin/trema dump_flows 0x3
-NXST_FLOW reply (xid=0x4):
-$ ./bin/trema dump_flows 0x4
-NXST_FLOW reply (xid=0x4):
+
+=== 最短パスの再計算を確認する
+
+トポロジ上のリンクが切れた場合、ルーティングスイッチは自動的に最短パスを作り直します。たとえば<<routing_switch_sample_network,図 15-5>> において、switch1 と switch5 の間のリンクが切れた場合を考えます。このときルーティングスイッチは古い最短パス (host1 ⇔ switch1 ⇔ switch5 ⇔ switch6 ⇔ host4) のフローエントリを消します。そして、ふたたび host1 が host2 へパケットを送ったタイミングで、ルーティングスイッチは新しい最短パス (host1 → switch1 → switch4 → switch5 → switch6) を作ります (<<routing_switch_update_shortest_path, 図 15-6>>)。
+
+[[routing_switch_update_shortest_path]]
+image::routing_switch_update_shortest_path.png[caption="図15-6",title="最短パスの作り直し"]
+
+この動作も実際に動かして確認してみましょう。リンクの削除は `trema delete_link` コマンドです。
+
+----
+$ ./bin/trema delete_link switch1 switch5
 ----
 
-以上でルーティングスイッチにおけるトポロジ検出と最短パス計算の動作を見てきました。いずれも OpenFlow で大規模なネットワークを扱う際の基本的なテクニックですので、ぜひ習得してください。
+すると、ルーティングスイッチを起動したターミナルには host1 ⇔ host4 の 2 つの最短パスを削除したというメッセージが表示されます。
+
+----
+Deleting path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
+Deleting path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
+----
+
+ふたたび host1 から host4 へパケットを送ってみましょう。
+
+----
+$ ./bin/trema send_packets --source host1 --dest host4
+----
+
+すると次のように、ルーティングスイッチを起動したターミナルには host1 → host4 の新たな最短パスが表示されます。
+
+----
+Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:3 -> 0x4:2 -> 0x4:3 -> 0x5:4 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
+----
+
+以上でルーティングスイッチの最短パス計算と再計算の動作を見てきました。いよいよソースコードを読んでみましょう。
 
 == ルーティングスイッチのソースコード
 
-ルーティングスイッチは次の3つのコントローラクラスが協調して動作します (<<routing_switch_architecture,図15-5>>)。
+ルーティングスイッチは次の 4 つのクラスが協調して動作します (<<routing_switch_architecture,図15-7>>)。
 
-- RoutingSwitchクラス
-- Topologyクラス (<<topology,第14章>>で紹介)
-- PathManagerクラス
+RoutingSwitch クラス:: スイッチから届く OpenFlow メッセージを振り分けます。OpenFlow スイッチと接続し、スイッチから上がってくる OpenFlow メッセージをその種類に応じて Topology または PathManager へと振り分けます
+Topology クラス (<<topology,第14章>>で紹介):: トポロジの変化イベントを PathManager へ通知します。トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch から受け取り、ネットワークトポロジ上のイベントへ変換し PathManager へ渡します
+PathManager クラス:: ルーティングスイッチの本体です。RoutingSwitch から Packet In メッセージを受け取ると、Topology から受け取るトポロジ情報を元に最短パスを計算し、Path クラスを通じて新しい最短パスをスイッチに反映します
+Path クラス:: パスの生成と削除に必要なフローエントリの操作を一手に引き受けます。FlowMod や FlowModDelete といった OpenFlow メッセージの詳細を PathManager から隠蔽します
 
 [[routing_switch_architecture]]
-image::routing_switch_architecture.png[caption="図15-5",title="ルーティングスイッチのクラス構成"]
+image::routing_switch_architecture.png[caption="図15-7",title="ルーティングスイッチのクラス構成"]
 
-RoutingSwitchクラスの主な仕事はOpenFlowメッセージの振り分けです。OpenFlowスイッチと接続し、スイッチから上がってくるOpenFlowメッセージをその種類に応じて Topology または PathManager へと振り分けます。
+複雑な機能を持つコントローラは、このように機能を小さなクラスに分割することでスッキリと書けます。LLDP の送受信といったトポロジ検出処理は Topology クラスに、FlowMod といったフローエントリの処理は Path クラスにそれぞれまかせ、そして PathManager クラスが全体をとりまとめることで見通しが良くなりテストもしやすくなります。もし新しく機能を追加したくなった場合にも、既存のコードは改造せず新機能に対応するクラスを追加するだけですfootnote:[<<sliceable_switch,第 16 章>>ではルーティングスイッチにクラスを追加することで仮想ネットワーク機能を実装する例を紹介します。]。
 
-Topologyコントローラは、トポロジ情報に関連する次のOpenFlowイベントをRoutingSwitchコントローラから受け取ります。
+=== RoutingSwitch クラスのソースコード (routing_switch.rb)
 
-- `switch_ready`
-- `features_reply`
-- `switch_disconnected`
-- `port_modify`
-- `packet_in`
+RoutingSwitch クラスは委譲パターンによって各 OpenFlow メッセージを他のクラスへと振り分けます。
 
-Topologyコントローラはこの受け取った OpenFlow メッセージをネットワークトポロジ上のイベントへ変換し、PathManager へ渡します。
-
-PathManagerがルーティングスイッチの本体です。RoutingSwitchコントローラからpacket_inイベントを受け取ると、Topologyコントローラから受け取るトポロジ情報を元に最短路を計算し、パスに沿ってフローエントリを各スイッチへと打ち込みます。また Packet Out することで宛先へとパケットを届けます。
-
-=== ルーティングスイッチのソースコード (routing_switch.rb)
-
-RoutingSwitchコントローラは委譲パターンによって各OpenFlowメッセージを他のコントローラへと振り分けます。たとえばTopologyコントローラへ switch_ready イベントを転送するには、`def_delegators` を使ってTopologyクラスのインスタンスへ `switch_ready` メソッドを委譲します。packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で転送します。
-
-// TODO 次章で説明するSliceableSwitchのことをここで簡単に触れておく
+// TODO: 移譲のやりかたについて、前の章で説明しているはずなのでそこを参照する
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/routing_switch.rb
 ----
-include::{sourcedir}/lib/routing_switch.rb[lines="40..48"]
+include::{sourcedir}/lib/routing_switch.rb[lines="38..46"]
 ----
 
-=== パスマネージャのソースコード (path_manager.rb)
+たとえば Topology クラスへ switch_ready イベントを転送するには、`delegate` メソッドを使って Topology クラスのインスタンスへ `switch_ready` メソッドを委譲します。なお packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で明示的にそれぞれの packet_in メソッドを呼び出すことで転送しています。
 
-パスマネージャは、TopologyコントローラとObserverパターンで連携します。TopologyコントローラはRoutingSwitchコントローラから上がってくる生のOpenFlowメッセージをトポロジ上の変化イベント(スイッチ・ポート・リンクの追加/削除とホストの追加)へと変換し、オブザーバであるPathManagerコントローラへ通知します。
+=== PathManager のソースコード (path_manager.rb)
 
-パスマネージャはトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topologyコントローラはトポロジイベント `add_link` をパスマネージャへ送ります。そしてPathManagerはグラフ情報を更新し新しくみつかったリンクを登録します。
+PathManager は、Topology クラスとObserverパターンで連携します。TopologyクラスはRoutingSwitchクラスから上がってくる生のOpenFlowメッセージをトポロジ上の変化イベント(スイッチ・ポート・リンクの追加/削除とホストの追加)へと変換し、オブザーバである PathManager クラスのトポロジイベントハンドラを呼び出します。
+
+// TODO: オブザーバパターンのやりかたについて、前の章で説明しているはずなのでそこを参照する
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/path_manager.rb
+.PathManager クラスのトポロジイベントハンドラ (lib/path_manager.rb)
 ----
-include::{sourcedir}/lib/path_manager.rb[lines="33..37,59..62"]
+include::{sourcedir}/lib/path_manager.rb[lines="23..43"]
 ----
 
-// リンクの発見だけでなくて、その他の場合についても図を使って説明する?
+PathManager はトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topology はトポロジイベント `add_link` を PathManager へ送ります。そして PathManager は新しくみつかったリンクを `@graph` へ追加します。
 
-// TODO Topologyのパス発見と`add_link`イベントからPathManagerが@graphを更新する図
+// TODO: リンクの発見だけでなくて、その他の場合についても図を使って説明する?
+// TODO: Topologyのパス発見と`add_link`イベントからPathManagerが@graphを更新する図
 
-パスマネージャへ `packet_in` が到着すると、パスマネージャは次の方法でパケットを宛先へと届けます (<<path_manager_internals,図15-6>>)。
-
-1. グラフ情報から送信元→宛先への最短路を計算する。もし最短路がみつかった場合には、最短路上のスイッチにフローエントリを打つ
-2. みつかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。みつからなかった場合には、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする
-
-[[path_manager_internals]]
-image::path_manager_internals.png[caption="図15-6",title="パスマネージャの仕組み"]
-
-// TODO 内部ポートと外部ポートの説明図
+PathManager は `packet_in` イベントに反応し、届いたパケットを宛先へと届けます。
 
 [source,ruby,subs="verbatim,attributes"]
 .PathManager#packet_in
 ----
-include::{sourcedir}/lib/path_manager.rb[lines="14..22"]
+include::{sourcedir}/lib/path_manager.rb[lines="13..22,48..53"]
 ----
 
-// === Dijkstra
+`packet_in` ハンドラの動作は<<path_manager_internals,図 15-6>> の通りです:
 
+1. グラフ情報から送信元→宛先への最短パスを計算する。もし最短パスがみつかった場合には、最短パス上のスイッチにでフローエントリを `Path.create` で打つ
+2. みつかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。みつからなかった場合には、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする
+
+[[path_manager_internals]]
+image::path_manager_internals.png[caption="図15-6",title="PathManager の仕組み"]
+
+// TODO: 内部ポートと外部ポートの説明図
+
+=== Path のソースコード (path.rb)
+
+Path クラスはパスの生成と削除に必要なフローエントリの操作を一手に引き受けます。たとえば、パスを生成するメソッド `Path.create` の実装は次のようになっています:
+
+[source,ruby,subs="verbatim,attributes"]
+.Path.create (lib/path.rb)
+----
+include::{sourcedir}/lib/path.rb[lines="9..12,30..37,66..72"]
+----
+
+PathManager が `Path.create` を呼び出すと、`Path` クラスのインスタンスメソッド `save` を呼び出します。`save` メソッドでは最短パスに沿ってフローエントリを `flow_mod_add_to_each_switch` メソッドでスイッチに書き込みます。
+
+// TODO: 上流から FlowMod するように path.rb を修正。delete では反対に下流から消す
+// TODO: FlowMod の最後でバリアを取る
+// TODO: all の説明は必要？
+
+// === Dijkstra
 // TODO ダイクストラの説明はやったほうがいい?
 
-// TODO ソースコードを include
-
-== OpenFlow の利点
+== OpenFlow を使う利点
 
 本章のはじめで説明したように、ルーティングスイッチは OpenFlow ネットワークを 1 台の仮想的なスイッチとして動作させるコントローラです。普通のスイッチを真似るだけならば、わざわざ OpenFlow を使わなくてもよいのでは? と思うかもしれません。ここでは、OpenFlow を使った場合の利点について考えてみたいと思います。
 
@@ -233,9 +279,9 @@ image::multipath.png[caption="図15-9",title="OpenFlowでは最短でないパ�
 
 いくつものスイッチからなるネットワークを扱うことができる、ルーティングスイッチの動作を見てきました。この章で学んだことを簡単にまとめておきましょう。
 
-- ネットワーク上の最短パスを計算する方法
-- 複数のコントローラを連携させる方法
-- OpenFlowを使う場合の利点
+- パケットを最短パスで宛先まで届ける方法。ダイクストラ法を使って最短パスを求め、最短パス上のスイッチにフローエントリを書き込む
+- 複数のクラスを連携しコントローラを実装する方法。メソッドの移譲やオブザーバーパターンを使い、機能ごとに分割したクラスを組み合わせる
+- OpenFlowを使う場合の利点。すべてのリンクを使うことで帯域を有効活用できるほか、マルチパスなどのパス選択アルゴリズムを自由に使える
 
 次の章では、ネットワーク仮想化を実現する本格的なコントローラの一例として、ルーティングスイッチを発展させたスライス機能付きスイッチを見ていきます。
 
