@@ -66,7 +66,6 @@ class Path < Trema::Controller
   def flow_mod_add_to_each_switch
     path.each_slice(2) do |in_port, out_port|
       send_flow_mod_add(out_port.dpid,
-                        hard_timeout: 60,
                         match: exact_match(in_port.number),
                         actions: SendOutPort.new(out_port.number))
     end
