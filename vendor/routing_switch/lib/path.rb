@@ -1,23 +1,43 @@
+require 'active_support/core_ext/class/attribute_accessors'
+require 'slice'
 require 'trema'
 
 # List of shortest-path flow entries.
 class Path < Trema::Controller
+  cattr_accessor(:all, instance_reader: false) { [] }
+
   def self.create(shortest_path, packet_in)
-    new.tap { |path| path.add(shortest_path, packet_in) }
+    new.save(shortest_path, packet_in).tap { |new_path| all << new_path }
   end
 
-  attr_accessor :slice
+  def self.destroy(path)
+    all.delete path
+  end
+
+  def self.find(&block)
+    all.select { |each| block.call(each) }
+  end
+
+  attr_reader :slice
+
+  def slice=(name)
+    Slice.find_by!(name: name)
+    @slice = name
+  end
+
   attr_reader :packet_in
 
-  def add(full_path, packet_in)
+  def save(full_path, packet_in)
     @full_path = full_path
     @packet_in = packet_in
     logger.info 'Creating path: ' + @full_path.map(&:to_s).join(' -> ')
     flow_mod_add_to_each_switch
+    self
   end
 
-  def delete
+  def destroy
     logger.info 'Deleting path: ' + @full_path.map(&:to_s).join(' -> ')
+    Path.destroy self
     flow_mod_delete_to_each_switch
   end
 
@@ -46,7 +66,6 @@ class Path < Trema::Controller
   def flow_mod_add_to_each_switch
     path.each_slice(2) do |in_port, out_port|
       send_flow_mod_add(out_port.dpid,
-                        hard_timeout: 60,
                         match: exact_match(in_port.number),
                         actions: SendOutPort.new(out_port.number))
     end

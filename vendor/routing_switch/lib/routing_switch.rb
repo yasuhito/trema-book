@@ -1,13 +1,13 @@
-require 'forwardable'
+$LOAD_PATH.unshift File.join(__dir__, '../vendor/topology/lib')
+
+require 'active_support/core_ext/module/delegation'
 require 'optparse'
+require 'path_in_slice_manager'
 require 'path_manager'
-require 'sliceable_switch'
 require 'topology_controller'
 
 # L2 routing switch
 class RoutingSwitch < Trema::Controller
-  extend Forwardable
-
   # Command-line options of RoutingSwitch
   class Options
     attr_reader :slicing
@@ -21,14 +21,12 @@ class RoutingSwitch < Trema::Controller
 
   timer_event :flood_lldp_frames, interval: 1.sec
 
-  def_delegators :@topology, :flood_lldp_frames
+  delegate :flood_lldp_frames, to: :@topology
 
-  def sliceable_switch
+  def slice
     fail 'Slicing is disabled.' unless @options.slicing
-    @path_manager
+    Slice
   end
-
-  # @!group Trema event handlers
 
   def start(args)
     @options = Options.new(args)
@@ -37,28 +35,25 @@ class RoutingSwitch < Trema::Controller
     logger.info 'Routing Switch started.'
   end
 
-  def_delegators :@topology, :switch_ready
-  def_delegators :@topology, :features_reply
-  def_delegators :@topology, :switch_disconnected
-  def_delegators :@topology, :port_modify
+  delegate :switch_ready, to: :@topology
+  delegate :features_reply, to: :@topology
+  delegate :switch_disconnected, to: :@topology
+  delegate :port_modify, to: :@topology
 
-  def packet_in(dpid, message)
-    @topology.packet_in(dpid, message)
-    @path_manager.packet_in(dpid, message) unless message.lldp?
+  def packet_in(dpid, packet_in)
+    @topology.packet_in(dpid, packet_in)
+    @path_manager.packet_in(dpid, packet_in) unless packet_in.lldp?
   end
 
   private
 
   def start_path_manager
     fail unless @options
-    (@options.slicing ? SliceableSwitch : PathManager).new.tap(&:start)
+    (@options.slicing ? PathInSliceManager : PathManager).new.tap(&:start)
   end
 
   def start_topology
     fail unless @path_manager
-    TopologyController.new.tap do |topology|
-      topology.start []
-      topology.add_observer @path_manager
-    end
+    TopologyController.new { |topo| topo.add_observer @path_manager }.start
   end
 end

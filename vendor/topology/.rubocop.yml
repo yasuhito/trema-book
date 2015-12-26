@@ -1,9 +1,9 @@
 AllCops:
   Include:
     - ./*.conf
-    - Gemfile
-    - Guardfile
-    - Rakefile
+    - ./Gemfile
+    - ./Guardfile
+    - ./Rakefile
     - tasks/*.rake
 
 Style/StringLiterals:

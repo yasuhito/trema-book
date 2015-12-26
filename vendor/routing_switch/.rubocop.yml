@@ -6,7 +6,7 @@ AllCops:
     - ./Rakefile
     - tasks/*.rake
   Exclude:
-    - bin/*
+    - !ruby/regexp /bin\/(?:(?!slice).)*$/
     - tmp/**/*
     - vendor/**/*
 

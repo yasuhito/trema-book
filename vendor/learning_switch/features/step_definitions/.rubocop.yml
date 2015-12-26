@@ -1,3 +1,7 @@
+AllCops:
+  Exclude:
+    - vendor/**/*
+
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 

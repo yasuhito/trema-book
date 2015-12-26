@@ -170,7 +170,7 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="3,12..16"]
 [source,ruby,subs="verbatim,attributes"]
 .LearningSwitch13#add_multicast_mac_drop_flow_entry (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="47..56"]
+include::{sourcedir}/lib/learning_switch13.rb[lines="85..94"]
 ----
 
 Flow Mod に指定するパラメータのうちポイントとなるのは次の 3 つです。
@@ -184,7 +184,7 @@ Flow Mod に指定するパラメータのうちポイントとなるのは次�
 [source,ruby,subs="verbatim,attributes"]
 .LearningSwitch13#add_default_forwarding_flow_entry (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="58..67"]
+include::{sourcedir}/lib/learning_switch13.rb[lines="107..116"]
 ----
 
 ここで重要なパラメータは次の 3 つです。
@@ -200,7 +200,7 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="58..67"]
 [source,ruby,subs="verbatim,attributes"]
 .LearningSwitch13#add_default_flooding_flow_entry (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="35..45"]
+include::{sourcedir}/lib/learning_switch13.rb[lines="74..83"]
 ----
 
 - `table_id`: ここで追加するフローエントリは、直前の GotoTable でテーブル ID INGRESS_FILTERING_TABLE_ID から FORWARDING_TABLE_ID に移動した後に処理されます。ですので、`table_id` には `FORWARDING_TABLE_ID` を指定します。
@@ -214,7 +214,7 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="35..45"]
 [source,ruby,subs="verbatim,attributes"]
 .LearningSwitch13#switch_ready (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="24..33"]
+include::{sourcedir}/lib/learning_switch13.rb[lines="25..28"]
 ----
 
 ここでの Flow Mod パラメータのポイントは次のとおりです。
