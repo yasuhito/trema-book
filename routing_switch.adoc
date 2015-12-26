@@ -136,10 +136,10 @@ $ ./bin/trema dump_flows switch4
 
 === 最短パスの再計算を確認する
 
-トポロジが変化した場合、ルーティングスイッチは自動的に最短パスを作り直します。たとえば<<routing_switch_sample_network,図 15-5>> において、switch1 と switch5 の間のリンクが切れた場合を考えます。このときルーティングスイッチは古い最短パス (host1 ⇔ switch1 ⇔ switch5 ⇔ switch6 ⇔ host4) のフローエントリを消し、新たな最短パス (host1 ⇔ switch1 ⇔ switch4 ⇔ switch5 ⇔ switch6) のフローエントリを追加します (<<routing_switch_update_shortest_path, 図 15-6>>)。
+トポロジ上のリンクが切れた場合、ルーティングスイッチは自動的に最短パスを作り直します。たとえば<<routing_switch_sample_network,図 15-5>> において、switch1 と switch5 の間のリンクが切れた場合を考えます。このときルーティングスイッチは古い最短パス (host1 ⇔ switch1 ⇔ switch5 ⇔ switch6 ⇔ host4) のフローエントリを消します。そして、ふたたび host1 が host2 へパケットを送ったタイミングで、ルーティングスイッチは新しい最短パス (host1 → switch1 → switch4 → switch5 → switch6) を作ります (<<routing_switch_update_shortest_path, 図 15-6>>)。
 
 [[routing_switch_update_shortest_path]]
-image::routing_switch_update_shortest_path.png[caption="図15-6",title="トポロジの変化に応じて最短パスを作り直す"]
+image::routing_switch_update_shortest_path.png[caption="図15-6",title="最短パスの作り直し"]
 
 この動作も実際に動かして確認してみましょう。リンクの削除は `trema delete_link` コマンドです。
 
@@ -147,36 +147,40 @@ image::routing_switch_update_shortest_path.png[caption="図15-6",title="トポ�
 $ ./bin/trema delete_link switch1 switch5
 ----
 
-すると、ルーティングスイッチを起動したターミナルには host1 ⇔ host4 の 2 つの最短パスを削除し、新たに最短パスを作りなおしたというメッセージが表示されます。
+すると、ルーティングスイッチを起動したターミナルには host1 ⇔ host4 の 2 つの最短パスを削除したというメッセージが表示されます。
 
 ----
 Deleting path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:2 -> 0x1:4 -> 0x1:1 -> 11:11:11:11:11:11
-Creating path: 44:44:44:44:44:44 -> 0x6:1 -> 0x6:2 -> 0x5:5 -> 0x5:4 -> 0x4:3 -> 0x4:2 -> 0x1:3 -> 0x1:1 -> 11:11:11:11:11:11
 Deleting path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:4 -> 0x5:2 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
+----
+
+ふたたび host1 から host4 へパケットを送ってみましょう。
+
+----
+$ ./bin/trema send_packets --source host1 --dest host4
+----
+
+すると次のように、ルーティングスイッチを起動したターミナルには host1 → host4 の新たな最短パスが表示されます。
+
+----
 Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:3 -> 0x4:2 -> 0x4:3 -> 0x5:4 -> 0x5:5 -> 0x6:2 -> 0x6:1 -> 44:44:44:44:44:44
 ----
 
-以上でルーティングスイッチの最短パス計算と再計算の動作を見てきました。いよいよ実装に移りましょう。
+以上でルーティングスイッチの最短パス計算と再計算の動作を見てきました。いよいよソースコードを読んでみましょう。
 
 == ルーティングスイッチのソースコード
 
 ルーティングスイッチは次の 4 つのクラスが協調して動作します (<<routing_switch_architecture,図15-7>>)。
 
-- RoutingSwitch クラス: OpenFlow メッセージの振り分け
-- Topology クラス (<<topology,第14章>>で紹介): トポロジ情報を PathManager へ送る
-- PathManager クラス: 最短パスの作成と更新を Path に指示
-- Path クラス: パスを構成するフローエントリの生成と削除
+RoutingSwitch クラス:: スイッチから届く OpenFlow メッセージを振り分けます。OpenFlow スイッチと接続し、スイッチから上がってくる OpenFlow メッセージをその種類に応じて Topology または PathManager へと振り分けます
+Topology クラス (<<topology,第14章>>で紹介):: トポロジの変化イベントを PathManager へ通知します。トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch コントローラから受け取り、ネットワークトポロジ上のイベントへ変換し PathManager へ渡します
+PathManager クラス:: ルーティングスイッチの本体です。RoutingSwitch から Packet In メッセージを受け取ると、Topology から受け取るトポロジ情報を元に最短パスを計算し、Path クラスを通じて新しい最短パスをスイッチに反映します
+Path クラス:: パスの生成と削除に必要なフローエントリの操作を一手に引き受けます。FlowMod や FlowModDelete といった OpenFlow メッセージの詳細を PathManager から隠蔽します
 
 [[routing_switch_architecture]]
 image::routing_switch_architecture.png[caption="図15-7",title="ルーティングスイッチのクラス構成"]
 
-RoutingSwitch クラスの主な仕事は OpenFlow メッセージの振り分けです。OpenFlow スイッチと接続し、スイッチから上がってくる OpenFlow メッセージをその種類に応じて Topology または PathManager へと振り分けます。
-
-Topology コントローラは、トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch コントローラから受け取ります。そしてこの受け取った OpenFlow メッセージをネットワークトポロジ上のイベントへ変換し、PathManager へ渡します。
-
-PathManager がルーティングスイッチの本体です。RoutingSwitch コントローラから Packet In メッセージを受け取ると、Topology コントローラから受け取るトポロジ情報を元に最短パスを計算または再計算し、Path クラスを通じて新しい最短パスをスイッチに反映します。
-
-Path クラスはフローエントリの管理を一手に引き受けます。FlowMod や FlowModDelete といった OpenFlow メッセージの詳細を PathManager から隠蔽します。
+複雑な機能を持つコントローラは、このように機能を小さなクラスに分割することでスッキリと書けます。LLDP の送受信といったトポロジ検出処理は Topology クラスに、FlowMod といったフローエントリの処理は Path クラスにそれぞれまかせ、そして PathManager クラスが全体をとりまとめることで見通しが良くなりテストもしやすくなります。もし新しく機能を追加したくなった場合にも、既存のコードは改造せず新機能に対応するクラスを追加するだけですfootnote:[<<sliceable_switch,第 16 章>>ではルーティングスイッチにクラスを追加することで仮想ネットワーク機能を実装する例を紹介します。]。
 
 === ルーティングスイッチのソースコード (routing_switch.rb)
 
