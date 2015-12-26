@@ -55,7 +55,7 @@ image::dijkstra.png[caption="図15-4",title="最短パスをダイクストラ�
 
 == 実行してみよう
 
-動作原理が分かったところで、実際のトポロジ検出や最短路計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
+動作原理が分かったところで、実際のトポロジ検出や最短パス計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
@@ -184,9 +184,9 @@ image::routing_switch_architecture.png[caption="図15-7",title="ルーティン�
 
 === RoutingSwitch クラスのソースコード (routing_switch.rb)
 
-// TODO: 移譲のやりかたについて、前の章で説明しているはずなのでそこを参照する
+RoutingSwitch クラスは委譲パターンによって各 OpenFlow メッセージを他のクラスへと振り分けます。
 
-RoutingSwitch クラスは委譲パターンによって各 OpenFlow メッセージを他のクラスへと振り分けます。たとえば Topology クラスへ switch_ready イベントを転送するには、`delegate` メソッドを使って Topology クラスのインスタンスへ `switch_ready` メソッドを委譲します。なお packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で明示的にそれぞれの packet_in メソッドを呼び出すことで転送しています。
+// TODO: 移譲のやりかたについて、前の章で説明しているはずなのでそこを参照する
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/routing_switch.rb
@@ -194,37 +194,44 @@ RoutingSwitch クラスは委譲パターンによって各 OpenFlow メッセ�
 include::{sourcedir}/lib/routing_switch.rb[lines="38..46"]
 ----
 
-=== パスマネージャのソースコード (path_manager.rb)
+たとえば Topology クラスへ switch_ready イベントを転送するには、`delegate` メソッドを使って Topology クラスのインスタンスへ `switch_ready` メソッドを委譲します。なお packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で明示的にそれぞれの packet_in メソッドを呼び出すことで転送しています。
 
-パスマネージャは、TopologyコントローラとObserverパターンで連携します。TopologyコントローラはRoutingSwitchコントローラから上がってくる生のOpenFlowメッセージをトポロジ上の変化イベント(スイッチ・ポート・リンクの追加/削除とホストの追加)へと変換し、オブザーバであるPathManagerコントローラへ通知します。
+=== PathManager のソースコード (path_manager.rb)
 
-パスマネージャはトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topologyコントローラはトポロジイベント `add_link` をパスマネージャへ送ります。そしてPathManagerはグラフ情報を更新し新しくみつかったリンクを `@graph` へ追加します。
+PathManager は、Topology クラスとObserverパターンで連携します。TopologyクラスはRoutingSwitchクラスから上がってくる生のOpenFlowメッセージをトポロジ上の変化イベント(スイッチ・ポート・リンクの追加/削除とホストの追加)へと変換し、オブザーバである PathManager クラスのトポロジイベントハンドラを呼び出します。
+
+// TODO: オブザーバパターンのやりかたについて、前の章で説明しているはずなのでそこを参照する
 
 [source,ruby,subs="verbatim,attributes"]
-.lib/path_manager.rb
+.PathManager クラスのトポロジイベントハンドラ (lib/path_manager.rb)
 ----
-include::{sourcedir}/lib/path_manager.rb[lines="33..37,59..62"]
+include::{sourcedir}/lib/path_manager.rb[lines="23..43"]
 ----
 
-// リンクの発見だけでなくて、その他の場合についても図を使って説明する?
+PathManager はトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topologyコントローラはトポロジイベント `add_link` を PathManager へ送ります。そして PathManager は新しくみつかったリンクを `@graph` へ追加します。
 
-// TODO Topologyのパス発見と`add_link`イベントからPathManagerが@graphを更新する図
+// TODO: リンクの発見だけでなくて、その他の場合についても図を使って説明する?
+// TODO: Topologyのパス発見と`add_link`イベントからPathManagerが@graphを更新する図
 
-パスマネージャへ `packet_in` が到着すると、パスマネージャは次の方法でパケットを宛先へと届けます (<<path_manager_internals,図15-6>>)。
-
-1. グラフ情報から送信元→宛先への最短路を計算する。もし最短路がみつかった場合には、最短路上のスイッチにフローエントリを打つ
-2. みつかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。みつからなかった場合には、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする
-
-[[path_manager_internals]]
-image::path_manager_internals.png[caption="図15-6",title="パスマネージャの仕組み"]
-
-// TODO 内部ポートと外部ポートの説明図
+PathManager は `packet_in` イベントに反応し、届いたパケットを宛先へと届けます。
 
 [source,ruby,subs="verbatim,attributes"]
 .PathManager#packet_in
 ----
-include::{sourcedir}/lib/path_manager.rb[lines="14..22"]
+include::{sourcedir}/lib/path_manager.rb[lines="13..22,48..53"]
 ----
+
+`packet_in` ハンドラの動作は<<path_manager_internals,図 15-6>> の通りです:
+
+1. グラフ情報から送信元→宛先への最短パスを計算する。もし最短パスがみつかった場合には、最短パス上のスイッチにでフローエントリを `Path.create` で打つ
+2. みつかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。みつからなかった場合には、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする
+
+[[path_manager_internals]]
+image::path_manager_internals.png[caption="図15-6",title="PathManager の仕組み"]
+
+// TODO: 内部ポートと外部ポートの説明図
+
+// TODO: Path クラスの説明
 
 // === Dijkstra
 
