@@ -182,23 +182,23 @@ image::routing_switch_architecture.png[caption="図15-7",title="ルーティン�
 
 複雑な機能を持つコントローラは、このように機能を小さなクラスに分割することでスッキリと書けます。LLDP の送受信といったトポロジ検出処理は Topology クラスに、FlowMod といったフローエントリの処理は Path クラスにそれぞれまかせ、そして PathManager クラスが全体をとりまとめることで見通しが良くなりテストもしやすくなります。もし新しく機能を追加したくなった場合にも、既存のコードは改造せず新機能に対応するクラスを追加するだけですfootnote:[<<sliceable_switch,第 16 章>>ではルーティングスイッチにクラスを追加することで仮想ネットワーク機能を実装する例を紹介します。]。
 
-=== ルーティングスイッチのソースコード (routing_switch.rb)
+=== RoutingSwitch クラスのソースコード (routing_switch.rb)
 
-RoutingSwitchコントローラは委譲パターンによって各OpenFlowメッセージを他のコントローラへと振り分けます。たとえばTopologyコントローラへ switch_ready イベントを転送するには、`def_delegators` を使ってTopologyクラスのインスタンスへ `switch_ready` メソッドを委譲します。packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で転送します。
+// TODO: 移譲のやりかたについて、前の章で説明しているはずなのでそこを参照する
 
-// TODO 次章で説明するSliceableSwitchのことをここで簡単に触れておく
+RoutingSwitch クラスは委譲パターンによって各 OpenFlow メッセージを他のクラスへと振り分けます。たとえば Topology クラスへ switch_ready イベントを転送するには、`delegate` メソッドを使って Topology クラスのインスタンスへ `switch_ready` メソッドを委譲します。なお packet_in イベントは Topology と PathManager の両方に届ける必要があるため、packet_in ハンドラの中で明示的にそれぞれの packet_in メソッドを呼び出すことで転送しています。
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/routing_switch.rb
 ----
-include::{sourcedir}/lib/routing_switch.rb[lines="40..48"]
+include::{sourcedir}/lib/routing_switch.rb[lines="38..46"]
 ----
 
 === パスマネージャのソースコード (path_manager.rb)
 
 パスマネージャは、TopologyコントローラとObserverパターンで連携します。TopologyコントローラはRoutingSwitchコントローラから上がってくる生のOpenFlowメッセージをトポロジ上の変化イベント(スイッチ・ポート・リンクの追加/削除とホストの追加)へと変換し、オブザーバであるPathManagerコントローラへ通知します。
 
-パスマネージャはトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topologyコントローラはトポロジイベント `add_link` をパスマネージャへ送ります。そしてPathManagerはグラフ情報を更新し新しくみつかったリンクを登録します。
+パスマネージャはトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topologyコントローラはトポロジイベント `add_link` をパスマネージャへ送ります。そしてPathManagerはグラフ情報を更新し新しくみつかったリンクを `@graph` へ追加します。
 
 [source,ruby,subs="verbatim,attributes"]
 .lib/path_manager.rb
