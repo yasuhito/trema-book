@@ -186,7 +186,7 @@ $ cd hello_trema
 
 エディタで hello_trema ディレクトリ内の lib/hello_trema.rb を開き、次の Ruby コードを入力してください。.rb は Ruby プログラムの標準的な拡張子です。Ruby の文法は必要に応じておいおい説明しますので、もしわからなくても気にせずそのまま入力してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 include::{sourcedir}/lib/hello_trema.rb[]
@@ -198,7 +198,7 @@ include::{sourcedir}/lib/hello_trema.rb[]
 
 Hello Tremaの実行にはOpenFlowスイッチが1台必要です。さきほどインストールしたOpen vSwitchをHello Tremaコントローラに接続することにしましょう。次の設定ファイルtrema.confをエディタで作成してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 vswitch { datapath_id 0xabc }
@@ -212,7 +212,7 @@ vswitch { datapath_id 0xabc }
 
 Hello Tremaの実行にはもちろんTremaが必要です。実行に必要なRubyのアプリケーションやライブラリを`Gemfile`というファイルに次のように書いておくと、Hello Trema専用の実行環境を自動的にセットアップできます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .Gemfile
 ----
 source 'https://rubygems.org/' # <1>
@@ -308,7 +308,7 @@ Rubyを習得する一番の近道は、コードを構成する各要素の種�
 
 `HelloTrema` や `Trema::Controller` など、大文字で始まる名前が定数です。Rubyの定数は英語や日本語といった自然言語における固有名詞にあたります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_world.rb
 ----
 # Hello World!
@@ -339,7 +339,7 @@ $ irb
 
 `class` に続く定数はクラス定義です。「Hello, Trema!」の例では `HelloTrema` が定義されるクラス名です。「`class` +クラス名」から始まるクラス定義は、同じ字下げレベルの `end` までの範囲です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
@@ -359,7 +359,7 @@ end # <2>
 
 Tremaではすべてのコントローラはクラスとして定義し、Tremaの提供する `Trema::Controller` クラスをかならず継承します。クラスを継承するには、`class クラス名 < 親クラス名` と書きます.
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
@@ -378,7 +378,7 @@ end
 
 ハンドラの定義は `def` に続く名前から `end` までのブロックです。たとえば `HelloTrema` の例では `start` と `switch_ready` ハンドラを定義しています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller
@@ -443,7 +443,7 @@ return self super then true undef unless until when while yield
 
 新しくスイッチが起動すると `switch_ready` メソッドが起動します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .HelloTrema#switch_ready (lib/hello_trema.rb)
 ----
 def switch_ready(dpid)
@@ -482,7 +482,7 @@ image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起�
 
 ログメッセージを出力するには、`logger` を使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .HelloTrema#start (lib/hello_trema.rb)
 ----
 def start(_args)
@@ -501,7 +501,7 @@ end
 
 `trema run` のオプションでロギングレベルを指定できます。たとえば次のコードを実行するとしましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .try_logging.rb
 ----
 # ロギングレベルの確認用コード
@@ -541,7 +541,7 @@ $ ./bin/trema run try_logging.rb --log_dir /var/log/
 
 `logger.info` に渡している文字列中の `#{}` は、文字列内にRubyの式を組込みます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 logger.info "Hello #{dpid.to_hex}!"
 #=> Hello 0xabc!
@@ -549,7 +549,7 @@ logger.info "Hello #{dpid.to_hex}!"
 
 これは次のコードと同じです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 logger.info 'Hello ' + dpid.to_hex + '!'
 #=> Hello 0xabc!

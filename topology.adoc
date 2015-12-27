@@ -151,7 +151,7 @@ TopologyController はトポロジ情報に関する OpenFlow メッセージの
 
 LLDP パケットの定期送信は、`flood_lldp_frames` メソッドが行います。`@topology` が管理している発見済みポートすべて (`@topology.ports`) に対して、LLDP パケットを送信するように Packet Out を行います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/topology_controller.rb
 ----
 include::{sourcedir}/lib/topology_controller.rb[]
@@ -167,7 +167,7 @@ include::{sourcedir}/lib/topology_controller.rb[]
 - `delete_port`: 無効になったポートを削除し、ポートから出ているリンクも削除する
 - `maybe_add_link`: 発見したリンクが新しいものであれば、データベースに追加する
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/topology.rb
 ----
 include::{sourcedir}/lib/topology.rb[]

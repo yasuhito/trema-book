@@ -288,31 +288,31 @@ Sliceクラスはスライスの追加・削除や検索といったクラスメ
 
 // TODO: 各コードに簡単な説明を追加
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスの追加 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="17..22"]
 ----
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスの削除 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="40..44"]
 ----
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスの検索 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="25..38"]
 ----
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスへのポートの追加 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="58..64"]
 ----
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスへのホストの追加 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="89..96"]
@@ -325,7 +325,7 @@ PathInSliceManager クラスは同じスライスに所属するホスト間の�
 1. パケットの送信元MACアドレスと宛先MACアドレスが同じスライスに族するかどうか判定する。もし同じスライスだった場合には、PathManagerと同じ方法で宛先ホストへパケットを届ける
 2. もし同じスライスでなかった場合、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする。つまり、スライスに属していないホストへとばらまく。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PathInSliceManager#packet_in
 ----
 include::{sourcedir}/lib/path_in_slice_manager.rb[lines="14..26"]

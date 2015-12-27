@@ -93,7 +93,7 @@ image::host2to1_openflow.png[caption="図6-6",title="同様にホスト2のMAC�
 
 今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 include::{sourcedir}/trema.conf[]
@@ -134,7 +134,7 @@ Packets received:
 ラーニングスイッチのソースコードは <<learning_switch.rb,lib/learning_switch.rb>> と <<fdb.rb,lib/fdb.rb>> の 2 つからなります。まずはメインのソースコード (<<learning_switch.rb,lib/learning_switch.rb>>) をざっと眺めてみましょう。 とくに、`private` の行よりも上のパブリックなメソッドに注目してください。
 
 [[learning_switch.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/learning_switch.rb
 ----
 include::{sourcedir}/lib/learning_switch.rb[]
@@ -163,7 +163,7 @@ include::{sourcedir}/lib/learning_switch.rb[]
 2. パケットの宛先MACアドレスとFDBから、パケットを出力するポート番号を調べる (`flow_mod_and_packet_out` メソッド)
 
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#packet_in, LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
@@ -173,7 +173,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
 
 もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、というフローエントリをスイッチに書き込みます (flow_modメソッド)。また、Packet Inを起こしたパケットも忘れずにそのポートへ出力します (packet_outメソッド)。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
@@ -181,7 +181,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
 
 このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第4章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod, LearningSwitch#packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
@@ -191,7 +191,7 @@ include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
 
 Packet OutはOpenFlowメッセージの1つで、スイッチの指定したポートからパケットを送信させるためのものです。TremaでPacket Outを送るためのメソッド、send_packet_outは次の2つの引数を取ります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_packet_out(datapath_id, options)
 ----
@@ -207,7 +207,7 @@ Packet Outの使い道は、Packet Inメッセージとして入ってきたパ�
 
 パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように:buffer_idオプションでバッファに乗っているパケットデータのIDを指定してやることでPacket Outできます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_packet_out(
   datapath_id,
@@ -223,7 +223,7 @@ send_packet_out(
 
 スイッチのバッファを使わずに Packet Out する場合、次のように `raw_data` オプションでパケットのデータを指定する必要があります。バッファに乗っているかいないかにかかわらず Packet Out できるので、若干遅くはなりますが安全です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_packet_out(
   datapath_id,
@@ -234,7 +234,7 @@ send_packet_out(
 
 これは、次のように `packet_in` オプションを使うことで若干短くできます (`.raw_data` を書かなくてよくなります)。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_packet_out(
   datapath_id,
@@ -256,7 +256,7 @@ send_packet_out(
 
 もし宛先ポートが見つからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが flow_mod_and_packet_out メソッドで、ポート番号に仮想ポート番号の `:flood` を指定して packet_out メソッドを呼び出します。`:flood` を指定した PacketOut メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
 include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
@@ -268,7 +268,7 @@ learning_switch.rb の一行目の `require 'fdb'` は、同じディレクト�
 
 fdb.rb もざっと目を通してみましょう。このファイルは FDB の機能をカプセル化する `FDB` クラスを提供します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/fdb.rb
 ----
 include::{sourcedir}/lib/fdb.rb[]

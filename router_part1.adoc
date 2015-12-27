@@ -87,7 +87,7 @@ image::router_network.png[caption="図12-4",title="ルータが複数あるネ�
 
 // TODO: case...when じゃなくてテーブルで引くようにして短くする
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
@@ -97,7 +97,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
 
 イーサネットにはルータ以外のホストがつながっている可能性があります。そこで Packet In メッセージが上がってきたときには、まずそのパケットが自分宛かどうかを判断します (`sent_to_router?` メソッド)。もし自分宛でない場合にはパケットを破棄します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#sent_to_router? (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="94..98"]
@@ -113,7 +113,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="94..98"]
 
 ARP リクエストパケットを受信すると `packet_in_arp_request` メソッドを呼びます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_arp_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="39..53"]
@@ -125,7 +125,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="39..53"]
 
 ARP リプライパケットを受信すると、ARP テーブル (`@arp_table`) に MAC アドレスを記録します。ここでは `PacketIn#sender_protocol` メソッドを使って ARP パケット中の送信元 IP アドレスを取り出しています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_arp_reply (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="56..63"]
@@ -143,7 +143,7 @@ IPv4 パケットを受信すると、`packet_in_ipv4` メソッドを呼びま�
 
 // TODO: 今の実装では破棄してないので、破棄するようにする
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_ipv4 (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="65..74"]
@@ -151,7 +151,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="65..74"]
 
 パケットを転送するかどうかの判定は `forward?` メソッドです。転送が必要な場合とは、次のようにパケットの宛先 IPv4 アドレスがルータのインタフェースに割り当てた IPv4 アドレスと異なる場合です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward? (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
@@ -159,7 +159,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
 
 パケットの宛先 IP アドレスがルータである場合、ルータ自身が応答します。シンプルルータでは、ICMP Echo リクエスト (ping) に応答する機能だけ実装しています。`packet_in_icmpv4_echo_request` メソッドは次のように ICMP Echo リクエストに応答します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
@@ -171,7 +171,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 
 ルータの動作の核心、パケットを書き換えて転送する部分です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
@@ -191,7 +191,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
 
 ARP テーブルから宛先の MAC アドレスがわかると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。<<forward,図 12-1>> で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。`forward` メソッド内の変数 `action` はこのためのアクションリストで、送信元と宛先 MAC アドレスの書き換え、そして該当するポートからの出力というアクションの配列です。このアクションは Flow Mod と Packet Out メッセージの送信に使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="114..118"]
 ----
@@ -200,7 +200,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="114..118"]
 
 ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐ分からない場合、次のように `send_later` メソッドを呼び出していました。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
@@ -210,7 +210,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 
 `send_later` メソッドでは、ARP が未解決なパケットを宛先 IP アドレスごとにキュー (`queue`) に入れます。キューへの追加後に ARP リクエストを送ることで宛先の MAC アドレスを解決します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#send_later (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="148..152"]
@@ -218,7 +218,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="148..152"]
 
 キューにためたパケットを転送するのは ARP リプライが Packet In したタイミングです。`packet_in_arp_reply` の最後に呼び出している `flush_unsent_packets` がこの処理を行います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#flush_unsent_packets (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="154..164"]

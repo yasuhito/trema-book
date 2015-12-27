@@ -10,7 +10,7 @@ $ ./bin/trema dump_flows [コマンドオプション] スイッチ名
 
 仮想ネットワーク設定で `of_switch` という名前のスイッチを定義し、コントローラを実行したとする。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 vswitch('of_switch') { datapath_id 0x1 }

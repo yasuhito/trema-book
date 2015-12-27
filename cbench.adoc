@@ -84,7 +84,7 @@ Cbench のようなマイクロベンチマークでは、測定対象が何で�
 Cbenchが正しく実行できたところで、CbenchのソースコードからPacket InとFlow Modメッセージの処理方法を見ていきましょう。ファイルは lib/cbench.rb です。
 
 [[cbench.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/cbench.rb
 ----
 include::{sourcedir}/lib/cbench.rb[]
@@ -106,7 +106,7 @@ Cbench のソースコードにはいくつかのメソッド呼び出しがあ�
 
 このようにメソッドは普通、変数や定数の後にドットでつなげます。定数や変数が名詞なら、メソッドはちょうど動詞と同じです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 door.open
 ----
@@ -115,7 +115,7 @@ door.open
 
 ふつう、メソッド呼び出しによって何らかの動作をすると新しい結果が得られます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 'redrum'.reverse
 #=> "murder"
@@ -125,7 +125,7 @@ door.open
 
 メソッドは引数を取るものもあります。次の例は配列の各要素の間に指定した文字をはさんで連結 (`join`) します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 ['M', 'A', 'S', 'H'].join('★')
 #=> "M★A★S★H"
@@ -146,7 +146,7 @@ Rubyにはこのようなメソッドが何百種類もあります。それぞ�
 
 コントローラに上がってくる未知のパケットを拾うには、Packet Inハンドラをコントローラクラスに実装します。Packet Inハンドラは次の形をしています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def packet_in(datapath_id, message)
   ...
@@ -211,7 +211,7 @@ end
 
 マッチングルールを指定するには、`send_flow_mod_add` の引数に `match:` オプションとしてマッチングルールオブジェクト (`Match.new(...)` または `ExactMatch.new(...)`) を渡します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
   datapath_id,
@@ -223,7 +223,7 @@ send_flow_mod_add(
 
 マッチングルールを作るには、`Match.new` に指定したい条件のオプションを渡します。たとえば、送信元 MAC アドレスが 00:50:56:c0:00:08 で VLAN ID が 3 というルールを指定したマッチングルールを Flow Mod に指定するコードは、次のようになります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
   datapath_id,
@@ -258,7 +258,7 @@ send_flow_mod_add(
 
 マッチングルールを作る構文 `Match.new` にこの12種類の条件すべてを渡せば、次のようにExact Matchを作れます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def packet_in(datapath_id, message)
   ...
@@ -273,7 +273,7 @@ def packet_in(datapath_id, message)
 
 しかし、マッチングルールを1つ作るだけで12行も書いていたら大変です。そこで、TremaではPacket InメッセージからExact Matchを楽に書ける次のショートカットを用意しています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def packet_out(datapath_id, message)
   send_flow_mod_add(
@@ -288,7 +288,7 @@ def packet_out(datapath_id, message)
 
 アクションを指定するには、`send_flow_mod_add` の引数に `actions:` オプションとして単体のアクションまたはアクションのリストを渡します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
   datapath_id,
@@ -309,7 +309,7 @@ send_flow_mod_add(
 
 たとえば、VLAN ヘッダを除去してポート2番に転送するアクションを Flow Mod に指定するコードは、次のようになります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
   datapath_id,
@@ -346,7 +346,7 @@ send_flow_mod_add(
 
 バッファIDを指定するには、`match:` や `actions:` オプションと同じく  `buffer_id:` オプションを `send_flow_mod_add` の引数に指定します。たとえば以下のコードは、バッファ ID に Packet Inメッセージのバッファ ID を指定する典型的な例です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(
   datapath_id,
@@ -381,7 +381,7 @@ Tremaはシングルスレッドで動作するので、実のところ Cbench �
 
 Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえば仮に、Tremaがスレッドで動作する `multi_threaded_packet_in` というハンドラを提供するとして、この中でスレッドセーフでない変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。すべてのスレッドで共有する値をスレッドから変更する場合に起こる競合は正しく処理してやる必要があります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def start(_args)
   @db = DB.new  # <1>
@@ -402,7 +402,7 @@ end
 
 インスタンス変数は同じクラスの中のメソッド定義内であればどこからでも使えます。具体的な例として次の `Human` クラスを見てください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class Human
   def initialize
@@ -423,7 +423,7 @@ end
 
 スレッド間の競合を解決する代表的な方法が Mutex による排他制御です。スレッド間で競合の起こる箇所を Mutex で囲むことで、その箇所へは同時に 1 つのスレッドしか入れなくなります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def start(_args)
   @db = DB.new
@@ -443,7 +443,7 @@ end
 
 もちろん、Trema には `multi_threaded_packet_in` というものはないので、スレッド化は自分でやる必要があります。次のように高速化したいハンドラメソッドの中身を別スレッドで起動し、インスタンス変数へのアクセスを Mutex で排他制御してやります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def initialize(_args)
   @db = DB.new
@@ -465,7 +465,7 @@ end
 
 そこで、次のようにあらかじめいくつかワーカースレッドを作って待機させておく、いわゆるスレッドプールという手法が使えます。そして `packet_in` ハンドラが呼ばれるたびに待機中のスレッドに `packet_in` の処理をまかせます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 # A simple openflow controller for benchmarking (multi-threaded version).
 def start(_args)
@@ -501,7 +501,7 @@ end
 
 最終的なマルチスレッド版 Cbench コントローラは次のようになります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/fast_cbench.rb
 ----
 # A simple openflow controller for benchmarking (multi-threaded version).

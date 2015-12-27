@@ -44,7 +44,7 @@ $ bundle install --binstubs
 
 // TODO trema.conf → switch_monitor.conf にファイル名を変更
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .switch_monitor.conf
 ----
 include::{sourcedir}/trema.conf[]
@@ -167,7 +167,7 @@ All = 0x1, 0x2
 まずはざっとスイッチ監視ツールのソースコード(<<switch_monitor.rb,lib/switch_monitor.rb>>)を眺めてみましょう。今までに学んできたRubyの品詞を頭の片隅に置きながら、ざっくりと次のコードに目を通してみてください。
 
 [[switch_monitor.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/switch_monitor.rb
 ----
 include::{sourcedir}/lib/switch_monitor.rb[]
@@ -179,7 +179,7 @@ include::{sourcedir}/lib/switch_monitor.rb[]
 
 `switch_ready` ハンドラでは、スイッチ一覧リストに新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_ready (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="10..14"]
@@ -187,7 +187,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="10..14"]
 
 `@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#start (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="5..8"]
@@ -205,7 +205,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="5..8"]
 
 Rubyの配列はとても直感的に要素を足したり取り除いたりできます。たとえば配列の最後に要素を加えるには `<<` を使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 members = [ "友太郎", "青井", "宮坂主任" ]
 members << "取間先生"
@@ -214,7 +214,7 @@ members << "取間先生"
 
 配列から要素を取り除くには `-=` を使います。これは左右の配列どうしを見比べ、共通する要素を取り除いてくれます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 fruits = [ "バナナ", "みかん", "テレビ", "りんご", "たわし" ]
 fruits -= [ "テレビ", "たわし" ]
@@ -227,7 +227,7 @@ fruits -= [ "テレビ", "たわし" ]
 
 `switch_disconnected` ハンドラでは、スイッチ一覧リストから切断したスイッチのDatapath IDを削除し、切断したスイッチの情報を画面に表示します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_disconnected (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
@@ -241,7 +241,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
 
 スイッチの一覧を一定時間ごとに表示するには、Tremaのタイマー機能を使います。次のように `timer_event` に続いて一定間隔ごとに呼び出したいメソッドと呼び出し間隔を指定しておくと、指定したメソッドが指定された間隔ごとに呼ばれます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class Human < Trema::Controller
   timer_event :birthday, 1.year  # <1>
@@ -265,7 +265,7 @@ class Human < Trema::Controller
 
 これを踏まえてスイッチ監視ツールのソースコードのタイマー部分を見てみましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="3,30..35"]
 ----
@@ -281,7 +281,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="3,30..35"]
 
 また、シンボルは誰かにメソッドを名前で渡すときにも登場します。これだけですと分かりづらいと思うので、具体的な例を見ていきましょう。リスト `switch_monitor.rb` には、次のようにシンボルを使っている箇所がありました。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="3"]
 ----
@@ -290,7 +290,7 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="3"]
 
 もしここでシンボルを使わずに、直接次のように指定するとどうなるでしょうか？
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 # まちがい!
 timer_event show_all_switches, 10.sec
@@ -304,7 +304,7 @@ timer_event show_all_switches, 10.sec
 
 スイッチの情報を取得するには、取得したい情報をリクエストするメッセージを `send_message` でスイッチに送信し、そのリプライメッセージをハンドラで受け取ります。たとえば、今回のようにスイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージを送信し、対応するハンドラ `description_stats_reply` でメッセージを受け取ります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_ready, SwitchMonitor#description_stats_reply (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
