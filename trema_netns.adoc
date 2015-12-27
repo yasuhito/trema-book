@@ -36,7 +36,7 @@ link '0x1', 'host2'
 $ ./bin/trema run my_controller.rb -c trema.conf
 ----
 
-このときネットワークネームスペース `host1` 内でシェルを起動するには、`trema netns` の引数にネットワークネームスペース名を次のように渡す。実行したシェルは `exit` または `Ctrl + d` で停止できる。
+このときネットワークネームスペース `host1` 内でシェルを起動するには、`trema netns` の引数にネットワークネームスペース名を次のように渡す。実行したシェルは `exit` または kbd:[Ctrl + d] で停止できる。
 
 ----
 $ ./bin/trema netns host1
