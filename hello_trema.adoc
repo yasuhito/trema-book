@@ -3,6 +3,7 @@
 :imagesdir: images/openflow_framework_trema
 
 // TODO asciidocで「トレマ」をルビ表示にする
+
 Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これでいよいよあなたもOpenFlowプログラマの仲間入りです!
 
 == 作ってわかるOpenFlow
@@ -241,7 +242,7 @@ Trema started.
 Hello, 0xabc! # <1>
 $
 ----
-<1> `Ctrl + c` でコントローラを終了
+<1> kbd:[Ctrl+c] でコントローラを終了
 
 ここまで見てきたように、`trema` コマンドを使うと、とても簡単にコントローラを実行できます。`trema` コマンドには他にもいくつかの機能がありますので、ここで簡単に紹介しておきましょう。
 
