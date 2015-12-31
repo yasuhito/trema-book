@@ -44,7 +44,7 @@ $ git clone https://github.com/trema/patch_panel.git
 ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaとパッチパネルのソースコード一式を自動的にインストールできます。
 
 ----
-$ cd cbench
+$ cd patch_panel
 $ bundle install --binstubs
 ----
 
