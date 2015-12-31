@@ -98,7 +98,7 @@ Cbenchのソースコード (<<cbench.rb>>) を眺めると、いくつか見慣
 
 Cbench のソースコードにはいくつかのメソッド呼び出しがあります。
 
-- `logger.info(...)` (<<hello_trema,第1章>>で解説)
+- `logger.info(...)` (<<hello_trema,第2章>>で解説)
 - `ExactMatch.new(...)`
 - `message.buffer_id`
 - `SendOutPort.new(...)`
