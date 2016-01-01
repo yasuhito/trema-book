@@ -1,33 +1,38 @@
-= スライス機能付きスイッチでネットワークを仮想化する
+= ネットワークを仮想化する
 :sourcedir: vendor/routing_switch
 :imagesdir: images/sliceable_switch
 
-実用的な大規模ネットワークの一例として、IaaSのようなクラウドサービスを実現する仕組みを見て行きましょう。<<routing_switch,第 15 章>>で紹介したルーティングスイッチの応用です。
+IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワークを OpenFlow で実現しましょう。<<routing_switch,第 15 章>>で紹介したルーティングスイッチの応用です。
 
-== ネットワークを仮想化する
+== ネットワークをスライスに分ける
 
-よく、クラウドサービスの本質は仮想化だと言われます。ユーザに提供するリソースを雲の向こうに仮想化することで、あたかも無限のリソースがいつでも使えるかのように見せるのです。
+クラウドサービスの核となる機能は仮想化です。たとえばクラウドサービスの一種である IaaS は、サーバやネットワークといった物理リソースを仮想化し、まるで雲 (クラウド) のように大きな仮想リソースとしてユーザに提供します。ユーザは自分専用のリソースをこの仮想リソースプールからいつでも好きなときに借り出せます。
 
-クラウドが仮想化するリソースは主にネットワークとサーバがありますが、このうちネットワークの仮想化は OpenFlow の得意分野です。OpenFlow でネットワークを仮想化してやることで、ユーザごとに専用のネットワークをオンデマンドで提供できます。
+クラウドサービスが制御する物理リソースのうち、ネットワークの仮想化は OpenFlow の得意分野です。物理リソースのうちサーバの仮想化は、Xen などの仮想マシンモニタを使えば、一台のサーバ上に何台もの仮想マシンを起動することで多数のユーザを集約できます。もうひとつの物理リソースであるネットワークの仮想化については、後に説明するように OpenFlow コントローラで同様の仕組みを実現できます。この 2 つの組み合わせにより、クラウドサービスは「仮想マシン + 仮想ネットワーク」という専用環境をユーザごとに提供します。
 
-スライス機能付きスイッチは、仮想ネットワークを提供するコントローラです。ひとつの物理ネットワークを論理的なネットワーク (スライス) に分割します。これによって、たくさんのユーザが専用のネットワークを使えるようになります。たとえば IaaS のようなたくさんのユーザを集約するサービスでは、物理サーバを仮想マシンで、またネットワークをスライスでそれぞれ分割することで、ユーザに仮想的な専用環境 (仮想マシン + 仮想ネットワーク) を提供します。
+本章で取り上げる「スライス機能付きスイッチ」は、ネットワークを仮想化するコントローラです (<<slice, 図 16-1>>)。ひとつの物理ネットワークをたくさんのスライス、つまりユーザごとの論理的なネットワークに分割することで、たくさんのユーザをひとつの物理ネットワーク上に集約できます。
 
 [[slice]]
-image::slice.png[caption="図16-1",title="スライスとは 1 つの物理ネットワークをいくつかの独立した仮想ネットワークに分割したもの"]
+.スライス機能付きスイッチは 1 つの物理ネットワークをたくさんの独立した仮想ネットワークに分割できる
+image::slice.png[caption="図 16-1: "]
 
 == スライスの実現方法
 
-スライスを実現する代表的な技術が VLANです。VLAN はスイッチをポート単位や MAC アドレス単位でスライスに分割できます。また VLAN タグと呼ばれる ID をパケットにつけることでスイッチをまたがったスライスも作れます。
+スライスを実現する代表的な既存技術が VLANです。VLAN はスイッチをポート単位や MAC アドレス単位でスライスに分割できます。また VLAN タグと呼ばれる ID をパケットにつけることでスイッチをまたがったスライスも作れます。
 
-ただし、VLAN にはスライス数の上限が 4094 個というプロトコル上の制約があります。このため、オフィスなどといった中小規模ネットワークではともかく、IaaS のようにユーザ数がゆうに数万を越えるオーダーになる場合には使えません。
+// TODO: VLAN の説明図を入れる。ポート VLAN, MAC VLAN, タグ VLAN の概念を説明
 
-一方 OpenFlow によるスライスではこの制約はありません。フローエントリによって同じスライス内にあるホスト同士のみが通信できるようにすれば、既存の VLAN の仕組みを使わなくてもフローエントリだけでスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限のない仮想ネットワーク」を作れます。
+ただし、VLAN にはスライス数の上限が 4094 個というプロトコル上の制約があります。このため、オフィスなどといった中小規模ネットワークではともかく、IaaS のようにユーザ数がゆうに数万を越える場合には使えません。
 
-スライス機能付きスイッチ は OpenFlow によるスライスの実装です。これは<<routing_switch,15章>>で紹介したルーティングスイッチを改造したもので、スライス数の上限なくたくさんのスライスを作れます。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮されており、REST API を通じてスライスの作成/削除などの操作ができます。
+// TODO: 4094 の制限を説明した RFC か何かをここで引く
+
+一方 OpenFlow によるスライスではこの制約はありません。フローエントリをうまく使えば、既存の VLAN の仕組みを使わなくてもスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限のない仮想ネットワーク」を作れます。
+
+スライス機能付きスイッチは OpenFlow によるスライスの実装です。これは<<routing_switch,15章>>で紹介したルーティングスイッチを改造することにより、上限なくたくさんのスライスを作れるようにしたものです。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮しており、REST API を通じてスライスの作成/削除などの操作ができます。
 
 == インストール
 
-スライサブルスイッチ (以下ではスライサブルスイッチと呼びます) を使ってネットワーク仮想化を実際に試してみましょう。スライサブルスイッチは Routing Switch の機能として実装されています。もし Routing Switch をまだインストールしていなければ、次のコマンドでインストールしてください。
+スライス機能付きスイッチを使って、ネットワーク仮想化を実際に試してみましょう。スライス機能付きスイッチのソースコードはルーティングスイッチのリポジトリに入っています。もしルーティングスイッチをまだインストールしていなければ、次のコマンドでインストールしてください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
@@ -35,38 +40,44 @@ $ cd routing_switch
 $ bundle install --binstubs
 ----
 
-=== スライサブルスイッチを起動する
+=== スライス機能付きスイッチを起動する
 
-スライサブルスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、図のネットワークを作ります。Routing Switch のソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
+スライス機能付きスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、<<sliceable_switch_network,図 16-2>> のネットワークを作ります。ルーティングスイッチのソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
 
-image::sliceable_switch_network.png[]
+[[sliceable_switch_network]]
+.スライス機能付きスイッチを実行するネットワーク
+image::sliceable_switch_network.png[caption="図 16-2: "]
 
-スライス機能はルーティングスイッチの機能の一部です。次のように `trema run` に `-- --slicing` オプションを付けると、スライス機能が有効になります。
+スライス機能を有効にするには、ルーティングスイッチの `trema run` に `-- --slicing` オプションを付けてください:
 
 ----
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -- --slicing
 ----
 
-それでは起動したスライサブルスイッチを使って、さっそくいくつかスライスを作ってみましょう。
+それでは起動したスライス機能付きスイッチを使って、さっそくいくつかスライスを作ってみましょう。
 
 === スライスを作る
 
-スライスの作成には Routing Switch に含まれる `slice` コマンドを使います。次の 2 枚のスライス `slice1`、 `slice2` を作ってみましょう。
+スライスの作成には `slice` コマンドを使います。2 枚のスライス `slice1`、 `slice2` を作り、それぞれに 2 台ずつホストを追加してみましょう (<<creating_slices,図 16-3>>)。
 
-image::creating_slices.png[]
+[[creating_slices]]
+.スライスの作成例
+image::creating_slices.png[caption="図 16-3: "]
+
+スライスの追加は `slice add` コマンドです:
 
 ----
 $ ./bin/slice add slice1
 $ ./bin/slice add slice2
 ----
 
-できたスライスにホストを追加します。`host1`、`host2` のポートと MAC アドレスを `slice1` に、`host3`、`host4` の MAC アドレスを `slice2` に、それぞれ登録します。
+`slice add_host` コマンドでスライスにホストを追加します。`host1`、`host4` のポートと MAC アドレスを `slice1` に、`host2` と `host3` を `slice2` に、それぞれ追加します。
 
 ----
 $ ./bin/slice add_host --port 0x1:1 --mac 11:11:11:11:11:11 --slice slice1
-$ ./bin/slice add_host --port 0x2:1 --mac 22:22:22:22:22:22 --slice slice1
-$ ./bin/slice add_host --port 0x3:1 --mac 33:33:33:33:33:33 --slice slice2
-$ ./bin/slice add_host --port 0x4:1 --mac 44:44:44:44:44:44 --slice slice2
+$ ./bin/slice add_host --port 0x6:1 --mac 44:44:44:44:44:44 --slice slice1
+$ ./bin/slice add_host --port 0x4:1 --mac 22:22:22:22:22:22 --slice slice2
+$ ./bin/slice add_host --port 0x5:1 --mac 33:33:33:33:33:33 --slice slice2
 ----
 
 ネットワークがスライスにうまく分割できているか、パケットを送って確認してみましょう。
@@ -78,52 +89,52 @@ $ ./bin/slice add_host --port 0x4:1 --mac 44:44:44:44:44:44 --slice slice2
 1. 同じスライスに属するホスト間で通信できること
 2. 異なるスライスに属するホスト間で通信できないこと
 
-これは今までやってきた通り、`trema send_packet` と `trema show_stats` コマンドで簡単に確認できます。たとえば同じスライス slice1 に属するホスト host1 と host2 で通信できることを確認するには次の通りです。
+これは今までやってきた通り、`trema send_packet` と `trema show_stats` コマンドで簡単に確認できます。たとえば同じスライス `slice1` に属するホスト `host1` と `host4` で通信できることを確認するには、おたがいにパケットを 1 つずつ送信し、それぞれのホストでパケットを 1 つずつ受信できているかどうかを見ます。
 
 ----
-$ ./bin/trema send_packet --source host1 --dest host2
-$ ./bin/trema send_packet --source host2 --dest host1
-$ ./bin/trema show_stats host1
-Packets sent:
-  192.168.0.1 -> 192.168.0.2 = 1 packet
-Packets received:
-  192.168.0.2 -> 192.168.0.1 = 1 packet
-$ ./bin/trema show_stats host2
-Packets sent:
-  192.168.0.2 -> 192.168.0.1 = 1 packet
-Packets received:
-  192.168.0.1 -> 192.168.0.2 = 1 packet
-----
-
-問題なく通信できています。それでは異なるスライス間での通信はどうでしょう。これも次のように簡単に確認できます。
-
-----
-$ ./bin/trema reset_stats host1
 $ ./bin/trema send_packet --source host1 --dest host4
 $ ./bin/trema send_packet --source host4 --dest host1
 $ ./bin/trema show_stats host1
 Packets sent:
   192.168.0.1 -> 192.168.0.4 = 1 packet
 Packets received:
-  192.168.0.2 -> 192.168.0.1 = 1 packet
+  192.168.0.4 -> 192.168.0.1 = 1 packet
 $ ./bin/trema show_stats host4
 Packets sent:
   192.168.0.4 -> 192.168.0.1 = 1 packet
+Packets received:
+  192.168.0.1 -> 192.168.0.4 = 1 packet
 ----
 
-たしかに、slice1 の host1 から slice2 の host4 へのパケットは届いていません。以上で、1 つのネットワークが 2 つの独立したスライスにうまく分割できていることを確認しました。
+たしかに問題なく通信できています。それでは異なるスライス間での通信はどうでしょう。同様に調べてみましょう。
+
+----
+$ ./bin/trema reset_stats host1
+$ ./bin/trema send_packet --source host1 --dest host2
+$ ./bin/trema send_packet --source host2 --dest host1
+$ ./bin/trema show_stats host1
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+$ ./bin/trema show_stats host2
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+----
+
+// TODO: trema reset_stats コマンドを実装
+
+たしかに、`slice1` の `host1` から `slice2` の `host2` へのパケットは届いていません。以上から、1 つのネットワークが 2 つの独立したスライスにうまく分割できていることが確認できました。
 
 == REST API を使う
 
-スライサブルスイッチは OpenStack など
-のミドルウェアと連携するための REST API を提供しています。REST API はプログラミング言語を問わず使えるため、スライサブルスイッチの持つ仮想ネットワーク機能をさまざまなミドルウェアに簡単に組込めます。
+スライス機能付きスイッチは OpenStack などのミドルウェアと連携するための REST API を提供しています。REST API はプログラミング言語を問わず使えるため、スライス機能付きスイッチの持つ仮想ネットワーク機能をさまざまなミドルウェアに簡単に組込めます。
 
-スライサブルスイッチの REST API は Rack (http://rack.github.io) で動作します （<<rest_overview,図16-2>>)。外部ミドルウェアから HTTP で Rack にアクセスすると、リクエストをスライサブルスイッチへ送信し、スライサブルスイッチはこの内容をネットワークへと反映します。
+スライス機能付きスイッチの REST API は Ruby の HTTP サーバー実装である WEBrick で動作します （<<rest_overview,図16-4>>)。WEBrick に「スライスの作成」や「ホストの追加」といったリクエストを HTTP で送ると、WEBrick はリクエスト内容をスライス機能付きスイッチ経由でネットワークへと反映します。また、現在のスライスやホストの状態も同様に REST API 経由で取得できます。
 
 [[rest_overview]]
-image::rest_overview.png[caption="図16-2",title="スライサブルスイッチの REST API 構成"]
+.スライス機能付きスイッチの REST API 構成
+image::rest_overview.png[caption="図16-4: "]
 
-REST API の起動は次のコマンドです。スライサブルスイッチを起動した後に `rackup` コマンドを実行します。
+REST API の起動は次のコマンドです。スライス機能付きスイッチを起動した後に `rackup` コマンドで WEBrick を起動します。
 
 ----
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -d -- --slicing
@@ -140,7 +151,7 @@ REST API 経由でスライスを作るには、スライスの情報が入っ�
 {"name": "yutaro_slice"}
 ----
 
-`curl` コマンドを使えば、手軽に REST サーバとやりとりできます。次のコマンドでは、`/slices` という URI に HTTP POST メソッドでこの JSON を送ります。rack のデフォルト待ち受けポートは 9292 です。
+次にこの JSON を /slices という URI に HTTP POST メソッドで送ります。`curl` コマンドを使えば、次のように手軽に REST サーバとやりとりできます。なお REST サーバである WEBrick のデフォルト待ち受けポートは 9292 です。
 
 ----
 $ curl -sS -X POST -d ’{"name": "yutaro_slice"}’ 'http://localhost:9292/slices' -H Content-Type:application/json -v
@@ -148,6 +159,7 @@ $ curl -sS -X POST -d ’{"name": "yutaro_slice"}’ 'http://localhost:9292/slic
 
 成功すると次のようにスライスの作成成功を示す HTTP ステータスコード 201 が返ってきます。
 
+[source,subs="verbatim,attributes"]
 ----
 * Hostname was NOT found in DNS cache
 *   Trying 127.0.0.1...
@@ -160,7 +172,7 @@ $ curl -sS -X POST -d ’{"name": "yutaro_slice"}’ 'http://localhost:9292/slic
 > Content-Length: 21
 >
 * upload completely sent off: 21 out of 21 bytes
-< HTTP/1.1 201 Created
+< HTTP/1.1 201 Created # <1>
 < Content-Type: application/json
 < Content-Length: 21
 * Server WEBrick/1.3.1 (Ruby/2.0.0/2014-10-27) is not blacklisted
@@ -171,17 +183,19 @@ $ curl -sS -X POST -d ’{"name": "yutaro_slice"}’ 'http://localhost:9292/slic
 * Connection #0 to host localhost left intact
 {"name": "yutaro_slice"}
 ----
+<1> スライス作成成功を示す HTTP ステータスコード 201
 
 === スライスにホストを追加する
 
-作ったスライスにはホストを追加できます。ホストのつながっているスイッチポートの dpid + ポート番号 + MAC アドレスでホストを一意に特定します。これをホスト追加の URI である `/slices/:slice_id/ports/:port_id/mac_addresses` に HTTP POST メソッドで送ります。たとえば、スライス `yutaro_slice` に dpid = 0x1, ポート番号 = 1, MAC アドレス = 11:11:11:11:11:11 のホストを追加するには次のようになります。
+作ったスライスにはホストを追加できます。追加するホストを指定するには、ホストのつながっているスイッチの dpid とポート番号、そしてホストの MAC アドレスを使います。これをホスト追加の URI である `/slices/:slice_id/ports/:port_id/mac_addresses` に HTTP POST メソッドで送ります。たとえば、スライス `yutaro_slice` に dpid = 0x1, ポート番号 = 1, MAC アドレス = 11:11:11:11:11:11 のホストを追加するコマンドは次のようになります。
 
 ----
 $ curl -sS -X POST -d ’{"name": "11:11:11:11:11:11"}’ 'http://localhost:9292/slices/yutaro_slice/ports/0x1:1/mac_addresses' -H Content-Type:application/json -v
 ----
 
-次のようにスライスの作成成功を示す HTTP ステータスコード 201 が返ってくれば成功です。
+次のようにホスト追加の成功を示す HTTP ステータスコード 201 が返ってくれば成功です。
 
+[source,subs="verbatim,attributes"]
 ----
 [{"name": "11:11:11:11:11:11"}]
 * Hostname was NOT found in DNS cache
@@ -196,7 +210,7 @@ $ curl -sS -X POST -d ’{"name": "11:11:11:11:11:11"}’ 'http://localhost:9292
 >
 } [data not shown]
 * upload completely sent off: 29 out of 29 bytes
-< HTTP/1.1 201 Created
+< HTTP/1.1 201 Created # <1>
 < Content-Type: application/json
 < Content-Length: 31
 * Server WEBrick/1.3.1 (Ruby/2.0.0/2014-10-27) is not blacklisted
@@ -207,105 +221,122 @@ $ curl -sS -X POST -d ’{"name": "11:11:11:11:11:11"}’ 'http://localhost:9292
 { [data not shown]
 * Connection #0 to host localhost left intact
 ----
+<1> ホスト追加成功を示す HTTP ステータスコード 201
 
 === スライスの構成を見る
 
-これまでの設定がきちんと反映されているか確認してみましょう。`/slices/:slice_id` に HTTP GET メソッドでアクセスすることで、スライスの情報を取得できます。先ほど作った `slice_yutaro` スライスの情報を取得してみましょう。
+これまでの設定がきちんと反映されているか確認してみましょう。`/slices/:slice_id/ports` に HTTP GET メソッドでアクセスすることで、スライスに追加したポート一覧を取得できます。先ほど作った `slice_yutaro` スライスの情報を取得してみましょうfootnote:[`curl` の出力を短くするために、冗長オプション (`-v`) は省略しています]。
 
 ----
-$ curl -sS -X GET 'http://localhost:9292/slices/yutaro_slice' -v
-{"name": "foo"}
-* Hostname was NOT found in DNS cache
-*   Trying 127.0.0.1...
-* Connected to localhost (127.0.0.1) port 9292 (#0)
-> GET /slices/foo HTTP/1.1
-> User-Agent: curl/7.35.0
-> Host: localhost:9292
-> Accept: */*
->
-< HTTP/1.1 200 OK
-< Content-Type: application/json
-< Content-Length: 15
-* Server WEBrick/1.3.1 (Ruby/2.0.0/2014-10-27) is not blacklisted
-< Server: WEBrick/1.3.1 (Ruby/2.0.0/2014-10-27)
-< Date: Tue, 31 Mar 2015 00:35:24 GMT
-< Connection: Keep-Alive
-<
-{ [data not shown]
-* Connection #0 to host localhost left intact
+$ curl -sS -X GET 'http://localhost:9292/slices/yutaro_slice/ports'
+[{"name": "0x1:1", "dpid": 1, "port_no": 1}]
+----
+
+たしかに、スライス `yutaro_slice` にはスイッチ `0x1` のポート 1 番が追加されています。このポートに接続した `host1` の情報は `/slices/:slice_id/ports/:port_id/mac_addresses` で取得できます。
+
+----
+$ curl -sS -X GET 'http://localhost:9292/slices/yutaro_slice/ports/0x1:1/mac_addresses'
+[{"name": "11:11:11:11:11:11"}]
 ----
 
 ## REST API 一覧
 
-REST API は今回紹介した以外にも便利な API を提供しています。やりとりする JSON データ等の詳しい仕様は https://relishapp.com/trema/routing-switch/docs/rest-api で公開していますので、本格的に使いたい人はこちらも参照してください。
+REST API は今回紹介した以外にも API を提供しています (<<rest_api_table,表 16-1>>)。やりとりする JSON データ等の詳しい仕様は https://relishapp.com/trema/routing-switch/docs/rest-api で公開していますので、本格的に使いたい人はこちらも参照してください。
 
-=== スライス関係
+[[rest_api_table]]
+.表 16-1: REST API 一覧
+|===
+| 動作 | メソッド | URI
 
-- `POST /slices` : スライスの作成
-- `DELETE /slices/:slice_id` : スライスの削除
-- `GET /slices` : スライスの一覧
-- `GET /slices/:slice_id` : スライス情報の取得
+| スライスの作成 | POST | `/slices`
+| スライスの削除 | DELETE | `/slices/:slice_id`
+| スライスの一覧 | GET | `/slices`
+| スライス情報の取得 | GET | `/slices/:slice_id`
+| ポートの追加 | POST | `/slices/:slice_id/ports`
+| ポートの削除 | DELETE | `/slices/:slice_id/ports/:port_id`
+| ポートの一覧 | GET | `/slices/:slice_id/ports`
+| ポート情報の取得 | GET | `/slices/:slice_id/ports/:port_id`
+| MAC アドレスの追加 | POST | `/slices/:slice_id/ports/:port_id/mac_addresses`
+| MAC アドレスの削除 | DELETE | `/slices/:slice_id/ports/:port_id/mac_addresses/:mac_address_id`
+| MAC アドレスの一覧 | GET | `/slices/:slice_id/ports/:port_id/mac_addresses`
+| MAC アドレス情報の取得 | GET `/slices/:slice_id/ports/:port_id/mac_addresses/:mac_address_id`
+|===
 
-=== ポート関係
+== スライス機能付きスイッチの実装
 
-- `POST /slices/:slice_id/ports` : ポートの追加
-- `DELETE /slices/:slice_id/ports/:port_id` : ポートの削除
-- `GET /slices/:slice_id/ports` : ポートの一覧
-- `GET /slices/:slice_id/ports/:port_id` : ポート情報の取得
-
-=== MAC アドレス関係
-
-- `POST /slices/:slice_id/ports/:port_id/mac_addresses` : MAC アドレスの追加
-- `DELETE /slices/:slice_id/ports/:port_id/mac_addresses/:mac_address_id` : MAC アドレスの削除
-- `GET /slices/:slice_id/ports/:port_id/mac_addresses` : MAC アドレスの一覧
-- `GET /slices/:slice_id/ports/:port_id/mac_addresses/:mac_address_id` : MAC アドレス情報の取得
-
-== スライスの実現方法
-
-実はこのスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの機能追加だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライサブルスイッチは次のように動作します（<<sliceable_switch_internals,図16-3>>）。
+実はスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの改造だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライス機能付きスイッチは次のように動作します（<<sliceable_switch_internals,図16-5>>）。
 
 [[sliceable_switch_internals]]
-image::sliceable_switch_internals.png[caption="図16-3",title="スライサブルスイッチの動作"]
+.スライス機能付きスイッチの動作
+image::sliceable_switch_internals.png[caption="図 16-5: "]
 
-1. パケットの道順を指定するためのトポロジ情報を収集する
-2. スイッチが受信したパケットをPacket Inメッセージで受け取る
-3. FDBを検索し、宛先であるホストが接続するスイッチとポート番号を決定する
-4. パケットを受信したポートと宛先ホストが接続するポートとが同じスライスに属するか判定する。もし同じスライスではない場合にはパケットを捨て、以降の処理は行わない
-5. Packet Inを出したスイッチから出口となるスイッチまでの最短パスをステップ1で収集したトポロジ情報を使って計算する
-6. この最短パスに沿ってパケットが転送されるよう、パス上のスイッチそれぞれにFlow Modを送りフローエントリを書き込む
-7. 最初のPacket Inを起こしたパケットも宛先に送るために、出口となるスイッチにPacket Outを送る
+1. ホスト 1 がホスト 4 宛てにパケットを送信すると、ルーティングスイッチはこのパケットを Packet In としてスイッチ 1 から受け取る (この Packet In の in_port をポート s とする)
+2. ルーティングスイッチはあらかじめ収集しておいたトポロジ情報 (<<topology,第14章>>) を検索し、宛先のホスト 4 が接続するスイッチ (スイッチ 6) とポート番号 (ポート g とする) を得る
+3. ポート s とポート g が同じスライスに属するか判定する。もし同じスライスではない場合にはパケットを捨て、以降の処理は行わない
+4. ポート s から宛先のポート g までの最短パスをトポロジ情報から計算する。その結果、ポート s → スイッチ 1 → スイッチ 5 → スイッチ 6 → ポート g というパスを得る
+5. この最短パスに沿ってパケットを転送するフローエントリを書き込むために、ルーティングスイッチはパス上のスイッチそれぞれに Flow Mod を送る
+6. Packet In を起こしたパケットを宛先に送るために、ルーティングスイッチはスイッチ 6 に Packet Out (ポート g) を送る
 
-スライサブルスイッチがルーティングスイッチと異なるのは、ステップ4が付け加えられている点だけです。ステップ4では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ以外はルーティングスイッチとまったく同じです。
+スライス機能付きスイッチがルーティングスイッチと異なるのは、ステップ 3 を追加した点だけです。ステップ 3 では送信元と宛先ホストがそれぞれ同じスライスに属しているかを判定し、同じスライスに所属している場合のみパケットを転送します。それ以外はルーティングスイッチとまったく同じです。
 
-== スライサブルスイッチのソースコード
+== スライス機能付きスイッチのソースコード
 
-スライサブルスイッチは<<routing_switch,15章>>で紹介したルーティングスイッチのエクステンションとして動作します。ルーティングスイッチにスライスを管理するSliceクラスを新たに導入し、パスを管理するPathManagerクラスをスライスに対応したPathInSliceManagerクラスに置き換えることで、ルーティングスイッチがスライサブルスイッチにグレードアップします。
+スライス機能は、ルーティングスイッチに次の新たなクラス 2 個を追加することで実現しています (<<sliceable_switch_classes, 図 16-6>>)。
 
-// TODO: クラス構造の図を載せる
-// TODO: ルーティングスイッチのクラス図もこれに合わせて更新
+PathInSliceManager クラス:: スライス内のパスを管理するコントローラの本体
+Slice クラス:: スライスを管理する
 
-Sliceクラスはスライスの追加・削除や検索といったクラスメソッドのほか、スライスへのポートやホストの追加・削除といったスライスの管理機能を提供します。
+[[sliceable_switch_classes]]
+.スライス機能付きスイッチを構成するクラス
+image::sliceable_switch_classes.png[caption="図 16-6: "]
 
-// TODO: 各コードに簡単な説明を追加
+// TODO: 実線と点線の矢印の説明を加える
+// TODO: Slice と Path クラスのメソッド一覧を更新
+// TODO: ルーティングスイッチのクラス図もスライス機能付きスイッチの図に合わせて更新
+
+=== PathInSliceManager クラス
+
+PathInSliceManager クラスは `packet_in` ハンドラでパケットの送信元と宛先が同じスライスに属するかどうかを判定します。それ以外の動作は PathManager クラスと同じなので、PathInSliceManager は PathManager を継承し `packet_in` ハンドラだけをオーバーライドします。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
+<<<<<<< HEAD
 .スライスの追加 (lib/slice.rb)
+=======
+.PathInSliceManager#packet_in
+>>>>>>> a595d349ee7d51f32c7cd69fc249137b536f2e14
 ----
-include::{sourcedir}/lib/slice.rb[lines="17..22"]
+include::{sourcedir}/lib/path_in_slice_manager.rb[lines="14..26"]
 ----
 
+<<<<<<< HEAD
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスの削除 (lib/slice.rb)
 ----
 include::{sourcedir}/lib/slice.rb[lines="40..44"]
 ----
 
+=======
+Packet In メッセージが PathInSliceManager へ到着すると、PathInSliceManager は次の方法でパケットを宛先へと届けます。
+
+1. パケットの送信元 MAC アドレスと宛先 MAC アドレスが同じスライスに属するかどうか判定する。もし同じスライスだった場合には、PathManager と同様に最短パスを作り宛先ホストへパケットを届ける
+2. もし同じスライスでなかった場合、パケットをすべての外部ポート (スライス機能付きスイッチが管理するスイッチ以外と接続した全てのポート) へ PacketOut する。つまり、スライスに属していないホストへとばらまくfootnote:[この処理から分かるように、スライスに属していないホスト同士はデフォルトで通信できる仕様になっています]
+
+ステップ 1 で使っている `Slice.find` メソッド (パケットの送信元と宛先が同じスライスに属するかどうか) といったスライスに関わる処理は、次の `Slice` クラスが行います。
+
+=== Slice クラス
+
+Slice クラスはスライスの管理クラスです。スライスの追加・削除や検索といったクラスメソッドのほか、スライスへのポートやホストの追加・削除といった機能を提供します。
+
+たとえば先ほど使った `Slice.find` メソッドは、スライスの一覧 (`all`) に対して同じ `find` メソッドを呼び出すだけです。
+
+>>>>>>> a595d349ee7d51f32c7cd69fc249137b536f2e14
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスの検索 (lib/slice.rb)
 ----
-include::{sourcedir}/lib/slice.rb[lines="25..38"]
+include::{sourcedir}/lib/slice.rb[lines="36..38"]
 ----
 
+<<<<<<< HEAD
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスへのポートの追加 (lib/slice.rb)
 ----
@@ -314,30 +345,37 @@ include::{sourcedir}/lib/slice.rb[lines="58..64"]
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .スライスへのホストの追加 (lib/slice.rb)
+=======
+スライスの追加メソッド `Slice.create` は指定した名前でスライスを作成します。最初に、すでに同じ名前のスライスがないかどうかを `Slice.find_by` で確認します。そして、スライスオブジェクトを `Slice.new` で作ります。作ったスライスはスライス一覧 (`all`) に追加します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.スライスの追加 (lib/slice.rb)
+>>>>>>> a595d349ee7d51f32c7cd69fc249137b536f2e14
 ----
-include::{sourcedir}/lib/slice.rb[lines="89..96"]
+include::{sourcedir}/lib/slice.rb[lines="17..22"]
 ----
 
-// TODO: 以下、書き直し
+`Slice.destroy` は `create` の逆で、スライスの削除メソッドです。最初に、削除しようとした名前のスライスがあるかどうかを `Slice.find_by!` で確認します。そして、削除するスライスに属する最短パス (`Path` オブジェクト) を削除します。最後に、そのスライスをスライス一覧 `all` から消します。
 
-PathInSliceManager クラスは同じスライスに所属するホスト間のみでパケットを転送するという機能を備えています。Packet InメッセージがPathInSliceManagerへ到着すると、PathInSliceManagerは次の方法でパケットを宛先へと届けます。
-
+<<<<<<< HEAD
 1. パケットの送信元MACアドレスと宛先MACアドレスが同じスライスに族するかどうか判定する。もし同じスライスだった場合には、PathManagerと同じ方法で宛先ホストへパケットを届ける
 2. もし同じスライスでなかった場合、パケットをすべての外部ポート(外部と接続しているポート)へPacketOutする。つまり、スライスに属していないホストへとばらまく。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .PathInSliceManager#packet_in
+=======
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.スライスの削除 (lib/slice.rb)
+>>>>>>> a595d349ee7d51f32c7cd69fc249137b536f2e14
 ----
-include::{sourcedir}/lib/path_in_slice_manager.rb[lines="14..26"]
+include::{sourcedir}/lib/slice.rb[lines="40..44"]
 ----
-
-なお 2 つめの処理から分かるように、スライスに属していないホスト同士は通信できる仕様となっています。
 
 == まとめ
 
-Hello Tremaから始めたTremaプログラミングも、いつの間にか本格的なクラウドを作れるまでになりました！
+Hello Trema から始めた Trema プログラミングも、いつの間にか本格的なクラウド用ネットワークを作れるまでになりました！
 
-- ネットワークを仮想的に分割して使うためのスライサブルスイッチが、同一のスライス内の通信のみを許可する仕組み
+- スライス機能付きスイッチが同一のスライス内の通信のみを許可する仕組み
 - クラウド構築ミドルウェアからスライスを設定するためのREST APIの使い方
 
-次章ではTremaを使った商用IaaSの1つであるOpenVNetのアーキテクチャを紹介します。本章で解説したスライサブルスイッチとはまったく異なる「分散Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
+次章では Trema を使った商用 IaaS の 1 つである OpenVNet のアーキテクチャを紹介します。本章で解説したスライス機能付きスイッチとはまったく異なる「分散 Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
