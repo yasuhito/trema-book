@@ -1,6 +1,6 @@
 = Hello, Trema!
 :sourcedir: vendor/hello_trema
-:imagesdir: images/openflow_framework_trema
+:imagesdir: images/hello_trema
 
 // TODO asciidocで「トレマ」をルビ表示にする
 
@@ -58,7 +58,8 @@ Tremaの名前は、著者の一人がファンである「とれまレコード
 この「とれまレコード」の名前にも面白い由来があります。日本がバブルの頃、道路の「とまれ」という標示がよく「とれま」と間違えて描かれており、これに目をつけたレーベルオーナーが「とれまレコード」と名付けたのだそうです。そしてもともと、このありえないミスの原因は、バブル景気時代に急増した外国人労働者達が、日本語もままならないまま工事現場で働いていたということにあります。
 
 [[trema_logo]]
-image::trema_logo.png[caption="図2-a",title="Tremaの公式ロゴ"]
+.Tremaの公式ロゴ
+image::trema_logo.png[caption="図 2-a: "]
 
 この逸話にのっとって、Tremaの公式ロゴも<<trema_logo,図2-a>>のとおり道路標識の写真になっています。ちなみに、こんな道路標識は日本中どこを探してもありません! 本書の編集者が画像編集ソフトで試しに作ってみたところ評判が良かったので、そのまま公式ロゴになりました。
 ====
@@ -253,8 +254,8 @@ $
 たとえば先ほどの「Hello, Trema!」で見たように、`trema run` はコントローラを起動するためのコマンドです。起動したコントローラは OpenFlow スイッチと接続しメッセージをやりとりします。また、`trema run` コマンドは `-c` (`--conf`) オプションで仮想ネットワークを作ることもでき、作ったコントローラをこの仮想ネットワークの中でテストできます(<<trema_run_command,図2-1>>)。
 
 [[trema_run_command]]
-image::trema_overview.png[caption="図2-1",title="trema runコマンドの実行イメージ"]
-// TODO 図から実ネットワークを消して、-cオプションと仮想ネットワークの対応を付ける
+.trema runコマンドの実行イメージ
+image::trema_overview.png[caption="図 2-1: "]
 
 `trema` コマンドは `git` や `svn` コマンドと似たコマンド体系を持っており、`trema` に続けて `run` などのサブコマンドを指定することでさまざまな機能を呼び出します。`trema` コマンドは Trema フレームワークにおける中心的なツールで、あらゆるコントローラ開発の出発点と言えます。こうしたコマンド体系を一般に「コマンドスイート」と呼びます。
 
