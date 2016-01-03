@@ -184,7 +184,6 @@ $ cd hello_trema
 [NOTE]
 ====
 テスト関連のディレクトリ (`features/` と `spec/`) の用途については、第 9 章「<<tdd,Trema でテスト駆動開発>>」で詳しく説明します。
-// TODO 第7章にリンクを張る
 ====
 
 ==== コントローラ本体の実装
@@ -584,12 +583,8 @@ logger.info 'Hello ' + dpid.to_hex + '!'
 
 Rubyプログラミングが初めてという人達のために、この章では入門に役立つサイトや本をいくつか紹介します。
 
-- 「Why’s (Poignant) Guide to Ruby」(http://mislav.uniqpath.com/poignant-guide/)
- 筆者は大学や職場でいろいろなプログラミング言語を勉強してきましたが、これほど読んでいて楽しい本に出会ったことはありません。この本はRuby会の謎の人物_why氏による風変わりなRuby入門で、プログラミング言語の解説書にもかかわらずまるで小説やマンガのようにリラックスして読めます。この章のRubyの品詞の説明は、この本を参考にしました(日本語版はhttp://www.aoky.net/articles/why_poignant_guide_to_ruby/)
-- 「TryRuby」(http://tryruby.org/)
- 同じく_why氏による、ブラウザで動くRuby環境です。Rubyを試してみたいけどインストールするのが面倒という人は、まずはここでRubyを試してみましょう。`help` と打つと15分の短いRubyチュートリアルが始まります。
-- 『プログラミングRuby第2版』(Dave Thomas、Chad Fowler、Andrew Hunt著／田和勝、まつもとゆきひろ 訳／オーム社) 
-Rubyの完全なリファレンスです。本気でRubyを勉強したい人は持っていて損はしません。リファレンスが必要ならこの本だけあれば十分です。
+「Ruby 2.2.0 リファレンスマニュアル」 (http://docs.ruby-lang.org/ja/2.2.0/doc/index.html):: Ruby の完全なリファレンスです。Ruby でプログラミングする際は参照しましょう
+「メタプログラミングRuby 第2版」(Paolo Perrotta 著／角 征典 訳／オライリージャパン):: Ruby プログラムを短く簡潔に書くためのテクニックをたくさん紹介しています。「プロっぽい」 Ruby コードを書きたい人は必読です
+「Why’s (Poignant) Guide to Ruby」(http://mislav.uniqpath.com/poignant-guide/) footnote:[日本語版は http://www.aoky.net/articles/why_poignant_guide_to_ruby/]:: 筆者は大学や職場でいろいろなプログラミング言語を勉強してきましたが、これほど読んでいて楽しいドキュメントに出会ったことはありません。この本はRuby会の謎の人物_why氏による風変わりなRuby入門で、プログラミング言語の解説書にもかかわらずまるで小説やマンガのようにリラックスして読めます。この章のRubyの品詞の説明は、このドキュメントを参考にしました
 
-// TODO この本を読む人はRubyをインストールすること前提だから、TryRubyはちょっと違うと思う。あといきなり\_whyの本を紹介するのもめちゃくちゃなので、最初は無難な本を紹介するのがいいと思う
 // TODO asciidoc のbib形式に変換
