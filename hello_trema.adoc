@@ -6,7 +6,7 @@
 
 Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これでいよいよあなたもOpenFlowプログラマの仲間入りです!
 
-image::izakaya.png[Izakaya,600,400]
+image::izakaya.png[]
 
 == 作ってわかるOpenFlow
 
