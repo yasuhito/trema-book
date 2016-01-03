@@ -3,6 +3,15 @@
 ## develop
 
 
+## 0.18.0 (1/3/2016)
+* OpenFlow 仕様章をアップデート
+* [#150](https://github.com/yasuhito/trema-book/pull/150): スライサブルスイッチ章をアップデート
+* [#151](https://github.com/yasuhito/trema-book/pull/151): ルーティングスイッチ章をアップデート
+* [#152](https://github.com/yasuhito/trema-book/pull/152): Hello Trema 章をアップデート
+* [#153](https://github.com/yasuhito/trema-book/pull/153): スイッチモニタ章をアップデート
+* そのほか細かい typo 修正など細かい修正たくさん
+
+
 ## 0.17.0 (12/26/2015)
 * [#136](https://github.com/yasuhito/trema-book/pull/136): ルーティングスイッチ章をアップデート
 * trema コマンドのリファレンスをいくつか追加
