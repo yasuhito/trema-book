@@ -108,7 +108,7 @@ image::pattern3.png[caption="図10-5",title="レガシーネットワークとOp
 
 逆流防止フィルタ（OneWayBridge コントローラ）のソースコードは GitHub の trema/one_way_bridge リポジトリ (https://github.com/trema/one_way_bridge) からダウンロードできます。このコントローラは、Packet In と Flow Removed のハンドラだけを定義したとてもシンプルなものです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/one_way_bridge.rb
 ----
 include::{sourcedir}/lib/one_way_bridge.rb[]
@@ -127,7 +127,7 @@ image::oneway_bridge.png[caption="図10-6",title="逆流防止フィルタ（One
 
 この物理構成をTrema設定ファイルにしたものが以下です。仮想リンク（`link` で始まる行）の端点にインターフェース名eth0、eth1を指定していることに注目してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル
 ----
 vswitch ('bridge') {

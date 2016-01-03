@@ -44,7 +44,7 @@ $ git clone https://github.com/trema/patch_panel.git
 ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaとパッチパネルのソースコード一式を自動的にインストールできます。
 
 ----
-$ cd cbench
+$ cd patch_panel
 $ bundle install --binstubs
 ----
 
@@ -60,7 +60,7 @@ $ bundle install --binstubs
 
 仮想ネットワーク設定ファイル `patch_panel.conf` では、パッチパネルの動作テストのためにパケットを送受信できる仮想ホストを定義しています。`vhost` で始まる行が仮想ホスト、そして `link` で始まる行がスイッチやホストをつなげるための仮想リンクです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .patch_panel.conf
 ----
 include::{sourcedir}/patch_panel.conf[]
@@ -127,7 +127,7 @@ Packets received:
 パッチパネルのソースコードは<<patch_panel.rb>>になります。
 
 [[patch_panel.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/patch_panel.rb
 ----
 include::{sourcedir}/lib/patch_panel.rb[]
@@ -145,7 +145,7 @@ include::{sourcedir}/lib/patch_panel.rb[]
 === startハンドラ
 startハンドラではコントローラを初期化します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#start (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
@@ -163,7 +163,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="3..6"]
 
 ハッシュテーブルは中カッコで囲まれた (`{}`) 辞書です。辞書とは「言葉をその定義に対応させたデータベース」です。Rubyでは、この対応を `:` という記号で次のように表します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 animals = { armadillo: 'アルマジロ', boar: 'イノシシ' }
 ----
@@ -172,7 +172,7 @@ animals = { armadillo: 'アルマジロ', boar: 'イノシシ' }
 
 // TODO ここでシンボルを使うことの説明
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 animals[:boar] #=> "イノシシ"
 ----
@@ -181,21 +181,21 @@ animals[:boar] #=> "イノシシ"
 
 新しい動物を辞書に加えるのも簡単です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 animals[:cow] = 'ウシ'
 ----
 
 Rubyのハッシュテーブルはとても高機能なので、文字列だけでなく好きなオブジェクトを格納できます。たとえば、パッチパネルでは Datapath ID をキーとして、パッチング情報 (配列) をバリューにします。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 @patch[0x1] = [[1, 2], [3, 4]]
 ----
 
 実は、すでにいろんなところでハッシュテーブルを使ってきました。たとえば、`send_flow_mod_add` などの省略可能なオプションは、コロン (`:`) を使っていることからもわかるように実はハッシュテーブルなのです。Rubyでは、引数の最後がハッシュテーブルである場合、その中カッコを次のように省略できます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def flow_mod(message, port_no)
   send_flow_mod_add(
@@ -221,7 +221,7 @@ end
 === switch_readyハンドラ
 `switch_ready` ハンドラでは、起動してきたスイッチに対してパッチング用のフローエントリを書き込みます。すでにパッチ情報 `@patch` にフローエントリ情報が入っていた場合(スイッチがいったん停止して再接続した場合など)のみ、フローエントリを入れ直します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#switch_ready (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="8..13"]
@@ -234,7 +234,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="8..13"]
 === add_flow_entriesメソッド
 1つのパッチ(2つのフローエントリ)を実際に書き込むのが `add_flow_entries` プライベートメソッドです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#add_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="27..34"]
@@ -242,7 +242,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="27..34"]
 
 `add_flow_entries` の中で2回呼び出している `send_flow_mod_add` がフローエントリを書き込むためのメソッドです。このメソッドは次の2つの引数を取ります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 send_flow_mod_add(dpid, options)
 ----
@@ -254,7 +254,7 @@ send_flow_mod_add(dpid, options)
 
 オプションの具体例として、最初の `send_flow_mod_add` の呼び出し部分を見てみましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#add_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="28..30"]
@@ -268,7 +268,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="28..30"]
 === delete_flow_entriesメソッド
 `delete_flow_entries` は古いフローエントリを消すメソッドです。`add_flow_entries` でフローエントリを足す前に、いったん `delete_flow_entries` で古いフローエントリを消すことでフローエントリが重複しないようにします。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#delete_flow_entries (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="36..39"]
@@ -279,7 +279,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="36..39"]
 === create_patch, delete_patchメソッド
 `create_patch` と `delete_patch` メソッドはパッチの作成と削除を行うためのインタフェースです。これらのメソッドは `bin/patch_panel` コマンドから呼び出されます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#create_patch (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="15..18"]
@@ -287,7 +287,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="15..18"]
 
 `create_patch` メソッドは、`add_flow_entries` メソッドでフローエントリを追加し、パッチ設定 `@patch` にパッチ情報を追加します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .PatchPanel#delete_patch (lib/patch_panel.rb)
 ----
 include::{sourcedir}/lib/patch_panel.rb[lines="20..23"]
@@ -300,7 +300,7 @@ include::{sourcedir}/lib/patch_panel.rb[lines="20..23"]
 `PatchPanel` クラスの `create_patch` と `delete_patch` メソッドを呼び出すコマンドが `bin/patch_panel` です。`create` と `delete` という 2 つのサブコマンドを持っています。
 
 [[patch_panel_command]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .bin/patch_panel
 ----
 include::{sourcedir}/bin/patch_panel[]
@@ -308,7 +308,7 @@ include::{sourcedir}/bin/patch_panel[]
 
 それぞれのサブコマンドの実装には gli (https://github.com/davetron5000/gli) というRubyライブラリを使っています。gliを使うと、いわゆるコマンドスイートを簡単に実装できます。以下のように、サブコマンドごとに `command サブコマンド名 do ... end` のブロックを記述することで、サブコマンドを作ることができます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .bin/patch_panel
 ----
 # patch_panelコマンド
@@ -334,7 +334,7 @@ end
 
 ここでのポイントは、それぞれのサブコマンド内での `PatchPanel` クラスのメソッド呼び出し部分です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 Trema.trema_process('PatchPanel', options[:socket_dir]).controller.create_patch(dpid, port1, port2)
 ----

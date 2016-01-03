@@ -10,7 +10,7 @@ $ ./bin/trema netns ネットワークネームスペース名 [コマンド]
 
 仮想ネットワーク設定で `host1`, `host2` という名前の 2 つのネットワークネームスペースをそれぞれ次のように定義し、コントローラを実行したとする。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 vswitch { dpid 0x1 }
@@ -36,7 +36,7 @@ link '0x1', 'host2'
 $ ./bin/trema run my_controller.rb -c trema.conf
 ----
 
-このときネットワークネームスペース `host1` 内でシェルを起動するには、`trema netns` の引数にネットワークネームスペース名を次のように渡す。実行したシェルは `exit` または `Ctrl + d` で停止できる。
+このときネットワークネームスペース `host1` 内でシェルを起動するには、`trema netns` の引数にネットワークネームスペース名を次のように渡す。実行したシェルは `exit` または kbd:[Ctrl + d] で停止できる。
 
 ----
 $ ./bin/trema netns host1

@@ -13,5 +13,6 @@ file 'index.html' => ADOC do |t|
      '-a icons=font '\
      '-a toc=left '\
      '-a source-highlighter=coderay '\
+     '-a experimental '\
      "-d book index.adoc --out-file #{t.name}"
 end

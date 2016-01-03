@@ -4,7 +4,7 @@
 
 ==== 概要
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 def start(args)
   # ...
@@ -24,7 +24,7 @@ $ ./bin/trema run ./lib/topology_controller.rb -c fullmesh.conf -- graphviz /tmp
 
 典型的な `start` ハンドラでは、ユーザが trema run で指定したコントローラの起動オプションを次のようにパースする:
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema/topology の lib/topology_controller.rb より抜粋
 ----
 def start(args)
@@ -40,7 +40,7 @@ end
 
 もし `args` 引数を使わない場合には、次のように名前をアンダーバーで始める (`_args`) ことで、使っていないことを明らかにする。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema/hello_trema の lib/hello_trema.rb より抜粋
 ----
 def start(_args)
