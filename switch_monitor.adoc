@@ -2,23 +2,26 @@
 :sourcedir: vendor/switch_monitor
 :imagesdir: images/switch_monitor
 
-// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
-// TODO all_switches_in_string メソッドの説明を書く
+// TODO: Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
+// TODO: all_switches_in_string メソッドの説明を書く
 
 OpenFlowの一番の特長は、たくさんのスイッチを1つのコントローラで集中管理できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験してみましょう。
 
+image::scope.png[Scope,600,600]
+
 == ネットワークを集中管理しよう
 
-OpenFlowの特長は「たくさんのスイッチを1つのコントローラで集中制御できる」という点にありました。スイッチにはフローテーブルに従ったパケットの転送という単純な仕事だけをやらせ、頭脳であるコントローラが全体のフローテーブルを統括するというわけです。これによって<<how_does_openflow_work,1章>>で見てきたように、自動化やシステム連携のしやすさ、ネットワークトラフィック制御の容易さ、そしてソフトウェア開発のテクニックやツールの応用といったさまざまなメリットが生まれるのでした。
+OpenFlowの特長は「たくさんのスイッチを1つのコントローラで集中制御できる」という点にありました。スイッチにはフローテーブルに従ったパケットの転送というひとつの仕事だけをやらせ、頭脳であるコントローラが全体のフローテーブルを統括するというわけです。これによって<<how_does_openflow_work,1 章>>で見てきたように、自動化やシステム連携のしやすさ、ネットワークトラフィック制御の容易さ、そしてソフトウェア開発のテクニックやツールの応用といったさまざまなメリットが生まれるのでした。
 
 本章ではこの集中制御の一例として、「スイッチの監視ツール」を作ります。このツールは「今、ネットワーク中にどんなスイッチが動いていて、それぞれがどんな状態か」をリアルタイムに表示します。たくさんあるスイッチ全体が正常に動いているかを確認するのに便利です。
 
 [[switch_monitor_overview]]
-image::switch_monitor_overview.png[caption="図3-1",title="スイッチ監視ツールの動作"]
+.スイッチ監視ツールの動作
+image::switch_monitor_overview.png[caption="図 3-1: "]
 
-スイッチ監視ツールは<<switch_monitor_tool,図3-1>>のように動作します。OpenFlowスイッチは、起動すると指定したOpenFlowコントローラへ接続します。コントローラはスイッチの接続を検知すると、起動したスイッチの情報を表示します。逆にスイッチが予期せぬ障害など何らかの原因で接続を切った場合、コントローラはこれを検知して警告を表示します。
+スイッチ監視ツールは<<switch_monitor_tool,図 3-1>>のように動作します。OpenFlowスイッチは、起動すると指定したOpenFlowコントローラへ接続します。コントローラはスイッチの接続を検知すると、起動したスイッチの情報を表示します。逆にスイッチが予期せぬ障害など何らかの原因で接続を切った場合、コントローラはこれを検知して警告を表示します。
 
-// TODO 警告を表示するのだから、logger.info より警告レベルを上げる
+// TODO: 警告を表示するのだから、logger.info より警告レベルを上げる
 
 == インストール
 
@@ -42,8 +45,6 @@ $ bundle install --binstubs
 
 試しに仮想スイッチ3台の構成でスイッチ監視ツールを起動してみましょう。次の内容の設定ファイルを `switch_monitor.conf` として保存してください。なお、それぞれの `datapath_id` がかぶらないように `0x1`, `0x2`, `0x3` と連番を振っていることに注意してください。
 
-// TODO trema.conf → switch_monitor.conf にファイル名を変更
-
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .switch_monitor.conf
 ----
@@ -52,20 +53,20 @@ include::{sourcedir}/trema.conf[]
 
 この構成でスイッチ監視ツールを起動するには、この設定ファイルを `trema run` の `-c` オプションに渡すのでした。スイッチ監視ツールの出力は次のようになります。
 
-// TODO 重要な行にマーカーで解説する (?)
-// TODO スイッチが 1 台以上みつかったときだけ All = の行を出力するようにコードを修正
-// TODO "Switch 0x○" → "0x○" にコードを修正
+// TODO: スイッチが 1 台以上みつかったときだけ All = の行を出力するようにコードを修正
+// TODO: "Switch 0x○" → "0x○" にコードを修正
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./lib/switch_monitor.rb -c switch_monitor.conf
 SwitchMonitor started.
 All =
-0x3 is up (All = 0x3)
-0x3 manufacturer = Nicira, Inc.
-0x3 hardware info =
-0x3 software info =
-0x3 serial number =
-0x3 description =
+0x3 is up (All = 0x3) # <1>
+0x3 manufacturer = Nicira, Inc. # <2>
+0x3 hardware info = # <3>
+0x3 software info = # <4>
+0x3 serial number = # <5>
+0x3 description = # <6>
 0x1 is up (All = 0x1, 0x3)
 0x1 manufacturer = Nicira, Inc.
 0x1 hardware info =
@@ -81,6 +82,12 @@ All =
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
 ----
+<1> スイッチ 0x3 がコントローラに接続
+<2> スイッチの製造者情報
+<3> スイッチのハードウェア情報 (空)
+<4> スイッチのソフトウェア情報 (空)
+<5> スイッチのシリアル番号 (空)
+<6> スイッチの詳細情報 (空)
 
 `0x1 is up` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。それぞれ続く行には、スイッチの製造者といった詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! 設定ファイルの `vswitch { ... }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
 
@@ -105,8 +112,9 @@ OpenFlowの世界でもこれと同じ用法が踏襲されています。OpenFl
 $ ./bin/trema stop 0x3
 ----
 
-すると、`trema run` を実行したターミナルで新たに ”`0x3 is down`” の行が出力されているはずです。
+すると、`trema run` を実行したターミナルで新たに ”`0x3 is down`” の行が出力されます。
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./switch_monitor.rb -c ./switch_monitor.conf
 SwitchMonitor started.
@@ -121,9 +129,9 @@ All =
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
-0x3 is down (All = 0x1, 0x2)
+0x3 is down (All = 0x1, 0x2) # <1>
 ----
-// TODO 注目すべき行に <数字> で注釈を入れる
+<1> スイッチ 0x3 が停止したことを示すログメッセージ
 
 うまくいきました! それでは逆に、さきほど落した仮想スイッチを再び起動してみましょう。仮想スイッチを起動するコマンドは `trema start` です。
 
@@ -133,6 +141,7 @@ $ ./bin/trema start 0x3
 
 “`0x3 is up`” の行が出力されれば成功です。
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./switch_monitor.rb -c ./switch_monitor.conf
 SwitchMonitor started.
@@ -151,9 +160,9 @@ All = 0x1, 0x2
 ……
 All = 0x1, 0x2
 All = 0x1, 0x2
-0x3 is up (All = 0x1, 0x2, 0x3)
+0x3 is up (All = 0x1, 0x2, 0x3) # <1>
 ----
-// TODO 注目すべき行に <数字> で注釈を入れる
+<1> スイッチ 0x3 がふたたび起動したことを示すログメッセージ
 
 このように、`trema stop` と `trema start` は仮想ネットワークのスイッチを制御するためのコマンドです。引数にスイッチのDatapath IDを指定することで、スイッチを停止または起動してコントローラの反応を確かめられます。
 
@@ -221,7 +230,7 @@ fruits -= [ "テレビ", "たわし" ]
 #=> [ "バナナ", "みかん", "りんご" ]
 ----
 
-配列はRubyで多用するデータ構造で、この他にもたくさんの操作があらかじめ定義されています。もし詳しく知りたい人は<<how_does_openflow_work,第 1 章>>の参考文献で紹介したRubyのサイトや書籍を参照してください。
+配列はRubyで多用するデータ構造で、この他にもたくさんの操作があらかじめ定義されています。もし詳しく知りたい人は<<hello_trema,第 2 章>>の参考文献で紹介したRubyのサイトや書籍を参照してください。
 
 === スイッチの切断を捕捉する
 
@@ -237,12 +246,13 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
 
 === スイッチ一覧を一定時間ごとに表示する
 
-// TODO クラスメソッドの説明
+// TODO: クラスメソッドの説明
 
 スイッチの一覧を一定時間ごとに表示するには、Tremaのタイマー機能を使います。次のように `timer_event` に続いて一定間隔ごとに呼び出したいメソッドと呼び出し間隔を指定しておくと、指定したメソッドが指定された間隔ごとに呼ばれます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
+# 1 年に一度、年をとるクラス
 class Human < Trema::Controller
   timer_event :birthday, 1.year  # <1>
   ...
@@ -257,7 +267,7 @@ class Human < Trema::Controller
 <2> この行から下はプライベートメソッド
 <3> タイマーから呼ばれる `birthday` メソッド
 
-// TODO 1.year が動くかどうかチェック
+// TODO: 1.year が動くかどうかチェック
 
 この定義は `Human` クラス定義の先頭に書けるので、まるで `Human` クラスの属性としてタイマーをセットしているように読めます。このようにTremaではタイマー処理も短く読みやすく書けます。
 
@@ -272,10 +282,10 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="3,30..35"]
 
 クラス名定義直後のタイマー定義より、10秒ごとに `show_all_switches` メソッドを呼んでいることがわかります。
 
-// TODO sec とか min とか hour とか year とかがちゃんと使えるかテスト & 確認、プラス一覧表を入れる
+// TODO: sec とか min とか hour とか year とかがちゃんと使えるかテスト & 確認、プラス一覧表を入れる
 
 ==== シンボル
-// TODO 以下の説明に出てくる、文字列とメソッドの引数をまだ説明していない
+// TODO: 以下の説明に出てくる、文字列とメソッドの引数をまだ説明していない
 
 シンボルは文字列の軽量版と言える品詞です。英字、数字、アンダースコアを含めることができますが、`:a` や `:number` や `:show_all_switches` のように必ずコロンで始めることになっています。シンボルは定数のように一度決めると変更できないので、文字列のようにいつの間にか書き変わっている心配がありません。このため、ハッシュテーブルの検索キーとしてよく使われます。
 
@@ -315,13 +325,15 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
 |===
 | 取得できる情報 | スイッチへ送るメッセージ | ハンドラ名
 
-| スイッチの詳細情報 | `DescriptionStats::Request` | `description_stats_reply` ハンドラ
-| 単一フローエントリの統計情報 | `FlowStats::Request` | `flow_stats_reply` ハンドラ (第○章で説明)
-| 複数フローエントリの統計情報 | `AggregateStats::Request` | `aggregate_stats_reply` ハンドラ (第○章で説明)
-| フローテーブルの統計情報 | `TableStats::Request` | `table_stats_reply` ハンドラ (第○章で説明)
-| スイッチポートの統計情報 | `PortStats::Request` | `port_stats_reply` ハンドラ (第○章で説明)
-| キューの統計情報 | `QueueStats::Request` | `queue_stats_reply` ハンドラ (第○章で説明)
+| スイッチの詳細情報 | `DescriptionStats::Request` | `description_stats_reply`
+| 単一フローエントリの統計情報 | `FlowStats::Request` | `flow_stats_reply`
+| 複数フローエントリの統計情報 | `AggregateStats::Request` | `aggregate_stats_reply`
+| フローテーブルの統計情報 | `TableStats::Request` | `table_stats_reply`
+| スイッチポートの統計情報 | `PortStats::Request` | `port_stats_reply`
+| キューの統計情報 | `QueueStats::Request` | `queue_stats_reply`
 |===
+
+// TODO: 初出の章またはリファレンスへのリンクを追加
 
 == まとめ
 
