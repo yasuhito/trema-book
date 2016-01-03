@@ -464,7 +464,8 @@ end
 実は OpenFlow の仕様には `switch_ready` というメッセージは定義されていません。実は、これは Trema が独自に定義するイベントなのです。`switch_ready` の裏では<<switch_ready,図2-b>>に示す一連の複雑な処理が行われていて、Trema がこの詳細をうまくカーペットの裏に隠してくれているというわけです。
 
 [[switch_ready]]
-image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起こるまで"]
+.switch_ready イベントが起こるまで
+image::switch_ready.png[caption="図 2-b: "]
 
 最初に、スイッチとコントローラがしゃべる OpenFlow プロトコルが合っているか確認します。OpenFlow の Hello メッセージを使ってお互いにプロトコルのバージョンを知らせ、うまく会話できそうか判断します。
 
@@ -493,12 +494,12 @@ def start(_args)
 end
 ----
 
-`logger` はTrema標準のロガーで、ログメッセージの出力はこれを通じて行います。ログメッセージの重要度に応じて、`critical` (重要度 最高)から `debug` (重要度 最低)までの次の6種類のメソッドを選べます。
+`logger` はTrema標準のロガーで、ログメッセージの出力はこれを通じて行います。ログメッセージの重要度に応じて、`unknown` (重要度 最高) から `debug` (重要度 最低) までの次の6種類のメソッドを選べます。
 
-- `critical`: 回復不能なエラー
+- `unknown`: 不明なエラー。重要度にかかわらず常にロギングされる
+- `fatal`: 回復不能なエラー
 - `error`: エラー
 - `warn`: 警告
-- `notice`: 注意が必要な情報
 - `info`: 通常レベルの情報
 - `debug`: デバッグ出力
 
@@ -510,10 +511,10 @@ end
 # ロギングレベルの確認用コード
 class TryLogging < Trema::Controller
   def start(_args)
-    logger.critical 'CRITICAL'
+    logger.unknown 'UNKNOWN'
+    logger.fatal 'FATAL'
     logger.error 'ERROR'
     logger.warn 'WARN'
-    logger.notice 'NOTICE'
     logger.info 'INFO'
     logger.debug 'DEBUG'
   end
@@ -522,14 +523,14 @@ end
 
 // TODO コードは別ファイルにして、rubocopにかける
 
-このコードをたとえば次のようにロギングレベル `notice` で実行すると、`info` と `debug` メッセージは出力されません。
+このコードをたとえば次のようにロギングレベル `warn` で実行すると、`info` と `debug` メッセージは出力されません。
 
 ----
-$ ./bin/trema run try_logging.rb --logging_level notice
-CRITICAL
+$ ./bin/trema run try_logging.rb --logging_level warn
+UNKNOWN
+FATAL
 ERROR
 WARN
-NOTICE
 ----
 
 ログファイルのデフォルトパスは `/tmp/[コントローラのクラス名].log` です。たとえばHelloTremaの場合には `/tmp/HelloTrema.log` になります。ログファイルの出力先ディレクトリを変更するには、`trema run` の `--log_dir` または `-L` オプションを指定します。たとえば次のようにすると、`/var/log/HelloTrema.log` が作られます。
