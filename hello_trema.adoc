@@ -211,9 +211,9 @@ vswitch { datapath_id 0xabc }
 
 この設定ファイルでは0xabcというDatapath IDを持つ1台のソフトウェアスイッチを定義しています。`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一位に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一位な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
 
-==== Tremaのインストール
+==== Trema のインストール
 
-Hello Tremaの実行にはもちろんTremaが必要です。実行に必要なRubyのアプリケーションやライブラリを`Gemfile`というファイルに次のように書いておくと、Hello Trema専用の実行環境を自動的にセットアップできます。
+Hello Trema の実行にはもちろん Trema が必要です。実行に必要な Ruby のアプリケーションやライブラリを `hello_trema` ディレクトリ直下の `Gemfile` というファイルに次のように書いておくと、Hello Trema 専用の実行環境を自動的にセットアップできます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .Gemfile
@@ -222,10 +222,10 @@ source 'https://rubygems.org/' # <1>
 
 gem ‘trema’# <2>
 ----
-<1> gemの取得元として標準的なhttps://rubygems.orgを指定します
-<2> 実行環境にTremaを追加します
+<1> gem の取得元として標準的な https://rubygems.org を指定します
+<2> 実行環境に Trema を追加します
 
-次のコマンドを実行すると、Trema の実行コマンドが `bin/trema` にインストールされます。
+`hello_trema` ディレクトリ直下で次のコマンドを実行すると、Trema の実行コマンド `trema` が `bin/` ディレクトリにインストールされます。
 
 ----
 $ bundle install --binstubs
