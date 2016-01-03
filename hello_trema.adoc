@@ -225,13 +225,15 @@ gem ‘trema’# <2>
 <1> gemの取得元として標準的なhttps://rubygems.orgを指定します
 <2> 実行環境にTremaを追加します
 
-次のコマンドを実行すると、Tremaの実行コマンドがbin/tremaにインストールされます。
+次のコマンドを実行すると、Trema の実行コマンドが `bin/trema` にインストールされます。
 
 ----
 $ bundle install --binstubs
 $ ./bin/trema --version
-trema version 0.5.1
+trema version 0.9.0
 ----
+
+// TODO: 出版前に Trema のバージョンを最新版に更新
 
 実行に最低限必要なコードはこれだけです。それでは細かい部分は後で説明するとして「習うより慣れろ」でさっそく実行してみましょう。
 
