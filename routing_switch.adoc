@@ -179,7 +179,7 @@ Creating path: 11:11:11:11:11:11 -> 0x1:1 -> 0x1:3 -> 0x4:2 -> 0x4:3 -> 0x5:4 ->
 ルーティングスイッチは次の 4 つのクラスが協調して動作します (<<routing_switch_classes,図 15-7>>)。
 
 RoutingSwitch クラス:: スイッチから届く OpenFlow メッセージを振り分けます。OpenFlow スイッチと接続し、スイッチから上がってくる OpenFlow メッセージをその種類に応じて Topology または PathManager へと振り分けます
-Topology クラス (<<topology,第14章>>で紹介):: トポロジの変化イベントを PathManager へ通知します。トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch から受け取り、ネットワークトポロジ上のイベントへ変換し PathManager へ渡します
+TopologyController, Topology クラス (<<topology,第14章>>で紹介):: トポロジの変化イベントを PathManager へ通知します。トポロジ情報の変化に関連する OpenFlow メッセージを RoutingSwitch から受け取り、ネットワークトポロジ上のイベントへ変換し PathManager へ渡します
 PathManager クラス:: ルーティングスイッチの本体です。RoutingSwitch から Packet In メッセージを受け取ると、Topology から受け取るトポロジ情報を元に最短パスを計算し、Path クラスを通じて新しい最短パスをスイッチに反映します
 Path クラス:: パスの生成と削除に必要なフローエントリの操作を一手に引き受けます。FlowMod や FlowModDelete といった OpenFlow メッセージの詳細を PathManager から隠蔽します
 
