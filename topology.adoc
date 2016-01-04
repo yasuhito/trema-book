@@ -109,7 +109,7 @@ Link 0x2-0x3 added: 0x1-0x2, 0x1-0x3, 0x2-0x3
 
 トポロジコントローラはトポロジの変化も検出できます。
 
-[[triangle_conf]]
+[[triangle_port_down]]
 .スイッチ 0x1 のポート 1 番を落としたときのトポロジ
 image::triangle_port_down.png[caption="図 14-8: "]
 
