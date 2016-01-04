@@ -151,44 +151,33 @@ image::graphviz_triangle.png[caption="図 14-9: "]
 
 == トポロジコントローラのソースコード
 
-トポロジコントローラは大きく分けて2つの部品からなります。`TopologyController` クラスがコントローラの本体で、LLDPパケットの送信とトポロジに関する OpenFlow メッセージの処理をします。収集したトポロジ情報は `Topology` クラスが管理します。
+トポロジコントローラは大きく分けて 3 つの部品からなります (<<topology_classes,図 14-10>>)。
 
-=== TopologyController の実装
+`TopologyController` クラス:: コントローラの本体で、LLDPパケットの送信とトポロジに関する OpenFlow メッセージの処理をします
+`Topology` クラス:: 収集したトポロジ情報を管理し、トポロジの変化を View クラスへ通知します
+`View::Text`, `View::Graphviz` クラス:: トポロジをテキストまたは画像で表示します
 
-TopologyController はトポロジ情報に関する OpenFlow メッセージのためのハンドラを持ちます。
+[[topology_classes]]
+.トポロジのクラス構成
+image::topology_classes.png[caption="図 14-10: "]
 
-- `start`: トポロジ情報を管理する `Topology` クラスのインスタンスをインスタンス変数 `@topology` に入れる
-- `switch_ready`: 新しくスイッチが接続してきたら、スイッチのポート情報を知るために Features Request メッセージをスイッチに投げる
-- `switch_disconnected`: スイッチが切断したら、トポロジ情報 (`@topology`) からスイッチを削除する
-- `features_reply`: スイッチから届いた Features Reply に含まれるポート情報のうち、物理ポートでポートが上がっているものを `@topology` に追加する
-- `port_modify`: ポート情報の変更 (ポートのUPとDOWN) を識別し、どちらの場合も `@topology` に反映する
-- `packet_in`: 返ってきた LLDP パケットを元に、`@topology` に新しいリンク情報を登録する
+このクラス分けは、いわゆる MVC モデル (Model-View-Controller) に従っています。`TopologyController` クラスは MVC の Controller にあたり、OpenFlow スイッチとメッセージをやりとりしたり他のクラスをセットアップしたりといった制御を担当します。`Topology` クラスは Model にあたり、ネットワークのモデルすなわちトポロジ情報を管理します。`View::Text` と `View::Graphviz` はその名の通り View にあたり、モデルである Topology を可視化します。
 
-LLDP パケットの定期送信は、`flood_lldp_frames` メソッドが行います。`@topology` が管理している発見済みポートすべて (`@topology.ports`) に対して、LLDP パケットを送信するように Packet Out を行います。
+このようにクラスを MVC で構成するとそれぞれのクラスの役割りがすっきりし、拡張性も向上します。たとえばトポロジを HTML で表示したくなった場合には、新たに `View::Html` クラスを追加するだけで実現できます。しかも、`TopologyController` や `Topology` クラスへの変更はほとんど必要ありません。また、<<routing_switch,次章>>で紹介するルーティングスイッチでは、トポロジを部品として使うことで複雑なパケット制御を可能にしています。このように比較的複雑な機能を実現したい場合には、クラスを MVC で構成できるかどうか検討するとよいでしょう。
 
-[source,ruby,indent=0,subs="verbatim,attributes"]
-.lib/topology_controller.rb
-----
-include::{sourcedir}/lib/topology_controller.rb[]
-----
+=== モデルとビューのセットアップ
 
-=== トポロジ情報の管理
-
-`Topology` クラスはトポロジ情報のデータベースです。`TopologyController` がOpenFlowメッセージから解釈したトポロジの変化を、ポート一覧、スイッチ一覧などのデータ構造として保存します。`Topology` クラスはスイッチやポート、リンク情報を登録するための以下のメソッドを提供しています。
-
-- `add_switch`: 新しいスイッチとポート一覧をデータベースに登録する
-- `delete_switch`: スイッチを削除し、スイッチから出ているすべてのリンクも削除する
-- `add_port`: すでに立ち上がっているスイッチに追加されたポートをデータベースに登録する
-- `delete_port`: 無効になったポートを削除し、ポートから出ているリンクも削除する
-- `maybe_add_link`: 発見したリンクが新しいものであれば、データベースに追加する
+`TopologyController` の仕事のひとつは、MVC のモデルとビューのセットアップです。次の `start` ハンドラでは、起動時のコマンドライン引数をパースし、トポロジ表示をテキスト表示 (`View::Text`) にするかまたは画像表示 (`View::Graphviz`) にするかを決定します。そして、決定したビューをモデル (`Topology`) のオブザーバとして追加 (`@topology.add_observer`) します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
-.lib/topology.rb
+.TopologyController#start
 ----
-include::{sourcedir}/lib/topology.rb[]
+include::{sourcedir}/lib/topology_controller.rb[lines="10..16"]
 ----
 
-`Topology` クラスには、トポロジの変化を他のコントローラにイベント通知するという便利な機能を持っています。コントローラは Trema のハンドラに加えて、新たに以下のハンドラを使ってトポロジの変化イベントを `Topology` クラスから取得できます。
+このオブザーバは、デザインパターンにおけるいわゆるオブザーバ・パターンの一例です。`Topology` のオブザーバとして追加されたビューのクラス (`View::Text` または `View::Graphviz`) は、トポロジに変化があった場合に変化イベントを `Topology` から受け取ります。そして、それぞれのビューの方法でトポロジを表示します。
+
+オブザーバが受け取れるトポロジの変化イベントは次の通りです:
 
 - `add_switch`: スイッチの追加イベント
 - `delete_switch`: スイッチの削除イベント
@@ -197,9 +186,67 @@ include::{sourcedir}/lib/topology.rb[]
 - `add_link`: リンクの追加イベント
 - `delete_link`: リンクの削除イベント
 
-たとえば次章で紹介するルーティングスイッチでは、この機能を使ってリアルタイムにトポロジの変化を検知し、仮想ネットワークの構成を更新します。この実装について詳しくは次章で解説します。
+オブザーバとして追加できるオブジェクトは、これらのイベントを受け取れば何でもかまいません。たとえば `View::Text` は次のように `add_switch` や `add_port` といったトポロジイベントハンドラを持っており、イベントに応じてトポロジをテキストベースで表示します。
 
-// TODO: ここの図がほしい。
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.lib/view/text.rb
+----
+include::{sourcedir}/lib/view/text.rb[]
+----
+
+MVC で説明したように、未知の外部クラスと連携したい場合にオブザーバ・パターンは便利です。`Topology` からのイベントを受け取るには `Topology#add_observer` でオブザーバとして登録するだけで良く、`Topology` クラスにはオブザーバのクラスに依存するコードはありません。このため、ビューに限らずトポロジ情報を利用するクラスを自由にオブザーバとして追加できます。たとえば<<routing_switch,次章>>や<<sliceable_switch,その次の章>>で実装するコントローラでは、`Topology` にコントローラ自身をオブザーバとして登録することで、トポロジ情報を利用してパケットの転送を制御します。
+
+=== OpenFlow メッセージの処理
+
+`TopologyController` クラスはスイッチから届く OpenFlow メッセージに応じた処理をします。
+
+`switch_ready` ハンドラでは、新しく接続してきたスイッチのポート一覧をを知るために、Features Request メッセージをスイッチに投げます。そして、`features_reply` ハンドラでスイッチから届いた Features Reply が持つポート一覧情報のうち、物理ポートでポートが上がっているものを `@topology` に追加します。このポート一覧は、LLDP パケットを作って送る際に使います。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.TopologyController#switch_ready, TopologyController#features_reply
+----
+include::{sourcedir}/lib/topology_controller.rb[lines="22..28"]
+----
+
+そのほかのハンドラでは、届いたメッセージの種類に応じてトポロジ情報を更新します。
+
+- `switch_disconnected`: コントローラとの接続が切れたスイッチをトポロジ情報 (`@topology`) から削除する
+- `port_modify`:  ポート情報の変更 (ポートのUPとDOWN) を識別し、どちらの場合も `@topology` に反映する
+- `packet_in`: 帰ってきた LLDP パケットから発見したリンク情報、または新規ホスト情報を `@topology` に登録する
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.TopologyController#switch_disconnected, TopologyController#port_modify, TopologyController#packet_in 
+----
+include::{sourcedir}/lib/topology_controller.rb[lines="30..55"]
+----
+
+=== LLDP パケットをスイッチへ送る
+
+LLDP パケットの定期送信は、`flood_lldp_frames` メソッドをタイマで呼び出すことで行います。`@topology` が管理する発見済みポートすべて (`@topology.ports`) に対して、Packet Out で LLDP パケットを送信します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.TopologyController#flood_lldp_frames
+----
+include::{sourcedir}/lib/topology_controller.rb[lines="5..7,57..74"]
+----
+
+=== トポロジ情報の管理
+
+`Topology` クラスはトポロジ情報のデータベースです。`TopologyController` が生の OpenFlow メッセージから解釈したトポロジの変化を、ポート一覧、スイッチ一覧などのデータ構造として保存します。そして、変化イベントをオブザーバへ通知します。たとえば `add_switch` メソッドでは、新しいスイッチとポート一覧を登録し、オブザーバの `add_switch` メソッドを呼びます。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.Topology#add_switch (lib/topology.rb)
+----
+include::{sourcedir}/lib/topology.rb[lines="40..44,81..82,93..100"]
+----
+
+スイッチのポート、スイッチにつながっているリンクなど、関連するもの同士は自動的に処理します。たとえば `delete_switch` メソッドでは、スイッチを消すだけでなくスイッチのポートやスイッチとつながるリンクもすべて消します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.Topology#add_switch (lib/topology.rb)
+----
+include::{sourcedir}/lib/topology.rb[lines="45..50,56..61,81..91"]
+----
 
 == まとめ
 
@@ -207,5 +254,6 @@ include::{sourcedir}/lib/topology.rb[]
 
 - LLDP でトポロジを検出する仕組み
 - トポロジの変化を検出する OpenFlow メッセージとその処理の実装方法
+- オブザーバーパターンを使った外部クラスとの連携方法
 
 次の章では、ネットワーク仮想化の最初の一歩として、たくさんのスイッチを一台の L2 スイッチとして仮想化できる、ルーティングスイッチコントローラを見ていきます。
