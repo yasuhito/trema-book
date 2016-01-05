@@ -84,7 +84,7 @@ image::router_network.png[caption="図 12-4: "]
 
 == ソースコード解説
 
-シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。残りのソースコードについては、GitHub の trema/simple_router リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
+シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。残りのソースコードについては、GitHub の `trema/simple_router` リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
 
 === Packet In ハンドラ
 
@@ -108,7 +108,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
 include::{sourcedir}/lib/simple_router.rb[lines="94..98"]
 ----
 
-この `sent_to_router?` メソッドはパケットの宛先 MAC アドレス (`message.destination_mac`) をチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`message.in_port`) に割り当てられている MAC アドレス (`interface.mac_address`) と同じである場合、自分宛と判断します。
+この `sent_to_router?` メソッドはパケットの宛先 MAC アドレス (`packet_in.destination_mac`) をチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`packet_in.in_port`) に割り当てられている MAC アドレス (`interface.mac_address`) と同じである場合、自分宛と判断します。
 
 ==== パケットの種類によって処理を切り替え
 
@@ -170,7 +170,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 ----
 
-まず送信元 IP アドレス (`message.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
+まず送信元 IP アドレス (`packet_in.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
 
 === パケットを書き換えて転送する
 
@@ -242,6 +242,6 @@ include::{sourcedir}/lib/simple_router.rb[lines="154..164"]
 
 // TODO: TTL 減算を実装する
 
-続く第 13 章では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
+続く<<router_part2,第 13 章>>では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
 
 
