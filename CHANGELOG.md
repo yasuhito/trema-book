@@ -3,6 +3,12 @@
 ## develop
 
 
+## 0.20.0 (1/5/2016)
+* [#156](https://github.com/yasuhito/trema-book/pull/156): ルータ章 part1 をアップデート
+* [#157](https://github.com/yasuhito/trema-book/pull/157): 誤字を修正
+* [#158](https://github.com/yasuhito/trema-book/pull/158): ルータ章 part2 をアップデート
+
+
 ## 0.19.0 (1/4/2016)
 * [#154](https://github.com/yasuhito/trema-book/pull/154): OpenFlowの仕組み章をアップデート
 * [#155](https://github.com/yasuhito/trema-book/pull/155): トポロジ章をアップデート
