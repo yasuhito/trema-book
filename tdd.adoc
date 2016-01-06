@@ -64,7 +64,7 @@ Ruby on Rails の作者として有名な David Heinemeier Hansson 氏 (以下�
 
 まずはテストに必要なツールをインストールしましょう。Trema のテストフレームワークは Ruby の受け入れテストツールの定番である Cucumber と統合されています。これらを使うために、以下の内容の Gemfile を作って `bundle install --binstubs` を実行してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .Gemfile
 ----
 source 'https://rubygems.org'
@@ -239,7 +239,7 @@ STDERR
 
 repeater_hub.rb にコントローラクラスが定義されていない、というエラーです。エラーを修正するために、RepeaterHub クラスの定義を追加してみましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/repeater_hub.rb
 ----
 class RepeaterHub < Trema::Controller
@@ -265,7 +265,7 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 When は「〜したとき」というきっかけになる動作を記述します。ここでは、Given で定義したホスト host1 から host2 にパケットを送ります。パケットを送るコマンドは、trema send_packets でした。cucumber (aruba) では、実行したいコマンドを次のように `I run ...` で直接書けます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 When I run `trema send_packets --source host1 --dest host2`                                                                                                                   
 ----
@@ -338,7 +338,7 @@ host2 にパケットが届いておらず、失敗しています。RepeaterHub
 
 フラッディングをする Flow Mod を打ち込むコードを RepeaterHub クラスに追加して、もう一度テストしてみましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class RepeaterHub < Trema::Controller
   def packet_in(datapath_id, message)
@@ -365,7 +365,7 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 失敗してしまいました。まだ host2 がパケットを受信できていません。そういえば、Flow Modしただけではパケットは送信されないので、明示的に Packet Out してやらないといけないのでしたね。というわけで Packet Out を追加します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class RepeaterHub < Trema::Controller                                                                                                                                             
   def packet_in(datapath_id, message)                                                                                                                                             

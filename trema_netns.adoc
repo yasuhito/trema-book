@@ -10,7 +10,7 @@ $ ./bin/trema netns ネットワークネームスペース名 [コマンド]
 
 仮想ネットワーク設定で `host1`, `host2` という名前の 2 つのネットワークネームスペースをそれぞれ次のように定義し、コントローラを実行したとする。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 vswitch { dpid 0x1 }

@@ -74,7 +74,7 @@ image::pipeline_goto.png[caption="図7-2",title="テーブル ID 0 から始ま�
 
 インストラクションはアクションよりも一段上の処理で、フローテーブルの移動とアクションの実行方法を記述できます。たとえば GotoTable インストラクションは、次のように Flow Mod の `instructions` パラメータに指定しておくことで、マッチしたパケットが到着するとそのパケット処理を指定したフローテーブルへと続けます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .GotoTable インストラクションの指定方法
 ----
 # テーブル 0 番から 1 番へ GotoTable
@@ -94,7 +94,7 @@ send_flow_mod_add(
 
 `Apply` を使うと指定したアクションを直ちにパケットへ適用できます。これはちょうど、OpenFlow1.0 の Flow Mod で `actions` を指定した場合と同じ効果を持ちます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .Apply で指定したアクションをパケットへ直ちに適用
 ----
 # ポート 1 番へ転送
@@ -105,7 +105,7 @@ send_flow_mod_add(
 )
 ----
 
-`WriteActions` は指定したアクションを後でまとめて適用するために使います。GotoTable でテーブルを移動しながらパケットに `WriteACtions` で指定したアクションを「後で適用するアクション」に追加していきます。そして GotoTable を含まないフローエントリにパケットがマッチしたタイミングで、そのパケットの「後で適用するアクション」をまとめて適用します。
+`WriteActions` は指定したアクションを後でまとめて適用するために使います。GotoTable でテーブルを移動しながらパケットに `WriteActions` で指定したアクションを「後で適用するアクション」に追加していきます。そして GotoTable を含まないフローエントリにパケットがマッチしたタイミングで、そのパケットの「後で適用するアクション」をまとめて適用します。
 
 [[pipeline_write_actions]]
 image::pipeline_write_actions.png[caption="図7-3",title="WriteActions でアクションを後でまとめて適用"]
@@ -149,7 +149,7 @@ OpenFlow1.3版ラーニングスイッチでは、役割の異なる2つのフ�
 OpenFlow1.3版パッチパネルのソースコードは<<learning_switch13.rb>>になります。
 
 [[learning_switch13.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/learning_switch13.rb
 ----
 include::{sourcedir}/lib/learning_switch13.rb[]
@@ -159,15 +159,15 @@ include::{sourcedir}/lib/learning_switch13.rb[]
 
 `switch_ready` ハンドラでは、まだ学習していないパケットのデフォルト処理を新しく起動したスイッチのフローテーブルに書き込みます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#switch_ready (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="3,12..16"]
+include::{sourcedir}/lib/learning_switch13.rb[lines="3,17..23"]
 ----
 
 最初に呼び出す `add_multicast_mac_drop_flow_entry` では、IP マルチキャストフレームをドロップするフローエントリを書き込みます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#add_multicast_mac_drop_flow_entry (lib/learning_switch13.rb)
 ----
 include::{sourcedir}/lib/learning_switch13.rb[lines="85..94"]
@@ -181,7 +181,7 @@ Flow Mod に指定するパラメータのうちポイントとなるのは次�
 
 続く `add_default_forwarding_flow_entry` では、IP マルチキャストフレーム以外のパケットを `FORWARDING_TABLE_ID` で処理します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#add_default_forwarding_flow_entry (lib/learning_switch13.rb)
 ----
 include::{sourcedir}/lib/learning_switch13.rb[lines="107..116"]
@@ -197,7 +197,7 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="107..116"]
 
 最後の `add_default_flooding_flow_entry` では、宛先 MAC アドレスをまだ学習していない場合のデフォルト処理をフローテーブルに書き込みます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#add_default_flooding_flow_entry (lib/learning_switch13.rb)
 ----
 include::{sourcedir}/lib/learning_switch13.rb[lines="74..83"]
@@ -211,7 +211,7 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="74..83"]
 
 `packet_in` ハンドラでは、Packet In したパケットの送信元 MAC アドレス + In Port の組を学習します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#switch_ready (lib/learning_switch13.rb)
 ----
 include::{sourcedir}/lib/learning_switch13.rb[lines="25..28"]
