@@ -40,7 +40,7 @@ $ bundle install --binstubs
 $ ./bin/trema run ./lib/cbench.rb
 ----
 
-そして別ターミナルを開き、次のコマンドでcbenchプロセスを実行しベンチマークを開始します。
+そして別ターミナルを開き、次のコマンドでcbenchプロセスを実行しベンチマークを開始しますfootnote:[cbench コマンドの初回実行時には、自動的に cbench コマンドのコンパイルが始まります。二回目以降の実行ではコンパイルは起こりません]。
 
 ----
 $ ./bin/cbench --port 6653 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000 --throughput
