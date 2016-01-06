@@ -27,7 +27,7 @@ $ git clone https://github.com/trema/cbench.git
 
 ----
 $ cd cbench
-bundle install --binstubs
+$ bundle install --binstubs
 ----
 
 以上でCbenchとTremaのセットアップは完了です。
