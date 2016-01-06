@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.21.0 (1/6/2016)
+* [#160](https://github.com/yasuhito/trema-book/pull/160): Cbench章をアップデート
+
+
 ## 0.20.0 (1/5/2016)
 * [#156](https://github.com/yasuhito/trema-book/pull/156): ルータ章 part1 をアップデート
 * [#157](https://github.com/yasuhito/trema-book/pull/157): 誤字を修正

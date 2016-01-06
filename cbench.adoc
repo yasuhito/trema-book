@@ -27,7 +27,7 @@ $ git clone https://github.com/trema/cbench.git
 
 ----
 $ cd cbench
-bundle install --binstubs
+$ bundle install --binstubs
 ----
 
 以上でCbenchとTremaのセットアップは完了です。
@@ -40,7 +40,7 @@ bundle install --binstubs
 $ ./bin/trema run ./lib/cbench.rb
 ----
 
-そして別ターミナルを開き、次のコマンドでcbenchプロセスを実行しベンチマークを開始します。
+そして別ターミナルを開き、次のコマンドでcbenchプロセスを実行しベンチマークを開始しますfootnote:[cbench コマンドの初回実行時には、自動的に cbench コマンドのコンパイルが始まります。二回目以降の実行ではコンパイルは起こりません]。
 
 ----
 $ ./bin/cbench --port 6653 --switches 1 --loops 10 --ms-per-test 10000 --delay 1000 --throughput
@@ -52,32 +52,20 @@ cbench: controller benchmarking tool
    starting test with 1000 ms delay after features_reply
    ignoring first 1 "warmup" and last 0 "cooldown" loops
    debugging info is off
-1   switches: fmods/sec:  332   total = 0.033193 per ms
-1   switches: fmods/sec:  329   total = 0.032900 per ms
-1   switches: fmods/sec:  314   total = 0.031400 per ms
-1   switches: fmods/sec:  336   total = 0.033600 per ms
-1   switches: fmods/sec:  364   total = 0.036388 per ms
-1   switches: fmods/sec:  352   total = 0.035188 per ms
-1   switches: fmods/sec:  352   total = 0.035187 per ms
-1   switches: fmods/sec:  352   total = 0.035200 per ms
-1   switches: fmods/sec:  352   total = 0.035195 per ms
-1   switches: fmods/sec:  352   total = 0.035200 per ms
-RESULT: 1 switches 9 tests min/max/avg/stdev = 31.40/36.39/34.47/1.45 responses/s
+1   switches: fmods/sec:  807   total = 0.080652 per ms
+1   switches: fmods/sec:  797   total = 0.079694 per ms
+1   switches: fmods/sec:  799   total = 0.079730 per ms
+1   switches: fmods/sec:  797   total = 0.079698 per ms
+1   switches: fmods/sec:  801   total = 0.080003 per ms
+1   switches: fmods/sec:  800   total = 0.079965 per ms
+1   switches: fmods/sec:  802   total = 0.080159 per ms
+1   switches: fmods/sec:  802   total = 0.080182 per ms
+1   switches: fmods/sec:  806   total = 0.080549 per ms
+1   switches: fmods/sec:  801   total = 0.080082 per ms
+RESULT: 1 switches 9 tests min/max/avg/stdev = 79.69/80.55/80.01/0.26 responses/s
 ----
 
-この例では、10秒間のベンチマークを10回実行しその結果を表示しています。実行環境によって値は変わりますが、Tremaは秒間約300回のFlow Modを打てることがわかります。
-
-[WARNING]
-.Cbenchの注意点
-====
-Cbench のスコアを盲信しないようにしてください。現在、OpenFlow コントローラの多くがその性能指標として Cbench のスコアを使っているのをよく見掛けます。たとえば Floodlight (http://www.projectfloodlight.org/) は 1 秒間に 100 万発の Flow Mod を打てると宣伝しています。実際にこれはなかなかすごい数字です。スレッドを駆使してめいっぱい I/O を使い切るようにしなければなかなかこの数字は出ません。でも、この数字はほとんど無意味です。
-
-Flow Mod を 1 秒間に 100 万発打たなければならない状況を考えてみてください。それは、Packet In が 1 秒間に 100 万回起こるということになります。Packet In が 1 秒間に 100 万発起こるとはどういうことでしょうか? スイッチで処理できないパケットがすべてコントローラへやってくる、これが 1 秒間に 100 万回も起こるということです。明らかにフローテーブルの設計がうまく行っていません。
-
-コントローラが Packet In を何発さばけるかという性能は、極端に遅くない限りは重要ではありません。データセンターのように、どこにどんなマシンがありどういう通信をするか把握できている場合は、フローテーブルをちゃんと設計していれば Packet In はそんなに起こらないからです。力技で Packet In をさばくよりも、いかに Packet In が起こらないフローテーブル設計をするかの方がずっと大事です。
-
-Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか? を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
-====
+この例では、10秒間のベンチマークを10回実行しその結果を表示しています。実行環境によって値は変わりますが、Trema は秒間に数百回のFlow Modを打てることがわかります。
 
 == ソースコード解説
 
@@ -100,9 +88,9 @@ Cbench のソースコードにはいくつかのメソッド呼び出しがあ�
 
 - `logger.info(...)` (<<hello_trema,第2章>>で解説)
 - `ExactMatch.new(...)`
-- `message.buffer_id`
+- `packet_in.buffer_id`
 - `SendOutPort.new(...)`
-- `message.in_port`
+- `packet_in.in_port`
 
 このようにメソッドは普通、変数や定数の後にドットでつなげます。定数や変数が名詞なら、メソッドはちょうど動詞と同じです。
 
@@ -148,7 +136,7 @@ Rubyにはこのようなメソッドが何百種類もあります。それぞ�
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-def packet_in(datapath_id, message)
+def packet_in(datapath_id, packet_in)
   ...
 end
 ----
@@ -260,14 +248,14 @@ send_flow_mod_add(
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-def packet_in(datapath_id, message)
+def packet_in(datapath_id, packet_in)
   ...
   send_flow_mod_add(
     datapath_id,
     match: Match.new(
-             in_port: message.in_port,
-             ether_source_address: message.ether_source_address,
-             ether_destination_address: message.ether_destination_address,
+             in_port: packet_in.in_port,
+             ether_source_address: packet_in.ether_source_address,
+             ether_destination_address: packet_in.ether_destination_address,
              ...
 ----
 
@@ -275,10 +263,10 @@ def packet_in(datapath_id, message)
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-def packet_out(datapath_id, message)
+def packet_out(datapath_id, packet_in)
   send_flow_mod_add(
     datapath_id,
-    match: ExactMatch.new(message),
+    match: ExactMatch.new(packet_in),
     ...
 ----
 
@@ -352,7 +340,7 @@ send_flow_mod_add(
   datapath_id,
   match: ...,
   actions: ...,
-  buffer_id: message.buffer_id # <1>
+  buffer_id: packet_in.buffer_id # <1>
 )
 ----
 <1> Flow Mod のオプションにバッファ ID を指定
@@ -375,11 +363,11 @@ send_flow_mod_add(
 
 こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
 
-== マルチスレッドで高速化
+== マルチスレッド化する
 
 Tremaはシングルスレッドで動作するので、実のところ Cbench の結果はあまり速くありません。シングルスレッドとはつまり、同時にひとつの `packet_in` ハンドラしか起動できないという意味です。たとえ cbench プロセスがたくさん Packet In メッセージを送ってきても、Trema は順に 1 つひとつ処理するため遅くなります。
 
-Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえば仮に、Tremaがスレッドで動作する `multi_threaded_packet_in` というハンドラを提供するとして、この中でスレッドセーフでない変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。すべてのスレッドで共有する値をスレッドから変更する場合に起こる競合は正しく処理してやる必要があります。
+Trema がシングルスレッドである理由は、マルチスレッドプログラミングの大変さを避けるためです。たとえばマルチスレッドで動作する `multi_threaded_packet_in` というハンドラがあったとして、この中でスレッドセーフでない変数の内容を変更すると、タイミングや環境に起因するやっかいなバグが発生してしまいます。すべてのスレッドで共有する値で競合が起こらないようにしてやる必要があるのです。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
@@ -387,10 +375,10 @@ def start(_args)
   @db = DB.new  # <1>
 end
 
-def multi_threaded_packet_in(datapath_id, message)  # <2>
+def multi_threaded_packet_in(datapath_id, packet_in)  # <2>
   # !!! ここで @db の読み書きは危険 !!!
-  return if @db.lookup(message.in_port)
-  @db.add message.ether_source_address, message.in_port
+  return if @db.lookup(packet_in.in_port)
+  @db.add packet_in.ether_source_address, packet_in.in_port
 end
 ----
 <1> スレッドセーフでないインスタンス変数
@@ -430,11 +418,11 @@ def start(_args)
   @mutex = Mutex.new  # <1>
 end
 
-def multi_threaded_packet_in(datapath_id, message)
+def multi_threaded_packet_in(datapath_id, packet_in)
   @mutex.synchronize do  # <2>
     # この中で@dbを読み書きすれば安全
-    return if @db.lookup(message.in_port)
-    @db.add message.ether_source_address, message.in_port
+    return if @db.lookup(packet_in.in_port)
+    @db.add packet_in.ether_source_address, packet_in.in_port
   end
 end
 ----
@@ -445,29 +433,28 @@ end
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-def initialize(_args)
+def start(_args)
   @db = DB.new
   @mutex = Mutex.new
 end
 
-def packet_in(datapath_id, message)
+def packet_in(datapath_id, packet_in)
   Thread.start do  # <1>
     @mutex.synchronize do
-      return if @db.lookup(message.in_port)
-      @db.add message.ether_source_address, message.in_port
+      return if @db.lookup(packet_in.in_port)
+      @db.add packet_in.ether_source_address, packet_in.in_port
     end
   end
 end
 ----
 <1> `packet_in` ハンドラの中身をスレッドで起動
 
-しかし、これでもまだ問題は残ります。`Thread.start` によるスレッド起動はそれなりにコストのかかる処理なので、Packet In が届くたびにスレッドを作っていては大して速くなりません。
+しかし、これでもまだ問題は残ります。`Thread.start` によるスレッド起動はそれなりにコストのかかる処理なので、Packet In が届くたびにスレッドを作っていては速くなりません。
 
 そこで、次のようにあらかじめいくつかワーカースレッドを作って待機させておく、いわゆるスレッドプールという手法が使えます。そして `packet_in` ハンドラが呼ばれるたびに待機中のスレッドに `packet_in` の処理をまかせます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-# A simple openflow controller for benchmarking (multi-threaded version).
 def start(_args)
   @db = DB.new
   @mutex = Mutex.new
@@ -475,8 +462,8 @@ def start(_args)
   10.times { start_worker_thread }  # <2>
 end
 
-def packet_in(datapath_id, message)
-  @work_queue.push [datapath_id, message]  # <3>
+def packet_in(datapath_id, packet_in)
+  @work_queue.push [datapath_id, packet_in]  # <3>
 end
 
 private
@@ -486,7 +473,7 @@ def start_worker_thread  # <4>
     loop do
       datapath_id, packet_in = @work_queue.pop  # <5>
       @mutex.synchronize do
-        next if @db.lookup(message.in_port)
+        next if @db.lookup(packet_in.in_port)
         @db.add packet_in.ether_source_address, packet_in.in_port
       end
     end
@@ -499,21 +486,21 @@ end
 <4> ワーカースレッドを起動するプライベートメソッド
 <5> スレッドの中でキューから datapath_id と Packet In を取り出す。Queue クラスはスレッドセーフなので、`@mutex.synchronize do ... end` の中に入れる必要はないことに注意
 
-最終的なマルチスレッド版 Cbench コントローラは次のようになります。
+このスレッドプールを使った、最終的なマルチスレッド版 Cbench コントローラは次のようになります。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
-.lib/fast_cbench.rb
+.lib/multi_threaded_cbench.rb
 ----
 # A simple openflow controller for benchmarking (multi-threaded version).
-class FastCbench < Trema::Controller
+class MultiThreadedCbench < Trema::Controller
   def start(_args)
     @work_queue = Queue.new
     10.times { start_worker_thread }
     logger.info 'Cbench started.'
   end
 
-  def packet_in(datapath_id, message)
-    @work_queue.push [datapath_id, message]
+  def packet_in(datapath_id, packet_in)
+    @work_queue.push [datapath_id, packet_in]
   end
 
   private
@@ -535,7 +522,7 @@ end
 実際に性能を計測してみましょう。
 
 ----
-$ ./bin/trema run lib/fast_cbench.rb
+$ ./bin/trema run lib/multi_threaded_cbench.rb
 ----
 
 別ターミナルで、
@@ -550,20 +537,101 @@ cbench: controller benchmarking tool
    starting test with 1000 ms delay after features_reply
    ignoring first 1 "warmup" and last 0 "cooldown" loops
    debugging info is off
-1   switches: fmods/sec:  584   total = 0.058318 per ms
-1   switches: fmods/sec:  572   total = 0.057134 per ms
-1   switches: fmods/sec:  571   total = 0.057010 per ms
-1   switches: fmods/sec:  589   total = 0.058647 per ms
-1   switches: fmods/sec:  595   total = 0.059268 per ms
-1   switches: fmods/sec:  586   total = 0.058510 per ms
-1   switches: fmods/sec:  593   total = 0.059281 per ms
-1   switches: fmods/sec:  594   total = 0.059338 per ms
-1   switches: fmods/sec:  598   total = 0.059595 per ms
-1   switches: fmods/sec:  593   total = 0.059285 per ms
-RESULT: 1 switches 9 tests min/max/avg/stdev = 57.01/59.59/58.67/0.92 responses/s
+1   switches: fmods/sec:  748   total = 0.074746 per ms
+1   switches: fmods/sec:  714   total = 0.071319 per ms
+1   switches: fmods/sec:  705   total = 0.070448 per ms
+1   switches: fmods/sec:  704   total = 0.070376 per ms
+1   switches: fmods/sec:  718   total = 0.071747 per ms
+1   switches: fmods/sec:  734   total = 0.073346 per ms
+1   switches: fmods/sec:  739   total = 0.073763 per ms
+1   switches: fmods/sec:  736   total = 0.073487 per ms
+1   switches: fmods/sec:  732   total = 0.073146 per ms
+1   switches: fmods/sec:  730   total = 0.072917 per ms
+RESULT: 1 switches 9 tests min/max/avg/stdev = 70.38/73.76/72.28/1.25 responses/s
 ----
 
-たしかに元の値に比べて約2倍に高速化できました。
+おや？シングルスレッド版よりも若干遅くなってしまいました。これには次の原因が考えられます。Ruby のスレッドは OS のネイティブスレッドであり、スレッド切り替えのオーバーヘッドが大きくかかります。しかも、Packet In 処理は一瞬で終わるため、マルチスレッド化しても並列性はあまり上がりません。これらのことから、マルスレッド化によって新たにスレッド切り替えのオーバーヘッドがかかった分、元のバージョンより若干遅くなってしまったと考えられます。
+
+== 無理やり高速化する
+
+実は cbench プロセスが送る Packet In はすべて同じ中身なので、一度作った Flow Mod メッセージを使いまわすことで簡単に高速化できます。最初のコードでは Packet In ハンドラの中で `send_flow_mod_add` で毎回 Flow Mod メッセージを作りなおしていました。この無駄な処理をなくすために、一度作った Flow Mod メッセージをキャッシュしておいて、2 回目以降はキャッシュした Flow Mod を `send_message` で送るのです。
+
+このキャッシュによって高速化したものがこちらです。ただしこれはベンチマークのために無理やり高速化したコードなので、すべてを理解する必要はありません。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.lib/fast_cbench.rb
+----
+# A simple openflow controller for benchmarking (fast version).
+class FastCbench < Trema::Controller
+  def start(_args)
+    logger.info "#{name} started."
+  end
+
+  def packet_in(dpid, packet_in)
+    @flow_mod ||= create_flow_mod_binary(packet_in) # <1>
+    send_message dpid, @flow_mod # <2>
+  end
+
+  private
+
+  def create_flow_mod_binary(packet_in) # <3>
+    options = {
+      command: :add,
+      priority: 0,
+      transaction_id: 0,
+      idle_timeout: 0,
+      hard_timeout: 0,
+      buffer_id: packet_in.buffer_id,
+      match: ExactMatch.new(packet_in),
+      actions: SendOutPort.new(packet_in.in_port + 1)
+    }
+    FlowMod.new(options).to_binary.tap do |flow_mod|
+      def flow_mod.to_binary
+        self
+      end
+    end
+  end
+end
+----
+<1> 最初は `@flow_mod` が `nil` なので、最初だけ `create_flow_mod_binary` で Flow Mod メッセージを作る。二回目以降は呼ばれない。
+<2> キャッシュした Flow Mod メッセージを cbench プロセスに送る
+<3> `FlowMod.new` で FlowMod メッセージを作る。`send_message` したときに Trema が呼び出す `flow_mod.to_binary` を軽くするため、あらかじめ作っておいたバイナリを返すような特異メソッドを定義しておく
+
+実行結果は次のようになります。秒間約 6000 発の Flow Mod が打てており、元のバージョンに比べて 10 倍近く高速化できました!
+
+----
+cbench: controller benchmarking tool
+   running in mode 'throughput'
+   connecting to controller at localhost:6653
+   faking 1 switches :: 10 tests each; 10000 ms per test
+   with 100000 unique source MACs per switch
+   starting test with 1000 ms delay after features_reply
+   ignoring first 1 "warmup" and last 0 "cooldown" loops
+   debugging info is off
+1   switches: fmods/sec:  6741   total = 0.674018 per ms
+1   switches: fmods/sec:  6400   total = 0.639859 per ms
+1   switches: fmods/sec:  6508   total = 0.650710 per ms
+1   switches: fmods/sec:  6334   total = 0.633349 per ms
+1   switches: fmods/sec:  6325   total = 0.632465 per ms
+1   switches: fmods/sec:  6293   total = 0.629207 per ms
+1   switches: fmods/sec:  6276   total = 0.627579 per ms
+1   switches: fmods/sec:  6332   total = 0.633133 per ms
+1   switches: fmods/sec:  6219   total = 0.621860 per ms
+1   switches: fmods/sec:  6293   total = 0.629266 per ms
+RESULT: 1 switches 9 tests min/max/avg/stdev = 621.86/650.71/633.05/7.77 responses/s
+----
+
+[WARNING]
+.Cbenchの注意点
+====
+Cbench のスコアを盲信しないようにしてください。現在、OpenFlow コントローラの多くがその性能指標として Cbench のスコアを使っているのをよく見掛けます。たとえば Floodlight (http://www.projectfloodlight.org/) は 1 秒間に 100 万発の Flow Mod を打てると宣伝しています。実際にこれはなかなかすごい数字です。スレッドを駆使してめいっぱい I/O を使い切るようにしなければなかなかこの数字は出ません。でも、この数字はほとんど無意味です。
+
+Flow Mod を 1 秒間に 100 万発打たなければならない状況を考えてみてください。それは、Packet In が 1 秒間に 100 万回起こるということになります。Packet In が 1 秒間に 100 万発起こるとはどういうことでしょうか? スイッチで処理できないパケットがすべてコントローラへやってくる、これが 1 秒間に 100 万回も起こるということです。明らかにフローテーブルの設計がうまく行っていません。
+
+コントローラが Packet In を何発さばけるかという性能は、極端に遅くない限りは重要ではありません。データセンターのように、どこにどんなマシンがありどういう通信をするか把握できている場合は、フローテーブルをちゃんと設計していれば Packet In はそんなに起こらないからです。力技で Packet In をさばくよりも、いかに Packet In が起こらないフローテーブル設計をするかの方がずっと大事です。
+
+Cbench のようなマイクロベンチマークでは、測定対象が何でその結果にはどんな意味があるか? を理解しないと針小棒大な結論を招きます。Cbench のスコアは参考程度にとどめましょう。
+====
 
 == まとめ
 
@@ -572,6 +640,6 @@ Packet InとFlow Modの最初の一歩として、ベンチマークツールCbe
 - フローエントリを追加するための `send_flow_mod_add` を使って、スイッチのフローテーブルを書き換えた
 - マッチングルールの作り方と、指定できるルールを学んだ
 - SendOutPort アクションによるパケットの転送と、その他のアクションを学んだ
-- コントローラをスレッドで高速化する方法を学んだ
+- コントローラをマルチスレッド化する方法を学んだ
 
 OpenFlow プログラミングの基礎はできたので、そろそろ実用的なツールを作ってみましょう。続く章では、遠隔操作可能なソフトウェアパッチパネルを作ります。ネットワークケーブルを挿し替えるためだけにラックのあるサーバルームまで出向く必要はなくなります。
