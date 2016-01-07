@@ -73,7 +73,7 @@ image::host1to2_openflow.png[caption="図 6-4: "]
 学習が終わると次はパケットの転送です。もちろん、パケットの宛先はまだ学習していないので、コントローラは次のようにパケットをばらまくことで宛先まで届けます。このばらまく処理をフラッディングと呼びます(<<host1to2_flood_openflow,図6-5>>)。
 
 1. コントローラはPacket Inメッセージの宛先MACアドレスを調べ、FDBから送出先のポート番号を探す。しかし、ホスト2のMACアドレスとポート番号はまだFDBに入っていないのでわからない
-2. コントローラはPacket Outメッセージ(出力ポート=フラッディング)でパケットをばらまくようにスイッチに指示する。その結果、ポート4につながるホスト2にパケットが届く
+2. コントローラはPacket Outメッセージ(出力ポート=フラッディング)でパケットをばらまくようにスイッチに指示する。その結果、ポート5につながるホスト2にパケットが届く
 
 [[host1to2_flood_openflow]]
 .パケットの宛先MACアドレスからスイッチのポート番号がFDBに見つからないため、Packet Outメッセージ(出力ポート=フラッディング)でパケットをばらまく
@@ -84,7 +84,7 @@ image::host1to2_flood_openflow.png[caption="図 6-5: "]
 この状態でホスト2がホスト1へパケットを送信すると次のようになります(<<host2to1_openflow,図6-6>>)。
 
 1. フローテーブルが空なためコントローラまでふたたびPacket Inメッセージが上がる
-2. コントローラはこのPacket Inメッセージから「ポート4番にはMACアドレスが00:22:22:22:22:22のホストがつながっている」とFDBに保存する
+2. コントローラはこのPacket Inメッセージから「ポート5番にはMACアドレスが00:22:22:22:22:22のホストがつながっている」とFDBに保存する
 3. Packet Inの宛先MACアドレスとFDBを照らし合わせ、出力先のポート番号を探す。ここですでに「ポート1=MACアドレス00:11:11:11:11:11」と学習しているので、出力ポートは1と決定できる
 4. 「ホスト2からホスト1へのパケットはポート1へ出力せよ」というフローエントリをFlow Modメッセージでフローテーブルに書き込む。加えて、Packet Outメッセージ(出力ポート = 1)でPacket Inを起こしたパケットをポート1へ出力する
 
@@ -94,7 +94,7 @@ image::host2to1_openflow.png[caption="図 6-6: "]
 
 さて、ここまでの段階でフローテーブルには「ホスト2からホスト1へのパケットはポート1へ出力せよ」というフローエントリが入りました。もし、ホスト2がホスト1へふたたびパケットを送信すると、今度はPacket Inがコントローラまで上がることはなく、スイッチ側だけでパケットを転送します。
 
-残りのホスト1からホスト2へのフローエントリはどうでしょう。すでにFDBはすべてのホストのMACアドレスとポート番号を学習してあります。もし、ふたたびホスト1からホスト2へパケットを送信すると、<<host2to1_openflow,図6-6>>と同様にコントローラが「ホスト1からホスト2へのパケットはポート4へ出力せよ」というフローエントリを書き込みます。もちろん、それ以降の通信ではPacket Inはまったく上がらずにすべてスイッチ側だけでパケットを処理します。
+残りのホスト1からホスト2へのフローエントリはどうでしょう。すでにFDBはすべてのホストのMACアドレスとポート番号を学習してあります。もし、ふたたびホスト1からホスト2へパケットを送信すると、<<host2to1_openflow,図6-6>>と同様にコントローラが「ホスト1からホスト2へのパケットはポート5へ出力せよ」というフローエントリを書き込みます。もちろん、それ以降の通信ではPacket Inはまったく上がらずにすべてスイッチ側だけでパケットを処理します。
 
 == 実行してみよう
 
@@ -173,25 +173,25 @@ include::{sourcedir}/lib/learning_switch.rb[]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#packet_in, LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="12..17,22..28"]
+include::{sourcedir}/lib/learning_switch.rb[lines="12..16,23..27"]
 ----
 
 ==== 宛先ポート番号が見つかった場合(FlowModとPacket Out)
 
-もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、というフローエントリをスイッチに書き込みます (flow_modメソッド)。また、Packet Inを起こしたパケットも忘れずにそのポートへ出力します (packet_outメソッド)。
+もし宛先ポートが見つかった場合、以降は同じパケットは同様に転送せよ、というフローエントリをスイッチに書き込みます (`flow_mod` メソッド)。また、Packet Inを起こしたパケットも忘れずにそのポートへ出力します (`packet_out` メソッド)。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
+include::{sourcedir}/lib/learning_switch.rb[lines="23..27"]
 ----
 
-このflow_modメソッドとpacket_outメソッドはそれぞれTrema::Controllerクラスのsend_flow_mod_add(<<cbench,第4章>>で紹介)およびsend_packet_out(Packet Outの送信)メソッドを次のように呼び出します。
+この `flow_mod` メソッドと `packet_out` メソッドはそれぞれ `send_flow_mod_add` (<<cbench,第4章>>で紹介) および `send_packet_out` (Packet Outの送信) メソッドを次のように呼び出します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod, LearningSwitch#packet_out (lib/learning_switch.rb)
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="30..44"]
+include::{sourcedir}/lib/learning_switch.rb[lines="29..43"]
 ----
 
 === Packet Out API
@@ -266,7 +266,7 @@ send_packet_out(
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
 ----
-include::{sourcedir}/lib/learning_switch.rb[lines="24..28"]
+include::{sourcedir}/lib/learning_switch.rb[lines="23..27"]
 ----
 
 === FDB の実装
