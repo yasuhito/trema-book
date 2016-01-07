@@ -149,7 +149,7 @@ include::{sourcedir}/lib/learning_switch.rb[]
 
 今までの知識だけでも、このソースコードからいろいろなことがわかります。
 
-- ラーニングスイッチの本体はLearningSwitchという名前のクラス
+- ラーニングスイッチの本体は `LearningSwitch` という名前のクラス
 - 起動時に呼ばれる `start` ハンドラでFDBのインスタンス変数を作っている。FDBの実装は別ファイル `lib/fdb.rb` に分かれている
 - `packet_in` はPacket Inメッセージを捕捉するためのハンドラ。スイッチのフローエントリにマッチしないパケットがコントローラに上がってくると、このハンドラが呼ばれる
 - `packet_in` ハンドラから呼ばれる `flow_mod_and_packet_out` メソッドの中では、`@fdb` を使ってポート番号を調べたり、`flow_mod` と `packet_out` メソッドでそれぞれFlow ModとPacket Outメッセージを送っている。また、先述した「パケットをばらまく(フラッディング)」処理に対応する `:flood` も見つかる
@@ -166,7 +166,7 @@ include::{sourcedir}/lib/learning_switch.rb[]
 
 知らないパケットがPacket Inとして入ってきたとき、ラーニングスイッチは次のようにFDBにホストの位置情報を学習し、宛先のポート番号を調べます。
 
-1. パケットの送信元MACアドレスとパケットが入ってきたポート番号をPacket Inメッセージから取り出し、FDB(@fdb)に保存する
+1. パケットの送信元MACアドレスとパケットが入ってきたポート番号をPacket Inメッセージから取り出し、FDB (`@fdb`) に保存する
 2. パケットの宛先MACアドレスとFDBから、パケットを出力するポート番号を調べる (`flow_mod_and_packet_out` メソッド)
 
 
@@ -212,7 +212,7 @@ Packet Outの使い道は、Packet Inメッセージとして入ってきたパ�
 
 ==== スイッチのバッファを使ってPacket Outする場合
 
-パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように:buffer_idオプションでバッファに乗っているパケットデータのIDを指定してやることでPacket Outできます。
+パケットのデータがスイッチのバッファに乗っていることが期待できる場合には、次のように `buffer_id` オプションでバッファに乗っているパケットデータのIDを指定してやることでPacket Outできます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
@@ -256,14 +256,14 @@ send_packet_out(
 
 `options` に指定できる主なオプションは次のとおりです。
 
-- `buffer_id` スイッチでバッファされているパケットの ID を指定する。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなる (ただし、スイッチにバッファされていない時はエラーになる)
-- `raw_data` Packet Out するパケットの中身を指定する。もし `buffer_id` オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われない
-- `packet_in` `raw_data` および `in_port` オプションを指定するためのショートカット。Packet In ハンドラの引数として渡される Packet In メッセージを指定する
-- `actions` Packet Out のときに実行したいアクションの配列を指定する。アクションが 1 つの場合は配列でなくてかまわない
+- `buffer_id`: スイッチでバッファされているパケットの ID を指定する。この値を使うと、スイッチでバッファされているパケットを指定して Packet Out できるので効率が良くなる (ただし、スイッチにバッファされていない時はエラーになる)
+- `raw_data`: Packet Out するパケットの中身を指定する。もし `buffer_id` オプションが指定されておりスイッチにバッファされたパケットを Packet Out する場合、この値は使われない
+- `packet_in`: `raw_data` および `in_port` オプションを指定するためのショートカット。Packet In ハンドラの引数として渡される Packet In メッセージを指定する
+- `actions`: Packet Out のときに実行したいアクションの配列を指定する。アクションが 1 つの場合は配列でなくてかまわない
 
 ==== 宛先ポート番号が見つからなかった場合 (フラッディング)
 
-もし宛先ポートが見つからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが flow_mod_and_packet_out メソッドで、ポート番号に仮想ポート番号の `:flood` を指定して packet_out メソッドを呼び出します。`:flood` を指定した PacketOut メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
+もし宛先ポートが見つからなかった場合、コントローラは Packet In したメッセージをフラッディングしてばらまきます。これをやっているのが `flow_mod_and_packet_out` メソッドで、ポート番号に仮想ポート番号の `:flood` を指定して `packet_out` メソッドを呼び出します。`:flood` を指定した PacketOut メッセージをスイッチが受け取ると、指定されたパケットをフラッディングします。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
