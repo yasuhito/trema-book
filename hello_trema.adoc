@@ -84,7 +84,7 @@ TremaはLinux用のソフトウェアです。次のLinuxディストリビュ�
 
 Ruby インタプリタ:: Trema の実行には Ruby のバージョン 2.0 以降が必要です。Trema を使ったコントローラの開発にも Ruby を使います
 
-Bundler footnote:[https://bundler.io/]:: Ruby ライブラリのインストーラです。Trema 本体と実行に必要なライブラリをインストールします
+Bundler footnote:[https://bundler.io/]:: Ruby ライブラリのインストーラです。Trema 本体と実行に必要なライブラリ一式を自動的にインストールします
 
 Open vSwitch footnote:[http://openvswitch.org/]:: OpenFlow に対応したソフトウェアスイッチの一種です。Trema の仮想ネットワーク機能で使用します
 
@@ -115,15 +115,15 @@ $ sudo yum install ruby ruby-devel gcc gcc-c++
 
 なお gcc と gcc-c++ パッケージは Trema が依存する外部ライブラリのインストールに必要です。
 
-=== Bundlerのインストール
+=== Bundler のインストール
 
-Bundlerは次のコマンドでインストールできます。
+Bundler は次のコマンドでインストールできます。
 
 ----
 $ gem install bundler
 ----
 
-なお `gem` はRubyの標準ライブラリ形式 `.gem` をインストールするコマンドです。ここでは最新版のBundlerの `.gem` を自動的にダウンロードしてインストールしています。
+なお `gem` は Ruby の標準ライブラリ形式 `.gem` をインストールするコマンドです。ここでは最新版の Bundler の `.gem` を自動的にダウンロードしてインストールしています。
 
 === Open vSwitchのインストール
 
@@ -172,7 +172,7 @@ $ cd hello_trema
 - `README.md`: メインのドキュメント
 - `LICENSE`: 配布ライセンスの指定
 - `CHANGELOG.md`: 開発履歴
-- `Gemfile`: 必要なgemパッケージの定義
+- `Gemfile`: 実行に必要なgemパッケージの定義
 - `Rakefile`: 開発用タスク
 - `lib/`: コントローラの実装
 - `features/`: 受け入れテスト
@@ -210,11 +210,11 @@ vswitch { datapath_id 0xabc }
 
 コントローラを実行する際にこの設定ファイルを指定することで、Open vSwitch を起動しコントローラに接続できます。
 
-この設定ファイルでは0xabcというDatapath IDを持つ1台のソフトウェアスイッチを定義しています。`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一位に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一位な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
+この設定ファイルでは0xabcというDatapath IDを持つ1台のソフトウェアスイッチを定義しています。`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一意に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一意な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
 
 ==== Trema のインストール
 
-Hello Trema の実行にはもちろん Trema が必要です。実行に必要な Ruby のアプリケーションやライブラリを `hello_trema` ディレクトリ直下の `Gemfile` というファイルに次のように書いておくと、Hello Trema 専用の実行環境を自動的にセットアップできます。
+Hello Trema の実行にはもちろん Trema が必要です。実行に必要な Ruby のアプリケーションやライブラリの gem を `hello_trema` ディレクトリ直下の `Gemfile` というファイルに次のように書くことで、Hello Trema の実行環境として Trema を使うということを指定します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .Gemfile
@@ -226,7 +226,7 @@ gem ‘trema’# <2>
 <1> gem の取得元として標準的な https://rubygems.org を指定します
 <2> 実行環境に Trema を追加します
 
-`hello_trema` ディレクトリ直下で次のコマンドを実行すると、Trema の実行コマンド `trema` が `bin/` ディレクトリにインストールされます。
+Gemfile に記述した実行環境のセットアップには Bundler を使います。`hello_trema` ディレクトリ直下で次の `bundle install --binstubs` コマンドを実行すると、`Gemfile` に記述した Trema と Trema が依存する `.gem` ファイル一式を自動的にインストールし、Trema の実行コマンド `trema` を `bin/` ディレクトリに生成します。
 
 ----
 $ bundle install --binstubs

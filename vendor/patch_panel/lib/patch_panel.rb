@@ -1,8 +1,8 @@
 # Software patch-panel.
 class PatchPanel < Trema::Controller
   def start(_args)
-    @patch = Hash.new { [] }
-    logger.info 'PatchPanel started.'
+    @patch = Hash.new([].freeze)
+    logger.info "#{name} started."
   end
 
   def switch_ready(dpid)

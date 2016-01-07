@@ -3,6 +3,21 @@
 ## develop
 
 
+## 0.22.0 (1/7/2016)
+* [#161](https://github.com/yasuhito/trema-book/pull/161): パッチパネル章をアップデート
+* [#162](https://github.com/yasuhito/trema-book/pull/162): ラーニングスイッチ章をアップデート
+
+
+## 0.21.0 (1/6/2016)
+* [#160](https://github.com/yasuhito/trema-book/pull/160): Cbench章をアップデート
+
+
+## 0.20.0 (1/5/2016)
+* [#156](https://github.com/yasuhito/trema-book/pull/156): ルータ章 part1 をアップデート
+* [#157](https://github.com/yasuhito/trema-book/pull/157): 誤字を修正
+* [#158](https://github.com/yasuhito/trema-book/pull/158): ルータ章 part2 をアップデート
+
+
 ## 0.19.0 (1/4/2016)
 * [#154](https://github.com/yasuhito/trema-book/pull/154): OpenFlowの仕組み章をアップデート
 * [#155](https://github.com/yasuhito/trema-book/pull/155): トポロジ章をアップデート
