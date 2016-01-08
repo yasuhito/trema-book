@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.23.0 (1/8/2016)
+* OpenFlow移行章をアップデート
+
+
 ## 0.22.0 (1/7/2016)
 * [#161](https://github.com/yasuhito/trema-book/pull/161): パッチパネル章をアップデート
 * [#162](https://github.com/yasuhito/trema-book/pull/162): ラーニングスイッチ章をアップデート
