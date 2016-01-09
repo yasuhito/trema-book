@@ -22,9 +22,6 @@ include::learning_switch.adoc[]
 [[learning_switch13]]
 include::learning_switch13.adoc[]
 
-[[traffic_monitor]]
-include::traffic_monitor.adoc[]
-
 [[tdd]]
 include::tdd.adoc[]
 

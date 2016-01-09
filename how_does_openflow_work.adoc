@@ -243,7 +243,7 @@ OpenFlowでもすべてのトラフィック情報はコントローラに上が
 
 OpenFlowは回転ずしです。フランス料理の味に近づけるのは大変ですが、必要な機能だけをチョイスしてがんばって実装すれば、思い通りの機器が手に入るのです。
 
-こうしたネットワーク機器のOpenFlow実装については、パッチパネルを<<patch_panel,第 5 章>>で、スイッチを<<learning_switch,第 6 章>>および<<learning_switch13,第 7 章>>で、ファイアウォールを<<firewall,第 11 章>>で、ルータを<<router_part1,第 12 章>>および<<router_part2,第 13 章>>でそれぞれ解説します。
+こうしたネットワーク機器のOpenFlow実装については、パッチパネルを<<patch_panel,第 6 章>>で、スイッチを<<learning_switch,第 7 章>>および<<learning_switch13,第 8 章>>で、ファイアウォールを<<firewall,第 12 章>>で、ルータを<<router_part1,第 12 章>>および<<router_part2,第 13 章>>でそれぞれ解説します。
 ====
 
 == OpenFlowで気をつけること
