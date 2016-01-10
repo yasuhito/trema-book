@@ -1,6 +1,9 @@
 [[how_does_openflow_work]]
 include::how_does_openflow_work.adoc[]
 
+[[openflow_spec]]
+include::openflow_spec.adoc[]
+
 [[hello_trema]]
 include::hello_trema.adoc[]
 
@@ -18,9 +21,6 @@ include::learning_switch.adoc[]
 
 [[learning_switch13]]
 include::learning_switch13.adoc[]
-
-[[traffic_monitor]]
-include::traffic_monitor.adoc[]
 
 [[tdd]]
 include::tdd.adoc[]
@@ -47,9 +47,6 @@ include::routing_switch.adoc[]
 include::sliceable_switch.adoc[]
 
 include::appendix_rvm.adoc[]
-
-[[openflow_spec]]
-include::appendix_openflow_spec.adoc[]
 
 [[trema_reference]]
 include::appendix_trema_reference.adoc[]

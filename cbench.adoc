@@ -10,10 +10,11 @@
 
 CbenchはOpenFlow1.0コントローラのためのベンチマークです。Cbenchは「1秒あたりにコントローラが出せるFlow Modの数」を計測します。これはOpenFlowプロトコル全体のうちの一部の性能だけを対象にしているので、ベンチマークの中でもマイクロベンチマークに分類できます。
 
-Cbenchは<<cbench_overview,図4-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchプロセスは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
+Cbenchは<<cbench_overview,図 5-1>>のように動作します。まずcbenchプロセスはOpenFlowスイッチのふりをしてコントローラに接続し、コントローラにPacket Inを連続して送ります。コントローラはPacket Inを受け取るとcbenchプロセスにFlow Modを返します。cbenchプロセスは決められた時間の間に受け取ったFlow Modの数をカウントし、ベンチマークのスコアとします。つまりPacket Inに反応して素早くFlow Modを返せるコントローラほど「速い」とみなします。
 
 [[cbench_overview]]
-image::cbench_overview.png[caption="図4-1",title="cbenchプロセスとコントローラの動作"]
+.cbenchプロセスとコントローラの動作
+image::cbench_overview.png[caption="図 5-1: "]
 
 == インストール
 
@@ -86,7 +87,7 @@ Cbenchのソースコード (<<cbench.rb>>) を眺めると、いくつか見慣
 
 Cbench のソースコードにはいくつかのメソッド呼び出しがあります。
 
-- `logger.info(...)` (<<hello_trema,第2章>>で解説)
+- `logger.info(...)` (<<hello_trema,第3章>>で解説)
 - `ExactMatch.new(...)`
 - `packet_in.buffer_id`
 - `SendOutPort.new(...)`
@@ -127,7 +128,7 @@ Rubyにはこのようなメソッドが何百種類もあります。それぞ�
 
 前章と同じく、`start` ハンドラでコントローラの起動をログに書き込みます。ユーザ引数は今回も使っていないので、仮引数の名前は `_args` のようにアンダースコアで始めます。
 
-// TODO: 2 章で _args の説明をしておく
+// TODO: Hello Trema 章で _args の説明をしておく
 // TODO: ここは、`packet_in`をスレッド化する/しないのスイッチをユーザ引数でコントロールできるようにしておく? そうしたら、パッチパネル章でユーザ引数の処理の説明を省ける。
 
 === packet_inハンドラ
@@ -179,9 +180,7 @@ end
 - `:vlan_priority` VLANの優先度を返す
 - `:ether_type` イーサタイプを返す
 
-このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、<<hello_trema,第2章>>で紹介した最新のTrema APIドキュメントを参照してください。
-
-// TODO 2章で Trema APIドキュメントを紹介したか確認
+このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、<<hello_trema,3 章>>で紹介した Trema ホームページを参照してください。
 
 === Flow Modの送りかた
 
@@ -314,7 +313,7 @@ send_flow_mod_add(
 // TODO `SendOutPort`の説明で触れている、論理ポートの説明を書く
 // TODO ラーニングスイッチ1.3章と同じく、箇条書きではなくて章にまとめる
 
-- `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号または論理ポート(第○章参照)を指定できる
+- `SendOutPort`  指定したスイッチのポートにパケットを出力する。ポートにはポート番号または予約ポート(<<learning_switch,第 7 章>>参照)を指定できる
 - `SetEtherSourceAddress` 送信元MACアドレスを指定した値に書き換える
 - `SetEtherDestinationAddress`  宛先MACアドレスを指定した値に書き換える
 - `SetIpSourceAddress` 送信元のIPアドレスを指定した値に書き換える
@@ -351,7 +350,7 @@ send_flow_mod_add(
 `send_flow_mod_add` で指定できるすべてのオプションは次の通りです。
 
 - `:match`  フローエントリのマッチングルールを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
-- `:actions`  フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第3章>>で解説) によって指定できる
+- `:actions`  フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第4章>>で解説) によって指定できる
 - `:buffer_id` アクションが参照するパケットがバッファされている領域の ID を指定する
 - `:idle_timeout`  フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
 - `:hard_timeout`  フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
