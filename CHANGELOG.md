@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.24.0 (1/10/2016)
+* [#159](https://github.com/yasuhito/trema-book/pull/159): OpenFlow仕様の章を 2 章へ移動
+
+
 ## 0.23.0 (1/8/2016)
 * OpenFlow移行章をアップデート
 
