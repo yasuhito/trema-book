@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.25.0 (1/12/2016)
+* [#166](https://github.com/yasuhito/trema-book/pull/166): ファイアウォール章を追加
+
+
 ## 0.24.0 (1/10/2016)
 * [#159](https://github.com/yasuhito/trema-book/pull/159): OpenFlow仕様の章を 2 章へ移動
 
