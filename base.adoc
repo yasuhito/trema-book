@@ -29,7 +29,7 @@ include::tdd.adoc[]
 include::one_way_bridge.adoc[]
 
 [[firewall]]
-= NFVを作ろう: ファイアウォール
+include::firewall.adoc[]
 
 [[router_part1]]
 include::router_part1.adoc[]
