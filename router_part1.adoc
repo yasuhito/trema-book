@@ -88,6 +88,12 @@ image::router_network.png[caption="図 12-4: "]
 
 シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。残りのソースコードについては、GitHub の `trema/simple_router` リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
 
+----
+$ git clone https://github.com/trema/simple_router.git
+$ cd simple_router
+$ bundle install --binstubs
+----
+
 === Packet In ハンドラ
 
 シンプルルータの主な動作は Packet In ハンドラから始まります。ハンドラ `packet_in` の中身は、次のようになっています。
