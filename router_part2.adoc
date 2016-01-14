@@ -211,7 +211,14 @@ rtt min/avg/max/mdev = 70.995/81.159/101.180/9.050 ms
 
 === iperf で動作を確認する
 
-次は iperf でネットワークスループットを計測してみましょう。iperf はサーバ・クライアント型のアプリケーションなので、まずは host2 上で次のように iperf のサーバを起動しておきます。
+次は iperf でネットワークスループットを計測してみましょう。まずは iperf をインストールします。
+
+----
+$ sudo apt-get update
+$ sudo apt-get install iperf
+----
+
+iperf はサーバ・クライアント型のアプリケーションなので、まずは host2 上で次のように iperf のサーバを起動しておきます。
 
 ----
 $ ./bin/trema netns host2
