@@ -114,12 +114,12 @@ $ ./bin/trema send_packets --source host1 --dest host2
 $ ./bin/trema send_packets --source host2 --dest host1
 $ ./bin/trema show_stats host1
 Packets sent:
-  192.168.0.1 -> 192.168.0.2 = 1 packet
+  192.168.0.1 -> 192.168.0.2 = 2 packets
 Packets received:
   192.168.0.2 -> 192.168.0.1 = 1 packet
 $ ./bin/trema show_stats host2
 Packets sent:
-  192.168.0.2 -> 192.168.0.1 = 1 packet
+  192.168.0.2 -> 192.168.0.1 = 2 packets
 Packets received:
   192.168.0.1 -> 192.168.0.2 = 1 packet
 ----
