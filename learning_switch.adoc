@@ -98,7 +98,20 @@ image::host2to1_openflow.png[caption="図 7-6: "]
 
 == 実行してみよう
 
-今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
+今回も仮想ネットワークを使ってラーニングスイッチを起動してみます。ソースコードと仮想ネットワークの設定ファイルはGitHubのtrema/learning_switchリポジトリ (https://github.com/trema/learning_switch) からダウンロードできます。
+
+----
+$ git clone https://github.com/trema/learning_switch.git
+----
+
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaなどの実行環境一式を自動的にインストールできます。
+
+----
+$ cd learning_switch
+$ bundle install --binstubs
+----
+
+githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
