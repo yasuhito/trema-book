@@ -59,13 +59,13 @@ $ exit
 
 シェルに入らずに直接コマンドを実行したい場合には、次のようにネットワークネームスペース名の後に実行したいコマンドを指定する。
 
----
+----
 $ ./bin/trema netns host1 ip link
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 23642: host1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000
     link/ether 6e:59:cb:51:86:db brd ff:ff:ff:ff:ff:ff
----
+----
 
 実行したいコマンドにオプションがある場合は、次のように'--'をつけて実行する。
 
