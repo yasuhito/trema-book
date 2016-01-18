@@ -4,7 +4,7 @@ class Dijkstra
   class Node
     attr_reader :name
     attr_reader :neighbors
-    attr_accessor :distance
+    attr_reader :distance
     attr_reader :prev
 
     def initialize(name, neighbors)
@@ -19,6 +19,11 @@ class Dijkstra
       return if new_distance > @distance
       @distance = new_distance
       @prev = min_node
+    end
+
+    def distance=(new_distance)
+      fail if new_distance < 0
+      @distance = new_distance
     end
 
     def <=>(other)

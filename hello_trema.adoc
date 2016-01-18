@@ -1,9 +1,12 @@
 = Hello, Trema!
 :sourcedir: vendor/hello_trema
-:imagesdir: images/openflow_framework_trema
+:imagesdir: images/hello_trema
 
 // TODO asciidocで「トレマ」をルビ表示にする
+
 Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これでいよいよあなたもOpenFlowプログラマの仲間入りです!
+
+image::izakaya.png[]
 
 == 作ってわかるOpenFlow
 
@@ -12,17 +15,16 @@ Trema(トレマ)を使うと楽しくSDNの世界が味わえます。これで�
 実装はステップバイステップで進みます。どのステップも実用的な例となっており、最初はOpenFlowやプログラミングの基礎から始めます。そしてパッチパネルやL2スイッチ、ファイアウォール、ルータの実装など徐々に複雑な機能へとステップアップし、最終的にはデータセンターでも動く本格的な「ネットワーク仮想化」の実装を目標とします。
 
  - Hello Trema (本章): OpenFlow 版 Hello World
- - スイッチ監視ツール (<<switch_monitor,3章>>): スイッチの死活監視ツール
- - cbenchベンチマーク (<<cbench,4章>>): OpenFlow のマイクロベンチマークツール
- - パッチパネル (<<patch_panel,5章>>): ソフトウェアとして実装したインテリジェント・パッチパネル
- - ラーニングスイッチ  (<<learning_switch,6章>>): レイヤ2スイッチをエミュレートするコントローラ
- - ラーニングスイッチ OpenFlow1.3 (<<learning_switch13,7章>>): ラーニングスイッチの OpenFlow1.3 による実装
- - トラフィックモニタ (<<traffic_monitor,8章>>): 統計情報の表示機能をラーニングスイッチに追加
+ - スイッチ監視ツール (<<switch_monitor,4章>>): スイッチの死活監視ツール
+ - cbenchベンチマーク (<<cbench,5章>>): OpenFlow のマイクロベンチマークツール
+ - パッチパネル (<<patch_panel,6章>>): ソフトウェアとして実装したインテリジェント・パッチパネル
+ - ラーニングスイッチ (<<learning_switch,7章>>): レイヤ2スイッチをエミュレートするコントローラ
+ - ラーニングスイッチ OpenFlow1.3 (<<learning_switch13,8章>>): ラーニングスイッチの OpenFlow1.3 による実装
  - テスト駆動開発 (<<tdd,9章>>): リピータハブのテスト駆動開発
- - ブリッジ (<<oneway_bridge,10章>>): レガシーなネットワークとOpenFlowネットワークのブリッジ
- - ファイアウォール (11章): 透過型ファイアウォール
- - ルータ (<<router_part1,12 章>>,<<router_part2,13 章>>): 基本的なレイヤ3スイッチ (ルータ)
- - トポロジ (<<topology,14 章>>): 中規模〜大規模ネットワークのトポロジ検知
+ - ブリッジ (<<one_way_bridge,10章>>): レガシーなネットワークとOpenFlowネットワークのブリッジ
+ - ファイアウォール (<<firewall,11章>>): 透過型ファイアウォール
+ - ルータ (<<router_part1,12章>>,<<router_part2,13章>>): 基本的なレイヤ3スイッチ (ルータ)
+ - トポロジ (<<topology,14章>>): 中規模〜大規模ネットワークのトポロジ検知
  - ルーティングスイッチ (<<routing_switch,15章>>): 中規模〜大規模ネットワーク用の仮想レイヤ2スイッチ
  - ネットワークスライス (<<sliceable_switch,16章>>): ルーティングスイッチに仮想ネットワーク機能を追加
 
@@ -57,9 +59,10 @@ Tremaの名前は、著者の一人がファンである「とれまレコード
 この「とれまレコード」の名前にも面白い由来があります。日本がバブルの頃、道路の「とまれ」という標示がよく「とれま」と間違えて描かれており、これに目をつけたレーベルオーナーが「とれまレコード」と名付けたのだそうです。そしてもともと、このありえないミスの原因は、バブル景気時代に急増した外国人労働者達が、日本語もままならないまま工事現場で働いていたということにあります。
 
 [[trema_logo]]
-image::trema_logo.png[caption="図2-a",title="Tremaの公式ロゴ"]
+.Tremaの公式ロゴ
+image::trema_logo.png[caption="図 3-a: "]
 
-この逸話にのっとって、Tremaの公式ロゴも<<trema_logo,図2-a>>のとおり道路標識の写真になっています。ちなみに、こんな道路標識は日本中どこを探してもありません! 本書の編集者が画像編集ソフトで試しに作ってみたところ評判が良かったので、そのまま公式ロゴになりました。
+この逸話にのっとって、Tremaの公式ロゴも<<trema_logo,図 3-a>>のとおり道路標識の写真になっています。ちなみに、こんな道路標識は日本中どこを探してもありません! 本書の編集者が画像編集ソフトで試しに作ってみたところ評判が良かったので、そのまま公式ロゴになりました。
 ====
 
 == Trema実行環境のセットアップ
@@ -78,11 +81,13 @@ TremaはLinux用のソフトウェアです。次のLinuxディストリビュ�
 
 `sudo` が正しく設定できることを確認したら、Tremaの実行に必要な次のソフトウェアをインストールします。
 
-- Rubyインタプリタ : Tremaの実行にはRubyのバージョン2.0以降が必要です。Tremaを使ったコントローラの開発にもRubyを使います。
-- Bundler (https://bundler.io/) : Rubyライブラリのインストーラです。bundlerを使ってTrema本体と実行に必要なライブラリをインストールします。
-- Open vSwitch (http://openvswitch.org/) : OpenFlowに対応したソフトウェアスイッチの一種です。Tremaの仮想ネットワーク機能で使用します。
+Ruby インタプリタ:: Trema の実行には Ruby のバージョン 2.0 以降が必要です。Trema を使ったコントローラの開発にも Ruby を使います
 
-// TODO ここではTremaはインストールしない、ということを書くべき?
+Bundler footnote:[https://bundler.io/]:: Ruby ライブラリのインストーラです。Trema 本体と実行に必要なライブラリ一式を自動的にインストールします
+
+Open vSwitch footnote:[http://openvswitch.org/]:: OpenFlow に対応したソフトウェアスイッチの一種です。Trema の仮想ネットワーク機能で使用します
+
+// TODO ここでは Trema はインストールしない、ということを書くべき?
 
 === Rubyのインストール
 
@@ -109,15 +114,15 @@ $ sudo yum install ruby ruby-devel gcc gcc-c++
 
 なお gcc と gcc-c++ パッケージは Trema が依存する外部ライブラリのインストールに必要です。
 
-=== Bundlerのインストール
+=== Bundler のインストール
 
-Bundlerは次のコマンドでインストールできます。
+Bundler は次のコマンドでインストールできます。
 
 ----
 $ gem install bundler
 ----
 
-なお `gem` はRubyの標準ライブラリ形式 `.gem` をインストールするコマンドです。ここでは最新版のBundlerの `.gem` を自動的にダウンロードしてインストールしています。
+なお `gem` は Ruby の標準ライブラリ形式 `.gem` をインストールするコマンドです。ここでは最新版の Bundler の `.gem` を自動的にダウンロードしてインストールしています。
 
 === Open vSwitchのインストール
 
@@ -150,7 +155,7 @@ $ sudo systemctl start openvswitch.service
 
 === Hello Tremaを書く
 
-コントローラの実装はプロジェクト用ディレクトリを作ることから始めます。まずは次のように、「Hello Trema!」用の空のディレクトリhello_tremaと、ソースコード用ディレクトリhello_trema/libを `mkdir -p` コマンドで新たに作ってください。
+コントローラの実装はプロジェクト用ディレクトリを作ることから始めます。まずは次のように、「Hello Trema!」用の空のディレクトリ `hello_trema` と、ソースコード用ディレクトリ `hello_trema/lib` を `mkdir -p` コマンドで新たに作ってください。
 
 ----
 $ mkdir -p hello_trema/lib
@@ -161,31 +166,30 @@ $ cd hello_trema
 
 プロジェクトディレクトリには、コントローラに関連するすべてのファイルを置きます。コントローラのソースコードをはじめ、README.mdやLICENSEといったドキュメント類、コントローラの動作をテストするためのテストファイル、そして各種設定ファイルがここに入ります。
 
-プロジェクトディレクトリのお手本として、GitHubのtrema/hello_tremaリポジトリ (https://github.com/trema/hello_trema) を見てみましょう。このリポジトリは、標準的なRubyプロジェクトのファイル構成に従っています。次に主要なファイルを挙げます。
+プロジェクトディレクトリのお手本として、GitHub の `trema/hello_trema` リポジトリ (https://github.com/trema/hello_trema) を見てみましょう。このリポジトリは、標準的な Ruby プロジェクトのファイル構成に従っています。次に主要なファイルを挙げます。
 
-- README.md: メインのドキュメント
-- LICENSE: 配布ライセンスの指定
-- CHANGELOG.md: 開発履歴
-- Gemfile: 必要なgemパッケージの定義
-- Rakefile: 開発用タスク
-- lib/: コントローラの実装
-- features/: 受け入れテスト
-- spec/: ユニットテスト
-- tasks/: 開発用タスク定義
+- `README.md`: メインのドキュメント
+- `LICENSE`: 配布ライセンスの指定
+- `CHANGELOG.md`: 開発履歴
+- `Gemfile`: 実行に必要なgemパッケージの定義
+- `Rakefile`: 開発用タスク
+- `lib/`: コントローラの実装
+- `features/`: 受け入れテスト
+- `spec/`: ユニットテスト
+- `tasks/`: 開発用タスク定義
 
 自分で作ったコントローラを公開する場合、このようなファイル構成にすることが求められます。
 
 [NOTE]
 ====
-テスト関連のディレクトリ(features/, spec/, tasks/)の用途については、第7章「テスト駆動開発」で詳しく説明します。
-// TODO 第7章にリンクを張る
+テスト関連のディレクトリ (`features/` と `spec/`) の用途については、第 9 章「<<tdd,Trema でテスト駆動開発>>」で詳しく説明します。
 ====
 
 ==== コントローラ本体の実装
 
-エディタで hello_trema ディレクトリ内の lib/hello_trema.rb を開き、次の Ruby コードを入力してください。.rb は Ruby プログラムの標準的な拡張子です。Ruby の文法は必要に応じておいおい説明しますので、もしわからなくても気にせずそのまま入力してください。
+エディタで `hello_trema` ディレクトリ内の `lib/hello_trema.rb` を開き、次の Ruby コードを入力してください。`.rb` は Ruby プログラムの標準的な拡張子です。Ruby の文法は必要に応じておいおい説明しますので、もしわからなくても気にせずそのまま入力してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 include::{sourcedir}/lib/hello_trema.rb[]
@@ -195,39 +199,41 @@ include::{sourcedir}/lib/hello_trema.rb[]
 
 ==== スイッチの定義
 
-Hello Tremaの実行にはOpenFlowスイッチが1台必要です。さきほどインストールしたOpen vSwitchをHello Tremaコントローラに接続することにしましょう。次の設定ファイルtrema.confをエディタで作成してください。
+Hello Trema の実行には OpenFlow スイッチが 1 台必要です。さきほどインストールした Open vSwitch を Hello Trema コントローラに接続することにしましょう。次の設定ファイル `trema.conf` をエディタで `hello_trema` ディレクトリ直下に作成してください。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
 vswitch { datapath_id 0xabc }
 ----
 
-コントローラを実行する際にこの設定ファイルを指定することで、Open vSwitchを起動しコントローラに接続できます。
+コントローラを実行する際にこの設定ファイルを指定することで、Open vSwitch を起動しコントローラに接続できます。
 
-この設定ファイルでは0xabcというDatapath IDを持つ1台のソフトウェアスイッチを定義しています。`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一位に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一位な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
+この設定ファイルでは0xabcというDatapath IDを持つ1台のソフトウェアスイッチを定義しています。`vswitch` で始まる行が1台の仮想スイッチに対応します。続く波括弧(`{ }`)内で指定されている `datapath_id` (`0xabc`) は、仮想スイッチを識別するための16進数の値です。これはちょうどネットワークカードにおけるMACアドレスのような存在で、スイッチを一意に特定するIDとして使われます。OpenFlowの仕様では、この値には64ビットの一意な整数値を割り振ることになっています。仮想スイッチでは好きな値を設定できるので、もし仮想スイッチを複数台作る場合にはお互いがぶつからないように注意してください。
 
-==== Tremaのインストール
+==== Trema のインストール
 
-Hello Tremaの実行にはもちろんTremaが必要です。実行に必要なRubyのアプリケーションやライブラリを`Gemfile`というファイルに次のように書いておくと、Hello Trema専用の実行環境を自動的にセットアップできます。
+Hello Trema の実行にはもちろん Trema が必要です。実行に必要な Ruby のアプリケーションやライブラリの gem を `hello_trema` ディレクトリ直下の `Gemfile` というファイルに次のように書くことで、Hello Trema の実行環境として Trema を使うということを指定します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .Gemfile
 ----
 source 'https://rubygems.org/' # <1>
 
 gem ‘trema’# <2>
 ----
-<1> gemの取得元として標準的なhttps://rubygems.orgを指定します
-<2> 実行環境にTremaを追加します
+<1> gem の取得元として標準的な https://rubygems.org を指定します
+<2> 実行環境に Trema を追加します
 
-次のコマンドを実行すると、Tremaの実行コマンドがbin/tremaにインストールされます。
+Gemfile に記述した実行環境のセットアップには Bundler を使います。`hello_trema` ディレクトリ直下で次の `bundle install --binstubs` コマンドを実行すると、`Gemfile` に記述した Trema と Trema が依存する `.gem` ファイル一式を自動的にインストールし、Trema の実行コマンド `trema` を `bin/` ディレクトリに生成します。
 
 ----
 $ bundle install --binstubs
 $ ./bin/trema --version
-trema version 0.5.1
+trema version 0.9.0
 ----
+
+// TODO: 出版前に Trema のバージョンを最新版に更新
 
 実行に最低限必要なコードはこれだけです。それでは細かい部分は後で説明するとして「習うより慣れろ」でさっそく実行してみましょう。
 
@@ -241,7 +247,7 @@ Trema started.
 Hello, 0xabc! # <1>
 $
 ----
-<1> `Ctrl + c` でコントローラを終了
+<1> kbd:[Ctrl+c] でコントローラを終了
 
 ここまで見てきたように、`trema` コマンドを使うと、とても簡単にコントローラを実行できます。`trema` コマンドには他にもいくつかの機能がありますので、ここで簡単に紹介しておきましょう。
 
@@ -249,36 +255,36 @@ $
 
 `trema` コマンドは Trema 唯一のコマンドラインツールであり、コントローラの起動やテストなどさまざまな用途に使います。
 
-たとえば先ほどの「Hello, Trema!」で見たように、`trema run` はコントローラを起動するためのコマンドです。起動したコントローラは OpenFlow スイッチと接続しメッセージをやりとりします。また、`trema run` コマンドは `-c` (`--conf`) オプションで仮想ネットワークを作ることもでき、作ったコントローラをこの仮想ネットワークの中でテストできます(<<trema_run_command,図2-1>>)。
+たとえば先ほどの「Hello, Trema!」で見たように、`trema run` はコントローラを起動するためのコマンドです。起動したコントローラは OpenFlow スイッチと接続しメッセージをやりとりします。また、`trema run` コマンドは `-c` (`--conf`) オプションで仮想ネットワークを作ることもでき、作ったコントローラをこの仮想ネットワークの中でテストできます(<<trema_run_command,図 3-1>>)。
 
 [[trema_run_command]]
-image::trema_overview.png[caption="図2-1",title="trema runコマンドの実行イメージ"]
-// TODO 図から実ネットワークを消して、-cオプションと仮想ネットワークの対応を付ける
+.trema runコマンドの実行イメージ
+image::trema_overview.png[caption="図 3-1: "]
 
 `trema` コマンドは `git` や `svn` コマンドと似たコマンド体系を持っており、`trema` に続けて `run` などのサブコマンドを指定することでさまざまな機能を呼び出します。`trema` コマンドは Trema フレームワークにおける中心的なツールで、あらゆるコントローラ開発の出発点と言えます。こうしたコマンド体系を一般に「コマンドスイート」と呼びます。
 
 // TODO コマンドスイートの一般的なオプション体系をコラムで詳しく説明
 
-一般的なコマンドスイートと同じく、サブコマンドの一覧は `trema help` で表示できます。また、サブコマンド自体のヘルプは `trema help [サブコマンド]` で表示できます。以下に、`trema help` で表示されるサブコマンド一覧をざっと紹介しておきます。いくつかのサブコマンドはまだ使い方を紹介していませんが、続く章で説明しますので今は目を通すだけでかまいません。
+一般的なコマンドスイートと同じく、サブコマンドの一覧は `trema help` で表示できます。また、サブコマンド自体のヘルプは `trema help サブコマンド名` で表示できます。以下に、`trema help` で表示されるサブコマンド一覧をざっと紹介しておきます。いくつかのサブコマンドはまだ使い方を紹介していませんが、続く章で説明しますので今は目を通すだけでかまいません。
 
 * `trema run`
- コントローラをフォアグラウンドで実行する。`--daemonize` (`-d`) オプションを付けることで、コントローラをバックグラウンド (デーモンモード) として実行できる
+ コントローラをフォアグラウンドで実行する。`--daemonize` (`-d`) オプションを付けることで、コントローラをバックグラウンド (デーモンモード) として実行できる
 * `trema version`
- Trema のバージョンを表示する。`trema --version` と同じ
+ Trema のバージョンを表示する。`trema --version` と同じ
 * `trema killall`
- バックグラウンドで起動している Trema プロセス全体を停止する
+ バックグラウンドで起動している Trema プロセス全体を停止する
 * `trema kill`
- 仮想ネットワーク内の指定したスイッチまたはスイッチポートを停止する
+ 仮想ネットワーク内の指定したスイッチまたはスイッチポートを停止する
 * `trema up`
- 仮想ネットワークの指定したスイッチまたはスイッチポートを再び有効にする章)
+ 仮想ネットワークの指定したスイッチまたはスイッチポートを再び有効にする
 * `trema send_packets`
- 仮想ネットワーク内でテストパケットを送信する
+ 仮想ネットワーク内でテストパケットを送信する
 * `trema show_stats`
- 仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報を表示する○章)
+ 仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報を表示する
 * `trema reset_stats`
- 仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報をリセットする(第○章)
+ 仮想ネットワーク内の仮想ホストで送受信したパケットの統計情報をリセットする
 * `trema dump_flows`
- 仮想ネットワーク内の仮想スイッチのフローテーブルを表示する
+ 仮想ネットワーク内の仮想スイッチのフローテーブルを表示する
 
 // TODO relishで生成したドキュメントと対応付けて更新
 
@@ -291,9 +297,9 @@ Rubyを習得する一番の近道は、コードを構成する各要素の種�
 |========================================================================
 | 品詞             | 視覚的ヒント   | 例
 
-| 定数             | 大文字で始まる | HelloTrema, Trema::Controller
-| インスタンス変数 | @で始まる      | @switches, @name
-| シンボル         | :で始まる      | :match, :actions
+| 定数             | 大文字で始まる | `HelloTrema`, `Trema::Controller`
+| インスタンス変数 | `@` で始まる   | `@switches`, `@name`
+| シンボル         | `:` で始まる   | `:match`, `:actions`
 |========================================================================
 
 [NOTE]
@@ -307,7 +313,7 @@ Rubyを習得する一番の近道は、コードを構成する各要素の種�
 
 `HelloTrema` や `Trema::Controller` など、大文字で始まる名前が定数です。Rubyの定数は英語や日本語といった自然言語における固有名詞にあたります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_world.rb
 ----
 # Hello World!
@@ -338,7 +344,7 @@ $ irb
 
 `class` に続く定数はクラス定義です。「Hello, Trema!」の例では `HelloTrema` が定義されるクラス名です。「`class` +クラス名」から始まるクラス定義は、同じ字下げレベルの `end` までの範囲です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
@@ -358,7 +364,7 @@ end # <2>
 
 Tremaではすべてのコントローラはクラスとして定義し、Tremaの提供する `Trema::Controller` クラスをかならず継承します。クラスを継承するには、`class クラス名 < 親クラス名` と書きます.
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller # <1>
@@ -377,7 +383,7 @@ end
 
 ハンドラの定義は `def` に続く名前から `end` までのブロックです。たとえば `HelloTrema` の例では `start` と `switch_ready` ハンドラを定義しています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/hello_trema.rb
 ----
 class HelloTrema < Trema::Controller
@@ -397,22 +403,22 @@ end
 // TODO: なぜargsをアンダースコアで始めるのか、rubocopを交えながら説明する。
 // TODO: 可能であればhello_tremaのソースコードから部分的にimportする
 
-それぞれのイベントハンドラは、対応するイベントが発生したときに自動的に呼び出されます。たとえば `start` ハンドラはコントローラの起動イベント発生時、つまり `trema run` でコントローラを起動したときに自動的に呼ばれます。また、Packet Inメッセージ(第3章)が到着したとき、もし `packet_in` ハンドラがコントローラクラスに定義されていれば、Tremaが `packet_in` ハンドラを自動的に呼びます。
+それぞれのイベントハンドラは、対応するイベントが発生したときに自動的に呼び出されます。たとえば `start` ハンドラはコントローラの起動イベント発生時、つまり `trema run` でコントローラを起動したときに自動的に呼ばれます。また、Packet In メッセージ (<<cbench,第 5 章>>で紹介) が到着したとき、もし `packet_in` ハンドラがコントローラクラスに定義されていれば、Tremaが `packet_in` ハンドラを自動的に呼びます。
 
 // TODO これを説明する図をここに入れる
 
 Tremaでよく使うイベントをリストアップしておきます。
 
 - `start`
- コントローラの起動時に呼ばれる
+ コントローラの起動時に呼ばれる
 - `switch_ready`
- スイッチがコントローラに接続したときに呼ばれる
+ スイッチがコントローラに接続したときに呼ばれる
 - `switch_disconnected`
- スイッチがコントローラから切断したときに呼ばれる(第4章)
+ スイッチがコントローラから切断したときに呼ばれる
 - `packet_in`
- 未知のパケットが到着したというPacket Inメッセージ到着時に呼ばれる(第3章)
+ 未知のパケットが到着したというPacket Inメッセージ到着時に呼ばれる
 - `flow_removed`
- フローが消されたときのFlow Removedメッセージ到着時に呼ばれる(第6章)
+ フローが消されたときのFlow Removedメッセージ到着時に呼ばれる
 
 [NOTE]
 .ハンドラの自動呼び出し
@@ -442,7 +448,7 @@ return self super then true undef unless until when while yield
 
 新しくスイッチが起動すると `switch_ready` メソッドが起動します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .HelloTrema#switch_ready (lib/hello_trema.rb)
 ----
 def switch_ready(dpid)
@@ -457,10 +463,11 @@ end
 [NOTE]
 .switch_readyの中身
 ====
-実は OpenFlow の仕様には `switch_ready` というメッセージは定義されていません。実は、これは Trema が独自に定義するイベントなのです。`switch_ready` の裏では<<switch_ready,図2-b>>に示す一連の複雑な処理が行われていて、Trema がこの詳細をうまくカーペットの裏に隠してくれているというわけです。
+実は OpenFlow の仕様には `switch_ready` というメッセージは定義されていません。実は、これは Trema が独自に定義するイベントなのです。`switch_ready` の裏では<<switch_ready,図 3-b>>に示す一連の複雑な処理が行われていて、Trema がこの詳細をうまくカーペットの裏に隠してくれているというわけです。
 
 [[switch_ready]]
-image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起こるまで"]
+.switch_ready イベントが起こるまで
+image::switch_ready.png[caption="図 3-b: "]
 
 最初に、スイッチとコントローラがしゃべる OpenFlow プロトコルが合っているか確認します。OpenFlow の Hello メッセージを使ってお互いにプロトコルのバージョンを知らせ、うまく会話できそうか判断します。
 
@@ -481,7 +488,7 @@ image::switch_ready.png[caption="図2-b",title="switch_ready イベントが起�
 
 ログメッセージを出力するには、`logger` を使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .HelloTrema#start (lib/hello_trema.rb)
 ----
 def start(_args)
@@ -489,27 +496,27 @@ def start(_args)
 end
 ----
 
-`logger` はTrema標準のロガーで、ログメッセージの出力はこれを通じて行います。ログメッセージの重要度に応じて、`critical` (重要度 最高)から `debug` (重要度 最低)までの次の6種類のメソッドを選べます。
+`logger` はTrema標準のロガーで、ログメッセージの出力はこれを通じて行います。ログメッセージの重要度に応じて、`unknown` (重要度 最高) から `debug` (重要度 最低) までの次の6種類のメソッドを選べます。
 
-- `critical`: 回復不能なエラー
+- `unknown`: 不明なエラー。重要度にかかわらず常にロギングされる
+- `fatal`: 回復不能なエラー
 - `error`: エラー
 - `warn`: 警告
-- `notice`: 注意が必要な情報
 - `info`: 通常レベルの情報
 - `debug`: デバッグ出力
 
 `trema run` のオプションでロギングレベルを指定できます。たとえば次のコードを実行するとしましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .try_logging.rb
 ----
 # ロギングレベルの確認用コード
 class TryLogging < Trema::Controller
   def start(_args)
-    logger.critical 'CRITICAL'
+    logger.unknown 'UNKNOWN'
+    logger.fatal 'FATAL'
     logger.error 'ERROR'
     logger.warn 'WARN'
-    logger.notice 'NOTICE'
     logger.info 'INFO'
     logger.debug 'DEBUG'
   end
@@ -518,14 +525,14 @@ end
 
 // TODO コードは別ファイルにして、rubocopにかける
 
-このコードをたとえば次のようにロギングレベル `notice` で実行すると、`info` と `debug` メッセージは出力されません。
+このコードをたとえば次のようにロギングレベル `warn` で実行すると、`info` と `debug` メッセージは出力されません。
 
 ----
-$ ./bin/trema run try_logging.rb --logging_level notice
-CRITICAL
+$ ./bin/trema run try_logging.rb --logging_level warn
+UNKNOWN
+FATAL
 ERROR
 WARN
-NOTICE
 ----
 
 ログファイルのデフォルトパスは `/tmp/[コントローラのクラス名].log` です。たとえばHelloTremaの場合には `/tmp/HelloTrema.log` になります。ログファイルの出力先ディレクトリを変更するには、`trema run` の `--log_dir` または `-L` オプションを指定します。たとえば次のようにすると、`/var/log/HelloTrema.log` が作られます。
@@ -540,7 +547,7 @@ $ ./bin/trema run try_logging.rb --log_dir /var/log/
 
 `logger.info` に渡している文字列中の `#{}` は、文字列内にRubyの式を組込みます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 logger.info "Hello #{dpid.to_hex}!"
 #=> Hello 0xabc!
@@ -548,7 +555,7 @@ logger.info "Hello #{dpid.to_hex}!"
 
 これは次のコードと同じです。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 logger.info 'Hello ' + dpid.to_hex + '!'
 #=> Hello 0xabc!
@@ -575,12 +582,8 @@ logger.info 'Hello ' + dpid.to_hex + '!'
 
 Rubyプログラミングが初めてという人達のために、この章では入門に役立つサイトや本をいくつか紹介します。
 
-- 「Why’s (Poignant) Guide to Ruby」(http://mislav.uniqpath.com/poignant-guide/)
- 筆者は大学や職場でいろいろなプログラミング言語を勉強してきましたが、これほど読んでいて楽しい本に出会ったことはありません。この本はRuby会の謎の人物_why氏による風変わりなRuby入門で、プログラミング言語の解説書にもかかわらずまるで小説やマンガのようにリラックスして読めます。この章のRubyの品詞の説明は、この本を参考にしました(日本語版はhttp://www.aoky.net/articles/why_poignant_guide_to_ruby/)
-- 「TryRuby」(http://tryruby.org/)
- 同じく_why氏による、ブラウザで動くRuby環境です。Rubyを試してみたいけどインストールするのが面倒という人は、まずはここでRubyを試してみましょう。`help` と打つと15分の短いRubyチュートリアルが始まります。
-- 『プログラミングRuby第2版』(Dave Thomas、Chad Fowler、Andrew Hunt著／田和勝、まつもとゆきひろ 訳／オーム社) 
-Rubyの完全なリファレンスです。本気でRubyを勉強したい人は持っていて損はしません。リファレンスが必要ならこの本だけあれば十分です。
+「Ruby 2.2.0 リファレンスマニュアル」 (http://docs.ruby-lang.org/ja/2.2.0/doc/index.html):: Ruby の完全なリファレンスです。Ruby でプログラミングする際は参照しましょう
+「メタプログラミングRuby 第2版」(Paolo Perrotta 著／角 征典 訳／オライリージャパン):: Ruby プログラムを短く簡潔に書くためのテクニックをたくさん紹介しています。「プロっぽい」 Ruby コードを書きたい人は必読です
+「Why’s (Poignant) Guide to Ruby」(http://mislav.uniqpath.com/poignant-guide/) footnote:[日本語版は http://www.aoky.net/articles/why_poignant_guide_to_ruby/]:: 筆者は大学や職場でいろいろなプログラミング言語を勉強してきましたが、これほど読んでいて楽しいドキュメントに出会ったことはありません。この本はRuby会の謎の人物_why氏による風変わりなRuby入門で、プログラミング言語の解説書にもかかわらずまるで小説やマンガのようにリラックスして読めます。この章のRubyの品詞の説明は、このドキュメントを参考にしました
 
-// TODO この本を読む人はRubyをインストールすること前提だから、TryRubyはちょっと違うと思う。あといきなり\_whyの本を紹介するのもめちゃくちゃなので、最初は無難な本を紹介するのがいいと思う
 // TODO asciidoc のbib形式に変換

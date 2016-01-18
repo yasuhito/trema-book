@@ -1,7 +1,8 @@
 require 'slice'
 
-describe Slice, '.new' do
-  Given(:slice) { Slice.new('slice') }
+describe Slice, '.create' do
+  Given { Slice.destroy_all }
+  Given(:slice) { Slice.create('slice') }
 
   describe '#add_port' do
     context 'with dpid: 0x1, port: 1' do

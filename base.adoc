@@ -1,6 +1,9 @@
 [[how_does_openflow_work]]
 include::how_does_openflow_work.adoc[]
 
+[[openflow_spec]]
+include::openflow_spec.adoc[]
+
 [[hello_trema]]
 include::hello_trema.adoc[]
 
@@ -19,9 +22,6 @@ include::learning_switch.adoc[]
 [[learning_switch13]]
 include::learning_switch13.adoc[]
 
-[[traffic_monitor]]
-include::traffic_monitor.adoc[]
-
 [[tdd]]
 include::tdd.adoc[]
 
@@ -29,7 +29,7 @@ include::tdd.adoc[]
 include::one_way_bridge.adoc[]
 
 [[firewall]]
-= NFVを作ろう: ファイアウォール
+include::firewall.adoc[]
 
 [[router_part1]]
 include::router_part1.adoc[]
@@ -51,11 +51,8 @@ include::openvnet.adoc[]
 
 include::appendix_rvm.adoc[]
 
-[[openflow_spec]]
-include::appendix_openflow_spec.adoc[]
-
-[[trema_api_reference]]
-include::appendix_trema_api_reference.adoc[]
+[[trema_reference]]
+include::appendix_trema_reference.adoc[]
 
 include::appendix_copyright_and_license.adoc[]
 

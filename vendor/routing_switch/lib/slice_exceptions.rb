@@ -1,15 +1,19 @@
 class Slice
+  # Superclass for not found errors
+  class NotFoundError < StandardError; end
   # Slice not found.
-  class SliceNotFoundError < StandardError; end
+  class SliceNotFoundError < NotFoundError; end
   # Port not found.
-  class PortNotFoundError < StandardError; end
+  class PortNotFoundError < NotFoundError; end
   # MAC address not found.
-  class MacAddressNotFoundError < StandardError; end
+  class MacAddressNotFoundError < NotFoundError; end
 
+  # Superclass for already exists errors
+  class AlreadyExistsError < StandardError; end
   # Slice already exists.
-  class SliceAlreadyExistsError < StandardError; end
+  class SliceAlreadyExistsError < AlreadyExistsError; end
   # Port already exists.
-  class PortAlreadyExistsError < StandardError; end
+  class PortAlreadyExistsError < AlreadyExistsError; end
   # MAC address already exists.
-  class MacAddressAlreadyExistsError < StandardError; end
+  class MacAddressAlreadyExistsError < AlreadyExistsError; end
 end

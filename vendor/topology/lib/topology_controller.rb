@@ -1,5 +1,3 @@
-$LOAD_PATH.unshift __dir__
-
 require 'command_line'
 require 'topology'
 
@@ -50,7 +48,7 @@ class TopologyController < Trema::Controller
       @topology.maybe_add_link Link.new(dpid, packet_in)
     else
       @topology.maybe_add_host(packet_in.source_mac,
-                               packet_in.ip_source_address,
+                               packet_in.source_ip_address,
                                dpid,
                                packet_in.in_port)
     end

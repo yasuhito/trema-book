@@ -5,8 +5,10 @@ module SliceExtensions
       { dpid: dpid, port_no: in_port, mac: source_mac }
     end
 
-    def slice_destination(topology)
-      topology.fetch(destination_mac).first.to_h.merge(mac: destination_mac)
+    def slice_destination(graph)
+      graph.fetch(destination_mac).first.to_h.merge(mac: destination_mac)
+    rescue KeyError
+      nil
     end
   end
 

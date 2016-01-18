@@ -1,54 +1,59 @@
+require 'active_support/core_ext/class/attribute_accessors'
+require 'drb'
+require 'json'
 require 'path_manager'
-require 'slice_extensions'
+require 'port'
 require 'slice_exceptions'
+require 'slice_extensions'
 
 # Virtual slice.
+# rubocop:disable ClassLength
 class Slice
-  # dpid + port number
-  class Port
-    def self.parse(port_id)
-      fail "Invalid port #{port_id}" unless /\A(0x\S+):(\d+)\Z/ =~ port_id
-      { dpid: Regexp.last_match(1).hex, port_no: Regexp.last_match(2).to_i }
-    end
+  extend DRb::DRbUndumped
+  include DRb::DRbUndumped
 
-    attr_reader :dpid
-    attr_reader :port_no
+  cattr_accessor(:all, instance_reader: false) { [] }
 
-    def initialize(attrs)
-      @attrs = attrs
-      @dpid = attrs.fetch(:dpid)
-      @port_no = attrs.fetch(:port_no)
+  def self.create(name)
+    if find_by(name: name)
+      fail SliceAlreadyExistsError, "Slice #{name} already exists"
     end
-
-    def name
-      format('%#x', @dpid) + ':' + @port_no.to_s
-    end
-
-    def fetch(attr)
-      @attrs.fetch attr
-    end
-
-    def to_json(*_)
-      %({"name": "#{name}", "dpid": #{@dpid}, "port_no": #{@port_no}})
-    end
-
-    def ==(other)
-      eql? other
-    end
-
-    def eql?(other)
-      @dpid == other.dpid && @port_no == other.port_no
-    end
-
-    def hash
-      name.hash
-    end
+    new(name).tap { |slice| all << slice }
   end
+
+  # This method smells of :reek:NestedIterators but ignores them
+  def self.find_by(queries)
+    queries.inject(all) do |memo, (attr, value)|
+      memo.find_all { |slice| slice.__send__(attr) == value }
+    end.first
+  end
+
+  def self.find_by!(queries)
+    find_by(queries) || fail(SliceNotFoundError,
+                             "Slice #{queries.fetch(:name)} not found")
+  end
+
+  def self.find(&block)
+    all.find(&block)
+  end
+
+  def self.destroy(name)
+    find_by!(name: name)
+    Path.find { |each| each.slice == name }.each(&:destroy)
+    all.delete_if { |each| each.name == name }
+  end
+
+  def self.destroy_all
+    all.clear
+  end
+
+  attr_reader :name
 
   def initialize(name)
     @name = name
     @ports = Hash.new([].freeze)
   end
+  private_class_method :new
 
   def add_port(port_attrs)
     port = Port.new(port_attrs)
@@ -60,12 +65,21 @@ class Slice
 
   def delete_port(port_attrs)
     find_port port_attrs
+    Path.find { |each| each.slice == @name }.select do |each|
+      each.port?(Topology::Port.create(port_attrs))
+    end.each(&:destroy)
     @ports.delete Port.new(port_attrs)
   end
 
   def find_port(port_attrs)
     mac_addresses port_attrs
     Port.new(port_attrs)
+  end
+
+  def each(&block)
+    @ports.keys.each do |each|
+      block.call each, @ports[each]
+    end
   end
 
   def ports
@@ -84,6 +98,11 @@ class Slice
   def delete_mac_address(mac_address, port_attrs)
     find_mac_address port_attrs, mac_address
     @ports[Port.new(port_attrs)] -= [Pio::Mac.new(mac_address)]
+
+    Path.find { |each| each.slice == @name }.select do |each|
+      each.endpoints.include? [Pio::Mac.new(mac_address),
+                               Topology::Port.create(port_attrs)]
+    end.each(&:destroy)
   end
 
   def find_mac_address(port_attrs, mac_address)
@@ -105,6 +124,8 @@ class Slice
 
   def member?(host_id)
     @ports[Port.new(host_id)].include? host_id[:mac]
+  rescue
+    false
   end
 
   def to_s
@@ -119,3 +140,4 @@ class Slice
     @ports.__send__ method, *args, &block
   end
 end
+# rubocop:enable ClassLength

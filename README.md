@@ -1,6 +1,6 @@
 # Trema本 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
-[Trema][trema]を使ったOpenFlowプログラミングを解説するフリー書籍です. 対応スイッチの多いOpenFlowバージョン1.3.xを対象にしています. プログラミング言語はRubyバージョン2.0です.
+[Trema][trema]を使ったOpenFlowプログラミングを解説するフリー書籍です. 対応スイッチの多いOpenFlowバージョン1.3.xを対象にしています. プログラミング言語はRubyバージョン2.0以降です.
 
 * ブラウザで読む: https://github.com/yasuhito/trema-book
 * PDFで読む: (準備中)

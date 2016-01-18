@@ -3,6 +3,52 @@
 ## develop
 
 
+## 0.25.0 (1/12/2016)
+* [#166](https://github.com/yasuhito/trema-book/pull/166): ファイアウォール章を追加
+
+
+## 0.24.0 (1/10/2016)
+* [#159](https://github.com/yasuhito/trema-book/pull/159): OpenFlow仕様の章を 2 章へ移動
+
+
+## 0.23.0 (1/8/2016)
+* OpenFlow移行章をアップデート
+
+
+## 0.22.0 (1/7/2016)
+* [#161](https://github.com/yasuhito/trema-book/pull/161): パッチパネル章をアップデート
+* [#162](https://github.com/yasuhito/trema-book/pull/162): ラーニングスイッチ章をアップデート
+
+
+## 0.21.0 (1/6/2016)
+* [#160](https://github.com/yasuhito/trema-book/pull/160): Cbench章をアップデート
+
+
+## 0.20.0 (1/5/2016)
+* [#156](https://github.com/yasuhito/trema-book/pull/156): ルータ章 part1 をアップデート
+* [#157](https://github.com/yasuhito/trema-book/pull/157): 誤字を修正
+* [#158](https://github.com/yasuhito/trema-book/pull/158): ルータ章 part2 をアップデート
+
+
+## 0.19.0 (1/4/2016)
+* [#154](https://github.com/yasuhito/trema-book/pull/154): OpenFlowの仕組み章をアップデート
+* [#155](https://github.com/yasuhito/trema-book/pull/155): トポロジ章をアップデート
+
+
+## 0.18.0 (1/3/2016)
+* OpenFlow 仕様章をアップデート
+* [#150](https://github.com/yasuhito/trema-book/pull/150): スライサブルスイッチ章をアップデート
+* [#151](https://github.com/yasuhito/trema-book/pull/151): ルーティングスイッチ章をアップデート
+* [#152](https://github.com/yasuhito/trema-book/pull/152): Hello Trema 章をアップデート
+* [#153](https://github.com/yasuhito/trema-book/pull/153): スイッチモニタ章をアップデート
+* そのほか細かい typo 修正など細かい修正たくさん
+
+
+## 0.17.0 (12/26/2015)
+* [#136](https://github.com/yasuhito/trema-book/pull/136): ルーティングスイッチ章をアップデート
+* trema コマンドのリファレンスをいくつか追加
+
+
 ## 0.16.0 (12/4/2015)
 * [#124](https://github.com/yasuhito/trema-book/pull/124): 10章を追加
 * [#123](https://github.com/yasuhito/trema-book/pull/123): startハンドラのリファレンスを追加
