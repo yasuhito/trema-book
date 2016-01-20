@@ -3,6 +3,25 @@
 ## develop
 
 
+## 0.26.0 (1/20/2016)
+* [#171](https://github.com/yasuhito/trema-book/pull/171): マルチプルテーブル版ルータ章を追加
+* [#170](https://github.com/yasuhito/trema-book/pull/170): OpenFlow移行章のラベル A, B, C を削除
+* [#168](https://github.com/yasuhito/trema-book/pull/168): netnsサブコマンドの説明を更新
+* [#167](https://github.com/yasuhito/trema-book/pull/167): OpenFlow仕様章の図を書き直し
+
+
+## 0.25.0 (1/12/2016)
+* [#166](https://github.com/yasuhito/trema-book/pull/166): ファイアウォール章を追加
+
+
+## 0.24.0 (1/10/2016)
+* [#159](https://github.com/yasuhito/trema-book/pull/159): OpenFlow仕様の章を 2 章へ移動
+
+
+## 0.23.0 (1/8/2016)
+* OpenFlow移行章をアップデート
+
+
 ## 0.22.0 (1/7/2016)
 * [#161](https://github.com/yasuhito/trema-book/pull/161): パッチパネル章をアップデート
 * [#162](https://github.com/yasuhito/trema-book/pull/162): ラーニングスイッチ章をアップデート

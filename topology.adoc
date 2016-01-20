@@ -78,7 +78,7 @@ $ cd topology
 $ bundle install --binstubs
 ----
 
-ソースコードに含まれる `triangle.conf` はスイッチ 3 台を三角形に接続したトアイアングル型のトポロジです (<<triangle_conf, 図 14-7>>)。
+ソースコードに含まれる `triangle.conf` はスイッチ 3 台を三角形に接続したトライアングル型のトポロジです (<<triangle_conf, 図 14-7>>)。
 
 [[triangle_conf]]
 .triangle.confのトポロジ
