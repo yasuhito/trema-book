@@ -37,6 +37,9 @@ include::router_part1.adoc[]
 [[router_part2]]
 include::router_part2.adoc[]
 
+[[router13]]
+include::router13.adoc[]
+
 [[topology]]
 include::topology.adoc[]
 
