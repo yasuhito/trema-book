@@ -109,20 +109,449 @@ OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual N
 
 == 使ってみる
 
-// TODO
-- https://github.com/axsh/openvnet/blob/master/docs/InstallGuide.md
+OpenVNetの利用はとても簡単です。まずは、CentOSが稼働する1台のマシンにOpenVNetの全てのサービスをインストールし、使い初めてみましょう。
+マシンは、物理マシンでも仮想マシンでも構いません。要件は以下の2つだけです。
+
+- CentOS 6.6以上が稼働するマシン
+- インターネット接続
+
+[[openvnet_installation_overview]]
+image::openvnet_installation_overview.png[caption="図17-1",title="1台のマシンで動作するOpenVNet環境"]
+
+=== インストールしてみる
+
+OpenVNetのインストールと初期設定は、以下の手順で進んでいきます。
+
+. OpenVNetのインストール
+. Redis、MySQLのインストール
+. Open vSwitchの仮想ブリッジ設定
+. 各種サービスの起動
+
+それでは、この順序に沿ってOpenVNetをインストールしてみましょう。
+
+==== OpenVNetのインストール
+
+`openvnet.repo` をダウンロードし、 `/etc/yum/repos.d/` ディレクトリに配置します。
+
+```
+$ sudo curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo
+```
+
+次に、 `openvnet-third-party.repo` をダウンロードし、 `/etc/yum.repos.d/` ディレクトリに配置します。
+
+```
+$ sudo curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet-third-party.repo
+```
+
+それぞれのリポジトリは、以下のパッケージを含んでいます。
+
+* `openvnet.repo`
+** `openvnet`
+** `openvnet-common`
+** `openvnet-vna`
+** `openvnet-vnmgr`
+** `openvnet-webapi`
+** `openvnet-vnctl`
+* `openvnet-third-party.repo`
+** `openvnet-ruby`
+** `openvswitch`
+
+`openvnet` パッケージはメタパッケージで、 `openvnet-common` 、 `openvnet-vna` 、 `openvnet-vnmgr` 、 `openvnet-webapi` 、および `openvnet-vnctl` パッケージに依存しています。一度に全てをインストールするために便利なパッケージです。
+
+なお、OpenVNetのインストールには `epel` が必要ですので、 `epel-release` パッケージをインストールしておきます。
+
+```
+$ sudo yum install -y epel-release
+```
+
+ここまでが完了したら、OpenVNetパッケージをインストールします。
+
+```
+$ sudo yum install -y openvnet
+```
+
+
+==== Redis、MySQLのインストール
+
+RedisおよびMySQL serverパッケージをインストールします。RedisはOpenVNetのプロセス間通信に必要で、MySQLはネットワーク構成情報を保持する為に利用されます。これらは両方必要とされていますが、OpenVNetは分散型のソフトウェアであるため、OpenVNetパッケージがこれらに依存する形にはなっていません。商用環境では、OpenVNetのプロセス群が動作するマシンとは異なるマシンにインストールされる形態を採用すると良いでしょう。
+
+```
+$ sudo yum install -y mysql-server redis
+```
+
+==== Open vSwitchの仮想ブリッジ設定
+
+Open vSwitchを使って、 `br0` という名前の仮想ブリッジを作成します。後の疎通確認では、 `inst1` および `inst2` という2つのLXCコンテナをこのブリッジに接続します。 `br0` の設定ファイルとして、 `/etc/sysconfig/network-scripts/ifcfg-br0` を、以下の内容で作成します。
+
+```
+DEVICE=br0
+DEVICETYPE=ovs
+TYPE=OVSBridge
+ONBOOT=yes
+BOOTPROTO=static
+HOTPLUG=no
+OVS_EXTRA="
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+"
+```
+
+なお、この設定では `datapath-id` を `0000aaaaaaaaaaaa` という値に設定していますが、この値はOpenVNetがブリッジを認識するための一意な識別子です。この値には16進数の値を設定できますが、後ほど利用する値ですので、憶えておいて下さい。
+
+==== 各種サービスの起動
+
+`openvswitch` サービスの起動と、仮想ブリッジの起動を行います。
+
+```
+$ sudo service openvswitch start
+$ sudo ifup br0
+```
+
+ネットワーク構成情報を保持するデータベースとしてインストールした、MySQL serverを起動します。
+
+```
+$ sudo service mysqld start
+```
+
+OpenVNetは、OpenVNet自身に内包されたRubyを利用しますので、環境変数PATHにそのパスを設定しておく必要があります。
+
+```
+$ PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+```
+
+Rubyにパスを通したら、データベースの作成を行います。
+
+```
+$ cd /opt/axsh/openvnet/vnet
+$ bundle exec rake db:create
+$ bundle exec rake db:init
+```
+
+先程述べたように、OpenVNetの各サービスはRedisで通信しますので、Redisを起動します。
+
+```
+$ service redis start
+```
+
+次に、OpenVNetのサービス群( `vnmgr` 、 `webapi` 、 `vna` )を起動します。これらを起動すると、 `/var/log/openvnet` ディレクトリにログが出力されます。もしうまく動作しない場合、このログの中に有用なエラーメッセージを見つけられる可能性があります。それでは、vnmgrとwebapiを起動してみましょう。
+
+```
+$ sudo initctl start vnet-vnmgr
+$ sudo initctl start vnet-webapi
+```
+
+続いて、データベースのレコードを作成するのは、 `vnctl` ユーティリティを使用します。 `vnctl` は `openvnet-vnctl` パッケージに含まれる、WebAPIのクライアントです。先程、仮想ブリッジの作成を行った際に設定した `datapath-id` の値を憶えているでしょうか？次のコマンドで、 `vna` がどの `datapath` を管理すればよいかをOpenVNetに教えます。
+
+```
+$ vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+```
+
+`vna` がどの `datapath` を管理すれば良いかの紐付けを行ったら、 `vna` を起動してみましょう。
+
+```
+$ sudo initctl start vnet-vna
+```
+
+`ovs-vsctl` コマンドで、 `vna` が正しく動作しているかを確認することができます。
+
+```
+$ ovs-vsctl show
+```
+
+ここで、 `is_connected: true` の文字列が見えていれば、 `vna` は正しく動作しています。もしこの文字列が見えない場合、数秒待ってから再施行してみて下さい。それでも見えない場合、 `/var/log/openvnet/vna.log` を確認し、何か問題が起こっていないかを確認して下さい。
+
+```
+fbe23184-7f14-46cb-857b-3abf6153a6d6
+    Bridge "br0"
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+```
+
+ここまででOpenVNetのインストールと設定は完了し、動作を開始しましたが、まだOpenVNetの仮想ネットワークに接続する仮想マシンが作成されていません。そこで、次にゲストとして2つのLXCコンテナ( `inst1` と `inst2` )を作成し、OpenVNetの仮想ネットワークに接続してみます。どのような仮想化技術でも動作はしますが、今回は、軽量かつ仮想マシン内にも簡単に構築できるLXCをインストールし、利用することにします。
+
+```
+$ sudo yum -y install lxc lxc-templates
+```
+
+`lxc` および `lxc-templates` パッケージのインストールが完了したら、コンテナのリソース制御を行う `cgroup` の利用準備を行います。
+
+```
+$ sudo mkdir /cgroup
+$ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
+$ sudo mount /cgroup
+```
+
+また、 `rsync` が必要になりますので、もしインストールされていない場合、以下のコマンドでrsyncをインストールして下さい。
+
+```
+$ sudo yum install -y rsync
+```
+
+LXCの動作の準備が出来ましたので、いよいよゲストの作成に入ります。
+
+```
+$ sudo lxc-create -t centos -n inst1
+$ sudo lxc-create -t centos -n inst2
+```
+
+`lxc-create` を実行すると、それぞれのゲストの `root` ユーザのパスワードがどこを見れば判るかが出力されます。このパスワードは後でゲストにログインする際に利用しますので、憶えておいて下さい。次に、ゲストのネットワークインタフェースの設定を行います。 `/var/lib/lxc/inst1/config` ファイルを開き、内容を以下で置き換えて下さい。
+
+```
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst1
+lxc.network.hwaddr = 10:54:FF:00:00:01
+lxc.rootfs = /var/lib/lxc/inst1/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst1
+lxc.autodev = 0
+```
+
+同様に、 `/var/lib/lxc/inst2/config` ファイルを開き、内容を以下で置き換えます。
+
+```
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst2
+lxc.network.hwaddr = 10:54:FF:00:00:02
+lxc.rootfs = /var/lib/lxc/inst2/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst2
+lxc.autodev = 0
+```
+
+注意点として、 今回はLinux BridgeがOpen vSwitchで置き換えられているため、 Linux Bridgeにネットワークインタフェースが設定されることを前提とした `lxc.network.link` パラメータは使用しません。その代わりに、この後に仮想ブリッジに手動でインタフェースを設定します。設定ファイルの内容を置き換えたら、LXCコンテナを起動します。
+
+```
+$ sudo lxc-start -d -n inst1
+$ sudo lxc-start -d -n inst2
+```
+
+LXCコンテナが起動したら、先述したとおり、起動したコンテナのネットワークインタフェースを先程設定した仮想ブリッジに手動で接続します。これは、基本的にネットワークのケーブルを物理スイッチに挿入するのと同じです。
+
+```
+$ sudo ovs-vsctl add-port br0 inst1
+$ sudo ovs-vsctl add-port br0 inst2
+```
+
+これで、OpenVNetのインストールと、OpenVNetの仮想ネットワークを体験する準備が整いました。次の節では、最も基本的な1つの仮想ネットワークセグメントの作成を試してみます。
 
 === CLIで操作してみる
 
-// TODO
+仮想ネットワークの作成などの操作は、前節でも登場した `vnctl` で行うことが出来ます。まずは、1つの仮想ネットワークセグメントを作成してみましょう。
 
-=== フローの変化を見る
+[[openvnet_cli_simplenetwork]]
+image::openvnet_cli_simplenetwork.png[caption="図17-1",title="最も基本的な1つの仮想ネットワークセグメント"]
 
-// TODO
+作成する仮想ネットワークのアドレスを `10.100.0.0/24.` とし、 inst1` のIPアドレスを `10.100.0.10`、`inst2` のIPアドレスを `10.100.0.11`とします。それでは、 `vnctl` コマンドを使用して仮想ネットワークを作成してみます。 `vnctl` コマンドで作成する対象は、 `networks` です。
+
+```
+$ vnctl networks add \
+  --uuid nw-test1 \
+  --display-name testnet1 \
+  --ipv4-network 10.100.0.0 \
+  --ipv4-prefix 24 \
+  --network-mode virtual
+```
+
+この1つのコマンドだけで、仮想ネットワークが作成されました。次に、どのIPアドレスを持つどのネットワークインタフェースが、その仮想ネットワークに所属しているのかを `vnctl` コマンドでOpenVNetに教えます。 操作する対象は、 `interfaces` です。まずは、 `inst1` の持つネットワークインタフェースを仮想ネットワークに設定します。
+
+```
+vnctl interfaces add \
+  --uuid if-inst1 \
+  --mode vif \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 10:54:ff:00:00:01 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.10 \
+  --port-name inst1
+```
+
+同様に、 `inst2` の持つネットワークインタフェースを仮想ネットワークに設定します。
+
+```
+vnctl interfaces add \
+  --uuid if-inst2 \
+  --mode vif \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 10:54:ff:00:00:02 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.11 \
+  --port-name inst2
+```
+
+この操作により、OpenVNetは `10.100.0.0/24` の仮想ネットワークを作成し、そこにそれぞれ `10.100.0.10` 、 `10.100.0.11` のIPアドレスを持つネットワークインタフェースが接続されていることを定義しました。
 
 === 疎通確認をする
 
-// TODO
+最後に、2つのゲストが仮想ネットワークを通じて疎通ができることを確認します。まず `inst1` にログインし、IPアドレスを確認してみます。
+
+```
+$ lxc-console -n inst1
+$ ip a
+```
+
+この操作時点ではまだ `inst1` の `eth0` にIPアドレスを付与していないため、IPアドレスが表示されませんが、これは正しい動作です。
+先程作成した仮想ネットワークはDHCPサービスを有効にしていないため、IPアドレスは手動で付与する必要があります。
+
+それでは、`inst1` の `eth0` にIPアドレスを付与します。付与するIPアドレスは、`vnctl` で `inst1` のインタフェースのIPアドレスとして設定した `10.100.0.10` です。
+
+```
+$ ip addr add 10.100.0.10/24 dev eth0
+```
+
+もう1つ端末を開き、 `inst2` に対し同じ操作を行います。ここで `inst2` の `eth0` に付与するIPアドレスは、 `10.100.0.11` です。
+
+```
+$ lxc-console -n inst2
+$ ip addr add 10.100.0.11/24 dev eth0
+```
+
+これで2つのゲストに仮想ネットワーク内のIPアドレスが付与されたので、お互いに `ping` を実行してみます。まずは、 `inst2` から `inst1` に `ping` を実行します。
+
+```
+$ ping 10.100.0.10
+```
+
+うまく行った場合、pingは正しく動作し、疎通が確認できるはずです。もしうまく動作しない場合は、ここまでの手順で誤りがなかったかを確認してみて下さい。
+疎通ができるようになったところで、注目すべき点として、従来のネットワークとOpenVNetの仮想ネットワークとの違いを1つ紹介します。
+
+先程 `inst2` の `eth0` に設定したIPアドレスを、 `10.100.0.11/24` から `10.100.0.15/24` に変更してみましょう。
+
+```
+$ sudo ip addr del 10.100.0.11/24 dev eth0
+$ sudo ip addr add 10.100.0.15/24 dev eth0
+```
+
+設定が終わったら、また `inst1` に対して `ping` を実行してみます。
+
+```
+$ ping 10.100.0.10
+```
+
+うまく動作したでしょうか？先程とは異なり、疎通ができなくなったことが確認できるはずです。これがもし従来のネットワークだった場合、 `10.100.0.0/24` の範囲内のIPアドレスに変更したとしても疎通できますが、OpenVNetはデータベースに従ってより厳格に制限を行うため、`inst2` のIPアドレスが `10.100.0.11` でない限り、通信を許可しません。
+
+=== フローの変化を見る
+
+OpenVNetはOpenFlowで仮想ネットワークをコントロールしていますが、フローエントリを `ovs-ofctl` でそのまま確認するのは大変です。
+OpenVNetには `vna` と共にインストールされる `vnflows-monitor` というツールが付属しており、
+フロー制御の節で解説したOpenVNetのフローテーブルの分類に基づいて、現在のOpen vSwitchのフローエントリを読みやすく整形して表示してくれます。
+
+`vnflows-monitor` を実行するには、OpenVNetが内包するRubyにパスが通っている必要があります。
+
+```
+$ PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+```
+
+それでは、 `vnflows-monitor` でフローエントリを表示してみましょう。
+
+```
+$ cd /opt/axsh/openvnet/vnet/bin/
+$ ./vnflows-monitor
+```
+
+Open vSwitchが正しく動作していて、フローエントリが存在する場合、例として以下のような内容が表示されます。
+
+```
+(0): TABLE_CLASSIFIER
+  0-00        0       0 => SWITCH(0x0)               actions=write_metadata:REMOTE(0x0),goto_table:TABLE_TUNNEL_PORTS(3)
+  0-01        0       0 => SWITCH(0x0)              tun_id=0 actions=drop
+  0-02       28       0 => PORT(0x1)                in_port=1 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x1),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
+  0-02       22       0 => PORT(0x2)                in_port=2 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x5),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
+  0-02        0       0 => SWITCH(0x0)              in_port=CONTROLLER actions=write_metadata:LOCAL|NO_CONTROLLER(0x0),goto_table:TABLE_CONTROLLER_PORT(7)
+  0-02        0       0 => PORT(0x7ffffffe)         in_port=LOCAL actions=write_metadata:LOCAL(0x0),goto_table:TABLE_LOCAL_PORT(6)
+(3): TABLE_TUNNEL_PORTS
+  3-00        0       0 => SWITCH(0x0)               actions=drop
+(4): TABLE_TUNNEL_NETWORK_IDS
+  4-00        0       0 => SWITCH(0x0)               actions=drop
+  4-30        0       0 => ROUTE_LINK(0x1)          tun_id=0x10000001,dl_dst=02:00:10:00:00:01 actions=write_metadata:TYPE_ROUTE_LINK(0x1),goto_table:TABLE_ROUTER_CLASSIFIER(33)
+  4-30        0       0 => NETWORK(0x1)             tun_id=0x80000001 actions=write_metadata:TYPE_NETWORK(0x1),goto_table:TABLE_NETWORK_SRC_CLASSIFIER(20)
+  4-30        0       0 => NETWORK(0x2)             tun_id=0x80000002 actions=write_metadata:TYPE_NETWORK(0x2),goto_table:TABLE_NETWORK_SRC_CLASSIFIER(20)
+(6): TABLE_LOCAL_PORT
+  6-00        0       0 => SWITCH(0x0)               actions=drop
+...
+```
+
+このように、フローエントリが (0): TABLE_CLASSIFIER といった形で、OpenVNetのフローテーブルの分類でグループ化されて表示されます。
+また、それぞれのフローテーブルの下に表示される行の意味は、左から順に、以下のようになっています。
+
+. フローエントリの優先度に従ったフローテーブルのインデックス
+. そのフローエントリにマッチしたパケット数
+. フローの `cookie`
+. フローの `match`
+. フローの `action`
+
+なお、`vnflows-monitor` には、フローの継続的な監視を行う機能もあります。これは `vnflows-monitor` の最も有用な特徴の1つであり、フローエントリの変化がすぐに画面出力に反映されます。この機能を利用するには、 `vnflows-monitor` に以下のような引数を付加して起動します。
+
+```
+$ cd /opt/axsh/openvnet/vnet/bin
+$ ./vnflows-monitor -d -c 0
+```
+
+この方法で起動すると、最初は何も表示されず、パケットが流れるのを待機している状態になります。
+この状態で、例として、先程の `inst1` と `inst2` の間で `ping` を実行した時には、次のような内容が出力されます。
+
+```
+-------run:4--iteration:43-------
+(0): TABLE_CLASSIFIER
+  0-02       34       0 => PORT(0x1)                in_port=1 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x1),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
+  0-02       28       0 => PORT(0x2)                in_port=2 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x5),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
+(15): TABLE_INTERFACE_EGRESS_CLASSIFIER
+ 15-30       11       0 => INTERFACE(0x1)[0x12]     ip,metadata=TYPE_INTERFACE(0x1),dl_src=10:54:ff:00:00:01,nw_src=10.100.0.10 actions=write_metadata:TYPE_NETWORK(0x1),goto_table:TABLE_INTERFACE_EGRESS_FILTER(18)
+ 15-30        8       0 => INTERFACE(0x5)[0x12]     ip,metadata=TYPE_INTERFACE(0x5),dl_src=10:54:ff:00:00:02,nw_src=192.168.50.10 actions=write_metadata:TYPE_NETWORK(0x2),goto_table:TABLE_INTERFACE_EGRESS_FILTER(18)
+(18): TABLE_INTERFACE_EGRESS_FILTER
+ 18-00       38       0 => SWITCH(0x0)               actions=goto_table:TABLE_NETWORK_SRC_CLASSIFIER(20)
+(20): TABLE_NETWORK_SRC_CLASSIFIER
+ 20-30       25       0 => NETWORK(0x1)             metadata=TYPE_NETWORK(0x1) actions=goto_table:TABLE_ROUTE_INGRESS_INTERFACE(30)
+ 20-30       13       0 => NETWORK(0x2)             metadata=TYPE_NETWORK(0x2) actions=goto_table:TABLE_ROUTE_INGRESS_INTERFACE(30)
+(30): TABLE_ROUTE_INGRESS_INTERFACE
+ 30-10        8       0 => INTERFACE(0x6)[0x12]     ip,metadata=TYPE_NETWORK(0x1),dl_dst=02:00:00:00:02:01 actions=write_metadata:TYPE_INTERFACE(0x6),goto_table:TABLE_ROUTE_INGRESS_TRANSLATION(31)
+ 30-10        8       0 => INTERFACE(0x7)[0x12]     ip,metadata=TYPE_NETWORK(0x2),dl_dst=02:00:00:00:02:02 actions=write_metadata:TYPE_INTERFACE(0x7),goto_table:TABLE_ROUTE_INGRESS_TRANSLATION(31)
+(31): TABLE_ROUTE_INGRESS_TRANSLATION
+ 31-90        8       0 => INTERFACE(0x6)           metadata=TYPE_INTERFACE(0x6) actions=goto_table:TABLE_ROUTER_INGRESS_LOOKUP(32)
+ 31-90        8       0 => INTERFACE(0x7)           metadata=TYPE_INTERFACE(0x7) actions=goto_table:TABLE_ROUTER_INGRESS_LOOKUP(32)
+(32): TABLE_ROUTER_INGRESS_LOOKUP
+ 32-30        8       0 => ROUTE(0x1)               ip,metadata=TYPE_INTERFACE(0x6),nw_src=10.100.0.0/24 actions=write_metadata:TYPE_ROUTE_LINK|REFLECTION(0x1),goto_table:TABLE_ROUTER_CLASSIFIER(33)
+ 32-30        8       0 => ROUTE(0x2)               ip,metadata=TYPE_INTERFACE(0x7),nw_src=192.168.50.0/24 actions=write_metadata:TYPE_ROUTE_LINK|REFLECTION(0x1),goto_table:TABLE_ROUTER_CLASSIFIER(33)
+(33): TABLE_ROUTER_CLASSIFIER
+ 33-30       16       0 => ROUTE_LINK(0x1)          metadata=TYPE_ROUTE_LINK(0x1) actions=goto_table:TABLE_ROUTER_EGRESS_LOOKUP(34)
+(34): TABLE_ROUTER_EGRESS_LOOKUP
+ 34-30        8       0 => ROUTE(0x1)               ip,metadata=TYPE_ROUTE_LINK(0x1),nw_dst=10.100.0.0/24 actions=write_metadata:0x8000000600000001,goto_table:TABLE_ROUTE_EGRESS_LOOKUP(35)
+ 34-30        8       0 => ROUTE(0x2)               ip,metadata=TYPE_ROUTE_LINK(0x1),nw_dst=192.168.50.0/24 actions=write_metadata:0x8000000700000001,goto_table:TABLE_ROUTE_EGRESS_LOOKUP(35)
+(35): TABLE_ROUTE_EGRESS_LOOKUP
+ 35-20        8       0 => INTERFACE(0x6)[0x12]     metadata=VALUE_PAIR(0x8000000600000000/0xffffffff00000000)(0x0) actions=write_metadata:0x702000000000006,goto_table:TABLE_ROUTE_EGRESS_TRANSLATION(36)
+ 35-20        8       0 => INTERFACE(0x7)[0x12]     metadata=VALUE_PAIR(0x8000000700000000/0xffffffff00000000)(0x0) actions=write_metadata:0x702000000000007,goto_table:TABLE_ROUTE_EGRESS_TRANSLATION(36)
+(36): TABLE_ROUTE_EGRESS_TRANSLATION
+ 36-90        8       0 => INTERFACE(0x6)           metadata=TYPE_INTERFACE(0x6) actions=goto_table:TABLE_ROUTE_EGRESS_INTERFACE(37)
+ 36-90        8       0 => INTERFACE(0x7)           metadata=TYPE_INTERFACE(0x7) actions=goto_table:TABLE_ROUTE_EGRESS_INTERFACE(37)
+(37): TABLE_ROUTE_EGRESS_INTERFACE
+ 37-20        8       0 => INTERFACE(0x6)[0x12]     metadata=TYPE_INTERFACE(0x6) actions=set_field:02:00:00:00:02:01->eth_src,write_metadata:TYPE_NETWORK(0x1),goto_table:TABLE_ARP_TABLE(40)
+ 37-20        8       0 => INTERFACE(0x7)[0x12]     metadata=TYPE_INTERFACE(0x7) actions=set_field:02:00:00:00:02:02->eth_src,write_metadata:TYPE_NETWORK(0x2),goto_table:TABLE_ARP_TABLE(40)
+(40): TABLE_ARP_TABLE
+ 40-40        8       0 => INTERFACE(0x1)[0x12]     ip,metadata=TYPE_NETWORK(0x1),nw_dst=10.100.0.10 actions=set_field:10:54:ff:00:00:01->eth_dst,goto_table:TABLE_NETWORK_DST_CLASSIFIER(42)
+ 40-40        8       0 => INTERFACE(0x5)[0x12]     ip,metadata=TYPE_NETWORK(0x2),nw_dst=192.168.50.10 actions=set_field:10:54:ff:00:00:02->eth_dst,goto_table:TABLE_NETWORK_DST_CLASSIFIER(42)
+(42): TABLE_NETWORK_DST_CLASSIFIER
+ 42-30       25       0 => NETWORK(0x1)             metadata=TYPE_NETWORK(0x1) actions=goto_table:TABLE_NETWORK_DST_MAC_LOOKUP(43)
+ 42-30       13       0 => NETWORK(0x2)             metadata=TYPE_NETWORK(0x2) actions=goto_table:TABLE_NETWORK_DST_MAC_LOOKUP(43)
+(43): TABLE_NETWORK_DST_MAC_LOOKUP
+ 43-60       12       0 => INTERFACE(0x1)[0x12]     metadata=TYPE_NETWORK(0x1),dl_dst=10:54:ff:00:00:01 actions=write_metadata:TYPE_INTERFACE(0x1),goto_table:TABLE_INTERFACE_INGRESS_FILTER(45)
+ 43-60        8       0 => INTERFACE(0x5)[0x12]     metadata=TYPE_NETWORK(0x2),dl_dst=10:54:ff:00:00:02 actions=write_metadata:TYPE_INTERFACE(0x5),goto_table:TABLE_INTERFACE_INGRESS_FILTER(45)
+(45): TABLE_INTERFACE_INGRESS_FILTER
+ 45-90       11       0 => INTERFACE(0x1)[0x71]     metadata=TYPE_INTERFACE(0x1) actions=goto_table:TABLE_OUT_PORT_INTERFACE_INGRESS(90)
+ 45-90        8       0 => INTERFACE(0x5)[0x71]     metadata=TYPE_INTERFACE(0x5) actions=goto_table:TABLE_OUT_PORT_INTERFACE_INGRESS(90)
+(90): TABLE_OUT_PORT_INTERFACE_INGRESS
+ 90-10       12       0 => PORT(0x1)                metadata=TYPE_INTERFACE(0x1) actions=output:1
+ 90-10        8       0 => PORT(0x2)                metadata=TYPE_INTERFACE(0x5) actions=output:2
+```
+
+`inst1` と `inst2` の間でICMP Echo RequestとICMP Echo ReplyがOpen vSwitchの仮想ブリッジを横断すると、マッチした全てのフローエントリが表示され、マッチしたパケット数のカウンタが増加していきます。
+この機能により、パケットがOpen vSwitchのどのフローエントリを通過して処理されたかを、一目で知ることができます。また、他の使い方として、例えば `vnctl` で仮想ネットワークを操作した時に、どのようなフローエントリが追加、あるいは削除されたかも確認することができます。
 
 == OpenVNetの活用例
 
