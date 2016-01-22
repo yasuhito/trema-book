@@ -3,6 +3,12 @@
 ## develop
 
 
+## 0.27.0 (1/22/2016)
+* [#172](https://github.com/yasuhito/trema-book/pull/172): 疑問を表す「〜か」の後の疑問符 (?) をはずす
+* [#173](https://github.com/yasuhito/trema-book/pull/173): 1 章を全体にアップデート
+* HTML 版のフォントをゴシックに変更
+
+
 ## 0.26.0 (1/20/2016)
 * [#171](https://github.com/yasuhito/trema-book/pull/171): マルチプルテーブル版ルータ章を追加
 * [#170](https://github.com/yasuhito/trema-book/pull/170): OpenFlow移行章のラベル A, B, C を削除
