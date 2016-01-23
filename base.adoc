@@ -49,6 +49,8 @@ include::routing_switch.adoc[]
 [[sliceable_switch]]
 include::sliceable_switch.adoc[]
 
+[[openvnet]]
+
 include::appendix_rvm.adoc[]
 
 [[trema_reference]]
