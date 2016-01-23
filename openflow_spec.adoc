@@ -37,20 +37,18 @@ image::version_negotiation.png[caption="図 2-2: "]
 
 もしここで、相手と同じバージョンを話せるようであればネゴシエーションに成功です。成功すると、Hello 以外のメッセージもやりとりできるようになります。
 
-=== スイッチのスペックの確認
+=== スイッチの Datapath ID の確認
 
-// あとで確認する
+次にコントローラは接続したスイッチの Datapath ID を確認します。コントローラがスイッチに **Features Request メッセージ**を送ると、スイッチは Datapath ID とスペックを乗せた **Features Reply メッセージ**を返答します。
 
-次にコントローラは接続したスイッチがどんなスイッチかを確認します。ネゴシエーション直後はまだバージョンしか確認できていないので、コントローラはスイッチに Features Request というメッセージを送って次の各情報をリクエストします。
-
- * スイッチのユニーク ID (Datapath ID)
- * 物理ポートの一覧情報
- * サポートする機能の一覧
-
-.Features Request メッセージでスイッチのスペックを確認
+.Features Request メッセージでスイッチの Datapath ID を確認
 image::features_request_reply.png[caption="図 2-3: "]
 
-スイッチは Features Reply メッセージでこの情報を返信します。
+Features Reply メッセージには Datapath ID に加えて、主に次のスペック情報が入っています。
+
+ * 一度にバッファできるパケットの数
+ * サポートするテーブルの数
+ * サポートする機能の一覧
 
 === コントローラへの受信パケットの通知
 
