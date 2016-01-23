@@ -112,7 +112,20 @@ image::pattern3.png[caption="図 10-5: "]
 
 === ソースコード
 
-逆流防止フィルタ（OneWayBridge コントローラ）のソースコードは GitHub の trema/one_way_bridge リポジトリ (https://github.com/trema/one_way_bridge) からダウンロードできます。このコントローラは、Packet In と Flow Removed のハンドラだけを定義したとてもシンプルなものです。
+逆流防止フィルタ（OneWayBridge コントローラ）のソースコードは GitHub の trema/one_way_bridge リポジトリ (https://github.com/trema/one_way_bridge) からダウンロードできます。
+
+----
+$ git clone https://github.com/trema/one_way_bridge.git
+----
+
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaなどの実行環境一式を自動的にインストールできます。
+
+----
+$ cd one_way_bridge
+$ bundle install --binstubs
+----
+
+このコントローラは、Packet In と Flow Removed のハンドラだけを定義したとてもシンプルなものです。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/one_way_bridge.rb

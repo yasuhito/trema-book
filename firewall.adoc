@@ -38,7 +38,20 @@ image::block_rfc1918.png[caption="図 11-2: "]
 
 ### 実行してみよう
 
-今回も仮想ネットワークを使って BlockRFC1918 コントローラを起動してみます。ソースコードと仮想ネットワークの設定ファイルは GitHub の `trema/transparent_firewall` リポジトリ (https://github.com/trema/transparent_firewall) からダウンロードできます。GitHub から取得したソースリポジトリ内に、仮想スイッチ1台、仮想ホスト3台の構成を持つ設定ファイル `trema.conf` が含まれています (<<firewall_configuration,図 11-3>>)。
+今回も仮想ネットワークを使って BlockRFC1918 コントローラを起動してみます。ソースコードと仮想ネットワークの設定ファイルは GitHub の `trema/transparent_firewall` リポジトリ (https://github.com/trema/transparent_firewall) からダウンロードできます。
+
+----
+$ git clone https://github.com/trema/transparent_firewall.git
+----
+
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaなどの実行環境一式を自動的にインストールできます。
+
+----
+$ cd transparent_firewall
+$ bundle install --binstubs
+----
+
+GitHub から取得したソースリポジトリ内に、仮想スイッチ1台、仮想ホスト3台の構成を持つ設定ファイル `trema.conf` が含まれています (<<firewall_configuration,図 11-3>>)。
 
 [[firewall_configuration]]
 .BlockRFC1918 を実行するための仮想ネットワーク構成
