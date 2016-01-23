@@ -41,6 +41,7 @@ image::version_negotiation.png[caption="図 2-2: "]
 
 次にコントローラは接続したスイッチの Datapath ID を確認します。コントローラがスイッチに **Features Request メッセージ**を送ると、スイッチは Datapath ID とスペックを乗せた **Features Reply メッセージ**を返答します。
 
+[[features_request_reply]]
 .Features Request メッセージでスイッチの Datapath ID を確認
 image::features_request_reply.png[caption="図 2-3: "]
 
@@ -54,6 +55,7 @@ Features Reply メッセージには Datapath ID に加えて、主に次のス�
 
 スイッチは、受信したパケットと関連情報を **Packet In メッセージ**でコントローラへ通知できます。たとえば、フローテーブルに登録していない通信を検知した場合など、Packet In メッセージを使ってパケットの情報をコントローラへ送ります (<<packet_in,図 2-4>>)。
 
+[[packet_in]]
 .受信パケットとその情報を Packet In メッセージとしてコントローラに上げる
 image::packet_in.png[caption="図 2-4: "]
 
@@ -61,6 +63,7 @@ image::packet_in.png[caption="図 2-4: "]
 
 **Packet Out メッセージ**は Packet In メッセージの逆で、スイッチからパケットを出力するためのメッセージです (<<packet_out,図 2-5>>)。
 
+[[packet_out]]
 .Packet Out メッセージでパケットをスイッチから出力
 image::packet_out.png[caption="図 2-5: "]
 
@@ -68,12 +71,15 @@ Packet Out の典型的な利用例は、Packet In でコントローラへ届�
 
 === フローテーブルの更新
 
-Flow Mod メッセージは、コントローラがパケットを転送するためのフローエントリをスイッチに送るためのメッセージです。Flow Mod メッセージを受け取ったスイッチは、メッセージ中のフローエントリを、自身のフローテーブルに書き込みます。
+**Flow Mod メッセージ**はスイッチのフローエントリを追加・削除・変更するためのメッセージです (<<flow_mod,図 2-6>>)。Flow Mod メッセージを受け取ったスイッチは、メッセージ内容に従って自身のフローテーブルを更新します。
 
-.Flow Mod によってフローテーブルを更新
-image::flowmod_packetout.png[caption="図 2-5: "]
+[[flow_mod]]
+.Flow Mod メッセージでフローテーブルを更新
+image::flow_mod.png[caption="図 2-6: "]
 
-Flow Mod メッセージを受け取ったスイッチは、フローエントリの書き込みが完了したことをコントローラに通知を行いません。もし Flow Mod メッセージ毎に応答のメッセージを返すことにすると、多くのフローエントリを設定するときに時間がかかってしまいます。そのため、OpenFlow は、応答を返さない仕様となっています。
+OpenFlow 仕様によると、スイッチはフローテーブルの更新完了をコントローラに通知しません。その理由は、もしも Flow Mod メッセージごとに応答メッセージを返すことにすると、多くのフローエントリを設定する場合に時間がかかってしまうためです。
+
+=== フローテーブル更新完了の確認
 
 しかし、フローエントリの書き込みの完了をコントローラ側で確認したいケースも存在します(第 11 章がその一例です)。このようなときに、Barrier メッセージを用います。<<barrier,図2-6>> のように、Barrier Request メッセージを送ると、それ以前に送られたメッセージの処理が全て完了した後に、スイッチからコントローラへと Barrier Reply メッセージが送られます。
 
