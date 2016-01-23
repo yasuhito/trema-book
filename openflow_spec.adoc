@@ -57,11 +57,14 @@ Features Reply メッセージには Datapath ID に加えて、主に次のス�
 .受信パケットとその情報を Packet In メッセージとしてコントローラに上げる
 image::packet_in.png[caption="図 2-4: "]
 
-=== パケットの転送
+=== パケットの出力
 
-// PacketOut と Flow Mod の説明を分離
+**Packet Out メッセージ**は Packet In メッセージの逆で、スイッチからパケットを出力するためのメッセージです (<<packet_out,図 2-5>>)。
 
-Packet Out メッセージは、コントローラからスイッチに出力させるパケットを送るために用いるメッセージです。例えば Packet In によりコントローラへ送られたパケットを正しい宛先に流すために、Packet Out メッセージを使います。これをやらないと Packet In によりコントローラへ送られたパケットはコントローラに残ったままで、宛先には届かないためです(<<flowmod_packetout,図2-5>>)。
+.Packet Out メッセージでパケットをスイッチから出力
+image::packet_out.png[caption="図 2-5: "]
+
+Packet Out の典型的な利用例は、Packet In でコントローラへ届いたパケットを宛先に届ける場合です。もしも Packet In の後に Packet Out をやらないと、パケットはコントローラに残ったままで宛先には届きません。
 
 === フローテーブルの更新
 
