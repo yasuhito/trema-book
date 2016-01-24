@@ -3,6 +3,12 @@
 ## develop
 
 
+## 0.28.0 (1/24/2016)
+* [#176](https://github.com/yasuhito/trema-book/pull/176): サンプルのインストール方法を追記
+* [#178](https://github.com/yasuhito/trema-book/pull/178): 図表番号のズレを修正
+* [#179](https://github.com/yasuhito/trema-book/pull/179): Hello Trema章をアップデート
+
+
 ## 0.27.0 (1/22/2016)
 * [#172](https://github.com/yasuhito/trema-book/pull/172): 疑問を表す「〜か」の後の疑問符 (?) をはずす
 * [#173](https://github.com/yasuhito/trema-book/pull/173): 1 章を全体にアップデート
