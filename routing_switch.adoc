@@ -82,7 +82,7 @@ $ bundle install --binstubs
 .ホスト 4 台、スイッチ 6 台からなるネットワーク
 image::routing_switch_sample_network.png[caption="図 16-5: "]
 
-この構成を実現する設定ファイルは、ルーティングスイッチのソースツリーの中に含まれています (`trema.conf`)。この設定ファイルを指定して、次のようにルーティングスイッチを起動します。
+この構成を実現する設定ファイルは、ルーティングスイッチのソースツリーに入っています (`trema.conf`)。この設定ファイルを指定して、次のようにルーティングスイッチを起動します。
 
 ----
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf
