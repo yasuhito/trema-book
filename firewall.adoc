@@ -51,7 +51,7 @@ $ cd transparent_firewall
 $ bundle install --binstubs
 ----
 
-GitHub から取得したソースリポジトリ内に、仮想スイッチ1台、仮想ホスト3台の構成を持つ設定ファイル `trema.conf` が含まれています (<<firewall_configuration,図 11-3>>)。
+GitHub から取得したソースリポジトリ内に、仮想スイッチ1台、仮想ホスト3台の構成を持つ設定ファイル `trema.conf` が入っています (<<firewall_configuration,図 11-3>>)。
 
 [[firewall_configuration]]
 .BlockRFC1918 を実行するための仮想ネットワーク構成

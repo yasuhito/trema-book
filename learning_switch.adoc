@@ -111,7 +111,7 @@ $ cd learning_switch
 $ bundle install --binstubs
 ----
 
-githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が含まれています。
+githubから取得したラーニングスイッチのソースリポジトリ内に、仮想スイッチ1台、仮想ホスト2台の構成を持つ設定ファイル `trema.conf` が入っています。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
@@ -181,7 +181,6 @@ include::{sourcedir}/lib/learning_switch.rb[]
 
 1. パケットの送信元MACアドレスとパケットが入ってきたポート番号をPacket Inメッセージから取り出し、FDB (`@fdb`) に保存する
 2. パケットの宛先MACアドレスとFDBから、パケットを出力するポート番号を調べる (`flow_mod_and_packet_out` メソッド)
-
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch#packet_in, LearningSwitch#flow_mod_and_packet_out (lib/learning_switch.rb)
