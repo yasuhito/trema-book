@@ -3,6 +3,10 @@
 ## develop
 
 
+## 0.30.0 (1/25/2016)
+* [#181](https://github.com/yasuhito/trema-book/pull/181): Cbench章をアップデート
+
+
 ## 0.29.0 (1/24/2016)
 * [#180](https://github.com/yasuhito/trema-book/pull/180): スイッチモニタ章をアップデート
 
