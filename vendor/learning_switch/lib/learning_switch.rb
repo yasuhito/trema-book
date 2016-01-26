@@ -1,6 +1,6 @@
 require 'fdb'
 
-# An OpenFlow controller that emulates a layer-2 switch.
+# An OpenFlow controller that emulates an ethernet switch.
 class LearningSwitch < Trema::Controller
   timer_event :age_fdb, interval: 5.sec
 
