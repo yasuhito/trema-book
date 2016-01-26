@@ -2,14 +2,15 @@
 :sourcedir: vendor/learning_switch
 :imagesdir: images/learning_switch13
 
+[.lead]
 ラーニングスイッチを OpenFlow1.3 で実装し、OpenFlow1.0版のラーニングスイッチの欠点を解消します。
 
 == OpenFlow1.0版ラーニングスイッチの問題点
 
-<<learning_switch,第7章>>で実装したラーニングスイッチには、実は以下の問題点があります。
+<<learning_switch,第7章「すべての基本、ラーニングスイッチ」>>で実装したラーニングスイッチには、実は以下の問題点があります。
 
-- フローテーブルが煩雑になる: OpenFlow1.0では同時に使えるフローテーブルは 1 つという制限があります。このため、ラーニングスイッチのようにフィルタリング用のフローエントリとパケット転送用のフローエントリが一つのフローテーブルに混在すると、後から見たときに解読が大変です。
-- 起動時の大量のPacketInを防げない: OpenFlow1.0ではフローエントリにマッチしないパケットはすべてPacket Inします。このため、switch_readyでフィルタリング用のフローエントリを設定するよりも前にパケットがコントローラへ大量に到着すると、`packet_in` ハンドラの大量呼び出しによりコントローラがパンクしてしまいます。
+フローテーブルが煩雑になる:: OpenFlow1.0では同時に使えるフローテーブルは 1 つという制限があります。このため、ラーニングスイッチのようにフィルタリング用のフローエントリとパケット転送用のフローエントリが一つのフローテーブルに混在すると、後から見たときに解読が大変です。
+起動時の大量のPacketInを防げない:: OpenFlow1.0ではフローエントリにマッチしないパケットはすべてPacket Inします。このため、`switch_ready` ハンドラでフィルタリング用のフローエントリを設定するよりも前にパケットがコントローラへ大量に到着すると、`packet_in` ハンドラの大量呼び出しによりコントローラがパンクしてしまいます。
 
 // TODO: OpenFlow1.0版ラーニングスイッチでもフィルタリング用のフローエントリを switch_ready で入れる実装にする
 
@@ -21,24 +22,24 @@
 
 [[pipeline]]
 .OpenFlow1.3でのマルチプルテーブルによるパイプライン処理
-image::pipeline.png[caption="図 7-1: "]
+image::pipeline.png[caption="図 8-1: "]
 
 === テーブルの移動
 
-このパイプライン処理は、テーブル ID が 0 のテーブルから始まり GotoTable インストラクションによって次のテーブルに移動します。パイプライン処理の入口となるテーブル、つまり Packet In したときに最初に入るテーブルの ID は 0 と決まっています。現在のテーブルから次のテーブルへと処理を移行するには GotoTable インストラクションに次のテーブル ID を指定します。なお指定できるテーブル ID は現在のテーブル ID よりも大きい必要があります。
+このパイプライン処理は、テーブル ID が 0 のテーブルから始まり GotoTable インストラクションによって次のテーブルに移動します。パイプライン処理の入口となるテーブル、つまり Packet In したときに最初に入るテーブルの ID は 0 と決まっています。現在のテーブルから次のテーブルへと処理を移行するには GotoTable インストラクションに次のテーブル ID を指定します。このとき指定できるテーブル ID は、現在のテーブル ID よりも大きい必要があります。
 
 [[pipeline_goto]]
 .テーブル ID 0 から始まり GotoTable インストラクションで次のテーブルへ処理を移動
-image::pipeline_goto.png[caption="図 7-2: "]
+image::pipeline_goto.png[caption="図 8-2: "]
 
 === OpenFlow1.3 のアクション 
 
 さて「GotoTable インストラクション」という用語を今まで断りなく使ってきましたが、OpenFlow1.3 ではパケットに対する処理を「アクション」と「インストラクション」に分けて書きます。まずはアクションから説明しましょう。
 
-アクションのひとつの用途はパケットの書き換えです。書き換えアクションの種類は OpenFlow1.0 に比べて大幅に増えており、マッチ条件で指定できるフィールドの書き換えや VLAN ヘッダの操作に加え、TTL や MPLS, IPv6 パケット等への操作が追加されています (<<actions1.3_modify_fields,表8-1>>)。
+アクションのひとつの用途はパケットの書き換えです。書き換えアクションの種類は OpenFlow1.0 に比べて大幅に増えており、マッチフィールドで指定できるフィールドの書き換えや VLAN ヘッダの操作に加え、TTL や MPLS, IPv6 パケット等への操作が追加されています (<<actions1.3_modify_fields,表8-1>>)。
 
 [[actions1.3_modify_fields]]
-.表 7-1: OpenFlow 1.3 で使えるアクション一覧 (パケットのフィールド書き換え)
+.表 8-1: OpenFlow 1.3 で使えるアクション一覧 (パケットのフィールド書き換え)
 |===
 | アクションのクラス名 | 説明
 
@@ -58,14 +59,14 @@ image::pipeline_goto.png[caption="図 7-2: "]
 | `PopPbb` | 一番外側のPBBサービスインスタンスヘッダ (I-TAG TCI) をパケットから取り除く
 |===
 
-もうひとつのアクションの用途はパケットの転送です。指定したポートへ転送したりポートに関連付けられたキューにパケットを追加するのに使います (<<actions1.3_output,表8-2>>)。
+もうひとつのアクションの用途はパケットの出力です。指定したポートへ出力したり、ポートに関連付けられたキューにパケットを追加するのに使います (<<actions1.3_output,表8-2>>)。
 
 [[actions1.3_output]]
-.表 7-2: OpenFlow 1.3 で使えるアクション一覧 (パケットの転送)
+.表 8-2: OpenFlow 1.3 で使えるアクション一覧 (パケットの出力)
 |===
 | アクションのクラス名 | 説明
 
-| `SendOutPort` | 指定したスイッチの (論理) ポートにパケットを転送する
+| `SendOutPort` | 指定したスイッチの (論理) ポートにパケットを出力する
 | `SetQueue` | `SendOutPort` で指定したポートの指定したキューにパケットを追加する
 |===
 
@@ -99,7 +100,7 @@ send_flow_mod_add(
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .Apply で指定したアクションをパケットへ直ちに適用
 ----
-# ポート 1 番へ転送
+# ポート 1 番へ出力
 send_flow_mod_add(
   datapath_id,
     ...
@@ -111,12 +112,12 @@ send_flow_mod_add(
 
 [[pipeline_write_actions]]
 .WriteActions でアクションを後でまとめて適用
-image::pipeline_write_actions.png[caption="図 7-3: "]
+image::pipeline_write_actions.png[caption="図 8-3: "]
 
 「この後で適用するアクション」をアクションセットと呼びます。アクションセットはいわゆる集合なので、同じアクションを複数入れることはできません。`WriteActions` 以外にも、アクションセットを空にする `Clear` インストラクションがあります。ここまでのインストラクションを含めてインストラクション一覧を紹介しましょう。
 
 [[instructions1.3]]
-.表 7-3: OpenFlow 1.3 で使えるインストラクション一覧
+.表 8-3: OpenFlow 1.3 で使えるインストラクション一覧
 |===
 | インストラクションのクラス名 | 説明
 
@@ -136,16 +137,16 @@ image::pipeline_write_actions.png[caption="図 7-3: "]
 
 == OpenFlow1.3 での Packet In
 
-OpenFlow1.3では、フローエントリにマッチしないパケットはPacket Inしません。このため OpenFlow1.0 で問題となった、フローエントリの設定前にパケットが大量に到着するとコントローラがパンクするという問題を解決できます。OpenFlow1.3でPacketInを起こすためには、アクションに `SendOutPort.new(:controller)` (コントローラへパケットを送り PacketIn を起こす) を指定したフローエントリを明示的に追加します。
+OpenFlow1.3では、フローエントリにマッチしないパケットはPacket Inしません。このため OpenFlow1.0 で問題となった、フローエントリの設定前にパケットが大量に到着しうるという問題を解決できます。OpenFlow1.3でPacketInを起こすためには、アクションに `SendOutPort.new(:controller)` (コントローラへパケットを送り PacketIn を起こす) を指定したフローエントリを明示的に追加します。
 
 // TODO OpenFlow1.3 でのアクションとインストラクションの説明。アクションとインストラクションの表もここに移動する。長くなるから節を分ける。
 
 == OpenFlow1.3版ラーニングスイッチの仕組み
 
-OpenFlow1.3版ラーニングスイッチでは、役割の異なる2つのフローテーブルを用いてL2スイッチを実現します。
+OpenFlow1.3版ラーニングスイッチでは、役割の異なる2つのフローテーブルを用いてイーサネットスイッチを実現します。
 
-- フィルタリングテーブル: 転送しないパケットをドロップする。それ以外のパケットは転送テーブルに送る。
-- 転送テーブル: 学習したMACアドレスを使ってパケットを転送する。宛先MACアドレスがみつからない場合にはフラッディングする。
+フィルタリングテーブル:: 転送しないパケットをドロップする。それ以外のパケットは転送テーブルに送る
+転送テーブル:: 学習したMACアドレスを使ってパケットを転送する。宛先MACアドレスがみつからない場合にはフラッディングする
 
 == ソースコード解説
 
@@ -155,7 +156,110 @@ OpenFlow1.3版パッチパネルのソースコードは<<learning_switch13.rb>>
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/learning_switch13.rb
 ----
-include::{sourcedir}/lib/learning_switch13.rb[]
+require 'fdb'
+
+# An OpenFlow controller that emulates an ethernet switch.
+class LearningSwitch13 < Trema::Controller
+  timer_event :age_fdb, interval: 5.sec
+
+  INGRESS_FILTERING_TABLE_ID = 0
+  FORWARDING_TABLE_ID = 1
+
+  AGING_TIME = 180
+
+  def start(_args)
+    @fdb = FDB.new
+    logger.info "#{name} started."
+  end
+
+  def switch_ready(datapath_id)
+    add_bpdu_drop_flow_entry(datapath_id)
+    add_default_broadcast_flow_entry(datapath_id)
+    add_default_flooding_flow_entry(datapath_id)
+    add_default_forwarding_flow_entry(datapath_id)
+  end
+
+  def packet_in(_datapath_id, packet_in)
+    @fdb.learn(packet_in.source_mac, packet_in.in_port)
+    add_forwarding_flow_and_packet_out(packet_in)
+  end
+
+  def age_fdb
+    @fdb.age
+  end
+
+  private
+
+  def add_forwarding_flow_and_packet_out(packet_in)
+    port_no = @fdb.lookup(packet_in.destination_mac)
+    add_forwarding_flow_entry(packet_in, port_no) if port_no
+    packet_out(packet_in, port_no || :flood)
+  end
+
+  def add_forwarding_flow_entry(packet_in, port_no)
+    send_flow_mod_add(
+      packet_in.datapath_id,
+      table_id: FORWARDING_TABLE_ID,
+      idle_timeout: AGING_TIME,
+      priority: 2,
+      match: Match.new(in_port: packet_in.in_port,
+                       destination_mac_address: packet_in.destination_mac,
+                       source_mac_address: packet_in.source_mac),
+      instructions: Apply.new(SendOutPort.new(port_no))
+    )
+  end
+
+  def packet_out(packet_in, port_no)
+    send_packet_out(
+      packet_in.datapath_id,
+      packet_in: packet_in,
+      actions: SendOutPort.new(port_no)
+    )
+  end
+
+  def add_default_broadcast_flow_entry(datapath_id)
+    send_flow_mod_add(
+      datapath_id,
+      table_id: FORWARDING_TABLE_ID,
+      idle_timeout: 0,
+      priority: 3,
+      match: Match.new(destination_mac_address: 'ff:ff:ff:ff:ff:ff'),
+      instructions: Apply.new(SendOutPort.new(:flood))
+    )
+  end
+
+  def add_default_flooding_flow_entry(datapath_id)
+    send_flow_mod_add(
+      datapath_id,
+      table_id: FORWARDING_TABLE_ID,
+      idle_timeout: 0,
+      priority: 1,
+      match: Match.new,
+      instructions: Apply.new(SendOutPort.new(:controller))
+    )
+  end
+
+  def add_bpdu_drop_flow_entry(datapath_id)
+    send_flow_mod_add(
+      datapath_id,
+      table_id: INGRESS_FILTERING_TABLE_ID,
+      idle_timeout: 0,
+      priority: 2,
+      match: Match.new(destination_mac_address: '01:80:C2:00:00:00')
+    )
+  end
+
+  def add_default_forwarding_flow_entry(datapath_id)
+    send_flow_mod_add(
+      datapath_id,
+      table_id: INGRESS_FILTERING_TABLE_ID,
+      idle_timeout: 0,
+      priority: 1,
+      match: Match.new,
+      instructions: GotoTable.new(FORWARDING_TABLE_ID)
+    )
+  end
+end
 ----
 
 === switch_ready ハンドラ
@@ -165,24 +269,37 @@ include::{sourcedir}/lib/learning_switch13.rb[]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#switch_ready (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="3,17..23"]
+def switch_ready(datapath_id)
+  add_bpdu_drop_flow_entry(datapath_id)
+  add_default_broadcast_flow_entry(datapath_id)
+  add_default_flooding_flow_entry(datapath_id)
+  add_default_forwarding_flow_entry(datapath_id)
+end
 ----
 
-最初に呼び出す `add_multicast_mac_drop_flow_entry` では、IP マルチキャストフレームをドロップするフローエントリを書き込みます。
+最初に呼び出す `add_bpdu_drop_flow_entry` では、不要なスパニングツリーの BPDU フレームをドロップするフローエントリを書き込みます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
-.LearningSwitch13#add_multicast_mac_drop_flow_entry (lib/learning_switch13.rb)
+.LearningSwitch13#add_bpdu_drop_flow_entry (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="85..94"]
+def add_bpdu_drop_flow_entry(datapath_id)
+  send_flow_mod_add(
+    datapath_id,
+    table_id: INGRESS_FILTERING_TABLE_ID,
+    idle_timeout: 0,
+    priority: 2,
+    match: Match.new(destination_mac_address: '01:80:C2:00:00:00')
+  )
+end
 ----
 
-Flow Mod に指定するパラメータのうちポイントとなるのは次の 3 つです。
+Flow Mod に指定するパラメータのうち、ポイントとなるのは次の 3 つです。
 
-- `table_id`: スイッチに入ってきたパケットの種類を見てドロップするかどうかを最初にフィルタリングする必要があるので、`table_id` には 0 (`INGRESS_FILTERING_TABLE_ID`) を指定します。
-- `idle_timeout`: IPマルチキャストフレームのドロップはスイッチの起動中はずっと有効なので、`idle_timeout` には 0 (フローエントリを消さない) を指定します。
-- `priority`: ドロップ処理は入ってきたパケットに対して最初に行うフィルタリングなので、テーブルID = 0 のフローエントリのうち最大優先度にします。ここでは 2 を指定します。
+`table_id`:: スイッチに入ってきたパケットの種類を見てドロップするかどうかを最初にフィルタリングする必要があるので、`table_id` には 0 (`INGRESS_FILTERING_TABLE_ID`) を指定します。
+`idle_timeout`:: BPDU フレームのドロップはスイッチの起動中はずっと有効なので、`idle_timeout` には 0 (フローエントリを消さない) を指定します。
+`priority`:: ドロップ処理は入ってきたパケットに対して最初に行うフィルタリングなので、テーブルID = 0 のフローエントリのうち最大優先度にします。ここでは 2 を指定します。
 
-続く `add_default_forwarding_flow_entry` では、IP マルチキャストフレーム以外のパケットを `FORWARDING_TABLE_ID` で処理します。
+続く `add_default_forwarding_flow_entry` では、BPDU フレーム以外のパケットを `FORWARDING_TABLE_ID` で処理します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#add_default_forwarding_flow_entry (lib/learning_switch13.rb)
@@ -192,9 +309,9 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="107..116"]
 
 ここで重要なパラメータは次の 3 つです。
 
-- `priority` を 1 に設定することで、より優先度の高いIPマルチキャストフレーム処理 (優先度 = 2) が終わったあとにこの処理を行います。
-- `match` 空のマッチを指定するので、IPマルチキャストフレームでないパケットをすべてこのフローエントリで拾います。
-- `instructions` では `GotoTable(FORWARDING_TABLE_ID)` を指定することで、以降の処理をテーブル 1 に移します。
+`priority`:: 優先度を 1 に設定することで、より優先度の高いBPDUフレーム処理 (優先度 = 2) が終わったあとにこの処理を行います。
+`match`:: 空のマッチを指定することで、BPDUフレームでないパケットをすべてこのフローエントリで拾います。
+`instructions`:: `GotoTable(FORWARDING_TABLE_ID)` を指定することで、以降の処理をテーブル 1 に移します。
 
 // TODO ソースコードの優先度がまちがってるのであとで修正する
 
@@ -206,25 +323,49 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="107..116"]
 include::{sourcedir}/lib/learning_switch13.rb[lines="74..83"]
 ----
 
-- `table_id`: ここで追加するフローエントリは、直前の GotoTable でテーブル ID INGRESS_FILTERING_TABLE_ID から FORWARDING_TABLE_ID に移動した後に処理されます。ですので、`table_id` には `FORWARDING_TABLE_ID` を指定します。
-- `priority`: フラッディング処理は宛先 MAC アドレスをまだ学習していなかった場合のデフォルト処理なので、優先度は低めの 1 を指定します。
-- `instructions`: フラッディングのための `SendOutPort.new(:flood)` アクションと、Packet In を起こするための `SendOutPort.new(:controller)` を `Apply` インストラクションで適用します。
+`table_id`:: ここで追加するフローエントリは、直前の GotoTable でテーブル ID `INGRESS_FILTERING_TABLE_ID` から `FORWARDING_TABLE_ID` に移動した後に処理されます。ですので、`table_id` には `FORWARDING_TABLE_ID` を指定します。
+`priority`:: フラッディング処理は宛先 MAC アドレスをまだ学習していなかった場合のデフォルト処理なので、優先度は低めの 1 を指定します。
+`instructions`:: フラッディングのための `SendOutPort.new(:flood)` アクションと、Packet In を起こするための `SendOutPort.new(:controller)` を `Apply` インストラクションで適用します。
 
 === packet_in ハンドラ
 
-`packet_in` ハンドラでは、Packet In したパケットの送信元 MAC アドレス + In Port の組を学習します。
+`packet_in` ハンドラでは、Packet In したパケットの送信元 MAC アドレス + In Port の組を学習します。学習した組はテーブル ID FORWARDING_TABLE_ID にフローエントリとして追加します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .LearningSwitch13#switch_ready (lib/learning_switch13.rb)
 ----
-include::{sourcedir}/lib/learning_switch13.rb[lines="25..28"]
+def packet_in(_datapath_id, packet_in)
+  @fdb.learn(packet_in.source_mac, packet_in.in_port)
+  add_forwarding_flow_and_packet_out(packet_in)
+end
+
+private
+
+def add_forwarding_flow_and_packet_out(packet_in)
+  port_no = @fdb.lookup(packet_in.destination_mac)
+  add_forwarding_flow_entry(packet_in, port_no) if port_no
+  packet_out(packet_in, port_no || :flood)
+end
+
+def add_forwarding_flow_entry(packet_in, port_no)
+  send_flow_mod_add(
+    packet_in.datapath_id,
+    table_id: FORWARDING_TABLE_ID,
+    idle_timeout: AGING_TIME,
+    priority: 2,
+    match: Match.new(in_port: packet_in.in_port,
+                     destination_mac_address: packet_in.destination_mac,
+                     source_mac_address: packet_in.source_mac),
+    instructions: Apply.new(SendOutPort.new(port_no))
+  )
+end
 ----
 
 ここでの Flow Mod パラメータのポイントは次のとおりです。
 
-- `priority`: 優先度を `FORWARDING_TABLE_ID` の他のフローエントリ (フラッディング) よりも高くすることで、このフローエントリにマッチしない場合だけフラッディングするようにします。
-- `idle_timeout`: フローエントリの寿命を指定しておくことで、OpenFlow1.0 版のラーニングスイッチで行ったタイマによるエイジングと同じ効果を出せます。
-- `match`, `instructions`: 宛先が Packet In の送信元 MAC アドレスと同じだったら、Packet In の `in_port` から入ったパケットをそちらに送る、というエントリを入れています。
+`priority`:: 優先度を `FORWARDING_TABLE_ID` の他のフローエントリ (フラッディング) よりも高くすることで、このフローエントリにマッチしない場合だけフラッディングするようにします。
+`idle_timeout`:: フローエントリの寿命を指定しておくことで、OpenFlow1.0 版のラーニングスイッチで行ったタイマによるエイジングと同じ効果を出せます。
+`match`, `instructions`:: 宛先が Packet In の送信元 MAC アドレスと同じだったら、Packet In の `in_port` から入ったパケットをそちらに送る、というエントリを入れています。
 
 == まとめ
 
@@ -232,7 +373,6 @@ include::{sourcedir}/lib/learning_switch13.rb[lines="25..28"]
 
 - マルチプルテーブルを使うことで、フローテーブルごとにパケット処理を分けデバッグしやすくできる。
 - `GotoTable` インストラクションを使うことで、ひとつのパケットを複数のフローテーブルで処理できる。
-- `WriteActions` インストラクションを使うことで、アクションセットを後でまとめて適用できる。
 - OpenFlow1.3 ではデフォルトで Packet In が起こらない。このため、OpenFlow1.0 で問題となるフローエントリ設定前の `packet_in` ハンドラの大量呼び出しが起こらない。
 
-続く章では処理済みパケット数などのフローテーブル統計機能を既存のコントローラに簡単に追加できる、便利なモジュールを実装します。このモジュールをラーニングスイッチに組込むことで、簡単に統計機能を追加してみましょう。
+続く章ではアジャイル開発手法を使って、コントローラを反復的に開発する手法を紹介します。テストコードを書きながら徐々に機能を追加していくことで、バグの少ないコントローラを着実に開発できます。
