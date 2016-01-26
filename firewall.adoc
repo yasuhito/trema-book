@@ -1,0 +1,581 @@
+# NFVを作ろう: ファイアウォール
+:imagesdir: images/transparent_firewall
+
+// TODO リード文をここに
+
+## NFVとはなにか
+
+NFV(Network Functions Virtualization)とは、ファイアウォールやルータ、スイッチ、ロードバランサといった専用ネットワーク機器を汎用サーバで実装したものです。NFVの実装方法にはいろいろ考えられますが、今まで見てきたようにOpenFlowを使えばスイッチはもちろん、本章で紹介するファイアウォール、そして次章で紹介するルータなども汎用サーバ上のソフトウェアとして実装できます。
+
+専用機器を汎用サーバで置き換える利点は、負荷が上がった際に水平方向にスケールさせやすいことです。従来の専用ネットワーク機器では、負荷が上がった際にはワンランク上のハイエンドな機器と置き換える、つまり垂直方向にアップグレードしなければなりませんでした。しかし、専用機器をOpenFlowを使って汎用サーバとして実装すれば、汎用サーバを増やすだけで、つまり水平方向に増設するだけで負荷上昇に対応できます。
+
+## 透過型ファイアウォール
+
+今回実装するファイアウォールはいわゆる透過型ファイアウォールです。<<transparent_firewall,図 11-1>> のようにルータとホストの間にブリッジとしてはさむだけでパケットのフィルタリングが可能です。既存のルータをそのまま使うため、各ホストのネットワーク設定を変更しなくてよいという利点があります。
+
+[[transparent_firewall]]
+.透過型ファイアウォール
+image::transparent_firewall.png[caption="図 11-1: "]
+
+パケットのフィルタリングはIPv4の情報に基づいて行います。フィルタリングのルールは次の2種類で、それぞれで実装が異なります。
+
+BlockRFC1918:: RFC1918が定義するプライベートアドレスを送信元または宛先とするパケットを遮断するファイアウォール。外側からと内側からの両方のパケットを遮断する。
+PassDelegated:: グローバルアドレスからのパケットのみを通すファイアウォール。外側→内側のパケットのみをフィルタする。
+
+## BlockRFC1918コントローラ
+
+BlockRFC1918コントローラは送信元または宛先 IP アドレスがプライベートアドレスのパケットを遮断します (<<block_rfc1918,図 11-2>>)。プライベートアドレスは RFC1918 (プライベート網のアドレス割当) が定義する次の 3 つの IP アドレス空間です。
+
+- 10.0.0.0/8
+- 172.16.0.0/12
+- 192.168.0.0/16
+
+// TODO: BlockRFC1918 コントローラ動作の詳しい説明をここに
+
+[[block_rfc1918]]
+.BlockRFC1918ファイアウォールはプライベートアドレスからのパケットを遮断
+image::block_rfc1918.png[caption="図 11-2: "]
+
+### 実行してみよう
+
+今回も仮想ネットワークを使って BlockRFC1918 コントローラを起動してみます。ソースコードと仮想ネットワークの設定ファイルは GitHub の `trema/transparent_firewall` リポジトリ (https://github.com/trema/transparent_firewall) からダウンロードできます。
+
+----
+$ git clone https://github.com/trema/transparent_firewall.git
+----
+
+ダウンロードしたソースツリー上で `bundle install --binstubs` を実行すると、Tremaなどの実行環境一式を自動的にインストールできます。
+
+----
+$ cd transparent_firewall
+$ bundle install --binstubs
+----
+
+GitHub から取得したソースリポジトリ内に、仮想スイッチ1台、仮想ホスト3台の構成を持つ設定ファイル `trema.conf` が入っています (<<firewall_configuration,図 11-3>>)。
+
+[[firewall_configuration]]
+.BlockRFC1918 を実行するための仮想ネットワーク構成
+image::configuration.png[caption="図 11-3: "]
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.trema.conf
+----
+vswitch('firewall') { datapath_id '0xabc' }
+
+vhost('outside') { ip '192.168.0.1' }
+vhost('inside') { ip '192.168.0.2' }
+vhost('inspector') {
+  ip '192.168.0.3'
+  promisc true
+}
+
+link 'firewall', 'outside'
+link 'firewall', 'inside'
+link 'firewall', 'inspector'
+----
+
+ホスト outside は外側のネットワーク、たとえばインターネット上のホストとして動作します。ホスト inside は内側のネットワークのホストです。ホスト inspector は BlockRFC1918 ファイアウォールが落としたパケットを調べるためのデバッグ用ホストです。inspector は outside または inside 宛のパケットを受け取るので、`promisc` オプションを有効にすることで自分宛でないパケットも受け取れるようにしておきます。
+
+では、いつものように `trema run` の `-c` オプションにこの設定ファイルを渡して BlockRFC1918 コントローラを実行してみましょう。
+
+----
+$ ./bin/trema run ./lib/block_rfc1918.rb -c trema.conf
+0xabc: connected
+0xabc: loading finished
+----
+
+別ターミナルを開き、`trema send_packets` コマンドを使って outside と inside ホストの間でテストパケットを送ってみます。
+
+----
+$ ./bin/trema send_packets --source outside --dest inside
+$ ./bin/trema send_packets --source inside --dest outside
+----
+
+outside と inside はどちらもプライベートアドレスを持つので、BlockRFC1918 コントローラがパケットを落とすはずです。落としたパケットは inspector ホストへ送られます。
+
+`trema show_stats` コマンドで outside、inside そして inspector の受信パケット数をチェックしてみましょう。
+
+----
+$ ./bin/trema show_stats outside
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+$ ./bin/trema show_stats inside
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+$ ./bin/trema show_stats inspector
+Packets received:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+----
+
+たしかに、outside と inside の `show_stats` には `Packets received:` の項目がないので、どちらにもパケットは届いていません。そして、落としたパケット 2 つはどちらも inspector に届いています。
+
+### ソースコード解説
+
+BlockRFC1918のソースコードをざっと眺めてみましょう。やっていることは基本的にフローエントリの設定だけなので、難しい点はありません。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.lib/block_rfc1918.rb
+----
+# A sample transparent firewall
+class BlockRFC1918 < Trema::Controller
+  PORT = {
+    outside: 1,
+    inside: 2,
+    inspect: 3
+  }
+
+  PREFIX = ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'].map do |each|
+    IPv4Address.new each
+  end
+
+  def switch_ready(dpid)
+    if @dpid
+      logger.info "#{dpid.to_hex}: ignored"
+      return
+    end
+    @dpid = dpid
+    logger.info "#{@dpid.to_hex}: connected"
+    start_loading
+  end
+
+  def switch_disconnected(dpid)
+    return if @dpid != dpid
+    logger.info "#{@dpid.to_hex}: disconnected"
+    @dpid = nil
+  end
+
+  def barrier_reply(dpid, _message)
+    return if dpid != @dpid
+    logger.info "#{@dpid.to_hex}: loading finished"
+  end
+
+  private
+
+  def start_loading
+    PREFIX.each do |each|
+      block_prefix_on_port prefix: each, in_port: :inside, priority: 5000
+      block_prefix_on_port prefix: each, in_port: :outside, priority: 4000
+    end
+    install_postamble 1500
+    send_message @dpid, Barrier::Request.new
+  end
+
+  def block_prefix_on_port(prefix:, in_port:, priority:)
+    send_flow_mod_add(
+      @dpid,
+      priority: priority + 100,
+      match: Match.new(in_port: PORT[in_port],
+                       ether_type: 0x0800,
+                       source_ip_address: prefix),
+      actions: SendOutPort.new(PORT[:inspect]))
+    send_flow_mod_add(
+      @dpid,
+      priority: priority,
+      match: Match.new(in_port: PORT[in_port],
+                       ether_type: 0x0800,
+                       destination_ip_address: prefix),
+      actions: SendOutPort.new(PORT[:inspect]))
+  end
+
+  def install_postamble(priority)
+    send_flow_mod_add(
+      @dpid,
+      priority: priority + 100,
+      match: Match.new(in_port: PORT[:inside]),
+      actions: SendOutPort.new(PORT[:outside]))
+    send_flow_mod_add(
+      @dpid,
+      priority: priority,
+      match: Match.new(in_port: PORT[:outside]),
+      actions: SendOutPort.new(PORT[:inside]))
+  end
+end
+----
+
+スイッチがコントローラに接続すると、`switch_ready` ハンドラが呼ばれます。`switch_ready` ハンドラでは、フローエントリを設定する `start_loading` メソッドを呼びます。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.BlockRFC1918#switch_ready (lib/block_rfc1918.rb)
+----
+def switch_ready(dpid)
+  if @dpid
+    logger.info "#{dpid.to_hex}: ignored"
+    return
+  end
+  @dpid = dpid
+  logger.info "#{@dpid.to_hex}: connected"
+  start_loading # <1>
+end
+----
+<1> フローエントリを設定する `start_loading` メソッドを呼ぶ。
+
+`start_loading` メソッドでは、パケットのドロップと転送用のフローエントリを設定します。まず、RFC1918 が定義する 3 つのプライベートアドレス空間それぞれについて、送信元または宛先 IP アドレスがプライベートアドレスのパケットを `inspector` ホストに転送するフローエントリを `block_prefix_on_port` メソッドで設定します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.BlockRFC1918#start_loading, BlockRFC1918#block_prefix_on_port (lib/block_rfc1918.rb)
+----
+def start_loading
+  PREFIX.each do |each|
+    block_prefix_on_port prefix: each, in_port: :outside, priority: 4000 # <1>
+    block_prefix_on_port prefix: each, in_port: :inside, priority: 5000  # <2>
+  end
+  install_postamble 1500
+  send_message @dpid, Barrier::Request.new
+end
+
+def block_prefix_on_port(prefix:, in_port:, priority:)
+  send_flow_mod_add( # <3>
+    @dpid,
+    priority: priority + 100,
+    match: Match.new(in_port: PORT[in_port],
+                     ether_type: 0x0800,
+                     source_ip_address: prefix),
+    actions: SendOutPort.new(PORT[:inspect]))
+  send_flow_mod_add( # <4>
+    @dpid,
+    priority: priority,
+    match: Match.new(in_port: PORT[in_port],
+                     ether_type: 0x0800,
+                     destination_ip_address: prefix),
+    actions: SendOutPort.new(PORT[:inspect]))
+end
+----
+<1> スイッチのポート 1 番 (内側ネットワークと接続) で受信するパケットのフローエントリを設定
+<2> スイッチのポート 2 番 (外側ネットワークと接続) で受信するパケットのフローエントリを設定
+<3> 送信元 IP アドレスがプライベートアドレスのパケットを `inspector` ホストに転送するフローエントリを追加
+<4> 宛先 IP アドレスがプライベートアドレスのパケットを `inspector` ホストに転送するフローエントリを追加
+
+// TODO: Rubyイディオムコラムでキーワード引数を説明をする
+
+そして、送信元 IP アドレスがプライベートアドレスでないパケットは転送を許可します。このフローエントリは `install_postamble` メソッドで次のように設定します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.BlockRFC1918#install_postamble (lib/block_rfc1918.rb)
+----
+def install_postamble(priority)
+  send_flow_mod_add( # <1>
+    @dpid,
+    priority: priority + 100,
+    match: Match.new(in_port: PORT[:inside]),
+    actions: SendOutPort.new(PORT[:outside]))
+  send_flow_mod_add( # <2>
+    @dpid,
+    priority: priority,
+    match: Match.new(in_port: PORT[:outside]),
+    actions: SendOutPort.new(PORT[:inside]))
+end
+----
+<1> スイッチのポート 2 番 (内側ネットワーク) で受信した転送 OK なパケットはポート 1 番 (外側ネットワーク) へ転送
+<2> 逆にスイッチのポート 1 番で受信した転送 OK なパケットはポート 2 番へ転送
+
+最後に、すべてのフローエントリがスイッチに反映したことをバリアで確認します。スイッチへ `Barrier::Request` メッセージを送り、スイッチからの `Barrier::Reply` メッセージが `barrier_reply` ハンドラへ届けば、すべてフローエントリの設定は完了です。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.BlockRFC1918#barrier_reply (lib/block_rfc1918.rb)
+----
+  def barrier_reply(dpid, _message) # <2>
+    return if dpid != @dpid
+    logger.info "#{@dpid.to_hex}: loading finished"
+  end
+
+  private
+
+  def start_loading
+    PREFIX.each do |each|
+      block_prefix_on_port prefix: each, in_port: :outside, priority: 4000
+      block_prefix_on_port prefix: each, in_port: :inside, priority: 5000
+    end
+    install_postamble 1500
+    send_message @dpid, Barrier::Request.new # <1>
+  end
+----
+<1> スイッチに `Barrier::Request` メッセージを送り、すべてのフローエントリが反映されるのを待つ
+<2> `Barrier::Reply` が届けば、完了メッセージを `logger.info` で出す
+
+## PassDelegatedコントローラ
+
+PassDelegatedコントローラは、外側から内側向きのパケットのうち、送信元または宛先 IP アドレスがグローバル IP アドレスのパケットのみを通します (<<pass_delegated,図 11-4>>)。
+
+[[pass_delegated]]
+.PassDelegatedファイアウォールは外→内側向きのグローバルアドレスからのパケットを通す
+image::pass_delegated.png[caption="図 11-4: "]
+
+フローエントリに用いるグローバル IP アドレスには、`trema/transparent_firewall` リポジトリ内のグローバル IP アドレス空間の一覧リスト (`*.txt` ファイル) を使います。このテキストファイルは、グローバルアドレスの割り当てなどを行う地域インターネットレジストリが提供するリストから自動生成したものです。たとえば、アジアと太平洋地域を担当する Asia-Pacific Network Information Centre (APNIC) のファイルは次のような 3000 以上の IP アドレス空間からなります。
+
+.aggregated-delegated-apinic.txt
+----
+1.0.0.0/8
+14.0.0.0/16
+14.1.0.0/20
+14.1.16.0/21
+14.1.32.0/19
+14.1.64.0/19
+14.1.128.0/17
+14.2.0.0/15
+14.4.0.0/14
+14.8.0.0/13
+...
+----
+
+### 実行してみよう
+
+PassDelegated コントローラを<<firewall_configuration,図 11-3>>と同じ `trema.conf` で起動してみましょう。`trema run` で実行すると、次のようにすべての *.txt ファイルを読みこみ IP アドレス空間ごとにフローエントリを作ります。グローバル IP アドレス空間は全部で2万以上あるので、すべてのフローエントリの作成には数分かかります。
+
+----
+$ ./bin/trema run ./lib/pass_delegated.rb -c pass_delegated.conf
+aggregated-delegated-afrinic.txt: 713 prefixes
+aggregated-delegated-apnic.txt: 3440 prefixes
+aggregated-delegated-arin.txt: 11342 prefixes
+aggregated-delegated-lacnic.txt: 1937 prefixes
+aggregated-delegated-ripencc.txt: 7329 prefixes
+0xabc: connected
+0xabc: loading started
+0xabc: loading finished in 241.03 seconds
+----
+
+コントローラが起動したら、別ターミナルを開き `trema send_packets` コマンドでoutsideとinsideホストの間でテストパケットを送ってみます。
+
+----
+$ ./bin/trema send_packets --source outside --dest inside
+$ ./bin/trema send_packets --source inside --dest outside
+----
+
+PassDelegated コントローラはグローバルアドレス以外の外側から内側へのパケットを遮断します。ホストoutsideはプライベートアドレスを持つので、PassDelegatedコントローラはパケットを落とします。ホストinsideもプライベートアドレスを持ちますが、insideからoutsideへのパケットは通します。`trema show_stats` コマンドで outside、inside そして inspector の受信パケット数をチェックしてみましょう。
+
+----
+$ ./bin/trema show_stats outside
+Packets sent:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+$ ./bin/trema show_stats inside
+Packets sent:
+  192.168.0.2 -> 192.168.0.1 = 1 packet
+Packets received:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+$ ./bin/trema show_stats inspector
+Packets received:
+  192.168.0.1 -> 192.168.0.2 = 1 packet
+----
+
+たしかに、outside から inside へのパケットは遮断し、逆向きの inside から outside へのパケットは通しています。そして、outside からの遮断されたパケットは inspector に届いています。
+
+### ソースコード解説
+
+PassDelegated のソースコードは BlockRFC1918 と似た構造ですが、使うフローエントリの種類が増えています。次の 4 種類のフローエントリを使います。
+
+フィルタ用 (優先度: 64000):: 外側ネットワークのグローバル IP アドレスからのパケットを内側ホストに転送するフローエントリです。3 万以上のエントリを持つため、セットアップに数分かかります
+バイパス用 (優先度: 65000):: フィルタ用フローエントリをセットアップしている間だけ有効なエントリです。外側⇔内側のすべてのパケットを通します
+ドロップ用 (優先度: 1000):: 外側ネットワークのグローバル IP アドレス以外からのパケットを inspector ホストに転送するフローエントリです
+IPv4以外用 (優先度: 900):: 外側ネットワークからの IPv4 以外のパケットを内側ネットワークへ転送するフローエントリです
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.lib/pass_delegated.rb
+----
+# A sample transparent firewall
+class PassDelegated < Trema::Controller
+  PORT = {
+    outside: 1,
+    inside: 2,
+    inspect: 3
+  }
+
+  PRIORITY = {
+    bypass: 65_000,
+    prefix: 64_000,
+    inspect: 1000,
+    non_ipv4: 900
+  }
+
+  PREFIX_FILES = %w(afrinic apnic arin lacnic ripencc).map do |each|
+    "aggregated-delegated-#{each}.txt"
+  end
+
+  def start(_args)
+    @prefixes = PREFIX_FILES.reduce([]) do |result, each|
+      data = IO.readlines(File.join __dir__, '..', each)
+      logger.info "#{each}: #{data.size} prefixes"
+      result + data
+    end
+  end
+
+  def switch_ready(dpid)
+    if @dpid
+      logger.info "#{dpid.to_hex}: ignored"
+      return
+    end
+    @dpid = dpid
+    logger.info "#{@dpid.to_hex}: connected"
+    start_loading
+  end
+
+  def switch_disconnected(dpid)
+    return if @dpid != dpid
+    logger.info "#{@dpid.to_hex}: disconnected"
+    @dpid = nil
+  end
+
+  def barrier_reply(dpid, _message)
+    return if dpid != @dpid
+    finish_loading
+  end
+
+  private
+
+  def start_loading
+    @loading_started = Time.now
+    install_preamble_and_bypass
+    install_prefixes
+    install_postamble
+    send_message @dpid, Barrier::Request.new
+  end
+
+  # All flows in place, safe to remove bypass.
+  def finish_loading
+    send_flow_mod_delete(@dpid,
+                         strict: true,
+                         priority: PRIORITY[:bypass],
+                         match: Match.new(in_port: PORT[:outside]))
+    logger.info(format('%s: loading finished in %.2f second(s)',
+                       @dpid.to_hex, Time.now - @loading_started))
+  end
+
+  def install_preamble_and_bypass
+    send_flow_mod_add(@dpid,
+                      priority: PRIORITY[:bypass],
+                      match: Match.new(in_port: PORT[:inside]),
+                      actions: SendOutPort.new(PORT[:outside]))
+    send_flow_mod_add(@dpid,
+                      priority: PRIORITY[:bypass],
+                      match: Match.new(in_port: PORT[:outside]),
+                      actions: SendOutPort.new(PORT[:inside]))
+  end
+
+  def install_prefixes
+    logger.info "#{@dpid.to_hex}: loading started"
+    @prefixes.each do |each|
+      send_flow_mod_add(@dpid,
+                        priority: PRIORITY[:prefix],
+                        match: Match.new(in_port: PORT[:outside],
+                                         ether_type: 0x0800,
+                                         source_ip_address: IPv4Address.new(each)),
+                        actions: SendOutPort.new(PORT[:inside]))
+    end
+  end
+
+  # Deny any other IPv4 and permit non-IPv4 traffic.
+  def install_postamble
+    send_flow_mod_add(@dpid,
+                      priority: PRIORITY[:inspect],
+                      match: Match.new(in_port: PORT[:outside], ether_type: 0x0800),
+                      actions: SendOutPort.new(PORT[:inspect]))
+    send_flow_mod_add(@dpid,
+                      priority: PRIORITY[:non_ipv4],
+                      match: Match.new(in_port: PORT[:outside]),
+                      actions: SendOutPort.new(PORT[:inside]))
+  end
+end
+----
+
+BlockRFC1918 と同じく、各種フローエントリの設定は `start_loading` メソッドから始まります。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.PassDelegated#start_loading (lib/pass_delegated.rb)
+----
+def start_loading
+  @loading_started = Time.now
+  install_preamble_and_bypass
+  install_prefixes
+  install_postamble
+  send_message @dpid, Barrier::Request.new
+end
+----
+
+最初に呼び出す `install_preamble_and_bypass` メソッドは、外側⇔内側のすべてのパケットを通すバイパス用フローエントリを追加します。優先度を他のフローエントリよりも大きくしておくことで、フィルタリング用フローエントリを設定している数分間もすべてのパケットはこのフローエントリにマッチします。このため、コントローラの起動中でも普通に通信できるようになります。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.PassDelegated#install_preamble_and_bypass (lib/pass_delegated.rb)
+----
+def install_preamble_and_bypass
+  send_flow_mod_add(@dpid, # <1>
+                    priority: PRIORITY[:bypass],
+                    match: Match.new(in_port: PORT[:inside]),
+                    actions: SendOutPort.new(PORT[:outside]))
+  send_flow_mod_add(@dpid, # <2>
+                    priority: PRIORITY[:bypass],
+                    match: Match.new(in_port: PORT[:outside]),
+                    actions: SendOutPort.new(PORT[:inside]))
+end
+----
+<1> 内側→外側のパケットをすべて通すフローエントリを設定
+<2> 外側→内側のパケットをすべて通すフローエントリを設定
+
+バイパス用フローエントリの後、大量のフィルタ用フローエントリを設定します。PassDelegated がフィルタするのは外側→内側ネットワークだけなので、それぞれのグローバル IP アドレス空間について 1 つずつのフローエントリを作ります。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.PassDelegated#install_prefixes (lib/pass_delegated.rb)
+----
+def install_prefixes
+  logger.info "#{@dpid.to_hex}: loading started"
+  @prefixes.each do |each|
+    send_flow_mod_add(@dpid,
+                      priority: PRIORITY[:prefix],
+                      match: Match.new(in_port: PORT[:outside],
+                                       ether_type: 0x0800,
+                                       source_ip_address: IPv4Address.new(each)),
+                      actions: SendOutPort.new(PORT[:inside]))
+  end
+end
+----
+
+続く `install_postamble` メソッドでは、ドロップ用と IPv4 以外用の 2 種類のフローエントリを設定します。ドロップ用フローエントリは、外側ネットワークのグローバル IP アドレス以外からのパケットを inspector ホストに転送します。IPv4 以外用フローエントリは、外側ネットワークからの IPv4 以外のパケットをすべて内側ネットワークへ転送します。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.PassDelegated#install_postamble (lib/pass_delegated.rb)
+----
+# Deny any other IPv4 and permit non-IPv4 traffic.
+def install_postamble
+  send_flow_mod_add(@dpid, # <1>
+                    priority: PRIORITY[:inspect],
+                    match: Match.new(in_port: PORT[:outside], ether_type: 0x0800),
+                    actions: SendOutPort.new(PORT[:inspect]))
+  send_flow_mod_add(@dpid, # <2>
+                    priority: PRIORITY[:non_ipv4],
+                    match: Match.new(in_port: PORT[:outside]),
+                    actions: SendOutPort.new(PORT[:inside]))
+end
+----
+<1> ドロップ用フローエントリの設定
+<2> IPv4 以外用フローエントリの設定
+
+最後に、すべてのフローエントリが実際にスイッチへ反映されるのをバリアで待った後、外側→内側へのバイパス用フローエントリを削除します。これによって、外側→内側へのグローバルアドレスを持たないホストからのパケットだけをフィルタリング用エントリで遮断できます。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.PassDelegated#install_postamble (lib/pass_delegated.rb)
+----
+def barrier_reply(dpid, _message)
+  return if dpid != @dpid
+  finish_loading
+end
+
+private
+
+# All flows in place, safe to remove bypass.
+def finish_loading
+  send_flow_mod_delete(@dpid,
+                       strict: true,
+                       priority: PRIORITY[:bypass],
+                       match: Match.new(in_port: PORT[:outside]))
+  logger.info(format('%s: loading finished in %.2f second(s)',
+                     @dpid.to_hex, Time.now - @loading_started))
+end
+----
+
+## まとめ
+
+NFVの実装として、2種類の透過型ファイアウォールを実装しました。
+
+- NFVとは専用機器を汎用サーバ+ソフトウェアで置き換えたもので、汎用サーバの台数を増やすことで負荷上昇に対応できる
+- 透過型ファイアウォールはルータとホストの間にはさむだけで使え、各ホストのネットワーク設定を変更しなくてよい
+- Flow Mod がスイッチに反映されたことを保証するには `Barrier::Request` メッセージを使う
+
+続く章では、「NFVを作ろう」のパート2としてルータをOpenFlowで作ります。今までに学んできたOpenFlowやRubyプログラミングの知識を総動員しましょう。

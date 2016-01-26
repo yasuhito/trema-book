@@ -2,7 +2,7 @@
 :sourcedir: vendor/routing_switch
 :imagesdir: images/sliceable_switch
 
-IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワークを OpenFlow で実現しましょう。<<routing_switch,第 15 章>>で紹介したルーティングスイッチの応用です。
+IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワークを OpenFlow で実現しましょう。<<routing_switch,第 16 章>>で紹介したルーティングスイッチの応用です。
 
 == ネットワークをスライスに分ける
 
@@ -10,11 +10,11 @@ IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワー
 
 クラウドサービスが制御する物理リソースのうち、ネットワークの仮想化は OpenFlow の得意分野です。物理リソースのうちサーバの仮想化は、Xen などの仮想マシンモニタを使えば、一台のサーバ上に何台もの仮想マシンを起動することで多数のユーザを集約できます。もうひとつの物理リソースであるネットワークの仮想化については、後に説明するように OpenFlow コントローラで同様の仕組みを実現できます。この 2 つの組み合わせにより、クラウドサービスは「仮想マシン + 仮想ネットワーク」という専用環境をユーザごとに提供します。
 
-本章で取り上げる「スライス機能付きスイッチ」は、ネットワークを仮想化するコントローラです (<<slice, 図 16-1>>)。ひとつの物理ネットワークをたくさんのスライス、つまりユーザごとの論理的なネットワークに分割することで、たくさんのユーザをひとつの物理ネットワーク上に集約できます。
+本章で取り上げる「スライス機能付きスイッチ」は、ネットワークを仮想化するコントローラです (<<slice, 図 17-1>>)。ひとつの物理ネットワークをたくさんのスライス、つまりユーザごとの論理的なネットワークに分割することで、たくさんのユーザをひとつの物理ネットワーク上に集約できます。
 
 [[slice]]
 .スライス機能付きスイッチは 1 つの物理ネットワークをたくさんの独立した仮想ネットワークに分割できる
-image::slice.png[caption="図 16-1: "]
+image::slice.png[caption="図 17-1: "]
 
 == スライスの実現方法
 
@@ -28,7 +28,7 @@ image::slice.png[caption="図 16-1: "]
 
 一方 OpenFlow によるスライスではこの制約はありません。フローエントリをうまく使えば、既存の VLAN の仕組みを使わなくてもスライスを実現できるからです。つまり OpenFlow を使えば、「スライス数に制限のない仮想ネットワーク」を作れます。
 
-スライス機能付きスイッチは OpenFlow によるスライスの実装です。これは<<routing_switch,15章>>で紹介したルーティングスイッチを改造することにより、上限なくたくさんのスライスを作れるようにしたものです。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮しており、REST API を通じてスライスの作成/削除などの操作ができます。
+スライス機能付きスイッチは OpenFlow によるスライスの実装です。これは<<routing_switch,第15章>>で紹介したルーティングスイッチを改造することにより、上限なくたくさんのスライスを作れるようにしたものです。また、実際に OpenStack などのクラウド構築ミドルウェアの一部として使うことも考慮しており、REST API を通じてスライスの作成/削除などの操作ができます。
 
 == インストール
 
@@ -42,11 +42,11 @@ $ bundle install --binstubs
 
 === スライス機能付きスイッチを起動する
 
-スライス機能付きスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、<<sliceable_switch_network,図 16-2>> のネットワークを作ります。ルーティングスイッチのソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
+スライス機能付きスイッチの動作を確認してみましょう。これまで通り Trema のネットワークエミュレータを用いて、<<sliceable_switch_network,図 17-2>> のネットワークを作ります。ルーティングスイッチのソースコードに含まれる設定ファイル (`trema.conf`) を使えば、このネットワーク構成を実現できます。
 
 [[sliceable_switch_network]]
 .スライス機能付きスイッチを実行するネットワーク
-image::sliceable_switch_network.png[caption="図 16-2: "]
+image::sliceable_switch_network.png[caption="図 17-2: "]
 
 スライス機能を有効にするには、ルーティングスイッチの `trema run` に `-- --slicing` オプションを付けてください:
 
@@ -58,11 +58,11 @@ $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -- --slicing
 
 === スライスを作る
 
-スライスの作成には `slice` コマンドを使います。2 枚のスライス `slice1`、 `slice2` を作り、それぞれに 2 台ずつホストを追加してみましょう (<<creating_slices,図 16-3>>)。
+スライスの作成には `slice` コマンドを使います。2 枚のスライス `slice1`、 `slice2` を作り、それぞれに 2 台ずつホストを追加してみましょう (<<creating_slices,図 17-3>>)。
 
 [[creating_slices]]
 .スライスの作成例
-image::creating_slices.png[caption="図 16-3: "]
+image::creating_slices.png[caption="図 17-3: "]
 
 スライスの追加は `slice add` コマンドです:
 
@@ -128,11 +128,11 @@ Packets sent:
 
 スライス機能付きスイッチは OpenStack などのミドルウェアと連携するための REST API を提供しています。REST API はプログラミング言語を問わず使えるため、スライス機能付きスイッチの持つ仮想ネットワーク機能をさまざまなミドルウェアに簡単に組込めます。
 
-スライス機能付きスイッチの REST API は Ruby の HTTP サーバー実装である WEBrick で動作します （<<rest_overview,図16-4>>)。WEBrick に「スライスの作成」や「ホストの追加」といったリクエストを HTTP で送ると、WEBrick はリクエスト内容をスライス機能付きスイッチ経由でネットワークへと反映します。また、現在のスライスやホストの状態も同様に REST API 経由で取得できます。
+スライス機能付きスイッチの REST API は Ruby の HTTP サーバー実装である WEBrick で動作します （<<rest_overview,図17-4>>)。WEBrick に「スライスの作成」や「ホストの追加」といったリクエストを HTTP で送ると、WEBrick はリクエスト内容をスライス機能付きスイッチ経由でネットワークへと反映します。また、現在のスライスやホストの状態も同様に REST API 経由で取得できます。
 
 [[rest_overview]]
 .スライス機能付きスイッチの REST API 構成
-image::rest_overview.png[caption="図16-4: "]
+image::rest_overview.png[caption="図17-4: "]
 
 REST API の起動は次のコマンドです。スライス機能付きスイッチを起動した後に `rackup` コマンドで WEBrick を起動します。
 
@@ -241,10 +241,10 @@ $ curl -sS -X GET 'http://localhost:9292/slices/yutaro_slice/ports/0x1:1/mac_add
 
 ## REST API 一覧
 
-REST API は今回紹介した以外にも API を提供しています (<<rest_api_table,表 16-1>>)。やりとりする JSON データ等の詳しい仕様は https://relishapp.com/trema/routing-switch/docs/rest-api で公開していますので、本格的に使いたい人はこちらも参照してください。
+REST API は今回紹介した以外にも API を提供しています (<<rest_api_table,表 17-1>>)。やりとりする JSON データ等の詳しい仕様は https://relishapp.com/trema/routing-switch/docs/rest-api で公開していますので、本格的に使いたい人はこちらも参照してください。
 
 [[rest_api_table]]
-.表 16-1: REST API 一覧
+.表 17-1: REST API 一覧
 |===
 | 動作 | メソッド | URI
 
@@ -264,11 +264,11 @@ REST API は今回紹介した以外にも API を提供しています (<<rest_
 
 == スライス機能付きスイッチの実装
 
-実はスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの改造だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライス機能付きスイッチは次のように動作します（<<sliceable_switch_internals,図16-5>>）。
+実はスライス機能は、<<routing_switch,第15章>>で説明したルーティングスイッチへのほんの少しの改造だけで実現しています。コントローラとOpenFlowスイッチの視点で見ると、スライス機能付きスイッチは次のように動作します（<<sliceable_switch_internals,図17-5>>）。
 
 [[sliceable_switch_internals]]
 .スライス機能付きスイッチの動作
-image::sliceable_switch_internals.png[caption="図 16-5: "]
+image::sliceable_switch_internals.png[caption="図 17-5: "]
 
 1. ホスト 1 がホスト 4 宛てにパケットを送信すると、ルーティングスイッチはこのパケットを Packet In としてスイッチ 1 から受け取る (この Packet In の in_port をポート s とする)
 2. ルーティングスイッチはあらかじめ収集しておいたトポロジ情報 (<<topology,第14章>>) を検索し、宛先のホスト 4 が接続するスイッチ (スイッチ 6) とポート番号 (ポート g とする) を得る
@@ -281,14 +281,14 @@ image::sliceable_switch_internals.png[caption="図 16-5: "]
 
 == スライス機能付きスイッチのソースコード
 
-スライス機能は、ルーティングスイッチに次の新たなクラス 2 個を追加することで実現しています (<<sliceable_switch_classes, 図 16-6>>)。
+スライス機能は、ルーティングスイッチに次の新たなクラス 2 個を追加することで実現しています (<<sliceable_switch_classes, 図 17-6>>)。
 
 PathInSliceManager クラス:: スライス内のパスを管理するコントローラの本体
 Slice クラス:: スライスを管理する
 
 [[sliceable_switch_classes]]
 .スライス機能付きスイッチを構成するクラス
-image::sliceable_switch_classes.png[caption="図 16-6: "]
+image::sliceable_switch_classes.png[caption="図 17-6: "]
 
 // TODO: 実線と点線の矢印の説明を加える
 // TODO: Slice と Path クラスのメソッド一覧を更新

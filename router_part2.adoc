@@ -70,7 +70,7 @@ image::default_route.png[caption="図 13-5: "]
 
 === パケットを書き換えて転送する(再)
 
-`RoutingTable` クラスのソースコードを見る前に、パケットの書き換えと転送を行う `forward` メソッドをもう一度見ていきましょう。<<router_part1,12章>>で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
+`RoutingTable` クラスのソースコードを見る前に、パケットの書き換えと転送を行う `forward` メソッドをもう一度見ていきましょう。<<router_part1,第12章>>で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
@@ -211,7 +211,14 @@ rtt min/avg/max/mdev = 70.995/81.159/101.180/9.050 ms
 
 === iperf で動作を確認する
 
-次は iperf でネットワークスループットを計測してみましょう。iperf はサーバ・クライアント型のアプリケーションなので、まずは host2 上で次のように iperf のサーバを起動しておきます。
+次は iperf でネットワークスループットを計測してみましょう。まずは iperf をインストールします。
+
+----
+$ sudo apt-get update
+$ sudo apt-get install iperf
+----
+
+iperf はサーバ・クライアント型のアプリケーションなので、まずは host2 上で次のように iperf のサーバを起動しておきます。
 
 ----
 $ ./bin/trema netns host2
