@@ -3,6 +3,14 @@
 ## develop
 
 
+## 0.32.0 (1/26/2016)
+* ラーニングスイッチ章をアップデート
+
+
+## 0.31.0 (1/25/2016)
+* [#182](https://github.com/yasuhito/trema-book/pull/182): パッチパネル章をアップデート
+
+
 ## 0.30.0 (1/25/2016)
 * [#181](https://github.com/yasuhito/trema-book/pull/181): Cbench章をアップデート
 
