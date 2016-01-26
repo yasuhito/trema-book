@@ -3,6 +3,11 @@
 ## develop
 
 
+## 0.33.0 (1/26/2016)
+* [#175](https://github.com/yasuhito/trema-book/pull/175): NFV記述を削除
+* [#163](https://github.com/yasuhito/trema-book/pull/163): ラーニングスイッチ1.3章をアップデート
+
+
 ## 0.32.0 (1/26/2016)
 * ラーニングスイッチ章をアップデート
 
