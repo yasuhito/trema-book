@@ -3,6 +3,14 @@
 ## develop
 
 
+## 0.34.0 (1/27/2016)
+* [#184](https://github.com/yasuhito/trema-book/pull/184): テスト章を校正
+* [#177](https://github.com/yasuhito/trema-book/pull/177): OpenFlow仕様章を途中まで校正
+* OpenFlow移行章を校正
+* ファイアウォール章を校正
+* ルータ章 part1, part2 を校正
+
+
 ## 0.33.0 (1/26/2016)
 * [#175](https://github.com/yasuhito/trema-book/pull/175): NFV記述を削除
 * [#163](https://github.com/yasuhito/trema-book/pull/163): ラーニングスイッチ1.3章をアップデート
