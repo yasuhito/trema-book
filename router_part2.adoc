@@ -2,6 +2,7 @@
 :sourcedir: vendor/router
 :imagesdir: images/router
 
+[.lead]
 ルータが持つ重要な機能であるルーティングテーブルの詳細を見ていきましょう。ルータは実に巧妙な仕組みで転送先の情報を管理します。
 
 image::map.png[]
