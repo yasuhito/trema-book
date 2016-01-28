@@ -88,8 +88,8 @@ class LearningSwitch13 < Trema::Controller
       table_id: INGRESS_FILTERING_TABLE_ID,
       idle_timeout: 0,
       priority: 2,
-      match: Match.new(destination_mac_address: '01:00:00:00:00:00',
-                       destination_mac_address_mask: 'ff:00:00:00:00:00')
+      match: Match.new(destination_mac_address: '01:00:5e:00:00:00',
+                       destination_mac_address_mask: 'ff:ff:ff:80:00:00')
     )
   end
 

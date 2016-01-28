@@ -8,11 +8,11 @@
 
 筆者はネットワーク研究者という仕事柄、よくさまざまなネットワークを目にします。その中でいつも「すごい!」とうならされるのが、ネットワークエンジニアの憧れ、ShowNet です。ShowNet はネットワーク系最大の展示会 Interop Tokyo の期間中だけ運用されるネットワークで、最新ネットワーク技術のいわばショーケースと言えます。普段は触れることのできない、ネットワーク界の F1 マシンとも言える最新機器を集めたライブデモンストレーションは圧巻の一言です。
 
-ShowNet の魅力をもっともよく伝えてくれるのが、Interop Tokyo で毎年公開される ShowNet のトポロジ図です (<<shownet_topology,図 14-1>>)。注目すべきは、ShowNet の複雑な情報をたった一枚の図に収めているところです。「この部分は、いったいどんなプロトコルで動いているんだろう?」「実際の詳しいトポロジはどうなっているのかな?」こうした気になる部分が、すべて一枚の図にきれいに収まっています。ネットワークが好きな人であれば、気がつくと何時間でも眺めてしまうほどの魅力を持つトポロジ図なのです。
+ShowNet の魅力をもっともよく伝えてくれるのが、Interop Tokyo で毎年公開される ShowNet のトポロジ図です (<<shownet_topology,図 15-1>>)。注目すべきは、ShowNet の複雑な情報をたった一枚の図に収めているところです。「この部分は、いったいどんなプロトコルで動いているんだろう?」「実際の詳しいトポロジはどうなっているのかな?」こうした気になる部分が、すべて一枚の図にきれいに収まっています。ネットワークが好きな人であれば、気がつくと何時間でも眺めてしまうほどの魅力を持つトポロジ図なのです。
 
 [[shownet_topology]]
 .2015 年 Interop Tokyo の ShowNet トポロジ図。引用元: http://www.interop.jp/2015/shownet/images/topology02.pdf Copyright (C) Interop Tokyo 2015 ShowNet NOC Team Member and NANO OPT Media, Inc. All Rights Reserved.
-image::shownet_topology.jpg[caption="図 14-1: "]
+image::shownet_topology.jpg[caption="図 15-1: "]
 
 ShowNet のようにいくつものスイッチやルータがつながるネットワークの動作では、トポロジ情報の把握が1つの鍵です。パケットが迷子になったりループしたりせずに正しく目的地まで届くためには、スイッチやルータ同士がどのような接続関係にあるかをお互いに把握しなければなりません。
 
@@ -24,29 +24,29 @@ OpenFlow では、コントローラがこのトポロジ情報を管理しま�
 
 === リンクの発見
 
-OpenFlow でリンクを発見する方法として代表的なのは、Link Layer Discovery Protocol (LLDP) パケットを使った方法です (<<lldp_overview,図 14-2>>)。コントローラはどこにリンクがあるかあたりをつけるために、適当なスイッチ A に LLDP パケットを試しに送ります。もし、スイッチ Aに別のスイッチ B がリンクでつながっていれば、LLDPはそこのリンクを通りスイッチ Bを経由してブーメランのようにコントローラへと戻ってきます。このように LLDP パケットが無事に戻ってくれば、スイッチ A と B はリンクでつながっているとわかります。また、LLDP パケットには通過したリンクの詳しい情報が書き込まれるので、スイッチ A と B がどのポート番号で接続しているかということまでわかります。これを繰り返していけば、最終的にはすべてのリンクを発見できるわけです。
+OpenFlow でリンクを発見する方法として代表的なのは、Link Layer Discovery Protocol (LLDP) パケットを使った方法です (<<lldp_overview,図 15-2>>)。コントローラはどこにリンクがあるかあたりをつけるために、適当なスイッチ A に LLDP パケットを試しに送ります。もし、スイッチ Aに別のスイッチ B がリンクでつながっていれば、LLDPはそこのリンクを通りスイッチ Bを経由してブーメランのようにコントローラへと戻ってきます。このように LLDP パケットが無事に戻ってくれば、スイッチ A と B はリンクでつながっているとわかります。また、LLDP パケットには通過したリンクの詳しい情報が書き込まれるので、スイッチ A と B がどのポート番号で接続しているかということまでわかります。これを繰り返していけば、最終的にはすべてのリンクを発見できるわけです。
 
 [[lldp_overview]]
 .LLDP を使ってリンクを発見する
-image::lldp_overview.png[caption="図 14-2: "]
+image::lldp_overview.png[caption="図 15-2: "]
 
 「なぜ、LLDP パケットはきちんとリンクを通ってコントローラまで戻ってくるんだろう？スイッチに LLDP 固有のしかけが必要なのかな？」こう思った方もいるかもしれません。実は、LLDPによるリンクは今まで学んできた OpenFlow の仕組みだけを使って実現できます。つまり、OpenFlow に対応したスイッチであれば LLDPでリンクを発見できるのです。
 
-LLDP によるリンク発見を OpenFlow で実現する方法を見ていきましょう。<<lldp_openflow,図 14-3>> のように、スイッチ 0x1 のポート 5 とスイッチ 0x3 のポート 1 が接続されていたとします。このリンクを発見するために、コントローラは次の動作をします。
+LLDP によるリンク発見を OpenFlow で実現する方法を見ていきましょう。<<lldp_openflow,図 15-3>> のように、スイッチ 0x1 のポート 5 とスイッチ 0x3 のポート 1 が接続されていたとします。このリンクを発見するために、コントローラは次の動作をします。
 
 [[lldp_openflow]]
 .LLDP パケットと OpenFlow の仕組みを使ってリンクを発見する
-image::lldp_openflow.png[caption="図 14-3: "]
+image::lldp_openflow.png[caption="図 15-3: "]
 
 1. コントローラは、接続関係を調べたいスイッチの Datapath ID 0x1 とポート番号 5 を埋め込んだ Link Layer Discovery Protocol (LLDP) パケットを作る
 2. ポート 5 から出力するというアクションを含む Packet Out メッセージを作り、先ほど作った LLDPパケットをスイッチ 0x1 へと送る
 3. Packet Out を受け取ったスイッチはアクションに従い、LLDPパケットを指定されたポート 5 から出力する。その結果、LLDP パケットは、ポート 5 の先につながるスイッチ 0x2 へと到着する
 4. LLDP パケットを受け取ったスイッチ 0x2 は、自身のフローテーブルを参照し、パケットの処理方法を調べる。このとき LLDP に対するフローエントリはあえて設定していないため、今回受信した LLDPパケットは、Packet In としてコントローラまで戻される
-5. コントローラは、受け取った Packet In メッセージを解析することで、リンクの発見を行う。スイッチ 0x2 からは<<lldp_packet_in,図 14-4>> の Packet In メッセージが送られてくる。この中身を見ることで、スイッチ 0x1 のポート 5 と、スイッチ 0x2 のポート 1 の間にリンクを発見できる
+5. コントローラは、受け取った Packet In メッセージを解析することで、リンクの発見を行う。スイッチ 0x2 からは<<lldp_packet_in,図 15-4>> の Packet In メッセージが送られてくる。この中身を見ることで、スイッチ 0x1 のポート 5 と、スイッチ 0x2 のポート 1 の間にリンクを発見できる
 
 [[lldp_packet_in]]
 .スイッチ 0x2 から送られてくる Packet In メッセージ
-image::lldp_packet_in.png[caption="図 14-5: "]
+image::lldp_packet_in.png[caption="図 15-5: "]
 
 このように、Packet Out で送られた LLDP パケットは、リンクを通過し、隣のスイッチから Packet In でコントローラへと戻ってきます。この一連の動作によりコントローラはリンクを発見できます。この方法自体は、OpenFlow 仕様でとくに規定されているわけではありません。それぞれのスイッチは OpenFlow 仕様で定められた動作を行っているだけです。つまり、Packet Out と Packet In をうまく使った “OpenFlow ならでは” のリンク発見方法だと言えます。
 
@@ -54,17 +54,17 @@ image::lldp_packet_in.png[caption="図 14-5: "]
 
 === トポロジの検出
 
-このリンク発見方法をネットワーク中のすべてのスイッチのすべてのポートに順に適用していけば、ネットワーク全体のスイッチの接続関係、つまりトポロジを知ることができます。たとえば<<topology_before,図 14-5>>のような 3 台の OpenFlow スイッチからなるネットワークにおいて、どうやってトポロジを検出できるかを見ていきましょう。各 OpenFlow スイッチがコントローラに接続した直後の状態では、コントローラはスイッチ同士がどのように接続されているかを知りません。
+このリンク発見方法をネットワーク中のすべてのスイッチのすべてのポートに順に適用していけば、ネットワーク全体のスイッチの接続関係、つまりトポロジを知ることができます。たとえば<<topology_before,図 15-5>>のような 3 台の OpenFlow スイッチからなるネットワークにおいて、どうやってトポロジを検出できるかを見ていきましょう。各 OpenFlow スイッチがコントローラに接続した直後の状態では、コントローラはスイッチ同士がどのように接続されているかを知りません。
 
 [[topology_before]]
 .トポロジ検出前のコントローラ
-image::topology_before.png[caption="図 14-5: "]
+image::topology_before.png[caption="図 15-5: "]
 
-まずスイッチ 0x1 から調べていきます。はじめに Features Request メッセージを送ることで、スイッチ 0x1 が持つポート一覧を取得します。そして、それぞれのポートに対して、前述のリンク発見手順を行います (<<topology_after,図 14-6>>)。その結果、スイッチ 0x1 からスイッチ 0x2 およびスイッチ 0x3 へと至るリンクそれぞれを発見できます。
+まずスイッチ 0x1 から調べていきます。はじめに Features Request メッセージを送ることで、スイッチ 0x1 が持つポート一覧を取得します。そして、それぞれのポートに対して、前述のリンク発見手順を行います (<<topology_after,図 15-6>>)。その結果、スイッチ 0x1 からスイッチ 0x2 およびスイッチ 0x3 へと至るリンクそれぞれを発見できます。
 
 [[topology_after]]
 .スイッチ 0x1 から出るリンクを発見
-image::topology_after.png[caption="図 14-6: "]
+image::topology_after.png[caption="図 15-6: "]
 
 あとは同様の手順を、ネットワーク中の各スイッチに対して順に行なっていくだけです。スイッチ 0x2, 0x3 に接続するリンクを順に調べていくことで、ネットワークの完全なトポロジ情報を知ることができます。
 
@@ -78,11 +78,11 @@ $ cd topology
 $ bundle install --binstubs
 ----
 
-ソースコードに含まれる `triangle.conf` はスイッチ 3 台を三角形に接続したトライアングル型のトポロジです (<<triangle_conf, 図 14-7>>)。
+ソースコードに含まれる `triangle.conf` はスイッチ 3 台を三角形に接続したトライアングル型のトポロジです (<<triangle_conf, 図 15-7>>)。
 
 [[triangle_conf]]
 .triangle.confのトポロジ
-image::triangle_conf.png[caption="図 14-7: "]
+image::triangle_conf.png[caption="図 15-7: "]
 
 これをトポロジコントローラで検出するには、次のように実行します。
 
@@ -111,9 +111,9 @@ Link 0x2-0x3 added: 0x1-0x2, 0x1-0x3, 0x2-0x3
 
 [[triangle_port_down]]
 .スイッチ 0x1 のポート 1 番を落としたときのトポロジ
-image::triangle_port_down.png[caption="図 14-8: "]
+image::triangle_port_down.png[caption="図 15-8: "]
 
-たとえば<<triangle_port_down,図 14-8>>のようにスイッチ 0x1 のポート 1 番を落としてみましょう。
+たとえば<<triangle_port_down,図 15-8>>のようにスイッチ 0x1 のポート 1 番を落としてみましょう。
 
 ----
 $ ./bin/trema port_down --switch 0x1 --port 1
@@ -143,15 +143,15 @@ Link 0x1-0x2 added: 0x1-0x2, 0x1-0x3, 0x2-0x3
 $ ./bin/trema run ./lib/topology_controller.rb -c triangle.conf -- graphviz /tmp/topology.png
 ----
 
-実行すると、<<graphviz_triangle,図 14-9>> のようにトポロジ画像が生成されます。
+実行すると、<<graphviz_triangle,図 15-9>> のようにトポロジ画像が生成されます。
 
 [[graphviz_triangle]]
 .トポロジコントローラで生成した三角形トポロジの画像
-image::graphviz_triangle.png[caption="図 14-9: "]
+image::graphviz_triangle.png[caption="図 15-9: "]
 
 == トポロジコントローラのソースコード
 
-トポロジコントローラは大きく分けて 3 つの部品からなります (<<topology_classes,図 14-10>>)。
+トポロジコントローラは大きく分けて 3 つの部品からなります (<<topology_classes,図 15-10>>)。
 
 `TopologyController` クラス:: コントローラの本体で、LLDPパケットの送信とトポロジに関する OpenFlow メッセージの処理をします
 `Topology` クラス:: 収集したトポロジ情報を管理し、トポロジの変化を View クラスへ通知します
@@ -159,7 +159,7 @@ image::graphviz_triangle.png[caption="図 14-9: "]
 
 [[topology_classes]]
 .トポロジのクラス構成
-image::topology_classes.png[caption="図 14-10: "]
+image::topology_classes.png[caption="図 15-10: "]
 
 このクラス分けは、いわゆる MVC モデル (Model-View-Controller) に従っています。`TopologyController` クラスは MVC の Controller にあたり、OpenFlow スイッチとメッセージをやりとりしたり他のクラスをセットアップしたりといった制御を担当します。`Topology` クラスは Model にあたり、ネットワークのモデルすなわちトポロジ情報を管理します。`View::Text` と `View::Graphviz` はその名の通り View にあたり、モデルである Topology を可視化します。
 
