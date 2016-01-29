@@ -1,5 +1,4 @@
 require 'active_support/core_ext/class/attribute_accessors'
-require 'pio'
 
 # Router network interface
 class Interface
