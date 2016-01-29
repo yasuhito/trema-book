@@ -76,7 +76,7 @@ image::default_route.png[caption="図 13-5: "]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
+include::{sourcedir}/lib/simple_router.rb[lines="106..126"]
 ----
 
 宛先アドレス (`packet_in.destination_ip_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
@@ -84,7 +84,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#resolve_next_hop (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="129..136"]
+include::{sourcedir}/lib/simple_router.rb[lines="129..137"]
 ----
 
 このメソッドでは、まず宛先アドレスと同じネットワークアドレスを持つインタフェースを探します。もしみつかった場合には、次の転送先として宛先アドレスをそのまま返します。みつからなった場合には、ルーティングテーブルから次の転送先を検索します。

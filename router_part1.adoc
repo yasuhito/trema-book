@@ -186,13 +186,13 @@ include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
+include::{sourcedir}/lib/simple_router.rb[lines="106..126"]
 ----
 
 この `forward` メソッドは、次の 5 つの処理を行います。
 
  1. ルーティングテーブルを参照し、次の転送先を決める (`resolve_next_hop`)
- 2. 次の転送先に送るための、出力インタフェースを決める (`@interfaces.find_by_prefix`)
+ 2. 次の転送先に送るための、出力インタフェースを決める (`Interface.find_by_prefix`)
  3. インタフェースが見つかった場合、ARP アドレスから宛先 MAC アドレスを探す (`@arp_table.lookup`)
  4. MAC アドレスが見つかった場合、転送用のフローエンントリを書き込み、受信パケットを Packet Out する
  5. MAC アドレスが見つからなかった場合、`send_later` メソッドで後で転送する
@@ -205,7 +205,7 @@ ARP テーブルから宛先の MAC アドレスがわかると、パケット�
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="114..118"]
+include::{sourcedir}/lib/simple_router.rb[lines="114..119"]
 ----
 
 === ARP の解決後にパケットを転送する
@@ -225,7 +225,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#send_later (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="148..152"]
+include::{sourcedir}/lib/simple_router.rb[lines="148..153"]
 ----
 
 キューにためたパケットを転送するのは ARP リプライが Packet In したタイミングです。`packet_in_arp_reply` の最後に呼び出している `flush_unsent_packets` がこの処理を行います。
@@ -233,7 +233,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="148..152"]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#flush_unsent_packets (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="154..164"]
+include::{sourcedir}/lib/simple_router.rb[lines="154..165"]
 ----
 
 ここでは MAC アドレスが解決したパケットそれぞれに対して、送信元と宛先 MAC アドレスを書き換えるアクションを指定し Packet Out しています。
