@@ -1,5 +1,3 @@
-require 'pio'
-
 # Routing table
 class RoutingTable
   include Pio
