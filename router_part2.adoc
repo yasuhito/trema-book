@@ -71,7 +71,7 @@ image::default_route.png[caption="図 13-5: "]
 
 === パケットを書き換えて転送する(再)
 
-`RoutingTable` クラスのソースコードを見る前に、パケットの書き換えと転送を行う `forward` メソッドをもう一度見ていきましょう。<<router_part1,第12章>>で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
+`RoutingTable` クラスのソースコードを見る前に、パケットの書き換えと転送を行う `forward` メソッドをもう一度見ていきましょう。<<router_part1,前章>>で説明したこのメソッドが行う 5 つの処理のうち、次の転送先と出力インターフェースを決める方法を見ていきます。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
@@ -79,7 +79,7 @@ image::default_route.png[caption="図 13-5: "]
 include::{sourcedir}/lib/simple_router.rb[lines="106..126"]
 ----
 
-宛先アドレス (`packet_in.destination_ip_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行なっています。このメソッドは、次のように定義されています。
+宛先アドレス (`packet_in.destination_ip_address`) に対する次転送先の決定は、`resolve_next_hop` メソッドで行います。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#resolve_next_hop (lib/simple_router.rb)
