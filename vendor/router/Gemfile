@@ -5,6 +5,7 @@ gem 'trema'
 group :development, :test do
   gem 'aruba', require: false
   gem 'cucumber', require: false
+  gem 'rake', require: false
 end
 
 group :metrics do

@@ -3,6 +3,11 @@
 ## develop
 
 
+## 0.35.0 (1/29/2016)
+
+* ルータ章、トポロジ章、ルーティングスイッチ章、スライサブルスイッチ章を校正
+
+
 ## 0.34.0 (1/27/2016)
 * [#184](https://github.com/yasuhito/trema-book/pull/184): テスト章を校正
 * [#177](https://github.com/yasuhito/trema-book/pull/177): OpenFlow仕様章を途中まで校正
