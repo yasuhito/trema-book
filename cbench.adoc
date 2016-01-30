@@ -218,7 +218,7 @@ send_flow_mod_add(
 send_flow_mod_add(
   datapath_id,
   match: Match.new(
-           ether_source_address: '00:50:56:c0:00:08'
+           source_mac_address: '00:50:56:c0:00:08'
            vlan_vid: 3
          )
   ...
@@ -230,8 +230,8 @@ send_flow_mod_add(
 マッチフィールドを作る `Match.new` のオプションには、全部で12種類の条件を指定できます。
 
 `:in_port`:: スイッチの物理ポート番号
-`:ether_source_address`:: 送信元MACアドレス
-`:ether_destination_address`:: 宛先MACアドレス
+`:source_mac_address`:: 送信元MACアドレス
+`:destination_mac_address`:: 宛先MACアドレス
 `:ether_type`:: イーサネットの種別
 `:ip_source_address`:: 送信元IPアドレス
 `:ip_destination_address`:: 宛先IPアドレス
@@ -256,8 +256,8 @@ def packet_in(datapath_id, packet_in)
     datapath_id,
     match: Match.new(
              in_port: packet_in.in_port,
-             ether_source_address: packet_in.ether_source_address,
-             ether_destination_address: packet_in.ether_destination_address,
+             source_mac_address: packet_in.source_mac_address,
+             destination_mac_address: packet_in.destination_mac_address,
              ...
 ----
 
@@ -381,7 +381,7 @@ end
 def multi_threaded_packet_in(datapath_id, packet_in)  # <2>
   # !!! ここで @db の読み書きは危険 !!!
   return if @db.lookup(packet_in.in_port)
-  @db.add packet_in.ether_source_address, packet_in.in_port
+  @db.add packet_in.source_mac_address, packet_in.in_port
 end
 ----
 <1> スレッドセーフでないインスタンス変数
@@ -404,7 +404,7 @@ def multi_threaded_packet_in(datapath_id, packet_in)
   @mutex.synchronize do  # <2>
     # この中で@dbを読み書きすれば安全
     return if @db.lookup(packet_in.in_port)
-    @db.add packet_in.ether_source_address, packet_in.in_port
+    @db.add packet_in.source_mac_address, packet_in.in_port
   end
 end
 ----
@@ -424,7 +424,7 @@ def packet_in(datapath_id, packet_in)
   Thread.start do  # <1>
     @mutex.synchronize do
       return if @db.lookup(packet_in.in_port)
-      @db.add packet_in.ether_source_address, packet_in.in_port
+      @db.add packet_in.source_mac_address, packet_in.in_port
     end
   end
 end
@@ -457,7 +457,7 @@ def start_worker_thread  # <4>
       datapath_id, packet_in = @work_queue.pop  # <5>
       @mutex.synchronize do
         next if @db.lookup(packet_in.in_port)
-        @db.add packet_in.ether_source_address, packet_in.in_port
+        @db.add packet_in.source_mac_address, packet_in.in_port
       end
     end
   end
