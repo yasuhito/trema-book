@@ -157,37 +157,42 @@ end
 - Packet Inを起こしたパケットの種別 (TCPかUDPか。VLANタグがついているかどうか、など)を判定するための `?` で終わるメソッド
 - 送信元や宛先のMACアドレスやIPアドレスなど、パケットの各フィールドを調べるためのアクセサメソッド
 
-`PacketIn` クラスは非常に多くのメソッドを持っており、またTremaのバージョンアップごとにその数も増え続けているためすべては紹介しきれません。そのかわり、代表的でよく使うものを以下に紹介します。
+`PacketIn` クラスは非常に多くのメソッドを持っており、またTremaのバージョンアップごとにその数も増え続けているためすべては紹介しきれません。そのかわり、代表的でよく使うものを<<packet_in_class,表5-1>>に紹介します。
 
 // TODO メソッド名を更新
 // TODO それぞれのメソッドの受け入れテスト
+[[packet_in_class]]
+.PacketIn クラス (一部)
+|===
+|メソッド|説明
 
-`:raw_data`:: パケットのデータ全体をバイナリ文字列で返す
-`:in_port`:: パケットが入ってきたスイッチのポート番号を返す
-`:buffered?`:: Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
-`:buffer_id`:: バッファされている場合、そのバッファ領域の ID
-`:total_length`:: パケットのデータ長を返す
-`:source_mac`:: パケットの送信元MACアドレスを返す
-`:destination_mac`:: パケットの宛先MACアドレスを返す
-`:ipv4?`:: パケットがIPv4である場合 `true` を返す
-`:ipv4_protocol`:: IPのプロトコル番号を返す
-`:ipv4_source_address`:: パケットの送信元IPアドレスを返す
-`:ipv4_destination_address`:: パケットの宛先IPアドレスを返す
-`:ipv4_tos`:: IPのToSフィールドを返す
-`:tcp?`:: パケットがTCPである場合 `true` を返す
-`:tcp_source_port`:: パケットのTCPの送信元ポート番号を返す
-`:tcp_destination_port`:: パケットのTCP宛先ポート番号を返す
-`:udp?`:: パケットがUDPである場合 `true` を返す
-`:udp_source_port`:: パケットのUDPの送信元ポート番号を返す
-`:udp_destination_port`:: パケットのUDPの宛先ポート番号を返す
-`:vlan?`:: パケットにVLANヘッダが付いている場合 `true` を返す
-`:vlan_vid`:: VLANのVIDを返す
-`:vlan_priority`:: VLANの優先度を返す
-`:ether_type`:: イーサタイプを返す
+|:raw_data| パケットのデータ全体をバイナリ文字列で返す
+|:in_port| パケットが入ってきたスイッチのポート番号を返す
+|:buffered?| Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
+|:buffer_id| バッファされている場合、そのバッファ領域の ID
+|:total_length| パケットのデータ長を返す
+|:source_mac| パケットの送信元MACアドレスを返す
+|:destination_mac| パケットの宛先MACアドレスを返す
+|:ipv4?| パケットがIPv4である場合 `true` を返す
+|:ipv4_protocol| IPのプロトコル番号を返す
+|:ipv4_source_address| パケットの送信元IPアドレスを返す
+|:ipv4_destination_address| パケットの宛先IPアドレスを返す
+|:ipv4_tos| IPのToSフィールドを返す
+|:tcp?| パケットがTCPである場合 `true` を返す
+|:tcp_source_port| パケットのTCPの送信元ポート番号を返す
+|:tcp_destination_port| パケットのTCP宛先ポート番号を返す
+|:udp?| パケットがUDPである場合 `true` を返す
+|:udp_source_port| パケットのUDPの送信元ポート番号を返す
+|:udp_destination_port| パケットのUDPの宛先ポート番号を返す
+|:vlan?| パケットにVLANヘッダが付いている場合 `true` を返す
+|:vlan_vid| VLANのVIDを返す
+|:vlan_priority| VLANの優先度を返す
+|:ether_type| イーサタイプを返す
+|===
 
 このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、<<hello_trema,第 3 章「Hello, Trema!」>>で紹介した Trema ホームページを参照してください。
 
-=== Flow Modの送りかた
+=== Flow Mod の送り方
 
 Cbenchの仕様によると、コントローラからCbenchへと送るFlow Modメッセージは、次の内容にセットする必要があります。
 
@@ -227,20 +232,26 @@ send_flow_mod_add(
 // TODO Pioのopen\_flow10/match.featureを書く
 // TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
 
-マッチフィールドを作る `Match.new` のオプションには、全部で12種類の条件を指定できます。
+OpenFlow 1.0 において指定できるマッチングフィールドは 12 種類です。`Match.new` のオプションには、以下の12種類の条件を指定できます(<<match_field_1.0,表5-2>>。
 
-`:in_port`:: スイッチの物理ポート番号
-`:source_mac_address`:: 送信元MACアドレス
-`:destination_mac_address`:: 宛先MACアドレス
-`:ether_type`:: イーサネットの種別
-`:source_ip_address`:: 送信元IPアドレス
-`:destination_ip_address`:: 宛先IPアドレス
-`:ip_protocol`:: IPのプロトコル種別
-`:tos`:: IPのToSフィールド
-`:transport_source_port`:: TCP/UDPの送信元ポート番号
-`:transport_destination_port`:: TCP/UDPの宛先ポート番号
-`:vlan_vid`:: VLAN IDの値
-`:vlan_priority`:: VLANのプライオリティ
+[[match_field_1.0]]
+.マッチフィールドを作る Match.new のオプション
+|===
+| オプション | 説明
+
+|:in_port| スイッチの物理ポート番号
+|:source_mac_address| 送信元MACアドレス
+|:destination_mac_address| 宛先MACアドレス
+|:ether_type| イーサネットの種別
+|:source_ip_address| 送信元IPアドレス
+|:destination_ip_address| 宛先IPアドレス
+|:ip_protocol| IPのプロトコル種別
+|:tos| IPのToSフィールド
+|:transport_source_port| TCP/UDPの送信元ポート番号
+|:transport_destination_port| TCP/UDPの宛先ポート番号
+|:vlan_vid| VLAN IDの値
+|:vlan_priority| VLANのプライオリティ
+|===
 
 ===== Exact Matchの作り方 (OpenFlow 1.0)
 
@@ -309,26 +320,32 @@ send_flow_mod_add(
 ----
 <1> アクションを 2 つ指定
 
-アクションには次の13種類のアクションを単体で、または組み合わせて指定できます。
+アクションには<<flow_mod_actions,表5-3>>の13種類のアクションを単体で、または組み合わせて指定できます。
 
 // TODO マッチの名前をアクションの名前に合わせる
 // TODO OpenFlow1.3 のそれぞれのアクションの .feature を pio に入れる
 // TODO `SendOutPort`の説明で触れている、論理ポートの説明を書く
 // TODO ラーニングスイッチ1.3章と同じく、箇条書きではなくて章にまとめる
 
-`SendOutPort`:: 指定したスイッチポートにパケットを出力する
-`SetEtherSourceAddress`:: 送信元MACアドレスを指定した値に書き換える
-`SetEtherDestinationAddress`:: 宛先MACアドレスを指定した値に書き換える
-`SetIpSourceAddress`:: 送信元のIPアドレスを指定した値に書き換える
-`SetIpDstinationAddress`:: 宛先のIPアドレスを指定した値に書き換える
-`SetIpTos`:: IPのToSフィールドを書き換える
-`SetTransportSourcePort`:: TCP/UDPの送信元ポート番号を書き換える
-`SetTransportDestinationPort`:: TCP/UDPの宛先ポート番号を書き換える
-`StripVlanHeader`:: VLANのヘッダを除去する
-`SetVlanVid`:: 指定したVLAN IDをセットする、または既存のものがあれば書き換える
-`SetVlanPriority`:: 指定したVLANプライオリティをセットする、または既存のものがあれば書き換える
-`Enqueue`:: 指定したスイッチポートのキューにパケットを入れる
-`VendorAction`:: ベンダ定義の独自拡張アクションを実行する
+[[flow_mod_actions]]
+.指定できるアクション
+|===
+|アクション|説明
+
+|SendOutPort| 指定したスイッチポートにパケットを出力する
+|SetEtherSourceAddress| 送信元MACアドレスを指定した値に書き換える
+|SetEtherDestinationAddress| 宛先MACアドレスを指定した値に書き換える
+|SetIpSourceAddress| 送信元のIPアドレスを指定した値に書き換える
+|SetIpDstinationAddress| 宛先のIPアドレスを指定した値に書き換える
+|SetIpTos| IPのToSフィールドを書き換える
+|SetTransportSourcePort| TCP/UDPの送信元ポート番号を書き換える
+|SetTransportDestinationPort| TCP/UDPの宛先ポート番号を書き換える
+|StripVlanHeader| VLANのヘッダを除去する
+|SetVlanVid| 指定したVLAN IDをセットする、または既存のものがあれば書き換える
+|SetVlanPriority| 指定したVLANプライオリティをセットする、または既存のものがあれば書き換える
+|Enqueue| 指定したスイッチポートのキューにパケットを入れる
+|VendorAction| ベンダ定義の独自拡張アクションを実行する
+|===
 
 まだ使っていないアクションについては、続く章で具体的な使い方を見ていきます。
 
@@ -350,18 +367,24 @@ send_flow_mod_add(
 // TODO buffer_id: が抜けてる!? 実装も合わせて確認。
 // TODO それぞれのオプションの受け入れテストを書く
 
-`send_flow_mod_add` で指定できるすべてのオプションは次の通りです。
+`send_flow_mod_add` で指定できるすべてのオプションは<<send_flow_mod_add_options,表5-4>>の通りです。
 
-`:match`:: フローエントリのマッチフィールドを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
-`:actions`:: フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第4章>>で解説) によって指定できる
-`:buffer_id`:: アクションが参照するパケットがバッファされている領域の ID を指定する
-`:idle_timeout`:: フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
-`:hard_timeout`:: フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
-`:priority`:: フローエントリの優先度(符号なし16ビット、大きいほど優先度高)。Packet Inメッセージはこの優先度順にフローエントリのマッチフィールドと照らし合わされる。デフォルトは `0xffff` (最高優先度)
-`:send_flow_removed`:: タイムアウトでフローエントリが消えるときに、Flow Removedメッセージをコントローラに送るかどうかを指定する。デフォルトは `true`
-`:check_overlap`:: `true` にセットすると、フローテーブルの中に同じ優先度で競合するものがあった場合、フローエントリを追加せずにエラーを起こす。デフォルトは `false`
-`:emerg`:: `true` にセットすると、フローエントリを緊急エントリとして追加する。緊急エントリはスイッチが何らかの障害でコントローラと切断したときにのみ有効となる。デフォルトは `false`
-`:cookie`:: 任意の用途に使える64ビットの整数。使い道としては、同じクッキー値を持つフローエントリ同士をまとめて管理するなどといった用途がある
+[[send_flow_mod_add_options]]
+.send_flow_mod_addで指定できるオプション
+|===
+|オプション|説明
+
+|:match| フローエントリのマッチフィールドを指定する。本章で紹介した `Match` オブジェクトまたは `ExactMatch` オブジェクトを指定する
+|:actions| フローエントリのアクションを指定する。アクションには単体のアクションまたは複数のアクションを配列 (<<switch_monitor,第4章>>で解説) によって指定できる
+|:buffer_id| アクションが参照するパケットがバッファされている領域の ID を指定する
+|:idle_timeout| フローエントリが一定時間参照されなかった場合に破棄されるまでの秒数を指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
+|:hard_timeout| フローエントリの寿命を秒数で指定する。デフォルトは0秒で、この場合フローエントリは破棄されない
+|:priority| フローエントリの優先度(符号なし16ビット、大きいほど優先度高)。Packet Inメッセージはこの優先度順にフローエントリのマッチフィールドと照らし合わされる。デフォルトは `0xffff` (最高優先度)
+|:send_flow_removed| タイムアウトでフローエントリが消えるときに、Flow Removedメッセージをコントローラに送るかどうかを指定する。デフォルトは `true`
+|:check_overlap| `true` にセットすると、フローテーブルの中に同じ優先度で競合するものがあった場合、フローエントリを追加せずにエラーを起こす。デフォルトは `false`
+|:emerg| `true` にセットすると、フローエントリを緊急エントリとして追加する。緊急エントリはスイッチが何らかの障害でコントローラと切断したときにのみ有効となる。デフォルトは `false`
+|:cookie| 任意の用途に使える64ビットの整数。使い道としては、同じクッキー値を持つフローエントリ同士をまとめて管理するなどといった用途がある
+|===
 
 こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
 
