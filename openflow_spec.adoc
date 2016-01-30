@@ -372,14 +372,14 @@ Mail のトラフィックを許可する場合には、TCP で Destination Port
 [[table0_1]]
 .マルチプルテーブルを使わない場合のフローテーブルの例1
 |====
-| マッチ | インストラクション | 優先度
+| マッチ | インストラクション | 優先度 | 備考
 
-| src_ip = 192.168.0.1/32, dst_port = 25 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 110 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 80 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 443 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000
-| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000
+| src_ip = 192.168.0.1/32, dst_port = 25 | Apply-Actions (Output 2) | 10000 | 宮坂部長用
+| src_ip = 192.168.0.1/32, dst_port = 110 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.1/32, dst_port = 80 | Apply-Actions (Output 2) | 10000 | 
+| src_ip = 192.168.0.1/32, dst_port = 443 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000 | 一般社員用
+| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000 |
 | wildcard | Apply-Actions (Drop) | 0
 |====
 
@@ -388,20 +388,20 @@ Mail のトラフィックを許可する場合には、TCP で Destination Port
 [[table0_2]]
 .マルチプルテーブルを使わない場合のフローテーブルの例2
 |====
-| マッチ | インストラクション | 優先度
+| マッチ | インストラクション | 優先度 | 備考
 
-| src_ip = 192.168.0.1/32, dst_port = 25 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.2/32, dst_port = 25 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 110 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.2/32, dst_port = 110 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 80 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.2/32, dst_port = 80 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32, dst_port = 443 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.2/32, dst_port = 443 | Apply-Actions (Output 2) | 10000
-| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000
-| src_ip = 192.168.0.2/32 | Apply-Actions (Drop) | 5000
-| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000
-| wildcard | Apply-Actions (Drop) | 0
+| src_ip = 192.168.0.1/32, dst_port = 25 | Apply-Actions (Output 2) | 10000 | 宮坂部長用 
+| src_ip = 192.168.0.1/32, dst_port = 110 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.1/32, dst_port = 80 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.1/32, dst_port = 443 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000 | 
+| src_ip = 192.168.0.2/32, dst_port = 25 | Apply-Actions (Output 2) | 10000 | 事務員用
+| src_ip = 192.168.0.2/32, dst_port = 110 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.2/32, dst_port = 80 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.2/32, dst_port = 443 | Apply-Actions (Output 2) | 10000 |
+| src_ip = 192.168.0.2/32 | Apply-Actions (Drop) | 5000 |
+| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000 | 一般社員用
+| wildcard | Apply-Actions (Drop) | 0 |
 |====
 
 <<table0_1,表2-2>> と <<table0_2,表2-3>> を比較すると、フローエントリが 5 つ増えているのが分かります。もし事務員をもう一人雇うことになった場合、さらに 5 つのエントリを追加する必要があります。
@@ -413,12 +413,12 @@ Mail のトラフィックを許可する場合には、TCP で Destination Port
 [[table1]]
 .マルチプルテーブルを使う場合のフローテーブルの例 1 (Table1)
 |====
-| マッチ | インストラクション | 優先度
+| マッチ | インストラクション | 優先度 | 備考
 
-| src_ip = 192.168.0.1/32 | Goto-Table 2 | 10000
-| src_ip = 192.168.0.2/32 | Goto-Table 2 | 10000
-| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000
-| wildcard | Apply-Actions (Drop) | 0
+| src_ip = 192.168.0.1/32 | Goto-Table 2 | 10000 | 宮坂部長用
+| src_ip = 192.168.0.2/32 | Goto-Table 2 | 10000 | 事務員用
+| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000 | 一般社員用 
+| wildcard | Apply-Actions (Drop) | 0 | 
 |====
 
 Table2 の内容は、<<table2,表2-5>> のようになっています。このテーブルを参照するのは、宮坂部長、事務員の端末からのパケットが到着した場合のみなので、あとは Mail, Web のトラフィックのみ通過できるようなエントリを記述すれば良いことになります。
@@ -428,13 +428,13 @@ Table2 の内容は、<<table2,表2-5>> のようになっています。この�
 [[table2]]
 .マルチプルテーブルを使う場合のフローテーブルの例 2 (Table2)
 |====
-| マッチ | インストラクション | 優先度
+| マッチ | インストラクション | 優先度 | 備考
 
-| dst_port = 25 | Apply-Actions (Output 2) | 10000
-| dst_port = 110 | Apply-Actions (Output 2) | 10000
-| dst_port = 80 | Apply-Actions (Output 2) | 10000
-| dst_port = 443 | Apply-Actions (Output 2) | 10000
-| wildcard | Apply-Actions (Drop) | 5000
+| dst_port = 25 | Apply-Actions (Output 2) | 10000 | 宮坂部長、事務員用
+| dst_port = 110 | Apply-Actions (Output 2) | 10000 |
+| dst_port = 80 | Apply-Actions (Output 2) | 10000 |
+| dst_port = 443 | Apply-Actions (Output 2) | 10000 |
+| wildcard | Apply-Actions (Drop) | 5000 |
 |====
 
 マルチプルテーブルを使ったほうが、<<table0_2,図2-3>> と比べ、シンプルになることが分かります。もし、事務員をもう一人雇うことになった場合でも、Table1 に一つエントリを追加するだけで済みます。
