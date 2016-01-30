@@ -59,7 +59,7 @@ image::dijkstra.png[caption="図 16-4: "]
 
 == 実行してみよう
 
-動作原理が分かったところで、実際のトポロジ検出や最短パス計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
+動作原理がわかったところで、実際のトポロジ検出や最短パス計算の動作をルーティングスイッチを起動し確認してみましょう。ルーティングスイッチは他のサンプルと同様、GitHub で公開しています。次のコマンドでソースコードを取得してください。
 
 ----
 $ git clone https://github.com/trema/routing_switch.git
@@ -216,7 +216,7 @@ PathManager は、Topology クラスとObserverパターンで連携します。
 include::{sourcedir}/lib/path_manager.rb[lines="23..43"]
 ----
 
-PathManager はトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topology はトポロジイベント `add_link` を PathManager へ送ります。そして PathManager は新しくみつかったリンクを `@graph` へ追加します。
+PathManager はトポロジイベントを受け取ると、インスタンス変数 `@graph` として持つ現在のネットワークグラフを更新します。たとえばLLDPによって新しいリンクを発見すると、Topology はトポロジイベント `add_link` を PathManager へ送ります。そして PathManager は新しく見つかったリンクを `@graph` へ追加します。
 
 // TODO: リンクの発見だけでなくて、その他の場合についても図を使って説明する?
 // TODO: Topologyのパス発見と`add_link`イベントからPathManagerが@graphを更新する図
@@ -235,8 +235,8 @@ include::{sourcedir}/lib/path_manager.rb[lines="13..22,48..53"]
 .PathManager の仕組み
 image::path_manager_internals.png[caption="図 16-6: "]
 
-1. グラフ情報から送信元→宛先への最短パスを計算する。もし最短パスがみつかった場合には、最短パス上のスイッチにでフローエントリを `Path.create` で打つ
-2. みつかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。みつからなかった場合には、パケットをすべての外部ポート (外部と接続しているポート) へPacketOutする
+1. グラフ情報から送信元→宛先への最短パスを計算する。もし最短パスが見つかった場合には、最短パス上のスイッチにでフローエントリを `Path.create` で打つ
+2. 見つかった場合には、宛先ポートにPacketOutすることでPacketInを起こしたパケットを宛先へ届ける。見つからなかった場合には、パケットをすべての外部ポート (外部と接続しているポート) へPacketOutする
 
 // TODO: 内部ポートと外部ポートを説明
 
