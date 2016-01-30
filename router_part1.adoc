@@ -119,7 +119,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="94..98"]
 
 ==== パケットの種類によって処理を切り替え
 
-自分宛のパケットだと分かると、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 パケットの 3 種類です。`PacketIn#data` メソッドはパケットの種類に応じたオブジェクトを返すので、この返り値に応じてハンドラメソッドを呼び出します。
+自分宛のパケットだとわかると、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 パケットの 3 種類です。`PacketIn#data` メソッドはパケットの種類に応じたオブジェクトを返すので、この返り値に応じてハンドラメソッドを呼び出します。
 
 ==== ARP リクエストのハンドル
 
@@ -210,7 +210,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="114..119"]
 
 === ARP の解決後にパケットを転送する
 
-ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐ分からない場合、次のように `send_later` メソッドを呼び出していました。
+ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐわからない場合、次のように `send_later` メソッドを呼び出していました。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
