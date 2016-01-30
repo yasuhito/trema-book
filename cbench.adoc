@@ -232,7 +232,7 @@ send_flow_mod_add(
 // TODO Pioのopen\_flow10/match.featureを書く
 // TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
 
-OpenFlow 1.0 において指定できるマッチングフィールドは 12 種類です。`Match.new` のオプションには、以下の12種類の条件を指定できます(<<match_field_1.0,表5-2>>。
+OpenFlow 1.0 において指定できるマッチングフィールドは 12 種類です。`Match.new` のオプションには、以下の12種類の条件を指定できます(<<match_field_1.0,表5-2>>)。
 
 [[match_field_1.0]]
 .マッチフィールドを作る Match.new のオプション
@@ -252,6 +252,11 @@ OpenFlow 1.0 において指定できるマッチングフィールドは 12 種
 |:vlan_vid| VLAN IDの値
 |:vlan_priority| VLANのプライオリティ
 |===
+
+[NOTE]
+====
+<<openflow_spec,2章>>で説明したように、OpenFlow 1.3 のマッチフィールドは 40 種類あります。しかし OpenFlow 1.3 での Match オブジェクトのオプションの指定方法は、OpenFlow 1.0 の場合と同じです。詳しくは OpenFlow 1.3 を扱う <<learning_switch13,8章>>や<<router13,14章>>を参照してください。
+====
 
 ===== Exact Matchの作り方 (OpenFlow 1.0)
 
@@ -284,6 +289,11 @@ def packet_out(datapath_id, packet_in)
 ----
 
 たった1行で書けました! Tremaにはこのようにコードを短く書ける工夫がたくさんあります。
+
+[NOTE]
+====
+ExactMatch が使えるのは OpenFlow 1.0 のみです。OpenFlow 1.3 ではマッチフィールドの種類が増えたため、ExactMatch は廃止されました。
+====
 
 ==== アクション (OpenFlow1.0)
 
@@ -387,6 +397,11 @@ send_flow_mod_add(
 |===
 
 こうしたオプションも、続くいくつかの章で具体的な使い方を紹介します。
+
+[NOTE]
+====
+<<openflow_spec,2章>>で説明したように、OpenFlow 1.3 において、フローエントリにインストラクションを指定しました。OpenFlow 1.0 では、マルチプルテーブルに対応していないのでインストラクションがありません。そのためインストラクションの代わりに、アクションを直接フローエントリに指定します。インストラクションの使い方は、<<learning_switch13,8章>>にて詳しく説明します。
+====
 
 == マルチスレッド化する
 
