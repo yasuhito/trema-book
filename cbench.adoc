@@ -81,13 +81,13 @@ include::{sourcedir}/lib/cbench.rb[]
 
 // TODO Ruby 入門でハッシュとキーワード引数、.newメソッドを説明する
 
-このソースコードを眺めると、いくつか見慣れない品詞や構文が登場していることに気付きます。この節では順にそれぞれを紹介していきますが、最初からすべてを覚える必要はありません。もし後でわからなくなったときには見直すようにしてください。
+Cbench のソースコードを眺めると、いくつか見慣れない品詞や構文が登場していることに気付きます。この節では順にそれぞれを紹介していきますが、最初からすべてを覚える必要はありません。もし後でわからなくなったときには見直すようにしてください。
 
 === メソッド呼び出し
 
 Cbench のソースコードにはいくつかの**メソッド呼び出し**があります。
 
-- `logger.info(...)` (<<hello_trema,第 3 章「Hello, Trema!」>>で登場)
+- `logger.info(...)` (<<hello_trema,3 章「Hello, Trema!」>>で解説)
 - `ExactMatch.new(...)`
 - `packet_in.buffer_id`
 - `SendOutPort.new(...)`
@@ -110,7 +110,7 @@ door.open
 #=> "murder"
 ----
 
-この場合、文字列がひっくりかえり新しい文字列が返ってきました。
+この場合、文字が逆順になった新しい文字列が返ってきました。
 
 メソッドは引数を取るものもあります。次の例は配列の各要素の間に指定した文字をはさんで連結 (`join`) します。
 
@@ -132,7 +132,7 @@ Rubyにはこのようなメソッドが何百種類もあります。それぞ�
 include::{sourcedir}/lib/cbench.rb[lines="3..5"]
 ----
 
-前章のHello,Trema!と同じく、`start` ハンドラでコントローラの起動をログに書き込みます。引数は今回も使っていないので、仮引数の名前は `_args` のようにアンダースコアで始めます。
+前章と同じく、`start` ハンドラでコントローラの起動をログに書き込みます。引数は今回も使っていないので、名前を `_args` のようにアンダースコアで始めます。
 
 // TODO: ここは、`packet_in`をスレッド化する/しないのスイッチをユーザ引数でコントロールできるようにしておく? そうしたら、パッチパネル章でユーザ引数の処理の説明を省ける。
 
@@ -162,17 +162,17 @@ end
 // TODO メソッド名を更新
 // TODO それぞれのメソッドの受け入れテスト
 [[packet_in_class]]
-.PacketIn クラス (一部)
+.PacketIn クラスのメソッド (一部)
 |===
 |メソッド|説明
 
 |:raw_data| パケットのデータ全体をバイナリ文字列で返す
 |:in_port| パケットが入ってきたスイッチのポート番号を返す
 |:buffered?| Packet Inを起こしたパケットがスイッチにバッファされているかどうかを返す
-|:buffer_id| バッファされている場合、そのバッファ領域の ID
+|:buffer_id| バッファされている場合、そのバッファ領域の ID を返す
 |:total_length| パケットのデータ長を返す
-|:source_mac| パケットの送信元MACアドレスを返す
-|:destination_mac| パケットの宛先MACアドレスを返す
+|:source_mac_address| パケットの送信元MACアドレスを返す
+|:destination_mac_address| パケットの宛先MACアドレスを返す
 |:ipv4?| パケットがIPv4である場合 `true` を返す
 |:ipv4_protocol| IPのプロトコル番号を返す
 |:ipv4_source_address| パケットの送信元IPアドレスを返す
@@ -190,7 +190,7 @@ end
 |:ether_type| イーサタイプを返す
 |===
 
-このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、<<hello_trema,第 3 章「Hello, Trema!」>>で紹介した Trema ホームページを参照してください。
+このようなメソッドは他にもたくさんあります。完全なメソッドのリストや詳しい情報を知りたい場合には、<<hello_trema,3 章「Hello, Trema!」>>で紹介した Trema ホームページを参照してください。
 
 === Flow Mod の送り方
 
@@ -232,7 +232,7 @@ send_flow_mod_add(
 // TODO Pioのopen\_flow10/match.featureを書く
 // TODO OpenFlow1.3 でのMatchの説明へのポインタを付ける
 
-OpenFlow 1.0 において指定できるマッチングフィールドは 12 種類です。`Match.new` のオプションには、以下の12種類の条件を指定できます(<<match_field_1.0,表5-2>>)。
+OpenFlow 1.0 において指定できるマッチフィールドは 12 種類です。`Match.new` のオプションには、以下の12種類の条件を指定できます(<<match_field_1.0,表5-2>>)。
 
 [[match_field_1.0]]
 .マッチフィールドを作る Match.new のオプション
@@ -255,7 +255,7 @@ OpenFlow 1.0 において指定できるマッチングフィールドは 12 種
 
 [NOTE]
 ====
-<<openflow_spec,2章>>で説明したように、OpenFlow 1.3 のマッチフィールドは 40 種類あります。しかし OpenFlow 1.3 での Match オブジェクトのオプションの指定方法は、OpenFlow 1.0 の場合と同じです。詳しくは OpenFlow 1.3 を扱う <<learning_switch13,8章>>や<<router13,14章>>を参照してください。
+<<openflow_spec,2章「OpenFlow の仕様」>>で説明したように、OpenFlow 1.3 でマッチフィールドは 40 種類に増えました。しかし、OpenFlow 1.3 での Match オブジェクトのオプションの指定方法は、OpenFlow 1.0 の場合と変わりません。詳しくは OpenFlow 1.3 を扱う <<learning_switch13,8章「OpenFlow1.3版ラーニングスイッチ」>>や<<router13,14章「ルータ (マルチプルテーブル編)」>>を参照してください。
 ====
 
 ===== Exact Matchの作り方 (OpenFlow 1.0)
@@ -361,7 +361,7 @@ send_flow_mod_add(
 
 ==== send_flow_mod_add のオプション
 
-バッファIDを指定するには、`buffer_id:` オプションを `send_flow_mod_add` の引数に指定します。たとえば以下のコードは、バッファ ID に Packet Inメッセージのバッファ ID を指定する典型的な例です。
+バッファIDを指定するには、`buffer_id:` オプションを `send_flow_mod_add` の引数に指定します。たとえば次のコードは、バッファ ID に Packet Inメッセージのバッファ ID を指定する典型的な例です。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----
@@ -400,7 +400,7 @@ send_flow_mod_add(
 
 [NOTE]
 ====
-<<openflow_spec,2章>>で説明したように、OpenFlow 1.3 において、フローエントリにインストラクションを指定しました。OpenFlow 1.0 では、マルチプルテーブルに対応していないのでインストラクションがありません。そのためインストラクションの代わりに、アクションを直接フローエントリに指定します。インストラクションの使い方は、<<learning_switch13,8章>>にて詳しく説明します。
+OpenFlow1.0 では<<openflow_spec,2章「OpenFlow の仕様」>>で解説したインストラクションは使いません。そのためインストラクションの代わりに、アクションを直接フローエントリに指定します。OpenFlow 1.3 でのインストラクションの使い方は、<<learning_switch13,8章「OpenFlow1.3版ラーニングスイッチ」>>にて詳しく説明します。
 ====
 
 == マルチスレッド化する
@@ -575,7 +575,7 @@ RESULT: 1 switches 9 tests min/max/avg/stdev = 70.38/73.76/72.28/1.25 responses/
 
 == 無理やり高速化する
 
-ほかに高速化の方法はないでしょうか。実は cbench プロセスが送ってくる Packet In はすべて同じ中身なので、cbench プロセスへ送る Flow Mod メッセージを何度も使いまわすことで簡単に高速化できます。最初のコードでは Packet In ハンドラの中で `send_flow_mod_add` で毎回 Flow Mod メッセージを作りなおしていました。この無駄な処理をなくすために、一度作った Flow Mod メッセージをキャッシュしておいて、2 回目以降はキャッシュした Flow Mod を `send_message` で送るのです。
+ほかに高速化の方法はないでしょうか。実は cbench プロセスが送ってくる Packet In はすべて同じ中身なので、cbench プロセスへ送る Flow Mod メッセージを何度も使いまわすことで簡単に高速化できます。最初のコードでは Packet In ハンドラの中で `send_flow_mod_add` で毎回 Flow Mod メッセージを作り直していました。この無駄な処理をなくすために、一度作った Flow Mod メッセージをキャッシュしておいて、2 回目以降はキャッシュした Flow Mod を `send_message` で送るのです。
 
 このキャッシュによって高速化したものがこちらです。ただしこれはただ Cbench のために無理やり高速化したコードなので、すべてを理解する必要はありません。
 
