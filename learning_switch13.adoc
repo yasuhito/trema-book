@@ -85,7 +85,6 @@ send_flow_mod_add(
   datapath_id,
   table_id: 0,
     ...
-  match: Match.new,
   instructions: GotoTable.new(1)
 )
 ----
