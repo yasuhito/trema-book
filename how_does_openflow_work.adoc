@@ -2,7 +2,7 @@
 :imagesdir: images/how_does_openflow_work
 
 [.lead]
-ネットワークを OpenFlow で構築すると、どんな利点があるのでしょうか。その答は、**ソフトウェアによる自動化**です。まずは身近な自動化の例を見て行きましょう。
+ネットワークを OpenFlow で構築すると、どんな利点があるのでしょうか。その答えは、**ソフトウェアによる自動化**です。まずは身近な自動化の例を見ていきましょう。
 
 image::incredible_machine.png[]
 
