@@ -236,7 +236,7 @@ send_flow_mod_add(
 `:source_ip_address`:: 送信元IPアドレス
 `:destination_ip_address`:: 宛先IPアドレス
 `:ip_protocol`:: IPのプロトコル種別
-`:ip_tos`:: IPのToSフィールド
+`:tos`:: IPのToSフィールド
 `:transport_source_port`:: TCP/UDPの送信元ポート番号
 `:transport_destination_port`:: TCP/UDPの宛先ポート番号
 `:vlan_vid`:: VLAN IDの値
