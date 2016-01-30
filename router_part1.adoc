@@ -177,7 +177,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 ----
 
-まず送信元 IP アドレス (`packet_in.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
+まず送信元 IP アドレス (`packet_in.source_ip_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
 
 === パケットを書き換えて転送する
 

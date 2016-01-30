@@ -233,8 +233,8 @@ send_flow_mod_add(
 `:source_mac_address`:: 送信元MACアドレス
 `:destination_mac_address`:: 宛先MACアドレス
 `:ether_type`:: イーサネットの種別
-`:ip_source_address`:: 送信元IPアドレス
-`:ip_destination_address`:: 宛先IPアドレス
+`:source_ip_address`:: 送信元IPアドレス
+`:destination_ip_address`:: 宛先IPアドレス
 `:ip_protocol`:: IPのプロトコル種別
 `:ip_tos`:: IPのToSフィールド
 `:transport_source_port`:: TCP/UDPの送信元ポート番号
