@@ -1,5 +1,5 @@
 require 'arp_table'
-require 'interfaces'
+require 'interface'
 require 'routing_table'
 
 # Simple implementation of L3 switch in OpenFlow1.0
@@ -7,7 +7,7 @@ require 'routing_table'
 class SimpleRouter < Trema::Controller
   def start(_args)
     load File.join(__dir__, '..', 'simple_router.conf')
-    @interfaces = Interfaces.new(Configuration::INTERFACES)
+    Interface.load_configuration Configuration::INTERFACES
     @arp_table = ArpTable.new
     @routing_table = RoutingTable.new(Configuration::ROUTES)
     @unresolved_packet_queue = Hash.new { [] }
@@ -38,8 +38,8 @@ class SimpleRouter < Trema::Controller
   # rubocop:disable MethodLength
   def packet_in_arp_request(dpid, in_port, arp_request)
     interface =
-      @interfaces.find_by(port_number: in_port,
-                          ip_address: arp_request.target_protocol_address)
+      Interface.find_by(port_number: in_port,
+                        ip_address: arp_request.target_protocol_address)
     return unless interface
     send_packet_out(
       dpid,
@@ -59,7 +59,7 @@ class SimpleRouter < Trema::Controller
                       packet_in.source_mac)
     flush_unsent_packets(dpid,
                          packet_in.data,
-                         @interfaces.find_by(port_number: packet_in.in_port))
+                         Interface.find_by(port_number: packet_in.in_port))
   end
 
   def packet_in_ipv4(dpid, packet_in)
@@ -82,7 +82,7 @@ class SimpleRouter < Trema::Controller
                       actions: SendOutPort.new(packet_in.in_port))
     else
       send_later(dpid,
-                 interface: @interfaces.find_by(port_number: packet_in.in_port),
+                 interface: Interface.find_by(port_number: packet_in.in_port),
                  destination_ip: packet_in.source_ip_address,
                  data: create_icmp_reply(icmp_request))
     end
@@ -93,12 +93,12 @@ class SimpleRouter < Trema::Controller
 
   def sent_to_router?(packet_in)
     return true if packet_in.destination_mac.broadcast?
-    interface = @interfaces.find_by(port_number: packet_in.in_port)
+    interface = Interface.find_by(port_number: packet_in.in_port)
     interface && interface.mac_address == packet_in.destination_mac
   end
 
   def forward?(packet_in)
-    !@interfaces.find_by(ip_address: packet_in.destination_ip_address)
+    !Interface.find_by(ip_address: packet_in.destination_ip_address)
   end
 
   # rubocop:disable MethodLength
@@ -106,7 +106,7 @@ class SimpleRouter < Trema::Controller
   def forward(dpid, packet_in)
     next_hop = resolve_next_hop(packet_in.destination_ip_address)
 
-    interface = @interfaces.find_by_prefix(next_hop)
+    interface = Interface.find_by_prefix(next_hop)
     return if !interface || (interface.port_number == packet_in.in_port)
 
     arp_entry = @arp_table.lookup(next_hop)
@@ -114,7 +114,8 @@ class SimpleRouter < Trema::Controller
       actions = [SetSourceMacAddress.new(interface.mac_address),
                  SetDestinationMacAddress.new(arp_entry.mac_address),
                  SendOutPort.new(interface.port_number)]
-      send_flow_mod_add(dpid, match: ExactMatch.new(packet_in), actions: actions)
+      send_flow_mod_add(dpid,
+                        match: ExactMatch.new(packet_in), actions: actions)
       send_packet_out(dpid, raw_data: packet_in.raw_data, actions: actions)
     else
       send_later(dpid,
@@ -127,7 +128,7 @@ class SimpleRouter < Trema::Controller
   # rubocop:enable MethodLength
 
   def resolve_next_hop(destination_ip_address)
-    interface = @interfaces.find_by_prefix(destination_ip_address)
+    interface = Interface.find_by_prefix(destination_ip_address)
     if interface
       destination_ip_address
     else

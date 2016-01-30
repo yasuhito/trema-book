@@ -1,4 +1,4 @@
-Feature: Simple router
+Feature: Simple router (OpenFlow1.3)
   Background:
     Given I set the environment variables to:
       | variable         | value |
@@ -21,12 +21,12 @@ Feature: Simple router
       link '0x1', 'host1'
       link '0x1', 'host2'
       """
-    And I use OpenFlow 1.0
-    And I trema run "lib/simple_router.rb" interactively with the configuration "trema.conf"
+    And I use OpenFlow 1.3
+    And I trema run "lib/simple_router13.rb" interactively with the configuration "trema.conf"
     And I run `sleep 10`
     When I run `bundle exec trema netns host1` interactively
 
-  @sudo
+  @sudo @wip
   Scenario: ping router's interface #1
     When I type "ping 192.168.1.1 -c 3"
     Then the output from "bundle exec trema netns host1" should contain:
@@ -34,7 +34,7 @@ Feature: Simple router
       3 packets transmitted, 3 received, 0% packet loss
       """
 
-  @sudo
+  @sudo @wip
   Scenario: ping router's interface #2
     When I type "ping 192.168.2.1 -c 3"
     Then the output from "bundle exec trema netns host1" should contain:
