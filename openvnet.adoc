@@ -99,7 +99,7 @@ DHCPやDNSなどのサービスをエッジスイッチで処理できます。
 
 == アーキテクチャと動作
 
-OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual Network Manager)が、ネットワーク全体の構造を保持するデータベースと、Web APIを提供します。データベースから、仮想ネットワークのあるべき設定を割り出したvnmgrは、分散するvna(Virtual Network Agent)に、担当するエッジスイッチに対しフローを設定するよう指示するのです。vnaは、接続されたスイッチ(Open vSwtich)に対し、OpenFlow仕様を含むフローの設定と、OpenFlow Controllerとして、DHCPなど反応すべきパケットに対する処理を任されています。
+OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual Network Manager)が、ネットワーク全体の構造を保持するデータベースと、Web APIを提供します。データベースから、仮想ネットワークのあるべき設定を割り出したvnmgrは、分散するvna(Virtual Network Agent)に、担当するエッジスイッチに対しフローを設定するよう指示するのです。vnaは、接続されたスイッチ(Open vSwtich)に対し、OpenFlow仕様を含むフローの設定と、OpenFlow Controllerとして、DHCPなど反応すべきパケットに対する処理を任されています。vna内部で、OpenFlow Controllerの機能を実現するために、Tremaを使っています。
 
 == 使ってみる
 
