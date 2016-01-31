@@ -12,7 +12,7 @@
 .透過型ファイアウォール
 image::transparent_firewall.png[caption="図 11-1: "]
 
-パケットのフィルタリングはIPv4の情報に基づいて行います。フィルタリングのルールは次の2種類で、それぞれで実装が異なります。
+パケットのフィルタリングはIPv4ヘッダの情報に基づいて行います。今回はフィルタリングのルールが異なる以下の2種類ファイアウォールを実装します。
 
 BlockRFC1918:: RFC1918が定義するプライベートアドレスを送信元または宛先とするパケットを遮断するファイアウォール。外側からと内側からの両方のパケットを遮断する。
 PassDelegated:: グローバルアドレスからのパケットのみを通すファイアウォール。外側→内側のパケットのみをフィルタする。
@@ -33,7 +33,7 @@ image::block_rfc1918.png[caption="図 11-2: "]
 
 ### 実行してみよう
 
-今回も仮想ネットワークを使って BlockRFC1918 コントローラを起動してみます。ソースコードと仮想ネットワークの設定ファイルは GitHub の `trema/transparent_firewall` リポジトリ (https://github.com/trema/transparent_firewall) からダウンロードできます。
+仮想ネットワークを使って BlockRFC1918 コントローラを起動してみます。ソースコードと仮想ネットワークの設定ファイルは GitHub の `trema/transparent_firewall` リポジトリ (https://github.com/trema/transparent_firewall) からダウンロードできます。
 
 ----
 $ git clone https://github.com/trema/transparent_firewall.git
@@ -55,7 +55,7 @@ image::configuration.png[caption="図 11-3: "]
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .trema.conf
 ----
-vswitch('firewall') { datapath_id '0xabc' }
+vswitch('firewall') { datapath_id 0xabc }
 
 vhost('outside') { ip '192.168.0.1' }
 vhost('inside') { ip '192.168.0.2' }
@@ -105,7 +105,7 @@ Packets received:
 
 たしかに、outside と inside の `show_stats` には `Packets received:` の項目がないので、どちらにもパケットは届いていません。そして、落としたパケット 2 つはどちらも inspector に届いています。
 
-### ソースコード解説
+## BlockRFC1918のソースコード
 
 BlockRFC1918のソースコードをざっと眺めてみましょう。やっていることは基本的にフローエントリの設定だけなので、難しい点はありません。
 
@@ -203,7 +203,7 @@ def switch_ready(dpid)
   start_loading # <1>
 end
 ----
-<1> フローエントリを設定する `start_loading` メソッドを呼ぶ。
+<1> フローエントリを設定する `start_loading` メソッドを呼ぶ
 
 `start_loading` メソッドでは、パケットのドロップと転送用のフローエントリを設定します。まず、RFC1918 が定義する 3 つのプライベートアドレス空間それぞれについて、送信元または宛先 IP アドレスがプライベートアドレスのパケットを `inspector` ホストに転送するフローエントリを `block_prefix_on_port` メソッドで設定します。
 
@@ -243,7 +243,7 @@ end
 
 // TODO: Rubyイディオムコラムでキーワード引数を説明をする
 
-そして、送信元 IP アドレスがプライベートアドレスでないパケットは転送を許可します。このフローエントリは `install_postamble` メソッドで次のように設定します。
+送信元 IP アドレスがプライベートアドレスでないパケットは転送を許可します。このフローエントリは `install_postamble` メソッドで次のように設定します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .BlockRFC1918#install_postamble (lib/block_rfc1918.rb)
@@ -290,7 +290,7 @@ end
 
 ## PassDelegatedコントローラ
 
-PassDelegatedコントローラは、外側から内側向きのパケットのうち、送信元または宛先 IP アドレスがグローバル IP アドレスのパケットのみを通します (<<pass_delegated,図 11-4>>)。
+PassDelegatedコントローラは、外側から内側向きのパケットのうち、送信元 IP アドレスがグローバル IP アドレスのパケットのみを通します (<<pass_delegated,図 11-4>>)。
 
 [[pass_delegated]]
 .PassDelegatedファイアウォールは外→内側向きのグローバルアドレスからのパケットを通す
@@ -336,7 +336,7 @@ $ ./bin/trema send_packets --source outside --dest inside
 $ ./bin/trema send_packets --source inside --dest outside
 ----
 
-PassDelegated コントローラはグローバルアドレス以外の外側から内側へのパケットを遮断します。ホストoutsideはプライベートアドレスを持つので、PassDelegatedコントローラはパケットを落とします。ホストinsideもプライベートアドレスを持ちますが、insideからoutsideへのパケットは通します。`trema show_stats` コマンドで outside、inside そして inspector の受信パケット数をチェックしてみましょう。
+PassDelegated コントローラはグローバルアドレス以外の外側から内側へのパケットを遮断します。ホストoutsideはプライベートアドレスを持つので、PassDelegatedコントローラはパケットを落とします。ホストinsideもプライベートアドレスを持ちますが、insideからoutsideへのパケットは通します。`trema show_stats` コマンドで outside、inside、そして inspector の受信パケット数をチェックしてみましょう。
 
 ----
 $ ./bin/trema show_stats outside
@@ -354,14 +354,14 @@ Packets received:
 
 たしかに、outside から inside へのパケットは遮断し、逆向きの inside から outside へのパケットは通しています。そして、outside からの遮断されたパケットは inspector に届いています。
 
-### ソースコード解説
+## PassDelegatedのソースコード
 
 PassDelegated のソースコードは BlockRFC1918 と似た構造ですが、使うフローエントリの種類が増えています。次の 4 種類のフローエントリを使います。
 
-フィルタ用 (優先度: 64000):: 外側ネットワークのグローバル IP アドレスからのパケットを内側ホストに転送するフローエントリです。3 万以上のエントリを持つため、セットアップに数分かかります
-バイパス用 (優先度: 65000):: フィルタ用フローエントリをセットアップしている間だけ有効なエントリです。外側⇔内側のすべてのパケットを通します
-ドロップ用 (優先度: 1000):: 外側ネットワークのグローバル IP アドレス以外からのパケットを inspector ホストに転送するフローエントリです
-IPv4以外用 (優先度: 900):: 外側ネットワークからの IPv4 以外のパケットを内側ネットワークへ転送するフローエントリです
+フィルタ用 (優先度: 64000):: 外側ネットワークのグローバル IP アドレスからのパケットを内側ホストに転送するフローエントリです。3 万以上のエントリがあるため、セットアップは数分かかります。
+バイパス用 (優先度: 65000):: フィルタ用フローエントリをセットアップしている間の数分間だけ有効なエントリです。外側⇔内側のすべてのパケットを通します。
+ドロップ用 (優先度: 1000):: 外側ネットワークのグローバル IP アドレス以外からのパケットを inspector ホストに転送するフローエントリです。
+IPv4以外用 (優先度: 900):: 外側ネットワークからの IPv4 以外のパケットを内側ネットワークへ転送するフローエントリです。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/pass_delegated.rb
@@ -485,7 +485,7 @@ def start_loading
 end
 ----
 
-最初に呼び出す `install_preamble_and_bypass` メソッドは、外側⇔内側のすべてのパケットを通すバイパス用フローエントリを追加します。優先度を他のフローエントリよりも大きくしておくことで、フィルタリング用フローエントリを設定している数分間もすべてのパケットはこのフローエントリにマッチします。このため、コントローラの起動中でも普通に通信できるようになります。
+最初に呼び出す `install_preamble_and_bypass` メソッドは、外側⇔内側のすべてのパケットを通すバイパス用フローエントリを追加します。優先度を他のフローエントリよりも大きくしておくことで、フィルタリング用フローエントリを設定している数分間はすべてのパケットがこのフローエントリにマッチします。このため、フローエントリのセットアップ中でも普通に通信できるようになります。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .PassDelegated#install_preamble_and_bypass (lib/pass_delegated.rb)
@@ -567,7 +567,7 @@ end
 
 ## まとめ
 
-様々なネットワーク機器の実装の一環として、2種類の透過型ファイアウォールをつくりました。
+ネットワーク機器のOpenFlow実装の一環として、2種類の透過型ファイアウォールを作りました。
 
 - 透過型ファイアウォールはルータとホストの間にはさむだけで使え、各ホストのネットワーク設定を変更しなくてよい
 - Flow Mod がスイッチに反映されたことを保証するには `Barrier::Request` メッセージを使う
