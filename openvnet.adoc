@@ -636,3 +636,11 @@ OpenVNetは、フローによってOpenVNetの仮想ネットワークと外部�
 == まとめ
 
 箇条書き
+
+OpenVNetは、Trema同様にバザール式の開発を行っており、常時開発者を募集しております。腕に覚えのある方は、ぜひ下記の情報をご参照の上、奮ってご参加いただければ幸いです。
+
+【URL】 http://openvnet.org/
+[[wesite_openvnet]]
+image::QR_to_openvnet.gif[caption="図xx-y",title="OpenVNetのサイトへのリンク"]
+
+
