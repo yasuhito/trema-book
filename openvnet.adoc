@@ -1,7 +1,7 @@
 = OpenVNetで本格的な仮想ネットワーク
 :imagesdir: images/openvnet
 
-// TODO ほかの章と同じく、リード文を2,3行ほど追加する
+仮想ネットワークの機能を、データセンター規模で本格的に利用することを目指して、分散するOpenFlowスイッチ群をOpenVNetを使ってコントロールしてみましょう。
 
 == OpenVNetとは
 
