@@ -147,7 +147,7 @@ include::{sourcedir}/lib/one_way_bridge.rb[]
 .逆流防止フィルタ（OneWayBridgeコントローラ）を実行するための物理構成例
 image::one_way_bridge_setup.png[caption="図 10-6: "]
 
-この物理構成をTrema設定ファイルにしたものが以下です。仮想リンク（`link` で始まる行）の端点にインターフェース名eth0、eth1を指定していることに注目してください。
+この物理構成をTrema設定ファイルにしたものが以下です。仮想リンク（`link` で始まる行）の端点にインタフェース名eth0、eth1を指定していることに注目してください。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .逆流防止フィルタ（OneWayBridgeコントローラ）の設定ファイル
