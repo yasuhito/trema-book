@@ -167,7 +167,7 @@ image::topology_classes.png[caption="図 15-10: "]
 
 === モデルとビューのセットアップ
 
-`TopologyController` の仕事のひとつは、MVC のモデルとビューのセットアップです。次の `start` ハンドラでは、起動時のコマンドライン引数をパースし、トポロジ表示をテキスト表示 (`View::Text`) にするかまたは画像表示 (`View::Graphviz`) にするかを決定します。そして、決定したビューをモデル (`Topology`) のオブザーバとして追加 (`@topology.add_observer`) します。
+`TopologyController` の仕事の1つは、MVC のモデルとビューのセットアップです。次の `start` ハンドラでは、起動時のコマンドライン引数をパースし、トポロジ表示をテキスト表示 (`View::Text`) にするかまたは画像表示 (`View::Graphviz`) にするかを決定します。そして、決定したビューをモデル (`Topology`) のオブザーバとして追加 (`@topology.add_observer`) します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .TopologyController#start
