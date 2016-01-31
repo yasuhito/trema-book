@@ -2,7 +2,7 @@
 :sourcedir: vendor/routing_switch
 :imagesdir: images/sliceable_switch
 
-IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワークを OpenFlow で実現しましょう。<<routing_switch,第 16 章>>で紹介したルーティングスイッチの応用です。
+IaaS (Infrastructure as a Service) の構築に必要な大規模ネットワークを OpenFlow で実現しましょう。<<routing_switch,16 章>>で紹介したルーティングスイッチの応用です。
 
 == ネットワークをスライスに分ける
 

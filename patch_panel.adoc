@@ -141,7 +141,7 @@ include::{sourcedir}/lib/patch_panel.rb[]
 今までに学んだ知識で、このコードをできるだけ解読してみましょう。
 
 - パッチパネルの本体はPatchPanelという名前の小さなクラスである
-- このクラスには<<hello_trema,第 3 章「Hello, Trema!」>>で学んだ `switch_ready` ハンドラが定義してあり、この中で `delete_flow_entries` と `add_flow_entries` いうプライベートメソッドを呼んでいる。どうやらこれがパッチ処理の本体だ
+- このクラスには<<hello_trema,3 章「Hello, Trema!」>>で学んだ `switch_ready` ハンドラが定義してあり、この中で `delete_flow_entries` と `add_flow_entries` いうプライベートメソッドを呼んでいる。どうやらこれがパッチ処理の本体だ
 - `create_patch` と `delete_patch` というメソッドが定義してある。これらがパッチの作成と削除に対応していると予想できる
 - `add_flow_entries` メソッドでは `send_flow_mod_add` を2回呼んでいる。1つのパッチを作るのに2つのフローエントリが必要なので、2回呼んでいるのだろうと推測できる 
 
@@ -296,7 +296,7 @@ for (int i = 0; i < 3; i++) {
 
 このように for ループで書くと、配列の要素にアクセスするための変数 `i` やループの終了条件 `i < 3` などが必要になります。一方、イテレータはこうした煩雑なものを抽象化で見えなくしてくれるので、プログラマは各要素についてやりたいことだけをブロックに書けば動きます。
 
-実は、<<cbench,第 5 章「マイクロベンチマークCbench」>>で登場した次のコードもイテレータです。
+実は、<<cbench,5 章「マイクロベンチマークCbench」>>で登場した次のコードもイテレータです。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 ----

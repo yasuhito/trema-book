@@ -126,7 +126,7 @@ Link 0x1-0x2 deleted: 0x1-0x3, 0x2-0x3
 Port 0x1:1 deleted: 2
 ----
 
-逆にふたたびポートを上げると、三角形トポロジが復活します。
+逆に再びポートを上げると、三角形トポロジが復活します。
 
 ----
 $ ./bin/trema port_up --switch 0x1 --port 1
