@@ -63,7 +63,7 @@ OpenVNetのようなエッジオーバーレイ型は、次の2つの場面で�
 OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual Network Manager)が、ネットワーク全体の構造を保持するデータベースと、Web APIを提供します。データベースから、仮想ネットワークのあるべき設定を割り出したvnmgrは、分散するvna(Virtual Network Agent)に、担当するエッジスイッチに対しフローを設定するよう指示するのです。vnaは、接続されたスイッチ(Open vSwtich)に対し、OpenFlow仕様を含むフローの設定と、OpenFlow Controllerとして、DHCPなど反応すべきパケットに対する処理を任されています。vna内部で、OpenFlow Controllerの機能を実現するために、Tremaを使っています。
 
 [[openvnet_architecture]]
-image::openvnet_archtecture.png[caption="図xx-y",title="OpenVNetの全体アーキテクチャ"]
+image::openvnet_architecture.png[caption="図xx-y",title="OpenVNetの全体アーキテクチャ"]
 
 vnctlは、OpenVNet全体を操作するためのコマンドラインインタフェースです。vnctlの引数に与えられたものを解釈して、vnmgrのWeb APIへ通信します。
 現在、サポートしているソフトウェアセットは下記の通りです。
