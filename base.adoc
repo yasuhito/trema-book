@@ -51,10 +51,5 @@ include::sliceable_switch.adoc[]
 
 [[openvnet]]
 
-include::appendix_rvm.adoc[]
-
-[[trema_reference]]
-include::appendix_trema_reference.adoc[]
-
 include::appendix_copyright_and_license.adoc[]
 
