@@ -27,7 +27,7 @@ TremaはOpenFlowコントローラ開発のためのテストツールが充実�
 
 == リピータハブの動き
 
-まずは、リピータハブがどのように動くか見て行きましょう。リピータハブにホスト 3 台をつなげた<<repeater_hub,図 9-1>>のネットワークを考えてください。ホスト 1 からホスト 2 へパケットを送信すると、リピータハブは入ってきたパケットを複製し他のすべてのホストにばらまきます。つまり、通信に関係のないホスト 3 もホスト 2 あてのパケットを受信します。このように、リピータハブはラーニングスイッチ (<<learning_switch,7 章「すべての基本、ラーニングスイッチ」>>) のような MAC アドレスの学習は行わず、とにかくすべてのホストへパケットを送ってしまうので、バカハブとかダムハブとも呼びます。
+まずは、リピータハブがどのように動くか見て行きましょう。リピータハブにホスト 3 台をつなげた<<repeater_hub,図 9-1>>のネットワークを考えてください。ホスト 1 からホスト 2 へパケットを送信すると、リピータハブは入ってきたパケットを複製し他のすべてのホストにばらまきます。つまり、通信に関係のないホスト 3 もホスト 2 宛のパケットを受信します。このように、リピータハブはラーニングスイッチ (<<learning_switch,7 章「すべての基本、ラーニングスイッチ」>>) のような MAC アドレスの学習は行わず、とにかくすべてのホストへパケットを送ってしまうので、バカハブとかダムハブとも呼びます。
 
 [[repeater_hub]]
 .ホスト 3 台をつなげたリピータハブの動作
@@ -70,7 +70,7 @@ Ruby on Rails の作者として有名な David Heinemeier Hansson 氏 (以下�
 コントローラのテストには次の 3 つのツールを使います。
 
 Cucumberfootnote:[https://cucumber.io]:: 受け入れテストの定番ツール。ブラックボックステストをシナリオ形式で簡潔に記述できる
-Arubafootnote:[https://github.com/cucumber/aruba]:: コマンドラインツールのテストツール。コマンドの起動と出力、終了ステータス等のテストができる
+Arubafootnote:[https://github.com/cucumber/aruba]:: コマンドラインツールのテストツール。コマンドの起動と出力、終了ステータスなどのテストができる
 trema/cucumber_step_definitionsfootnote:[https://github.com/trema/cucumber_step_definitions]:: ArubaのTrema用ライブラリ。コントローラの起動やパケットの送受信といった、コントローラのテストを記述できる
 
 == パケット受信をテストする
@@ -139,13 +139,13 @@ And I trema run "lib/repeater_hub.rb" with the configuration "trema.conf"
 $ ./bin/trema run lib/repeater_hub.rb -c trema.conf -d
 ----
 
-Given が書けたところですぐに実行してみます。まだ `lib/repeater_hub.rb` ファイルを作っていないのでエラーになることはわかりきっていますが、とりあえず実行してみます。次のコマンドを実行すると、受け入れテストファイル `features/repeater_hub.feature` を実行しテスト結果を表示します。
+Given が書けたところですぐに実行してみます。まだ `lib/repeater_hub.rb` ファイルを作っていないのでエラーになることはわかりきっていますが、エラーを確認するためにあえて実行します。次のコマンドを実行すると、受け入れテストファイル `features/repeater_hub.feature` を実行しテスト結果を表示します。
 
 [source,subs="verbatim,attributes"]
 ----
 $ ./bin/cucumber features/repeater_hub.feature
 Feature: Repeater Hub example
-  @sudo @announce-
+  @sudo
   Scenario: Run
     Given a file named "trema.conf" with:
       """
@@ -209,7 +209,7 @@ $ touch lib/repeater_hub.rb
 $ ./bin/cucumber features/repeater_hub.feature
 ----
 
-再びテストを実行すると、こんどは次のエラーメッセージが出ます。
+再びテストを実行すると、今度は次のエラーメッセージが出ます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -251,7 +251,7 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 === When: パケットの送信
 
-When には「〜したとき」というきっかけになる動作を記述します。ここでは、Given で定義したホスト host1 から host2 にパケットを送る処理を書きます。パケットを送るコマンドは、trema send_packets でした。Aruba では、実行したいコマンドを次のように `I run ...` で直接書けます。
+When には「〜したとき」というきっかけになる動作を記述します。ここでは、Given で定義したホスト host1 から host2 にパケットを送る処理を書きます。パケットを送るコマンドは、trema send_packets でした。Cucumber (Aruba) では、実行したいコマンドを次のように `I run ...` で直接書けます。
 
 ----
 When I run `trema send_packets --source host1 --dest host2`                                                                                                                   
@@ -272,7 +272,7 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 === Then: 受信したパケットの数
 
-Then には「最終的にこうなるはず」というテストを書きます。ここでは、「ホスト 2・ホスト 3 がパケットを受け取るはず」というステップを書けばよいですね。これは `trema/cucumber_step_definitions` を使うと次のように書けます。
+Then には「最終的にこうなるはず」というテストを書きます。ここでは、「ホスト 2・ホスト 3 がパケットを受け取るはず」というステップを書けばよいですね。これは次のように書けます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -419,12 +419,12 @@ Feature: "Repeater Hub" example
 
 == リファクタリング
 
-リファクタリングは、テストコードによってソフトウェアの振る舞いを保ちつつ、理解や修正が簡単になるようにソースコードを改善することです。Rubyにはリファクタリング用の便利なツールがたくさんあります。中でもよく使うツールは次の 4 つです。
+リファクタリングとは、テストコードによってソフトウェアの振る舞いを保ちつつ、理解や修正が簡単になるようにソースコードを改善することです。Rubyにはリファクタリング用の便利なツールがたくさんあります。中でもよく使うツールは次の 4 つです。
 
-reekfootnote:[https://github.com/troessner/reek]:: Rubyコードの臭いを自動的に検知し、改善すべき場所を教えてくれる便利なツールです。
-flogfootnote:[http://ruby.sadi.st/Flog.html]:: すべてのメソッドの複雑度 (これが大きいほど複雑でテストしづらい) を客観的なポイントで表示します。
-flayfootnote:[http://ruby.sadi.st/Flay.html]:: メソッドのコピペなど、重複するコードを探して容赦なく指摘してくれます。
-rubocopfootnote:[https://github.com/bbatsov/rubocop]:: コードが標準的な Ruby のコーディングスタイルに沿っているかチェックしてくれます。
+reekfootnote:[https://github.com/troessner/reek]:: Rubyコードの臭いを自動的に検知し、改善すべき場所を教えてくれる便利なツール
+flogfootnote:[http://ruby.sadi.st/Flog.html]:: すべてのメソッドの複雑度 (これが大きいほど複雑でテストしづらい) を客観的なポイントで表示
+flayfootnote:[http://ruby.sadi.st/Flay.html]:: メソッドのコピペなど、重複するコードを探して容赦なく指摘してくれる
+rubocopfootnote:[https://github.com/bbatsov/rubocop]:: コードが標準的な Ruby のコーディングスタイルに沿っているかチェックしてくれる
 
 `RepeaterHub` クラスは十分簡潔ですが、念のためこの 4 つを使ってチェックしておきます。
 
@@ -457,7 +457,7 @@ Inspecting 1 file
 
 Tremaのユニットテストフレームワークを使ってリピータハブを作り、コントローラをテスト駆動開発する方法を学びました。今回学んだことは次の2つです。
 
- * Cucumber・Aruba・trema/cucumber_step_definitionsを使うと、コントローラを起動し仮想ホストの受信パケット数などをテストできる
+ * Cucumber・Aruba・trema/cucumber_step_definitionsを使うと、コントローラを起動して仮想ホストの受信パケット数などをテストできる
  * テストをGiven・When・Thenの3ステップに分けて分析し設計する方法を学んだ。それぞれのステップをCucumberのテストコードに置き換えることで、テストコードが完成する
  * テストが通ったら必ずリファクタリングすること。`reek`・`flog`・`flay`・`rubocop` を使うと、コードの問題点を客観的に洗い出してくれる
  
