@@ -126,7 +126,7 @@ Link 0x1-0x2 deleted: 0x1-0x3, 0x2-0x3
 Port 0x1:1 deleted: 2
 ----
 
-逆にふたたびポートを上げると、三角形トポロジが復活します。
+逆に再びポートを上げると、三角形トポロジが復活します。
 
 ----
 $ ./bin/trema port_up --switch 0x1 --port 1
@@ -167,7 +167,7 @@ image::topology_classes.png[caption="図 15-10: "]
 
 === モデルとビューのセットアップ
 
-`TopologyController` の仕事のひとつは、MVC のモデルとビューのセットアップです。次の `start` ハンドラでは、起動時のコマンドライン引数をパースし、トポロジ表示をテキスト表示 (`View::Text`) にするかまたは画像表示 (`View::Graphviz`) にするかを決定します。そして、決定したビューをモデル (`Topology`) のオブザーバとして追加 (`@topology.add_observer`) します。
+`TopologyController` の仕事の1つは、MVC のモデルとビューのセットアップです。次の `start` ハンドラでは、起動時のコマンドライン引数をパースし、トポロジ表示をテキスト表示 (`View::Text`) にするかまたは画像表示 (`View::Graphviz`) にするかを決定します。そして、決定したビューをモデル (`Topology`) のオブザーバとして追加 (`@topology.add_observer`) します。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .TopologyController#start

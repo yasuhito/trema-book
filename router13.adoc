@@ -34,7 +34,7 @@ Protocol Classifier テーブルは、Ingress テーブルから入ったパケ�
 ルータのポート宛の ARP Request:: ホストの MAC アドレスを学習し、ポートの MAC アドレスを ARP Reply で返す
 それ以外の ARP:: パケットを書き換えて適切なポートから転送する
 
-ARP Responder テーブルは以上の処理 3 種類 x ポート数分のフローエントリを持ちます。たとえばポートが 2 つの場合には、<<arp_responder_table,図 14-3>>のようにフローエントリ数は全部で 6 つです。それぞれのフローエントリの具体的な働きについては後述します。
+ARP Responder テーブルは、前記 3 種類の処理×ポート数分のフローエントリを持ちます。たとえばポートが 2 つの場合には、<<arp_responder_table,図 14-3>>のようにフローエントリ数は全部で 6 つです。それぞれのフローエントリの具体的な働きについては後述します。
 
 [[arp_responder_table]]
 .ARP Responder テーブルのフローエントリ例
@@ -199,7 +199,7 @@ host2 からの ARP Reply が届くと、コントローラに Packet In しま�
 .host2 の MAC アドレスを学習し ICMP Echo Request を host2 に届けるまでの動作
 image::handle_arp_reply.png[caption="図 14-11: "]
 
-ARP Reply を受け取ったコントローラは次のように動作します。まず、ARP Reply で解決した host2 の MAC アドレス用フローエントリを ARP Table Lookup テーブルに追加します (<<handle_arp_reply,図 14-11>> の 3)。そして、MAC アドレス未解決で送信待ちになっていたパケットをすべて、Packet Out でふたたび Ingress テーブルに入れます (<<handle_arp_reply,図 14-11>> の 4)。
+ARP Reply を受け取ったコントローラは次のように動作します。まず、ARP Reply で解決した host2 の MAC アドレス用フローエントリを ARP Table Lookup テーブルに追加します (<<handle_arp_reply,図 14-11>> の 3)。そして、MAC アドレス未解決で送信待ちになっていたパケットをすべて、Packet Out で再び Ingress テーブルに入れます (<<handle_arp_reply,図 14-11>> の 4)。
 
 [source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter13#packet_in_arp (lib/simple_router13.rb)
