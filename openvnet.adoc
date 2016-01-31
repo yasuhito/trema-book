@@ -65,7 +65,7 @@ OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual N
 [[openvnet_architecture]]
 image::openvnet_architecture.png[caption="図xx-y",title="OpenVNetの全体アーキテクチャ"]
 
-vnctlは、OpenVNet全体を操作するためのコマンドラインインタフェースです。vnctlの引数に与えられたものを解釈して、vnmgrのWeb APIへ通信します。
+vnctlは、OpenVNet全体を操作するためのコマンドラインインタフェースです。vnctlの引数に与えられたものを解釈して、vnmgrのWeb APIへ通信します。vnmgrは分散するvnaとの通信に、メッセージキューを利用することで、大規模なユースケースに対応する他、vnaが適切なタイミングでOpenFlow Switchと対話できるように設計されています。
 現在、サポートしているソフトウェアセットは下記の通りです。
 
 |===
