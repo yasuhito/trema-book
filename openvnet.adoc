@@ -102,11 +102,6 @@ DHCPやDNSなどのサービスをエッジスイッチで処理できます。
 OpenVNetのアーキテクチャは非常にシンプルです。vnmgr(Virtual Network Manager)が、ネットワーク全体の構造を保持するデータベースと、Web APIを提供します。データベースから、仮想ネットワークのあるべき設定を割り出したvnmgrは、分散するvna(Virtual Network Agent)に、担当するエッジスイッチに対しフローを設定するよう指示するのです。vnaは、接続されたスイッチ(Open vSwtich)に対し、OpenFlow仕様を含むフローの設定と、OpenFlow Controllerとして、DHCPなど反応すべきパケットに対する処理を任されています。
 
 
-=== フロー制御
-
-// TODO
-- https://github.com/axsh/openvnet/wiki/FlowTable
-
 == 使ってみる
 
 OpenVNetの利用はとても簡単です。まずは、CentOSが稼働する1台のマシンにOpenVNetの全てのサービスをインストールし、使い初めてみましょう。
