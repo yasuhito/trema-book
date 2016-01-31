@@ -69,12 +69,11 @@ vnctlは、OpenVNet全体を操作するためのコマンドラインインタ�
 現在、サポートしているソフトウェアセットは下記の通りです。
 
 |===
-| コンポーネント名称 | サポートしているソフトウェア名称
+| コンポーネント名称 | サポートしているソフトウェア名称 | URL
 
 | OpenFlow Switch | Open vSwitch | http://openvswitch.org/
 | Database | MySQL | http://www.mysql.com/
-| Message Queue | ZeroMQ & Redis | http://zeromq.org/
-http://redis.io/
+| Message Queue | ZeroMQ & Redis | http://zeromq.org/ http://redis.io/
 |===
 
 == OpenVNetの主な機能
