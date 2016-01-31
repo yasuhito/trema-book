@@ -48,7 +48,7 @@ $ bundle install --binstubs
 .スライス機能付きスイッチを実行するネットワーク
 image::sliceable_switch_network.png[caption="図 17-2: "]
 
-スライス機能を有効にするには、ルーティングスイッチの `trema run` に `-- --slicing` オプションを付けてください:
+スライス機能を有効にするには、ルーティングスイッチの `trema run` に `-- --slicing` オプションを付けてください。
 
 ----
 $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -- --slicing
@@ -64,7 +64,7 @@ $ ./bin/trema run ./lib/routing_switch.rb -c trema.conf -- --slicing
 .スライスの作成例
 image::creating_slices.png[caption="図 17-3: "]
 
-スライスの追加は `slice add` コマンドです:
+スライスの追加は `slice add` コマンドです。
 
 ----
 $ ./bin/slice add slice1
@@ -89,7 +89,7 @@ $ ./bin/slice add_host --port 0x5:1 --mac 33:33:33:33:33:33 --slice slice2
 1. 同じスライスに属するホスト間で通信できること
 2. 異なるスライスに属するホスト間で通信できないこと
 
-これは今までやってきた通り、`trema send_packet` と `trema show_stats` コマンドで簡単に確認できます。たとえば同じスライス `slice1` に属するホスト `host1` と `host4` で通信できることを確認するには、おたがいにパケットを 1 つずつ送信し、それぞれのホストでパケットを 1 つずつ受信できているかどうかを見ます。
+これは今までやってきた通り、`trema send_packet` と `trema show_stats` コマンドで簡単に確認できます。たとえば同じスライス `slice1` に属するホスト `host1` と `host4` で通信できることを確認するには、お互いにパケットを 1 つずつ送信し、それぞれのホストでパケットを 1 つずつ受信できているかどうかを見ます。
 
 ----
 $ ./bin/trema send_packet --source host1 --dest host4
@@ -346,4 +346,4 @@ Hello Trema から始めた Trema プログラミングも、いつの間にか�
 - スライス機能付きスイッチが同一のスライス内の通信のみを許可する仕組み
 - クラウド構築ミドルウェアからスライスを設定するためのREST APIの使い方
 
-次章では Trema を使った商用 IaaS の 1 つである OpenVNet のアーキテクチャを紹介します。本章で解説したスライス機能付きスイッチとはまったく異なる「分散 Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
+次章では、Trema を使った仮想ネットワークソフトウェアであり、商用クラウドにも使われている OpenVnet を紹介します。本章で解説したスライス機能付きスイッチとはまったく異なる「分散 Trema」とも言えるスライスの実現方法は、商用クラウドの作り方として参考になります。
