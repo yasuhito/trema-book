@@ -15,7 +15,6 @@ MAC アドレスでパケットを転送する LAN をイーサネットと呼�
 
 実は、ハードウェアに近いパケット転送方式はイーサネット以外にもいくつもあります。イーサネットは、転送方式のうちのたった 1 つにすぎないのです。
 
- - スマートフォンやノートパソコンで使う無線 LAN。今ではなくてはならないものの1つ
  - ADSL や光ファイバーによるインターネット接続に使う PPP (Point to Point Protocol)。身近に使われている
  - WAN で使われる ATM (Asynchronous Transfer Mode) やフレームリレー。利用は徐々に減りつつある
  - リング型のネットワークを構成する FDDI (Fiber-Distributed Data Interface)。昔は、大学などの計算機室のワークステーションをつなげるためによく使われていた
@@ -85,7 +84,7 @@ image::router_network.png[caption="図 12-4: "]
 
 == ソースコード解説
 
-シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。残りのソースコードについては、GitHub の `trema/simple_router` リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
+シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。ソースコードは GitHub の `trema/simple_router` リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
 
 ----
 $ git clone https://github.com/trema/simple_router.git
