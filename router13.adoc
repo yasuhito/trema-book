@@ -2,6 +2,7 @@
 :sourcedir: vendor/router
 :imagesdir: images/router
 
+[.lead]
 OpenFlow1.3 のマルチプルテーブルを使うことで、ルータの機能の大部分をフローテーブルとして実装してみましょう
 
 == マルチプルテーブル版ルータのテーブル構成

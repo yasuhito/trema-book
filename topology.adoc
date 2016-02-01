@@ -2,6 +2,7 @@
 :sourcedir: vendor/topology
 :imagesdir: images/topology
 
+[.lead]
 大規模なネットワークを構築する前準備として、ネットワークトポロジを OpenFlow で検出してみましょう
 
 == 美しい大規模ネットワーク

@@ -2,6 +2,7 @@
 :sourcedir: vendor/routing_switch
 :imagesdir: images/routing_switch
 
+[.lead]
 大規模なネットワークを構成するたくさんのスイッチを連携させ、うまく制御する仕組みを見て行きましょう。
 
 == 複数のスイッチを制御する
