@@ -441,47 +441,6 @@ $ ping 10.100.0.10
 
 先程とは異なり、疎通ができなくなったはずです。これがもし従来のネットワークだった場合、 `10.100.0.0/24` の範囲内のIPアドレスであれば疎通できます。しかしOpenVNetは設定情報に従って厳格に通信制限を行うため、`inst2` のIPアドレスが `10.100.0.11` でない限り、通信を許可しません。
 
-=== フローエントリを見る
-
-OpenVNetはフローエントリで仮想ネットワークをコントロールします。OpenVNetには `vnflows-monitor` というツールが付属しており、エッジスイッチのフローエントリを読みやすく整形して表示できます。
-
-次のコマンドでフローエントリを表示します。
-
-```
-$ cd /opt/axsh/openvnet/vnet/bin/
-$ ./vnflows-monitor
-```
-
-エッジスイッチが正しく動作していて、フローエントリが存在する場合、例えば以下のような内容が表示されます。
-
-```
-(0): TABLE_CLASSIFIER
-  0-00        0       0 => SWITCH(0x0)               actions=write_metadata:REMOTE(0x0),goto_table:TABLE_TUNNEL_PORTS(3)
-  0-01        0       0 => SWITCH(0x0)              tun_id=0 actions=drop
-  0-02       28       0 => PORT(0x1)                in_port=1 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x1),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
-  0-02       22       0 => PORT(0x2)                in_port=2 actions=write_metadata:TYPE_INTERFACE|LOCAL(0x5),goto_table:TABLE_INTERFACE_EGRESS_CLASSIFIER(15)
-  0-02        0       0 => SWITCH(0x0)              in_port=CONTROLLER actions=write_metadata:LOCAL|NO_CONTROLLER(0x0),goto_table:TABLE_CONTROLLER_PORT(7)
-  0-02        0       0 => PORT(0x7ffffffe)         in_port=LOCAL actions=write_metadata:LOCAL(0x0),goto_table:TABLE_LOCAL_PORT(6)
-(3): TABLE_TUNNEL_PORTS
-  3-00        0       0 => SWITCH(0x0)               actions=drop
-(4): TABLE_TUNNEL_NETWORK_IDS
-  4-00        0       0 => SWITCH(0x0)               actions=drop
-  4-30        0       0 => ROUTE_LINK(0x1)          tun_id=0x10000001,dl_dst=02:00:10:00:00:01 actions=write_metadata:TYPE_ROUTE_LINK(0x1),goto_table:TABLE_ROUTER_CLASSIFIER(33)
-  4-30        0       0 => NETWORK(0x1)             tun_id=0x80000001 actions=write_metadata:TYPE_NETWORK(0x1),goto_table:TABLE_NETWORK_SRC_CLASSIFIER(20)
-  4-30        0       0 => NETWORK(0x2)             tun_id=0x80000002 actions=write_metadata:TYPE_NETWORK(0x2),goto_table:TABLE_NETWORK_SRC_CLASSIFIER(20)
-(6): TABLE_LOCAL_PORT
-  6-00        0       0 => SWITCH(0x0)               actions=drop
-...
-```
-
-これは、それぞれのフローテーブルを処理単位にグループ化して見やすく表示したものです。それぞれのフローテーブルの下に表示される行の意味は、左から順に次のとおりです。
-
-. フローエントリの優先度に従ったフローテーブルのインデックス (0-00、0-01など)
-. そのフローエントリにマッチしたパケット数 (0、28、22など)
-. フローの `cookie` (0 => SWITCH(0x0)など)
-. フローの `match` (tun_id=0、in_port=1など)
-. フローの `action` (actions=dropなど)
-
 == OpenVNetを応用した実用例
 
 最後にOpenVNetの高度な応用事例として、OpenVNetのDockerコンテナ対応、および複数クラウド間の仮想ネットワークによる連携機能を紹介します。いずれも、著者の所属するTIS株式会社が実証実験を行い、それぞれの成果はフリーソフトウェアとして配布しています。
