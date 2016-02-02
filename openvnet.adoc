@@ -240,7 +240,7 @@ $ sudo initctl start vnet-webapi
 $ vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 ```
 
-`vna` と Datapath ID の紐付けをができたので、 `vna` を起動してみましょう。
+`vna` と Datapath ID の紐付けができたので、 `vna` を起動してみましょう。
 
 ```
 $ sudo initctl start vnet-vna
