@@ -1,0 +1,513 @@
+= OpenVNetで本格的な仮想ネットワーク
+:imagesdir: images/openvnet
+
+[.lead]
+OpenVNetはTremaで構築された本格的な仮想ネットワーク基盤です。実際のデータセンターでも使える仮想ネットワークを体験しましょう。
+
+== OpenVNetとは
+
+OpenVNetはOpenFlowで仮想ネットワークを構築するためのフリーソフトウェアです。Tremaを使ってあらゆるパケットの挙動を自由に制御することで、既存のネットワーク上にあたかもユーザ専用のネットワークがあるかのような環境を作り出すことができます。開発はWSF(Wakame Software Foundation)が中心となっており、筆者の一人である山崎の所属する株式会社あくしゅの開発者がメインコミッターを務めています。ソフトウェアライセンスにLGPLv3を採用し、組織の枠を越えたオープンソースでの開発を行っています。
+
+OpenVNetはもともと、WSFのプロジェクトの 1 つであるWakame-vdcからネットワーク機能を切り出したものです。Wakame-vdcはデータセンター全体を仮想化するためのソフトウェアで、すでにいくつもの企業や研究機関で商業化や実用化が進んでいます。
+
+- 国立情報学研究所 (NII): 分散処理の実証実験、クラウド教育教材として活用
+- 九州電力: 大規模データの分散処理基盤として
+- NTT PCコミュニケーションズ: パブリッククラウド WebARENA VPSクラウド
+- 京セラコミュニケーションシステム: パブリッククラウド GreenOffice Unified Cloud
+- TIS株式会社: OpenVNetのDocker対応とクラウド間連携の実証プロジェクト (後述)
+
+=== エッジ仮想化による仮想ネットワーク
+
+OpenVNetによるネットワーク仮想化の特長は、**エッジ仮想化**である点です。エッジ仮想化では、仮想マシンと既存のネットワークとの間にソフトウェアOpenFlowスイッチ(エッジスイッチ)を設置し、ここで全てのパケットを制御します。これによって、仮想マシンからは、あたかも独立したネットワークがあるかのように見えます。
+
+エッジスイッチの主な仕事は、物理ネットワークと仮想ネットワーク間でのパケットの相互書き換えです。
+
+[[edge_network_virtualization]]
+.エッジ仮想化によるネットワークの仮想化
+image::edge_translation.png[caption="図 18-1: "]
+
+1. 仮想マシンから仮想ネットワークに送信したパケットは、エッジスイッチが物理ネットワークを通るように書き換え、宛先のサーバへ送出する
+2. 宛先のサーバに届く直前のエッジスイッチで逆の書き換えを行う。つまり、物理ネットワークを通ってきたパケットを仮想ネットワーク内のパケットに見えるように書き換える
+
+こうしたエッジスイッチによるパケットの書き換えは仮想マシンからは見えません。OpenVNetの作り出した仮想ネットワークが、仮想マシンからは物理ネットワークであるかのように見えます。
+
+エッジ仮想化のもう一つの大きな利点は、OpenFlow化されていない既存のネットワーク上で動作することです。たとえば <<sliceable_switch,第17章「ネットワークを仮想化する」>> で紹介したスライサブルスイッチには、ネットワークスイッチがすべてOpenFlowに対応しているという前提がありました。一方エッジ仮想化では、この制御を物理サーバ上に起動したエッジスイッチだけで行います。こうすることで、既に構築されたネットワークの上で仮想ネットワークを実現できます。
+
+// TODO: 図が欲しい。物理ネットワーク(L2, L3, VPNでDB跨ぎ)に、仮想ネットワークをマッピングする図 = 基本的な考え方として理解できるもの
+
+== エッジ仮想化の利点
+
+OpenVNetのようなエッジ仮想化は、次の2つの場面で特に威力を発揮します。
+
+1. 既存ネットワークの活用
+2. ダウンサイジング
+
+=== 既存ネットワークの活用
+
+最小の変更だけで既存データセンター上に仮想ネットワークサービスを構築できます。エッジ仮想化によるネットワーク仮想化はほぼ物理サーバの追加だけで実現できます。このため、物理ネットワークの新たな敷設や再設定をできるだけ抑えながら、その上に新しく仮想ネットワークを構築して提供できます。
+
+=== ダウンサイジング
+
+古い大量の物理スイッチを仮想ネットワーク化することで一掃できます。近年のネットワーク帯域向上により、物理ネットワークの仮想環境への詰め込みが一般的になってきました。たとえば単純計算しただけでも、10Gbpsの物理ネットワークには10Mbpsの仮想ネットワークを100個ほど詰め込めます。さらに、ネットワーク利用率のばらつきを考慮し効率的に設計すれば、より多くを集約できます。
+
+== OpenVNetの全体アーキテクチャ
+
+OpenVNetのアーキテクチャは非常にシンプルです。データセンタ全体のネットワークの構成を管理するのが、vnmgr(Virtual Network Manager)です。vnmgrはグローバルな仮想ネットワーク設定情報を元に、分散するvna(Virtual Network Agent)に対して、エッジスイッチを設定するよう指示します。個々の vna は Trema を使ったコントローラとして実装しており、それぞれが担当するエッジスイッチへとフローエントリを書き込みます。
+
+[[openvnet_architecture]]
+.OpenVNetの全体アーキテクチャ
+image::openvnet_architecture.png[caption="図 18-2: "]
+
+OpenVNetはTrema以外にも、定評のあるフリーソフトウェアをコンポーネントとして利用しています。エッジスイッチとして動作するソフトウェアスイッチ、グローバルな仮想ネットワーク設定情報を管理するデータベース、そして vnmgr と vna 間のメッセージングには、それぞれ次のソフトウェアを採用しています。
+
+|===
+| コンポーネント | 実装 | URL
+
+| OpenFlow スイッチ | Open vSwitch | http://openvswitch.org/
+| 設定情報データベース | MySQL | http://www.mysql.com/
+| メッセージング | ZeroMQ & Redis | http://zeromq.org/ http://redis.io/
+|===
+
+== OpenVNetの主な機能
+
+OpenVNetは仮想ネットワーク以外にも、次の 4 つの強力な機能を持っています。
+
+1. 仮想ルータによる仮想ネットワーク接続
+2. セキュリティグループによる仮想ファイアウォール機能
+3. DHCPとDNSサービス
+4. 仮想ネットワークと既存ネットワークの接続
+
+=== 仮想ルータによる仮想ネットワーク間接続
+
+OpenVNet上に作成した２つ以上の仮想ネットワークの間を自由に相互接続できます。これにより、２つの異なる仮想ネットワークに接続する仮想マシン同士が通信できるようになります。これはちょうど、仮想ネットワークの間にルータを仮想的に配置するようなものです。
+
+[[route_between_vnets]]
+.仮想ルータによる仮想ネットワーク間接続
+image::route_between_vnets.png[caption="図 18-3: "]
+
+この仮想ルータ機能は、すべてエッジスイッチのフローによって実現しています。仮想マシン間のパケットは余計なネットワーク経路を辿らず、エッジスイッチ間で最適な通信をします。
+
+=== セキュリティグループによる仮想ファイアウォール機能
+
+エッジスイッチは各仮想マシンのトラフィック全ての関所でもあります。セキュリティグループは、この関所にパケットの受け入れ許可ルールを指定し、仮想マシンのファイアウォールとして機能させるものです。
+
+// TODO: 簡単な図がほしい
+[[sequrity_groups]]
+.セキュリティグループ間の仮想ファイアウォール機能
+image::sequrity_groups.png[caption="図 18-4: "]
+
+セキュリティグループは、このファイアウォール設定を仮想的なグループ間の通信に設定できます。仮想ファイアウォールの設定をエッジスイッチのフローエントリへと自動変換することで、グループ間の適切な通信ルールを制御します。
+
+=== DHCPとDNSサービス
+
+DHCPやDNSなどのサービスをエッジスイッチとコントローラだけで処理できます。これにより、新たにDHCPサーバなどを立てなくてもソフトウェア的に各種ネットワークサービスを提供できます。
+
+// TODO: 簡単な図がほしい
+[[dhcp]]
+.DHCPサービスをエッジスイッチとvnaで実現
+image::dhcp.png[caption="図 18-5: "]
+
+たとえばDHCPの場合、DHCP関係のパケットはエッジスイッチでマッチさせ、vnaにエスカレーションします。vnaはDHCPの返信パケットを生成し仮想マシンへ直接返答します。この機能は、仮想マシンに割り振るIPアドレスが自明である場合に利用できます。
+
+=== 仮想ネットワークと外部ネットワークとの接続
+
+OpenVNetで作った仮想ネットワークを、外部のネットワークと接続する機能を VNetEdge と呼びます。2つのネットワーク境界にあるエッジスイッチ上のフローを使って、ネットワーク間でパケットの相互転送を行います。
+
+VNetEdgeでは、トランスレーションと呼ぶルールに従ってパケットの相互転送を行います。例えば、特定のVLANタグを持ったパケットを任意の仮想ネットワークへ転送したり、特定のIPアドレス宛のパケットを仮想ネットワーク内の任意のIPアドレスへ変換したりできます。
+
+== 使ってみる
+
+OpenVNetの利用はとても簡単です。実行に必要なものは次の2つだけです。
+
+- CentOS 6.6以上(CentOS6系)が稼働する物理または仮想マシン
+- インターネット接続
+
+[[openvnet_installation_overview]]
+.1台のマシンで動作するOpenVNet環境
+image::openvnet_installation_overview.png[caption="図 18-6: "]
+
+=== インストールしてみる
+
+OpenVNetのインストールと初期設定は、以下の手順で進めます。
+
+. OpenVNetのインストール
+. RedisとMySQLのインストール
+. エッジスイッチの設定
+. 各種サービスの起動
+
+==== OpenVNetのインストール
+
+OpenVNetは `yum` パッケージとして提供されています。リポジトリの設定ファイルである `openvnet.repo` を `/etc/yum/repos.d/` ディレクトリに次のようにダウンロードします。
+
+```
+$ sudo curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo
+```
+
+次に、OpenVNetで利用するミドルウェアパッケージをまとめらたリポジトリ設定ファイル `openvnet-third-party.repo` を `/etc/yum.repos.d/` ディレクトリにダウンロードします。
+
+```
+$ sudo curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet-third-party.repo
+```
+
+加えて、OpenVNetのインストールに必要なエンタープライズLinux用の拡張パッケージである `epel-release` パッケージをインストールしておきます。
+
+```
+$ sudo yum install -y epel-release
+```
+
+ここまで完了したら、OpenVNetパッケージをインストールします。`openvnet` パッケージはメタパッケージで、OpenVNetの動作に必要なパッケージを一度に全てインストールできます。
+
+```
+$ sudo yum install -y openvnet
+```
+
+==== RedisとMySQLのインストール
+
+RedisおよびMySQL serverパッケージをインストールします。OpenVNetは、Redisをプロセス間通信ミドルウェアとして、またMySQLをネットワーク構成情報のデータベースとして利用します。
+
+```
+$ sudo yum install -y mysql-server redis
+```
+
+==== エッジスイッチの設定
+
+`br0` という名前のエッジスイッチを作成します。後の疎通確認では、 `inst1` および `inst2` という2つの仮想マシンをこのエッジスイッチに接続します。 `br0` の設定ファイルとして、 `/etc/sysconfig/network-scripts/ifcfg-br0` を、以下の内容で作成します。
+
+```
+DEVICE=br0
+DEVICETYPE=ovs
+TYPE=OVSBridge
+ONBOOT=yes
+BOOTPROTO=static
+HOTPLUG=no
+OVS_EXTRA="
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+"
+```
+
+なお、この設定では `datapath-id` を `0000aaaaaaaaaaaa` という値に設定しています。この値はOpenVNetがエッジスイッチを認識するための一意な識別子で、16進数の値を設定できます。後ほど利用する値ですので、覚えておいて下さい。
+
+==== 各種サービスの起動
+
+次のコマンドで `openvswitch` サービスとエッジスイッチを起動します。
+
+```
+$ sudo service openvswitch start
+$ sudo ifup br0
+```
+
+ネットワーク構成情報を保持するデータベースとして、MySQL serverを起動します。
+
+```
+$ sudo service mysqld start
+```
+
+OpenVNetは、OpenVNetと同時にインストールされるRubyを利用しますので、環境変数PATHにそのパスを設定しておきます。
+
+```
+$ PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+```
+
+次に、構成情報のためのデータベースの作成を行います。
+
+```
+$ cd /opt/axsh/openvnet/vnet
+$ bundle exec rake db:create
+$ bundle exec rake db:init
+```
+
+OpenVNetの各サービス間の通信に使うRedisを起動します。
+
+```
+$ service redis start
+```
+
+OpenVNetのサービス群 (`vnmgr` 、 `webapi` 、 `vna`) を起動します。
+
+```
+$ sudo initctl start vnet-vnmgr
+$ sudo initctl start vnet-webapi
+```
+
+`vnctl` ユーティリティで構成情報データベースを作成します。次のコマンドで、`vna` が管理するエッジスイッチの Datapath ID をOpenVNetに教えます。
+
+```
+$ vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+```
+
+`vna` と Datapath ID の紐付けができたので、 `vna` を起動してみましょう。
+
+```
+$ sudo initctl start vnet-vna
+```
+
+`ovs-vsctl` コマンドで、 `vna` が正しく動作しているかを確認できます。
+
+```
+$ ovs-vsctl show
+fbe23184-7f14-46cb-857b-3abf6153a6d6
+    Bridge "br0"
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+```
+
+ここで、 `is_connected: true` の文字列が見えていれば、 `vna` は正しく動作しています。
+
+次に仮想マシンとして2つの仮想マシン( `inst1` と `inst2` )を作成し、OpenVNetの仮想ネットワークに接続してみます。起動する仮想マシンの種類として、今回は軽量なコンテナの一種であるLXCを使います。
+
+```
+$ sudo yum -y install lxc lxc-templates
+```
+
+`lxc` および `lxc-templates` パッケージのインストールが完了したら、コンテナのリソース制御を行う `cgroup` を設定します。
+
+```
+$ sudo mkdir /cgroup
+$ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
+$ sudo mount /cgroup
+```
+
+仮想マシン作成コマンドである `lxc-create` が利用する `rsync` をインストールします。
+
+```
+$ sudo yum install -y rsync
+```
+
+LXCの動作の準備が出来ましたので、いよいよ仮想マシン `inst1`、`inst2` を作成します。
+
+```
+$ sudo lxc-create -t centos -n inst1
+$ sudo lxc-create -t centos -n inst2
+```
+
+`lxc-create` を実行すると、それぞれの仮想マシンの `root` ユーザのパスワードが入ったファイル名を出力します。このパスワードは後で仮想マシンにログインする際に利用しますので、覚えておいて下さい。
+
+次に、仮想マシンのネットワークインタフェースの設定を行います。 `/var/lib/lxc/inst1/config` ファイルを開き、内容を以下で置き換えて下さい。
+
+```
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst1
+lxc.network.hwaddr = 10:54:FF:00:00:01
+lxc.rootfs = /var/lib/lxc/inst1/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst1
+lxc.autodev = 0
+```
+
+同様に、 `/var/lib/lxc/inst2/config` ファイルを開き、内容を以下で置き換えます。
+
+```
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst2
+lxc.network.hwaddr = 10:54:FF:00:00:02
+lxc.rootfs = /var/lib/lxc/inst2/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst2
+lxc.autodev = 0
+```
+
+設定ファイルの内容を置き換えたら、仮想マシンを起動します。
+
+```
+$ sudo lxc-start -d -n inst1
+$ sudo lxc-start -d -n inst2
+```
+
+仮想マシンが起動したら、その仮想マシンのネットワークインタフェースを先程設定したエッジスイッチに手動で接続します。これは、ちょうどネットワークケーブルを物理スイッチに挿入する操作に対応します。
+
+```
+$ sudo ovs-vsctl add-port br0 inst1
+$ sudo ovs-vsctl add-port br0 inst2
+```
+
+これで、OpenVNetのインストールと、OpenVNetの仮想ネットワークを体験する準備が整いました。ここまでの操作では、何もない物理ネットワークと繋がるエッジスイッチに仮想マシンが接続しただけの状態です。
+
+[[openvnet_connected]]
+.仮想マシンがエッジスイッチに接続した状態
+image::openvnet_connected.png[caption="図 18-7: "]
+
+では、最も基本的な仮想ネットワークを1つ作成をしてみましょう。
+
+=== CLIで仮想ネットワークを操作する
+
+仮想ネットワークの操作はすべて `vnctl` コマンドで行います。まずは、1つの仮想ネットワークを作成してみましょう。
+
+作成する仮想ネットワークのアドレスを `10.100.0.0/24` とし、 `inst1` のIPアドレスを `10.100.0.10`、`inst2` のIPアドレスを `10.100.0.11` とします。次の `vnctl networks` コマンドでこのネットワークを作成できます。
+
+```
+$ vnctl networks add \
+  --uuid nw-test1 \
+  --display-name testnet1 \
+  --ipv4-network 10.100.0.0 \
+  --ipv4-prefix 24 \
+  --network-mode virtual
+```
+
+[[openvnet_cli_simplenetwork_1]]
+.仮想ネットワークの作成
+image::openvnet_cli_simplenetwork_1.png[caption="図 18-8: "]
+
+次に、どのネットワークインタフェースがどの仮想ネットワークに所属しているのかを `vnctl` コマンドでOpenVNetに教えます。 これは、 `vnctl interfaces` コマンドで実行できます。まずは、 `inst1` の持つネットワークインタフェースを仮想ネットワークに設定します。
+
+```
+$ vnctl interfaces add \
+  --uuid if-inst1 \
+  --mode vif \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 10:54:ff:00:00:01 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.10 \
+  --port-name inst1
+```
+
+同様に、 `inst2` の持つネットワークインタフェースを仮想ネットワークに設定します。
+
+```
+vnctl interfaces add \
+  --uuid if-inst2 \
+  --mode vif \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 10:54:ff:00:00:02 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.11 \
+  --port-name inst2
+```
+
+この操作により、OpenVNetは `10.100.0.0/24` の仮想ネットワークを作成し、そこにそれぞれ `10.100.0.10` 、 `10.100.0.11` のIPアドレスを持つネットワークインタフェースを接続します。
+
+[[openvnet_cli_simplenetwork_2]]
+.ネットワークインタフェースにIPアドレスを設定した状態
+image::openvnet_cli_simplenetwork_2.png[caption="図 18-9: "]
+
+=== 疎通確認をする
+
+作成した2つの仮想マシンが仮想ネットワークを通じて疎通できることを確認します。まず `inst1` にログインし、IPアドレスを確認してみます。
+
+```
+$ lxc-console -n inst1
+$ ip addr show
+```
+
+この時点ではまだ `inst1` の `eth0` にIPアドレスを設定していないため、IPアドレスが表示されません。作った仮想ネットワークではDHCPサービスを有効にしていないため、IPアドレスは手動で設定する必要があります。
+
+`inst1` のコンソールにて次のコマンドを実行し、 `eth0` にIPアドレス `10.100.0.10` を設定します。これは、 `vnctl` で設定した `inst1` のネットワークインタフェースのIPアドレスと同じにする必要があります。
+
+```
+$ ip addr add 10.100.0.10/24 dev eth0
+```
+
+もう1つ端末を開き、 `inst2` に対し同じ操作を行います。`inst2` の `eth0` に設定するIPアドレスは、 `10.100.0.11` です。
+
+```
+$ lxc-console -n inst2
+$ ip addr add 10.100.0.11/24 dev eth0
+```
+
+これで2つの仮想マシンそれぞれに仮想ネットワーク内のIPアドレスを設定できました。
+
+[[openvnet_cli_simplenetwork_3]]
+.ネットワークインタフェースにIPアドレスを設定
+image::openvnet_cli_simplenetwork_3.png[caption="図 18-10: "]
+
+それでは、お互いに `ping` を実行してみます。まずは、 `inst2` から `inst1` に `ping` を実行します。
+
+```
+$ ping 10.100.0.10
+```
+
+うまく行った場合、pingは正しく動作し、疎通が確認できるはずです。もしうまく動作しない場合は、ここまでの手順を確認してみて下さい。
+
+疎通できるようになったところで、従来のネットワークとOpenVNetの仮想ネットワークとの興味深い違いを1つ紹介しておきましょう。先ほど `inst2` の `eth0` に設定したIPアドレスを、 `10.100.0.11/24` から `10.100.0.15/24` に変更してみましょう。
+
+```
+$ sudo ip addr del 10.100.0.11/24 dev eth0
+$ sudo ip addr add 10.100.0.15/24 dev eth0
+```
+
+設定が終わったら、再び `inst1` に対して `ping` を実行してみます。
+
+```
+$ ping 10.100.0.10
+```
+
+先程とは異なり、疎通ができなくなったはずです。これがもし従来のネットワークだった場合、 `10.100.0.0/24` の範囲内のIPアドレスであれば疎通できます。しかしOpenVNetは設定情報に従って厳格に通信制限を行うため、`inst2` のIPアドレスが `10.100.0.11` でない限り、通信を許可しません。
+
+== OpenVNetを応用した実用例
+
+最後にOpenVNetの高度な応用事例として、OpenVNetのDockerコンテナ対応、および複数クラウド間の仮想ネットワークによる連携機能を紹介します。いずれも、著者の所属するTIS株式会社が実証実験を行い、それぞれの成果はフリーソフトウェアとして配布しています。
+
+=== 複数サーバ上のDockerコンテナを仮想ネットワークで接続する
+
+Docker footnote:[Dockerの詳細は、Dockerの公式ドキュメント(https://docs.docker.com/)を参照ください] とは、dotCloud社（現Docker社）が自社のパブリックPaaSを実現するために開発したコンテナの一種です。アプリケーションの実行環境を容易に素早く、かつ他の影響を受けないようにして立ち上げるために、Dockerは他から隔離された環境（＝コンテナ）を作り出します。
+
+Dockerは様々なリソースを隔離しますが、ネットワークもその隔離すべきリソースの一つです。そのためDockerは、ネットワークネームスペースや仮想ネットワークインタフェースを用いて、サーバ内部に他から隔離された仮想ネットワークを作ります。さらに Docker は iptables を使って、この仮想ネットワークを外部と通信できるようにします。
+
+この方式は、複数のサーバ上でDockerを動作させる場合に問題が生じます。Dockerが作り出す仮想ネットワークはサーバ内に閉じており、異なるサーバで動作しているDockerコンテナ同士が通信できないためです。
+
+この問題は、DockerにOpenVNetを組み合わせれば、解決できます。Dockerコンテナ同士をOpenVNetの仮想ネットワークで接続すれば、サーバをまたいだDockerコンテナ間が通信できるようになります。さらに、OpenVNetを使うことで、Docker コンテナを繋ぐネットワークに対して、セキュリティグループの機能が使えます。
+
+例えばある物理ネットワーク上のサーバ2台と、ルータで接続された別の物理ネットワーク上のサーバ1台の合計3つのサーバがあるとします。これらのサーバ上でDockerコンテナを動作させ、それらをOpenVNetの仮想ネットワークで接続することを考えてみましょう。
+
+まず最初に、各サーバ上にエッジスイッチを立ち上げます。次に、各サーバ上でDockerコンテナを立ち上げ、それらをエッジスイッチに接続します。
+
+さらに以下の手順でOpenVNetを設定します。
+
+1. 各エッジスイッチのDatapath IDをOpenVNetに設定する
+2. 各サーバが所属する物理ネットワークの情報をOpenVNetに設定する
+3. OpenVNetが敷設する仮想ネットワークを定義する
+4. 各サーバの物理ネットワークインタフェースの情報をOpenVNetに設定する
+5. 立ち上げたDockerコンテナの仮想ネットワークインタフェースの情報をOpenVNetに設定する
+6. OpenVNetが制御するセキュリティグループを定義する
+7. 各仮想ネットワークインタフェースに望みのセキュリティグループを割り当てる
+8. OpenVNet上に仮想ルータを構成して、物理ネットワークと仮想ネットワーク間のルーティングを定義する
+
+最後に各サーバとDockerコンテナにスタティックルートを設定すれば、OpenVNetを用いたDockerネットワーキングが完成します。
+
+各サーバ上のDockerコンテナは、OpenVNetが作った一つの仮想ネットワークに接続していますので、異なるサーバのDockerコンテナ同士が通信できます。またセキュリティグループの機能を使えば、OpenVNet が到達すべきでないパケットを遮断するため、個々のDockerコンテナにパケットフィルタルールを定義する必要がなくなります。
+
+image::docker_openvnet_1.png[caption="図 18-11: ",title="OpenVNetを用いたDockerネットワーキング"]
+
+なお、ここで説明した手順を実行するツールキットを、walfisch footnote:[https://github.com/tech-sketch/walfisch] というフリーソフトウェアとして公開しています。実際に実行したコマンドが標準出力に表示されますので、興味がある方は一度動作させてみると良いでしょう。
+
+=== 複数のクラウドを仮想ネットワークで連結する
+
+OpenVNetはDockerコンテナ間を連結するというミクロな機能だけでなく、複数のクラウド間を連結するというマクロな機能も提供します。
+
+現在様々なクラウドが利用可能ですが、提供されるネットワーク機能やその利用方法はクラウドごとに大きく異なります。このため複数のクラウド間を連結したい場合、それぞれのクラウドのネットワーク機能を強く意識したネットワーク設計を行う必要があります。
+
+OpenVNetは、OpenVNetの仮想ネットワークと外部のネットワークの間をシームレスに接続するVNetEdge機能を持っています。そのためOpenVNetを利用することで、クラウドごとに異なるネットワーク機能に依存せず、複数のクラウドをシームレスに連携できます。
+
+例えば、プライベートクラウドとしてWakame-vdc、パブリッククラウドとしてAmazon Web Servicesのネットワークを連結するケースを考えます。
+
+[[narukozaka_tools]]
+image::narukozaka_tools.png[caption="図 18-12: ",title="プライベートIaaSとパブリックIaaSの連結構成"]
+
+VNetEdgeはこの連結を次のように実現しています。まず、仮想ネットワークIDとVLAN IDの変換規則をOpenVNetに登録します。そして、Wakame-vdcの仮想ネットワークと、Amazon Web ServicesのVirtual Private Cloudで構築されたネットワークの間を流れるパケットがVNetEdgeのエッジスイッチを通過する際に、この２つのネットワークが同一のネットワークであるかのようにパケット転送を制御します。
+
+このツールキットはフリーソフトウェアとして公開しており footnote:[https://github.com/cloudconductor-incubator/narukozaka-tools]、複数のクラウド間を連結する以外にも多くの機能を持ちます。
+
+* wakame-vdcとパブリックIaaSの間を自動的に連結する機能
+* IaaSのネットワーク上に、VNetEdgeをスイッチとしたスター型のネットワークトポロジを構築する機能
+* Wakame-vdc側のインスタンスとAmazon Web Services側のインスタンスのVNetEdge間の通信の暗号化
+* IaaSのインスタンスイメージの作成と起動
+* IaaSのインスタンスにインストールするミドルウェアの自動設定
+
+== まとめ
+
+Tremaで構築された本格的な仮想ネットワーク基盤である OpenVNet を紹介しました。
+
+* OpenVNet はエッジ仮想化であるため、既存の物理ネットワークをほぼそのまま活用して、仮想ネットワークを実現できる
+* オンプレミス環境以外にも、AWSに代表されるパブリッククラウドでも利用できる
+* 仮想マシンだけでなく、Dockerに代表されるコンテナ主体の基盤とも組み合わせて利用できる
+* LGPL3ライセンスに基づくフリーソフトウェアであり、オープンな開発コミュニティを持っている
+
+OpenVNetは、Tremaと同じく開発者を広く募集しています。腕に覚えのある方は、ぜひOpenVNetのホームページ (http://openvnet.org/) から開発にご参加ください。

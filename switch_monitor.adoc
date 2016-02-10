@@ -2,27 +2,31 @@
 :sourcedir: vendor/switch_monitor
 :imagesdir: images/switch_monitor
 
-// TODO Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
-// TODO all_switches_in_string メソッドの説明を書く
+// TODO: Ruby API の Web ページを探し、新しく出てきたメソッドはそこにリンクを張る
+// TODO: all_switches_in_string メソッドの説明を書く
 
-OpenFlowの一番の特長は、たくさんのスイッチを1つのコントローラで集中管理できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験してみましょう。
+[.lead]
+OpenFlowの特長の一つは、たくさんのスイッチを集中管理できることです。その雰囲気を簡単なOpenFlowコントローラを書いて体験してみましょう。
+
+image::scope.png[]
 
 == ネットワークを集中管理しよう
 
-OpenFlowの特長は「たくさんのスイッチを1つのコントローラで集中制御できる」という点にありました。スイッチにはフローテーブルに従ったパケットの転送という単純な仕事だけをやらせ、頭脳であるコントローラが全体のフローテーブルを統括するというわけです。これによって<<how_does_openflow_work,1章>>で見てきたように、自動化やシステム連携のしやすさ、ネットワークトラフィック制御の容易さ、そしてソフトウェア開発のテクニックやツールの応用といったさまざまなメリットが生まれるのでした。
+OpenFlowではたくさんのスイッチを1つのコントローラで集中制御できます。スイッチにはフローテーブルに従ったパケットの転送という1つの仕事だけをやらせ、頭脳であるコントローラが全体のフローテーブルを統括するというわけです。これによって<<how_does_openflow_work,1 章「OpenFlow の仕組み」>>で見てきたように、自動化やさまざまなシステム連携・トラフィック制御のしやすさ・ソフトウェア開発のテクニック適用・水平方向へのアップグレード、といったさまざまなメリットが生まれるのでした。
 
-本章ではこの集中制御の一例として、「スイッチの監視ツール」を作ります。このツールは「今、ネットワーク中にどんなスイッチが動いていて、それぞれがどんな状態か」をリアルタイムに表示します。たくさんあるスイッチ全体が正常に動いているかを確認するのに便利です。
+本章ではこの集中制御の一例として、スイッチ監視ツールを作ります。このツールは「今、ネットワーク中にどんなスイッチが動いていて、それぞれがどんな状態か」をリアルタイムに表示します。OpenFlowでの集中制御に必要な基本テクニックをすべて含んでいます。
+
+スイッチ監視ツールは<<switch_monitor_tool,図 4-1>>のように動作します。コントローラはスイッチの接続を検知すると、起動したスイッチの情報を表示します。逆にスイッチが予期せぬ障害など何らかの原因で接続を切った場合、コントローラはこれを検知して警告を表示します。
 
 [[switch_monitor_overview]]
-image::switch_monitor_overview.png[caption="図3-1",title="スイッチ監視ツールの動作"]
+.スイッチ監視ツールの動作
+image::switch_monitor_overview.png[caption="図 4-1: "]
 
-スイッチ監視ツールは<<switch_monitor_tool,図3-1>>のように動作します。OpenFlowスイッチは、起動すると指定したOpenFlowコントローラへ接続します。コントローラはスイッチの接続を検知すると、起動したスイッチの情報を表示します。逆にスイッチが予期せぬ障害など何らかの原因で接続を切った場合、コントローラはこれを検知して警告を表示します。
-
-// TODO 警告を表示するのだから、logger.info より警告レベルを上げる
+// TODO: 警告を表示するのだから、logger.info より警告レベルを上げる
 
 == インストール
 
-今までと同じく、スイッチ監視ツールのソースコードは GitHub から次のようにダウンロードできます。
+スイッチ監視ツールのソースコードは GitHub から次のようにダウンロードできます。
 
 ----
 $ git clone https://github.com/trema/switch_monitor.git
@@ -42,9 +46,7 @@ $ bundle install --binstubs
 
 試しに仮想スイッチ3台の構成でスイッチ監視ツールを起動してみましょう。次の内容の設定ファイルを `switch_monitor.conf` として保存してください。なお、それぞれの `datapath_id` がかぶらないように `0x1`, `0x2`, `0x3` と連番を振っていることに注意してください。
 
-// TODO trema.conf → switch_monitor.conf にファイル名を変更
-
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .switch_monitor.conf
 ----
 include::{sourcedir}/trema.conf[]
@@ -52,20 +54,20 @@ include::{sourcedir}/trema.conf[]
 
 この構成でスイッチ監視ツールを起動するには、この設定ファイルを `trema run` の `-c` オプションに渡すのでした。スイッチ監視ツールの出力は次のようになります。
 
-// TODO 重要な行にマーカーで解説する (?)
-// TODO スイッチが 1 台以上みつかったときだけ All = の行を出力するようにコードを修正
-// TODO "Switch 0x○" → "0x○" にコードを修正
+// TODO: スイッチが 1 台以上見つかったときだけ All = の行を出力するようにコードを修正
+// TODO: "Switch 0x○" → "0x○" にコードを修正
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./lib/switch_monitor.rb -c switch_monitor.conf
 SwitchMonitor started.
 All =
-0x3 is up (All = 0x3)
-0x3 manufacturer = Nicira, Inc.
-0x3 hardware info =
-0x3 software info =
-0x3 serial number =
-0x3 description =
+0x3 is up (All = 0x3) # <1>
+0x3 manufacturer = Nicira, Inc. # <2>
+0x3 hardware info = # <3>
+0x3 software info = # <4>
+0x3 serial number = # <5>
+0x3 description = # <6>
 0x1 is up (All = 0x1, 0x3)
 0x1 manufacturer = Nicira, Inc.
 0x1 hardware info =
@@ -81,32 +83,28 @@ All =
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
 ----
+<1> スイッチ 0x3 がコントローラに接続
+<2> スイッチの製造者情報
+<3> スイッチのハードウェア情報 (空)
+<4> スイッチのソフトウェア情報 (空)
+<5> スイッチのシリアル番号 (空)
+<6> スイッチの詳細情報 (空)
 
-`0x1 is up` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台が検出されていることがわかります。それぞれ続く行には、スイッチの製造者といった詳細情報も出力されています。また、一定時間ごとにスイッチ一覧が出力されています (`All = 0x1, 0x2, 0x3` の行)。どうやらスイッチ監視ツールはうまく動いているようです。このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができました! 設定ファイルの `vswitch { ... }` の行を増やせば、スイッチをさらに5台、10台……と足していくことも思いのままです。
+`0x1 is up` などの行から、仮想ネットワーク設定ファイルに定義したスイッチ3台をコントローラが検出していることがわかります。続く行では、スイッチの製造者といった詳細情報や、スイッチ一覧 (`All = 0x1, 0x2, 0x3` の行) も確認できます。
 
-[NOTE]
-.Datapath ってどういう意味？
-====
-実用的には”Datapath = OpenFlowスイッチ”と考えて問題ありません。”データパス”で検索すると、「CPUは演算処理を行うデータパスと、指示を出すコントローラから構成されます」というハードウェア教科書の記述が見つかります。つまり、ハードウェアの世界では一般に
-
-- 筋肉にあたる部分 = データパス
-- 脳にあたる部分 = コントローラ
-
-という分類をするようです。
-
-OpenFlowの世界でもこれと同じ用法が踏襲されています。OpenFlowのデータパスはパケット処理を行うスイッチを示し、その制御を行うソフトウェア部分をコントローラと呼びます。
-====
+このように実際にスイッチを持っていなくても、設定ファイルを書くだけでスイッチを何台も使ったコントローラの動作テストができます。設定ファイルの `vswitch { ... }` の行を増やせば、スイッチをさらに5台、10台、…と足していくことも思いのままです。
 
 === 仮想スイッチを停止/再起動してみる
 
-それでは、スイッチの切断がうまく検出されるか確かめてみましょう。仮想スイッチを停止するコマンドは `trema stop` です。`trema run` を実行したターミナルはそのままで別ターミナルを開き、次のコマンドで仮想スイッチ `0x3` を落としてみてください。
+それでは、スイッチの切断をうまく検出できるか確かめてみましょう。仮想スイッチを停止するコマンドは `trema stop` です。`trema run` を実行したターミナルはそのままで別ターミナルを開き、次のコマンドで仮想スイッチ `0x3` を落としてみてください。
 
 ----
 $ ./bin/trema stop 0x3
 ----
 
-すると、`trema run` を実行したターミナルで新たに ”`0x3 is down`” の行が出力されているはずです。
+すると、`trema run` を実行したターミナルで新たに `0x3 is down` の行が出力されます。
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./switch_monitor.rb -c ./switch_monitor.conf
 SwitchMonitor started.
@@ -121,9 +119,9 @@ All =
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
 All = 0x1, 0x2, 0x3
-0x3 is down (All = 0x1, 0x2)
+0x3 is down (All = 0x1, 0x2) # <1>
 ----
-// TODO 注目すべき行に <数字> で注釈を入れる
+<1> スイッチ 0x3 が停止したことを示すログメッセージ
 
 うまくいきました! それでは逆に、さきほど落した仮想スイッチを再び起動してみましょう。仮想スイッチを起動するコマンドは `trema start` です。
 
@@ -131,8 +129,9 @@ All = 0x1, 0x2, 0x3
 $ ./bin/trema start 0x3
 ----
 
-“`0x3 is up`” の行が出力されれば成功です。
+`0x3 is up` の行が出力されれば成功です。
 
+[source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run ./switch_monitor.rb -c ./switch_monitor.conf
 SwitchMonitor started.
@@ -151,49 +150,110 @@ All = 0x1, 0x2
 ……
 All = 0x1, 0x2
 All = 0x1, 0x2
-0x3 is up (All = 0x1, 0x2, 0x3)
+0x3 is up (All = 0x1, 0x2, 0x3) # <1>
 ----
-// TODO 注目すべき行に <数字> で注釈を入れる
+<1> スイッチ 0x3 が再び起動したことを示すログメッセージ
 
 このように、`trema stop` と `trema start` は仮想ネットワークのスイッチを制御するためのコマンドです。引数にスイッチのDatapath IDを指定することで、スイッチを停止または起動してコントローラの反応を確かめられます。
 
-- `trema stop [Datapath ID]`: 指定した仮想スイッチを停止する
-- `trema start [Datapath ID]`: 指定した仮想スイッチを起動する
+trema stop [Datapath ID]:: 指定した仮想スイッチを停止する
+trema start [Datapath ID]:: 指定した仮想スイッチを再び起動する
 
 スイッチ監視ツールの動作イメージがわかったところで、そろそろソースコードの解説に移りましょう。
 
 == ソースコード解説
 
-まずはざっとスイッチ監視ツールのソースコード(<<switch_monitor.rb,lib/switch_monitor.rb>>)を眺めてみましょう。今までに学んできたRubyの品詞を頭の片隅に置きながら、ざっくりと次のコードに目を通してみてください。
+まずはざっとスイッチ監視ツールのソースコード(<<switch_monitor.rb,lib/switch_monitor.rb>>)を眺めてみましょう。今までに学んできたRubyの品詞を頭の片隅に置きながら、次のコードに目を通してみてください。
 
 [[switch_monitor.rb]]
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/switch_monitor.rb
 ----
-include::{sourcedir}/lib/switch_monitor.rb[]
+# Switch liveness monitor.
+class SwitchMonitor < Trema::Controller
+  timer_event :show_all_switches, interval: 10.sec
+
+  def start(_args)
+    @switches = []
+    logger.info "#{name} started."
+  end
+
+  def switch_ready(dpid)
+    @switches << dpid
+    logger.info "#{dpid.to_hex} is up (All = #{all_switches_in_string})"
+    send_message dpid, DescriptionStats::Request.new
+  end
+
+  def switch_disconnected(dpid)
+    @switches -= [dpid]
+    logger.info "#{dpid.to_hex} is down (All = #{all_switches_in_string})"
+  end
+
+  def description_stats_reply(dpid, packet_in)
+    logger.info "Switch #{dpid.to_hex} manufacturer = #{packet_in.manufacturer}"
+    logger.info "Switch #{dpid.to_hex} hardware info = #{packet_in.hardware}"
+    logger.info "Switch #{dpid.to_hex} software info = #{packet_in.software}"
+    logger.info "Switch #{dpid.to_hex} serial number = #{packet_in.serial_number}"
+    logger.info "Switch #{dpid.to_hex} description = #{packet_in.datapath}"
+  end
+
+  private
+
+  def show_all_switches
+    logger.info "All = #{all_switches_in_string}"
+  end
+
+  def all_switches_in_string
+    @switches.sort.map(&:to_hex).join(', ')
+  end
+end
 ----
 
 新しい品詞や構文がいくつかありますが、今までに学んだ知識だけでこのRubyソースコードの構成はなんとなくわかったはずです。まず、スイッチ監視ツールの本体は `SwitchMonitor` という名前のクラスです。そしてこのクラスにはいくつかハンドラメソッドが定義してあるようです。おそらくそれぞれがスイッチの接続や切断、そして統計情報イベントを処理しているんだろう、ということが想像できれば上出来です。
 
 === スイッチの起動を捕捉する
 
-`switch_ready` ハンドラでは、スイッチ一覧リストに新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
+`switch_ready` ハンドラでは、スイッチ一覧リスト `@switches` に新しく接続したスイッチのDatapath IDを追加し、接続したスイッチの情報を画面に表示します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_ready (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="10..14"]
 ----
 
-`@switches` は現在起動しているスイッチのDatapath IDを管理するインスタンス変数で、`start` ハンドラで空の配列に初期化されます。
+`@switches` は `start` ハンドラで空の配列に初期化されます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#start (lib/switch_monitor.rb)
 ----
-include::{sourcedir}/lib/switch_monitor.rb[lines="5..8"]
+def start(_args)
+  @switches = []
+  logger.info "#{name} started."
+end
 ----
 
-新しくスイッチが起動すると `switch_ready` ハンドラが起動し、`@switches` が保持する配列の最後にそのDatapath IDを追加します。また、`logger.info` で新しいスイッチのDatapath IDを表示します。
+=== インスタンス変数
+
+アットマーク(`@`)で始まる語は**インスタンス変数**です。インスタンス変数はたとえば人間の歳や身長などといった、属性を定義するときによく使われます。アットマークはアトリビュート (属性) を意味すると考えれば覚えやすいでしょう。
+
+インスタンス変数は同じクラスの中のメソッド定義内であればどこからでも使えます。具体的な例として次の `Human` クラスを見てください。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+----
+class Human
+  def initialize
+    @age = 0 # <1>
+  end
+
+  def birthday # <2>
+    @age += 1
+  end
+end
+----
+<1> インスタンス変数を初期化。生まれたときは 0 歳
+<2> 一年に一度、歳をとる
+
+`Human` クラスで定義される `Human` オブジェクトは、初期化したときにはそのインスタンス変数 `@age` は0、つまり0歳です。`birthday` を呼び出すたびに歳を取り、`@age` が 1 増えます。このように `@age` は `initialize` および `birthday` メソッドのどちらからでもその値を変更できます。
 
 ==== 配列
 
@@ -201,33 +261,33 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="5..8"]
 
 - `[]` は空の配列
 - `[1, 2, 3]` は数字の配列
-- `["友太郎", "青井", "宮坂主任"]` は文字列の配列
+- `["バナナ", "みかん", "りんご"]` は文字列の配列
 
 Rubyの配列はとても直感的に要素を足したり取り除いたりできます。たとえば配列の最後に要素を加えるには `<<` を使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-members = [ "友太郎", "青井", "宮坂主任" ]
-members << "取間先生"
-#=> [ "友太郎", "青井", "宮坂主任", "取間先生" ]
-----
-
-配列から要素を取り除くには `-=` を使います。これは左右の配列どうしを見比べ、共通する要素を取り除いてくれます。
-
-[source,ruby,subs="verbatim,attributes"]
-----
-fruits = [ "バナナ", "みかん", "テレビ", "りんご", "たわし" ]
-fruits -= [ "テレビ", "たわし" ]
-#=> [ "バナナ", "みかん", "りんご" ]
+fruits = ["バナナ", "みかん", "りんご"]
+fruits << "パイナップル"
+#=> ["バナナ", "みかん", "りんご", "パイナップル"]
 ----
 
-配列はRubyで多用するデータ構造で、この他にもたくさんの操作があらかじめ定義されています。もし詳しく知りたい人は<<how_does_openflow_work,第 1 章>>の参考文献で紹介したRubyのサイトや書籍を参照してください。
+配列から要素を取り除くには `-=` を使います。これは左右の配列同士を見比べ、共通する要素を取り除いてくれます。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+----
+fruits = ["バナナ", "みかん", "テレビ", "りんご", "たわし"]
+fruits -= ["テレビ", "たわし"]
+#=> ["バナナ", "みかん", "りんご"]
+----
+
+**配列**はRubyで多用するデータ構造で、この他にもたくさんのメソッドがあらかじめ定義されています。もし詳しく知りたい人は<<hello_trema, 3 章「Hello, Trema!」>>の参考文献で紹介したRubyのサイトや書籍を参照してください。
 
 === スイッチの切断を捕捉する
 
 `switch_disconnected` ハンドラでは、スイッチ一覧リストから切断したスイッチのDatapath IDを削除し、切断したスイッチの情報を画面に表示します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_disconnected (lib/switch_monitor.rb)
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
@@ -237,14 +297,15 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="16..19"]
 
 === スイッチ一覧を一定時間ごとに表示する
 
-// TODO クラスメソッドの説明
+// TODO: クラスメソッドの説明
 
-スイッチの一覧を一定時間ごとに表示するには、Tremaのタイマー機能を使います。次のように `timer_event` に続いて一定間隔ごとに呼び出したいメソッドと呼び出し間隔を指定しておくと、指定したメソッドが指定された間隔ごとに呼ばれます。
+スイッチの一覧を一定時間ごとに表示するには、Tremaの**タイマー機能**を使います。次のように `timer_event` に続いて一定間隔ごとに呼び出したいメソッドと呼び出し間隔を指定しておくと、指定したメソッドが指定した間隔ごとに呼ばれます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
+# 1 年に一度、年をとるクラス
 class Human < Trema::Controller
-  timer_event :birthday, 1.year  # <1>
+  timer_event :birthday, interval: 1.year  # <1>
   ...
 
   private  # <2>
@@ -257,57 +318,77 @@ class Human < Trema::Controller
 <2> この行から下はプライベートメソッド
 <3> タイマーから呼ばれる `birthday` メソッド
 
-// TODO 1.year が動くかどうかチェック
+// TODO: 1.year が動くかどうかチェック
 
-この定義は `Human` クラス定義の先頭に書けるので、まるで `Human` クラスの属性としてタイマーをセットしているように読めます。このようにTremaではタイマー処理も短く読みやすく書けます。
+この定義は `Human` クラス定義の先頭に書けるので、まるで `Human` クラスの属性としてタイマーをセットしているように読めます。このようにTremaを使うとタイマー処理も短く読みやすく書けます。
 
 タイマーから呼び出すメソッドは、クラスの中だけで使うのでよくプライベートなメソッドとして定義します。Rubyでは `private` と書いた行以降のメソッドはプライベートメソッドとして定義され、クラスの外からは見えなくなります。
 
 これを踏まえてスイッチ監視ツールのソースコードのタイマー部分を見てみましょう。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-include::{sourcedir}/lib/switch_monitor.rb[lines="3,30..35"]
+class SwitchMonitor < Trema::Controller
+  timer_event :show_all_switches, interval: 10.sec
+  ...
+
+  private
+
+  def show_all_switches
+    logger.info "All = #{all_switches_in_string}"
+  end
 ----
 
 クラス名定義直後のタイマー定義より、10秒ごとに `show_all_switches` メソッドを呼んでいることがわかります。
 
-// TODO sec とか min とか hour とか year とかがちゃんと使えるかテスト & 確認、プラス一覧表を入れる
+// TODO: sec とか min とか hour とか year とかがちゃんと使えるかテスト & 確認、プラス一覧表を入れる
 
 ==== シンボル
-// TODO 以下の説明に出てくる、文字列とメソッドの引数をまだ説明していない
+// TODO: 以下の説明に出てくる、文字列とメソッドの引数をまだ説明していない
 
-シンボルは文字列の軽量版と言える品詞です。英字、数字、アンダースコアを含めることができますが、`:a` や `:number` や `:show_all_switches` のように必ずコロンで始めることになっています。シンボルは定数のように一度決めると変更できないので、文字列のようにいつの間にか書き変わっている心配がありません。このため、ハッシュテーブルの検索キーとしてよく使われます。
+**シンボル**は文字列の軽量版と言える品詞です。`:a`・`:number`・`:show_all_switches` のように必ずコロンで始まり、英字・数字・アンダースコアを含みます。シンボルは定数のように一度決めると変更できないので、文字列のようにいつの間にか書き変わっている心配がありません。このため、ハッシュテーブル (<<patch_panel,6 章「インテリジェントなパッチパネル」>>参照) の検索キーとしてよく使われます。
 
-また、シンボルは誰かにメソッドを名前で渡すときにも登場します。これだけですと分かりづらいと思うので、具体的な例を見ていきましょう。リスト `switch_monitor.rb` には、次のようにシンボルを使っている箇所がありました。
+また、シンボルは誰かにメソッドを名前で渡すときにも登場します。これだけですとわかりづらいと思うので、具体的な例を見ていきましょう。リスト `switch_monitor.rb` には、次のようにシンボルを使っている箇所がありました。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 include::{sourcedir}/lib/switch_monitor.rb[lines="3"]
 ----
 
-この `:show_all_switches` は `SwitchMonitor` クラスのメソッド名でした。ここでやっていることを簡単に言うと、`timer_event` の引数として `show_all_switches` メソッドの名前を渡しています。
+この `:show_all_switches` は `SwitchMonitor` クラスのメソッド名をシンボルで書いたものです。
 
-もしここでシンボルを使わずに、直接次のように指定するとどうなるでしょうか？
+もしここでシンボルを使わずに、直接次のように指定するとどうなるでしょうか。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 # まちがい!
-timer_event show_all_switches, 10.sec
+timer_event show_all_switches, interval: 10.sec
 ----
 
 これではうまく動きません。なぜならば、ソースコードの中に `show_all_switches` とメソッドの名前を書いた時点でそのメソッドが実行されてしまい、その返り値が `timer_event` へと渡されてしまうからです。
 
-そこで、もしソースコード中でメソッドの名前を誰かに渡すときには、かならずシンボルにすることで実行されないようにして渡します。これがシンボルがよく使われるもう1つの用途です。
+もしメソッド名を何かに渡すときにはかならずシンボルにする、と覚えましょう。
 
 === スイッチの詳細情報を表示する
 
 スイッチの情報を取得するには、取得したい情報をリクエストするメッセージを `send_message` でスイッチに送信し、そのリプライメッセージをハンドラで受け取ります。たとえば、今回のようにスイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージを送信し、対応するハンドラ `description_stats_reply` でメッセージを受け取ります。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SwitchMonitor#switch_ready, SwitchMonitor#description_stats_reply (lib/switch_monitor.rb)
 ----
-include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
+def switch_ready(dpid)
+  @switches << dpid
+  logger.info "#{dpid.to_hex} is up (All = #{all_switches_in_string})"
+  send_message dpid, DescriptionStats::Request.new
+end
+
+def description_stats_reply(dpid, packet_in)
+  logger.info "Switch #{dpid.to_hex} manufacturer = #{packet_in.manufacturer}"
+  logger.info "Switch #{dpid.to_hex} hardware info = #{packet_in.hardware}"
+  logger.info "Switch #{dpid.to_hex} software info = #{packet_in.software}"
+  logger.info "Switch #{dpid.to_hex} serial number = #{packet_in.serial_number}"
+  logger.info "Switch #{dpid.to_hex} description = #{packet_in.datapath}"
+end
 ----
 
 スイッチの詳細情報のほかにも、さまざまな統計情報を取得できます。OpenFlow 1.0がサポートしている統計情報の一覧は次のとおりです。
@@ -315,20 +396,22 @@ include::{sourcedir}/lib/switch_monitor.rb[lines="10..15,21..29"]
 |===
 | 取得できる情報 | スイッチへ送るメッセージ | ハンドラ名
 
-| スイッチの詳細情報 | `DescriptionStats::Request` | `description_stats_reply` ハンドラ
-| 単一フローエントリの統計情報 | `FlowStats::Request` | `flow_stats_reply` ハンドラ (第○章で説明)
-| 複数フローエントリの統計情報 | `AggregateStats::Request` | `aggregate_stats_reply` ハンドラ (第○章で説明)
-| フローテーブルの統計情報 | `TableStats::Request` | `table_stats_reply` ハンドラ (第○章で説明)
-| スイッチポートの統計情報 | `PortStats::Request` | `port_stats_reply` ハンドラ (第○章で説明)
-| キューの統計情報 | `QueueStats::Request` | `queue_stats_reply` ハンドラ (第○章で説明)
+| スイッチの詳細情報 | `DescriptionStats::Request` | `description_stats_reply`
+| 単一フローエントリの統計情報 | `FlowStats::Request` | `flow_stats_reply`
+| 複数フローエントリの統計情報 | `AggregateStats::Request` | `aggregate_stats_reply`
+| フローテーブルの統計情報 | `TableStats::Request` | `table_stats_reply`
+| スイッチポートの統計情報 | `PortStats::Request` | `port_stats_reply`
+| キューの統計情報 | `QueueStats::Request` | `queue_stats_reply`
 |===
+
+// TODO: 初出の章またはリファレンスへのリンクを追加
 
 == まとめ
 
 この章ではスイッチの動作状況を監視するスイッチ監視ツールを作りました。また、作ったスイッチ監視ツールをテストするため Trema の仮想ネットワーク機能を使いました。
 
 - スイッチの起動と切断を捕捉するには、`switch_ready` と `switch_disconnected` ハンドラメソッドを定義する
-- スイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージをスイッチへ送信し `description_stats` ハンドラでリプライを受信する
+- スイッチの詳細情報を取得するには、`DescriptionStats::Request` メッセージをスイッチへ送信し `description_stats_reply` ハンドラでリプライを受信する
 - タイマー (`timer_event`) を使うと一定間隔ごとに指定したメソッドを起動できる
 - `trema start` と `trema stop` コマンドで仮想ネットワーク内のスイッチを起動/停止できる
 

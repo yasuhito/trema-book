@@ -4,39 +4,44 @@
 
 // TODO フローテーブルのテストが cucumber でもできるようにする
 
-ソフトウェアテストは総合的なスキルを必要とする最高峰の奥義です。「テストを書き、コードを直す」この正確なくりかえしが徐々に大きな蓄えとなり、将来的にプロジェクトに豊富な見返りをもたらしてくれます。
+[.lead]
+ソフトウェアテストは総合的なスキルを必要とする最高峰の奥義です。「テストを書き、コードを直す」この正確なくりかえしを身に付ければ、将来的にプロジェクトに豊富な見返りをもたらします。
+
+image::yutaro_test.png[]
 
 == 仕様書としてのテストコード
 
-きちんと整備されたテストコードは、元のコードの仕様書のようなものです。ふつうの仕様書は読むだけですが、テストコードは実行してみることでソフトウェアの動作をチェックできます。たくさんのスイッチを接続したOpenFlowネットワークとコントローラの保守をまかされたとしましょう。もし前任者からテストコードをもらえなければ、コントローラを何度も実行しながら苦労して解読しなければなりません。逆に、テストさえもらえればコード本体を理解しやすくなりますし、気楽にリファクタリングや修正ができます。とくにOpenFlowではスイッチとコントローラが複雑に絡み合い、しかもそれぞれがステートを持つので、ソフトウェアで自動化されたテストがないとやってられません。
+きちんと整備したテストコードは、元のコードの仕様書のようなものです。ふつうの仕様書は読むだけですが、テストコードは実行してみることでソフトウェアの動作をチェックできます。
 
-TremaはOpenFlowコントローラ開発のためのテストツールが充実しています。アジャイル開発者の大事な仕事道具、テスト駆動開発もTremaはサポートしています。本章ではテスト駆動を使ったコントローラの開発テクニックを紹介します。要点をつかみやすくするため動作の単純ないわゆる「バカハブ(ダムハブ)」、つまりリピータハブを取り上げます。ではさっそく実際の流れを見て行きましょう。
+OpenFlowネットワークとコントローラの保守をまかされたとしましょう。もし前任者からテストコードをもらえなければ、コントローラを何度も実行しながら苦労して解読しなければなりません。逆に、テストさえもらえればコード本体を理解しやすくなりますし、気楽にリファクタリングや修正ができます。とくにOpenFlowではスイッチとコントローラが複雑に絡み合い、しかもそれぞれがステートを持つので、ソフトウェアで自動化したテストがないとやってられません。
+
+TremaはOpenFlowコントローラ開発のためのテストツールが充実しています。たとえばアジャイル開発者の大事な仕事道具、**テスト駆動開発**もTremaはサポートしています。本章ではテスト駆動を使ったコントローラの開発風景を紹介します。要点をつかみやすくするため、動作の単純なリピータハブを取り上げます。ではさっそく実際のテスト駆動開発の流れを見て行きましょう。
 
 [NOTE]
 .テスト駆動開発とテストファーストの違いは？
 ====
-「テスト駆動開発」や「テストファースト」など似たような用語に混乱している人も多いと思います。この2つの違いは何でしょうか。
+テスト駆動開発やテストファーストなど似たような用語に混乱している人も多いと思います。この2つの違いは何でしょうか。
 
-テストファーストはテスト駆動開発のステップの一部なので、テスト駆動開発のほうがより大きな概念になります。テスト駆動開発では、まずは失敗する見込みでテストを書き (このステップがテストファースト)、次にこのテストを通すためのコードを書きます。最後にコードをリファクタリングして、クリーンにします。この3ステップを数分間隔で何度も回しながら開発するのがテスト駆動開発です。
+**テストファースト**はテスト駆動開発のステップの一部なので、テスト駆動開発のほうがより大きな概念になります。テスト駆動開発では、まずは失敗する見込みでテストを書き (このステップがテストファースト)、次にこのテストを通すためのコードを書きます。最後にコードをリファクタリングして、クリーンにします。この3ステップを数分間隔で何度も回しながら開発するのがテスト駆動開発です。
 ====
 
 == リピータハブの動き
 
-まずは、リピータハブがどのように動くか見て行きましょう。リピータハブにホスト 3 台をつなげた<<repeater_hub,図 9-1>>のネットワークを考えてください。ホスト 1 からホスト 2 へパケットを送信すると、リピータハブは入ってきたパケットを複製し他のすべてのホストにばらまきます。つまり、通信に関係のないホスト 3 もホスト 2 あてのパケットを受信します。このように、リピータハブはラーニングスイッチ (<<learning_switch,6 章>>) のような MAC アドレスの学習は行わず、とにかくすべてのホストへパケットを送ってしまうので「バカ」ハブとか「ダム」ハブとも呼びます。
+まずは、リピータハブがどのように動くか見て行きましょう。リピータハブにホスト 3 台をつなげた<<repeater_hub,図 9-1>>のネットワークを考えてください。ホスト 1 からホスト 2 へパケットを送信すると、リピータハブは入ってきたパケットを複製し他のすべてのホストにばらまきます。つまり、通信に関係のないホスト 3 もホスト 2 宛のパケットを受信します。このように、リピータハブはラーニングスイッチ (<<learning_switch,7 章「すべての基本、ラーニングスイッチ」>>) のような MAC アドレスの学習は行わず、とにかくすべてのホストへパケットを送ってしまうので、バカハブとかダムハブとも呼びます。
 
 [[repeater_hub]]
-image::repeater_hub.png[caption="図 9-1",title="ホスト 3 台をつなげたリピータハブの動作"]
-// TODO: 図を横向きではなく縦向きにして書き直す
+.ホスト 3 台をつなげたリピータハブの動作
+image::repeater_hub.png[caption="図 9-1: "]
 
 これを OpenFlow で実装すると<<repeater_hub_openflow,図 9-2>>のようになります。ホスト 1 がパケットを送信すると、スイッチからコントローラに Packet In が起こります。ここでコントローラは「今後は同様のパケットを他の全ポートへばらまけ (フラッディング)」という Flow Mod を打ちます。また、Packet In を起こしたホスト 1 からのパケットを他の全ポートへ Packet Out でフラッディングします。
-// TODO: 図を横向きではなく縦向きにして書き直す
 
 [[repeater_hub_openflow]]
-image::repeater_hub_openflow.png[caption="図 9-2",title="OpenFlow 版リピータハブ"]
+.OpenFlow 版リピータハブ
+image::repeater_hub_openflow.png[caption="図 9-2: "]
 
 == どこまでテストするか？
 
-おおまかな仕組みは分かったので、テストを書き始める前にテスト戦略を決めます。テスト戦略とは言い換えると「どこまでテストするか？」ということです。これは経験が必要なむずかしい問題なので、ソフトウェアテスト界の賢人達の言葉を借りることにしましょう。
+おおまかな仕組みはわかったので、テストを書き始める前にテスト戦略を決めます。テスト戦略とは言い換えると「どこまでテストするか？」ということです。これは経験が必要なむずかしい問題なので、ソフトウェアテスト界の賢人達の言葉を借りることにしましょう。
 
 テスト駆動開発の第一人者、ケント・ベックは stackoverflow.com の「どこまでテストするか？」というトピック footnote:[http://stackoverflow.com/questions/153234/how-deep-are-your-unit-tests] に次の投稿をしています。
 
@@ -44,62 +49,50 @@ image::repeater_hub_openflow.png[caption="図 9-2",title="OpenFlow 版リピー�
 
 Ruby on Rails の作者として有名な David Heinemeier Hansson 氏 (以下、DHH) は、彼の勤める Basecamp 社のブログ footnote:[https://signalvnoise.com/posts/3159-testing-like-the-tsa] で次のように語っています。
 
-> コードのすべての行にはコストがかかる。テストを書くのには時間がかかり、更新するのにも時間がかかり、読んで理解するのにも時間がかかる。したがってテストを書くのに必要なコストよりも、テストで得られる利益を大きくしなければいけない。テストのやりすぎは当然ながら間違っている。
+> コードのすべての行にはコストがかかる。テストを書くのにも、更新するのにも、読んで理解するのにも時間がかかる。したがってテストを書くのに必要なコストよりも、テストから得られる利益を大きくしなければいけない。テストのやりすぎは当然ながら間違っている。
 
-2人の言葉をまとめると、
+2人の言葉をまとめるとこうなります。
 
- * 目的はテストコードではなく、正しく動くコードこそが目的
- * 動くと確信が得られる最低限のテストを書こう
+ * 目的はテストコードではなく、コードが正しく動くこと
+ * 正しく動くと確信が得られる、最低限のテストコードを書こう
 
-となります。リピータハブのテスト戦略もこれに従いましょう。最低限のテストシナリオはこうなるはずです。
+リピータハブのテスト戦略もこれに従いましょう。最低限のテストシナリオはこうなるはずです。
 
-1. ホスト 1、2、3 をスイッチにつなげ、
-2. リピータハブのコントローラを起動しておいたとき、
+1. ホスト 1・ホスト 2・ホスト 3 をスイッチにつなげ、
+2. リピータハブのコントローラを起動したとき、
 3. ホスト 1 がホスト 2 へパケットを送ると、
-4. ホスト 2、3 がパケットを受け取る
+4. ホスト 2・ホスト 3 がパケットを受け取る
 
-それぞれのステップを順にテストコードに起こしていきましょう。
+それぞれのステップを順にテストコードに起こしていきます。
 
-== テストツールのインストール
+== テストに使うツール
 
-まずはテストに必要なツールをインストールしましょう。Trema のテストフレームワークは Ruby の受け入れテストツールの定番である Cucumber と統合されています。これらを使うために、以下の内容の Gemfile を作って `bundle install --binstubs` を実行してください。
+コントローラのテストには次の 3 つのツールを使います。
 
-[source,ruby,subs="verbatim,attributes"]
-.Gemfile
-----
-source 'https://rubygems.org'
-
-gem 'trema'
-
-group :development, :test do
-  gem 'aruba', require: false
-  gem 'cucumber', require: false
-  gem 'rake', require: false
-end
-----
-
-なお aruba は cucumber の拡張ライブラリで、`trema run` や `trema send_packets` といったコマンドラインツールの出力などをテストできます。コントローラが正しく動作しているかどうか、実際に `trema run` や `trema send_packets` を実行してその出力をテストするという仕組みです。
+Cucumberfootnote:[https://cucumber.io]:: 受け入れテストの定番ツール。ブラックボックステストをシナリオ形式で簡潔に記述できる
+Arubafootnote:[https://github.com/cucumber/aruba]:: コマンドラインツールのテストツール。コマンドの起動と出力、終了ステータスなどのテストができる
+trema/cucumber_step_definitionsfootnote:[https://github.com/trema/cucumber_step_definitions]:: ArubaのTrema用ライブラリ。コントローラの起動やパケットの送受信といった、コントローラのテストを記述できる
 
 == パケット受信をテストする
 
-では、リピータハブの動作を受け入れテストにしていきましょう。最初のテストシナリオを思い出してください。
+では、リピータハブの動作を Cucumber の受け入れテストにしていきます。最初のテストシナリオを思い出してください。
 
-1. ホスト 1、2、3 をスイッチにつなげ、
-2. リピータハブのコントローラを起動しておいたとき、
+1. ホスト 1・ホスト 2・ホスト 3 をスイッチにつなげ、
+2. リピータハブのコントローラを起動したとき、
 3. ホスト 1 がホスト 2 へパケットを送ると、
-4. ホスト 2、3 がパケットを受け取る
+4. ホスト 2・ホスト 3 がパケットを受け取る
 
-テストシナリオを受け入れテストに置き換えるには、シナリオの各ステップをGiven(前提条件)、When(〜したとき)、Then(こうなる)の3つに分類します。
+テストシナリオを Cucumber の受け入れテストに置き換えるには、シナリオの各ステップを**Given(前提条件)**・**When(〜したとき)**・**Then(こうなる)**の3つに分類します。
 
-* Given: ホスト 1、2、3 をスイッチにつなげ、リピータハブのコントローラを起動しておいたとき、
-* When: ホスト 1 がホスト 2 へパケットを送ると、
-* Then：ホスト 2、3 がパケットを受け取る。
+* **Given:** ホスト 1・ホスト 2・ホスト 3 をスイッチにつなげ、リピータハブのコントローラを起動したとき、
+* **When:** ホスト 1 がホスト 2 へパケットを送ると、
+* **Then:** ホスト 2・ホスト 3 がパケットを受け取る。
 
-では、まずは最初の Given ステップを cucumber のコードに直します。
+では、まずは最初の Given ステップを Cucumber のコードに直します。
 
 ### Given: 仮想ネットワークでリピータハブを動かす
 
-シナリオの前提条件 (Given) には、まずはコントローラにつなげるスイッチとホスト 3 台のネットワーク構成 (<<repeater_hub,図 9-1>>) を記述します。cucumber のテストファイル features/repeater_hub.feature というファイルを次の内容で作ってください。
+シナリオの前提条件 (Given) には、まずはコントローラにつなげるスイッチとホスト 3 台のネットワーク構成 (<<repeater_hub,図 9-1>>) を記述します。Cucumber のテストファイル `features/repeater_hub.feature` はこうなります:
 
 // TODO 古い文法 ‘promisc “on”’ もサポートしておく?
 
@@ -128,14 +121,15 @@ Given a file named "trema.conf" with:
   """
 ----
 
-ここで、それぞれの仮想ホストが `promisc` オプション (プロミスキャスモード。自分宛でないパケットを受け取ることができる) を `true` にしていることに注意してください。リピータハブはパケットをすべてのポートにばらまくので、こうすることでホストがどんなパケットでも受信できるようにしておきます。
+最初の行 `Given a file named "trema.conf" with: ...` は、「... という内容のファイル `trema.conf` があったとき、」を表すテストステップです。このように、Cucumber では英語 (自然言語) でテストステップを記述できます。
+
+それぞれの仮想ホストで `promisc` オプション (プロミスキャスモード。自分宛でないパケットも受け取れるようにするモード) を `true` にしていることに注意してください。リピータハブはパケットをすべてのポートにばらまくので、こうすることでホストがどんなパケットでも受信できるようにしておきます。
 
 続いて、この仮想ネットワーク上でコントローラを起動する Given ステップを次のように書きます。
 
 [source,subs="verbatim,attributes"]
 ----
 And I trema run "lib/repeater_hub.rb" with the configuration "trema.conf"
-And I run `sleep 8`      
 ----
 
 これは、シェル上で次のコマンドを実行するのと同じです。
@@ -143,20 +137,15 @@ And I run `sleep 8`
 [source,subs="verbatim,attributes"]
 ----
 $ ./bin/trema run lib/repeater_hub.rb -c trema.conf -d
-$ sleep 8
 ----
 
-なお `sleep 8` は仮想ネットワークとコントローラがすべて起動してから次の When ステップに入れるようにするための調整です。
-
-// TODO 起動方法の説明。cucumber独特のディレクトリや、sleep時間など。
-
-Given が書けたところで実行してみましょう。まだ `lib/repeater_hub.rb` ファイルを作っていないのでエラーになることはわかりきっていますが、とりあえず実行してみます。次のコマンドを実行すると、受け入れテストファイル `features/repeater_hub.feature` を実行しテスト結果を表示します。
+Given が書けたところですぐに実行してみます。まだ `lib/repeater_hub.rb` ファイルを作っていないのでエラーになることはわかりきっていますが、エラーを確認するためにあえて実行します。次のコマンドを実行すると、受け入れテストファイル `features/repeater_hub.feature` を実行しテスト結果を表示します。
 
 [source,subs="verbatim,attributes"]
 ----
 $ ./bin/cucumber features/repeater_hub.feature
 Feature: Repeater Hub example
-  @sudo @announce-
+  @sudo
   Scenario: Run
     Given a file named "trema.conf" with:
       """
@@ -202,7 +191,6 @@ STDERR
       expected "trema run ../../lib/repeater_hub.rb -c trema.conf -d" to be successfully executed (RSpec::Expectations::ExpectationNotMetError)
       ./features/step_definitions/trema_steps.rb:41:in `/^I trema run "([^"]*)"( interactively)? with the configuration "([^"]*)"$/'
       features/repeater_hub.feature:27:in `And I trema run "lib/repeater_hub.rb" with the configuration "trema.conf"'
-    And I run `sleep 8
 
 Failing Scenarios:
 cucumber features/repeater_hub.feature:5 # Scenario: Run as a daemon
@@ -212,7 +200,7 @@ cucumber features/repeater_hub.feature:5 # Scenario: Run as a daemon
 0m8.113s
 ----
 
-予想通り、`trema run` の箇所でエラーになりました。エラーメッセージによると `lib/repeater_hub.rb` というファイルが無いとのことなので、空のファイルを作ります。
+予想通り、`trema run` の箇所でエラーになりました。エラーメッセージによると `lib/repeater_hub.rb` というファイルが無いと言っています。このエラーを直すために、とりあえず空のファイルを作ります。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -221,7 +209,7 @@ $ touch lib/repeater_hub.rb
 $ ./bin/cucumber features/repeater_hub.feature
 ----
 
-ふたたびテストを実行すると、こんどは次のエラーメッセージが出ます。
+再びテストを実行すると、今度は次のエラーメッセージが出ます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -237,16 +225,16 @@ STDERR
       features/repeater_hub.feature:27:in `And I trema run "lib/repeater_hub.rb" with the configuration "trema.conf"'
 ----
 
-repeater_hub.rb にコントローラクラスが定義されていない、というエラーです。エラーを修正するために、RepeaterHub クラスの定義を追加してみましょう。
+repeater_hub.rb にコントローラクラスが定義されていない、というエラーです。エラーを修正するために、`RepeaterHub` クラスの定義を追加してみます。エラーを修正できればいいので、クラスの中身はまだ書きません。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .lib/repeater_hub.rb
 ----
 class RepeaterHub < Trema::Controller
 end
 ----
 
-ふたたびテストを実行してみましょう。今度はパスするはずです。
+再びテストを実行してみます。今度はパスするはずです。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -259,18 +247,17 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 やりました! これで Given ステップは動作しました。
 
-このようにテスト駆動開発では、最初にテストを書き、わざとエラーを起こしてからそれを直すためのコードをちょっとだけ追加します。テストを実行した結果からのフィードバックを得ながら「テストを書き、コードを直す」を何度もくりかえしつつ最終的な完成形に近づけていくのです。
+このようにテスト駆動開発では、最初にテストを書き、わざとエラーを起こしてからそれを直すためのコードをちょっとだけ追加します。テスト実行結果からのフィードバックを得ながら「テストを書き、コードを直す」を何度もくりかえしつつ最終的な完成形に近づけていくのです。
 
 === When: パケットの送信
 
-When は「〜したとき」というきっかけになる動作を記述します。ここでは、Given で定義したホスト host1 から host2 にパケットを送ります。パケットを送るコマンドは、trema send_packets でした。cucumber (aruba) では、実行したいコマンドを次のように `I run ...` で直接書けます。
+When には「〜したとき」というきっかけになる動作を記述します。ここでは、Given で定義したホスト host1 から host2 にパケットを送る処理を書きます。パケットを送るコマンドは、trema send_packets でした。Cucumber (Aruba) では、実行したいコマンドを次のように `I run ...` で直接書けます。
 
-[source,ruby,subs="verbatim,attributes"]
 ----
 When I run `trema send_packets --source host1 --dest host2`                                                                                                                   
 ----
 
-テストを一行追加しただけですが、念のため実行しておきましょう。
+テストを一行追加しただけですが、念のため実行しておきます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -285,7 +272,7 @@ $ ./bin/cucumber features/repeater_hub.feature
 
 === Then: 受信したパケットの数
 
-Then には「最終的にこうなるはず」というテストを書きます。ここでは、「ホスト 2、3 がパケットを受け取るはず」というステップを書けばよいですね。これは次のように書けます。
+Then には「最終的にこうなるはず」というテストを書きます。ここでは、「ホスト 2・ホスト 3 がパケットを受け取るはず」というステップを書けばよいですね。これは次のように書けます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -297,9 +284,9 @@ And the number of packets received by "host3" should be:
   | 192.168.0.1 |        1 |
 ----
 
-このステップはテーブルのような形式をしており、ホスト 2 とホスト 3 それぞれについて、送信元 IP アドレス 192.168.0.1 からパケットを 1 つ受信する、ということを表しています。
+このステップはテーブル形式をしており、ホスト 2・ホスト 3 それぞれについて、送信元 IP アドレス 192.168.0.1 からパケットを 1 つ受信するはず、ということを表しています。
 
-ではさっそく実行してみましょう。
+ではさっそく実行してみます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -334,17 +321,17 @@ cucumber features/repeater_hub.feature:5 # Scenario: Run as a daemon
 0m20.198s
 ----
 
-host2 にパケットが届いておらず、失敗しています。RepeaterHub はまだ何も機能を実装していないので当然ですね。
+host2 に 1 つ届くはずだったパケットが届いておらず、失敗しています。`RepeaterHub` クラスはまだ何も機能を実装していないので当然です。
 
-フラッディングをする Flow Mod を打ち込むコードを RepeaterHub クラスに追加して、もう一度テストしてみましょう。
+フラッディングをする Flow Mod を打ち込むコードを `RepeaterHub` クラスに追加して、もう一度テストしてみます。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class RepeaterHub < Trema::Controller
-  def packet_in(datapath_id, message)
+  def packet_in(datapath_id, packet_in)
     send_flow_mod_add(
       datapath_id,
-      match: ExactMatch.new(message),
+      match: ExactMatch.new(packet_in),
       actions: SendOutPort.new(:flood)
     )
   end
@@ -363,27 +350,27 @@ $ ./bin/cucumber features/repeater_hub.feature
            got: 0
 ----
 
-失敗してしまいました。まだ host2 がパケットを受信できていません。そういえば、Flow Modしただけではパケットは送信されないので、明示的に Packet Out してやらないといけないのでしたね。というわけで Packet Out を追加します。
+失敗してしまいました。まだ host2 がパケットを受信できていません。そういえば、Flow Modしただけではパケットは送信されないので、明示的に Packet Out してやらないといけないのでした。そこで次のように Packet Out を追加します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
 class RepeaterHub < Trema::Controller                                                                                                                                             
-  def packet_in(datapath_id, message)                                                                                                                                             
+  def packet_in(datapath_id, packet_in)                                                                                                                                             
     send_flow_mod_add(                                                                                                                                                            
       datapath_id,                                                                                                                                                                
-      match: ExactMatch.new(message),                                                                                                                                             
+      match: ExactMatch.new(packet_in),                                                                                                                                             
       actions: SendOutPort.new(:flood)                                                                                                                                            
     )                                                                                                                                                                             
     send_packet_out(                                                                                                                                                              
       datapath_id,                                                                                                                                                                
-      raw_data: message.raw_data,                                                                                                                                                 
+      raw_data: packet_in.raw_data,                                                                                                                                                 
       actions: SendOutPort.new(:flood)                                                                                                                                            
     )                                                                                                                                                                             
   end                                                                                                                                                                             
 end 
 ----
 
-さっそく実行してみましょう。
+再び実行してみます。
 
 [source,subs="verbatim,attributes"]
 ----
@@ -415,7 +402,6 @@ Feature: "Repeater Hub" example
       link 'repeater_hub', 'host3'
       """
     And I trema run "lib/repeater_hub.rb" with the configuration "trema.conf"
-    And I run `sleep 8`                                                      
     When I run `trema send_packets --source host1 --dest host2`              
     Then the number of packets received by "host2" should be:                
       | source      | #packets |
@@ -429,23 +415,55 @@ Feature: "Repeater Hub" example
 0m20.976s
 ----
 
-すべてのテストに通りました！これでリピータハブとテストコード一式が完成です。このテストコードの実行結果は、RepeaterHub の仕様書としても読めますね。
+すべてのテストに通りました! 次はテスト駆動開発で欠かせないステップであるリファクタリングに進みます。
+
+== リファクタリング
+
+リファクタリングとは、テストコードによってソフトウェアの振る舞いを保ちつつ、理解や修正が簡単になるようにソースコードを改善することです。Rubyにはリファクタリング用の便利なツールがたくさんあります。中でもよく使うツールは次の 4 つです。
+
+reekfootnote:[https://github.com/troessner/reek]:: Rubyコードの臭いを自動的に検知し、改善すべき場所を教えてくれる便利なツール
+flogfootnote:[http://ruby.sadi.st/Flog.html]:: すべてのメソッドの複雑度 (これが大きいほど複雑でテストしづらい) を客観的なポイントで表示
+flayfootnote:[http://ruby.sadi.st/Flay.html]:: メソッドのコピペなど、重複するコードを探して容赦なく指摘してくれる
+rubocopfootnote:[https://github.com/bbatsov/rubocop]:: コードが標準的な Ruby のコーディングスタイルに沿っているかチェックしてくれる
+
+`RepeaterHub` クラスは十分簡潔ですが、念のためこの 4 つを使ってチェックしておきます。
+
+----
+$ ./bin/reek lib/repeater_hub.rb
+
+$ ./bin/flog lib/repeater_hub.rb
+     9.0: flog total
+     4.5: flog/method average
+
+     5.6: RepeaterHub#packet_in            lib/repeater_hub.rb:7
+
+$ ./bin/flay lib/repeater_hub.rb
+Total score (lower is better) = 0
+
+$ ./bin/rubocop lib/repeater_hub.rb
+Inspecting 1 file
+.
+
+1 file inspected, no offenses detected
+----
+
+`reek`・`flog`・`flay`・`rubocop` コマンドすべてで、エラーメッセージは出ていません。ただし `flog` は複雑度を表示するだけなので、リファクタリングするかどうかは自分で判断する必要があります。今回のように、目安として複雑度が10ポイント以下であれば、リファクタリングの必要はありません。
+
+もしもここでエラーメッセージが出た場合には、コントローラをリファクタリングします。エラーメッセージには修正のヒントが入っているので、それに従えば機械的に修正できます。動くテストコードがあるので、リファクタリングの最中に誤ってコードを壊してしまっても、すぐにミスしたことがわかります。
+
+以上でコントローラとテストコードの一式が完成しました!
 
 == まとめ
 
 Tremaのユニットテストフレームワークを使ってリピータハブを作り、コントローラをテスト駆動開発する方法を学びました。今回学んだことは次の2つです。
 
- * TremaはRubyのテストフレームワークCucumberと統合されており、仮想スイッチのフローテーブルや仮想ホストの受信パケット数などについてのテストを書ける
- * テストをGiven、When、Thenの3ステップに分けて分析し設計する方法を学んだ。それぞれのステップをCucumberのテストコードに置き換えることで、テストコードが完成する
-
-Tremaのサンプルアプリケーションにはテストコードが付属しています。本格的にテストコードを書く人は参考にしてください。
+ * Cucumber・Aruba・trema/cucumber_step_definitionsを使うと、コントローラを起動して仮想ホストの受信パケット数などをテストできる
+ * テストをGiven・When・Thenの3ステップに分けて分析し設計する方法を学んだ。それぞれのステップをCucumberのテストコードに置き換えることで、テストコードが完成する
+ * テストが通ったら必ずリファクタリングすること。`reek`・`flog`・`flay`・`rubocop` を使うと、コードの問題点を客観的に洗い出してくれる
+ 
+本書で紹介するすべてのサンプルコードには、テストコード (`features/` 以下) が付属しています。本格的にテストコードを書く人は、参考にしてください。
 
 == 参考文献
 
-- 『テスト駆動開発入門』(Kent Beck著／ピアソン・エデュケーション) ケント・ベック自身によるバイブルです。もったいないことに日本語版の訳がまずく、意味の通らないところがたくさんあります。私たちは仲間との勉強会に原著を使いましたが、わかりやすい英語だったので問題ありませんでした。
-- 「stackoverflow」(http://stackoverflow.com/[http://stackoverflow.com/])」 私はテストに限らずプログラミングでわからないことがあると、このQ&Aサイトを検索します。ユーザーは役に立つ回答には点数をつけることができ、またケント・ベックなど有名人が回答してくれることが多いので、質の高い回答がそろっています。
-- 「Signal vs. Noise」(https://signalvnoise.com/[https://signalvnoise.com/]) Ruby on Railsを作った小さな会社 Basecamp のブログです。この章で紹介したDHHのテスト論など、有名ハッカーの生の声が読めます。記事それぞれが非常に刺激的で (一部) 過激な意見にみちあふれています。
-- 『リファクタリング』(Martin Fowler著／ピアソン・エデュケーション) この本の最大の功績は、コードのまずい兆候(重複するコードがあるとか、長すぎるメソッドなど)を「コードの臭い」と表現したことです。粗相をした赤ちゃんのおむつのように臭うコードには改善が必要で、この本にはそのためのレシピがそろっています。この本はJavaですが、Ruby版(『リファクタリング：Rubyエディション』Jay Fields、Shane Harvie、Martin Fowler、Kent Beck著／アスキー・メディアワークス)もあります。
-- 「reek」(https://github.com/troessner/reek[https://github.com/troessner/reek]) 「コードの臭い」を検知する能力はプログラマの美意識にいくらか依存しますが、ソフトウェアで客観的に検知できるとしたらすばらしいと思いませんか。reekはRubyコードの臭いを自動的に検知して改善すべき場所を教えてくれる便利なツールです。次に紹介する「flog」「flay」とともに、本書のサンプルコードを書く際にとてもお世話になりました。
-- 「flog」(http://ruby.sadi.st/Flog.html[http://ruby.sadi.st/Flog.html]) 「Rubyサディストのためのツール」と銘打ったこのツールは、すべてのメソッドがどのくらい複雑かを客観的なポイントで表示してくれます(大きいほど複雑でテストしづらい)。Tremaのコードでは目安としてこれが10ポイントをこえないようにしています。
-- 「flay」(http://ruby.sadi.st/Flay.html[http://ruby.sadi.st/Flay.html]) この「Rubyサディストのためのツール その2」は、重複するコードを探して容赦なく指摘してくれます。DRY(Don't repeat yourself)を目指すならこのツールを使って重複を減らすべきです。
+- 『テスト駆動開発入門』(Kent Beck著／ピアソン・エデュケーション) テスト駆動開発のバイブルです。もったいないことに日本語版は訳がまずく、意味の通らないところがたくさんあります。もし英語が苦でなければ、原著の英語版で読むことをおすすめします。
+- 『リファクタリング』(Martin Fowler著／ピアソン・エデュケーション) この本の最大の功績は、コードのまずい兆候を「コードの臭い」と表現したことです。粗相をした赤ちゃんのおむつのように臭うコードには改善が必要で、この本にはそのためのレシピがそろっています。この本はJavaですが、Ruby版(『リファクタリング：Rubyエディション』Jay Fields、Shane Harvie、Martin Fowler、Kent Beck著／アスキー・メディアワークス)もあります。

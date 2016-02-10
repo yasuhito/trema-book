@@ -1,6 +1,6 @@
 require 'fdb'
 
-# An OpenFlow controller that emulates a layer-2 switch.
+# An OpenFlow controller that emulates an ethernet switch.
 class LearningSwitch < Trema::Controller
   timer_event :age_fdb, interval: 5.sec
 
@@ -10,7 +10,6 @@ class LearningSwitch < Trema::Controller
   end
 
   def packet_in(_datapath_id, packet_in)
-    return if packet_in.destination_mac.reserved?
     @fdb.learn packet_in.source_mac, packet_in.in_port
     flow_mod_and_packet_out packet_in
   end

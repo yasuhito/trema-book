@@ -1,14 +1,15 @@
-= NFVを作ろう: ルータ (前編)
+= ルータ (前編)
 :sourcedir: vendor/router
 :imagesdir: images/router
 
-// TODO: NFV という言葉が出てきてない。他の章で説明してたはず。
-
+[.lead]
 今まで学んだ知識を総動員して、ラーニングスイッチよりも高度なルータの実装に挑戦しましょう。まずは、スイッチとルータの違いをきちんと理解することからスタートです。
+
+image::map.png[]
 
 == ルータとスイッチの違い
 
-ルータとスイッチの一番大きな違いは、パケット転送に使う情報にあります。スイッチはパケットの転送に MAC アドレスを使う一方で、ルータは IP アドレスを使うのです。なぜ、ルータは IP アドレスを使うのでしょうか? MAC アドレスだけでパケットが届くなら、わざわざ IP アドレスを使う必要はありません。実はこれらの違いには、技術的な理由があるのです。
+ルータとスイッチの一番大きな違いは、パケット転送に使う情報にあります。スイッチはパケットの転送に MAC アドレスを使う一方で、ルータは IP アドレスを使うのです。なぜ、ルータは IP アドレスを使うのでしょうか。MAC アドレスだけでパケットが届くなら、わざわざ IP アドレスを使う必要はありません。実はこれらの違いには、技術的な理由があるのです。
 
 MAC アドレスでパケットを転送する LAN をイーサネットと呼びます。ネットワークを実装のレベルで分類すると、イーサネットはハードウェアに近いレベルのネットワークです。なぜかと言うと、イーサネットがパケットの転送に使う MAC アドレスは、ハードウェアであるネットワークカードを識別する情報だからです。この MAC アドレスは、パケットのイーサネットヘッダと呼ばれる部分に入っています。
 
@@ -22,27 +23,28 @@ MAC アドレスでパケットを転送する LAN をイーサネットと呼�
 
 == イーサネットだけならルータは不要？
 
-ほとんどがイーサネットなら、わざわざルータで中継するのはなぜでしょう? 現に、OpenFlow のマッチングルールで扱えるのは MAC アドレスといったイーサネットの情報だけで、PPP や ATM といった他のネットワークは対象外です。もしイーサネットだけを使うのであれば、ルータは不要なのでしょうか?
+ここで1つの疑問が出てきます。いろいろある転送方式のうち、もしもイーサネットだけを使うのであれば、ルータによる中継は不要なのでしょうか。
 
-実際には、大きなネットワークをイーサネットだけで作るには次の問題があります。
+いいえ、ルータは必要です。もしもルータを使わずに大きなネットワークを作ろうとすると、次の問題が起こります。
 
- - ブロードキャストの問題: ネットワーク上の情報の発見などのためにブロードキャストパケットを送ると、ネットワーク上のすべてのホストにこのパケットがばらまかれる。もし大きいネットワーク内でみんながブロードキャストを送ってしまうと、ネットワークがパンクしてしまう
- - セキュリティ上の問題: もし全体が 1 つのネットワークでどことでも自由に通信できてしまうと、他人の家や他社のホストと簡単に接続できてしまう。こうなると、プライバシー情報や機密データを守るのが大変になる
+ブロードキャストの問題:: ネットワーク上の情報の発見などのためにブロードキャストパケットを送ると、ネットワーク上のすべてのホストにこのパケットがばらまかれる。もし大きいネットワーク内でみんながブロードキャストを送ってしまうと、ネットワークがパンクしてしまう
+セキュリティの問題:: もし全体が 1 つのネットワークでどことでも自由に通信できてしまうと、他人の家や他社のホストと簡単に接続できてしまう。こうなると、プライバシー情報や機密データを守るのが大変になる
 
-そこで、現実的にはイーサネットだけでネットワークを作る場合にも、家や会社の部署といった単位で小さなネットワークを作り、それらをルータでつなぐ場合が大半です。ルータがネットワーク間の「門番」としても働き、実際にパケットを転送するかしないかを制御することで、上の 2 つの問題を解決します。
+そこで、現実的にはイーサネットだけでネットワークを作る場合にも、家や会社の部署といった単位で小さなネットワークを作り、それらをルータでつなぐ場合が大半です。ルータがネットワーク間の門番としても働き、実際にパケットを転送するかしないかを制御することで、上の 2 つの問題を解決します。
 
 == ルータの動作
 
-ルータの存在意義がわかったところで、ルータの動作を詳しく見ていきましょう。おおまかに言うと、ルータは複数のイーサネットをつなぐために、1) イーサネット間でのパケットの転送と、2) 正しく届けるのに必要なパケットの書き換え、の 2 つの仕事を行います。
+ルータの存在意義がわかったところで、一般的なイーサネットでのルータの動作を詳しく見ていきましょう。おおまかに言うと、ルータは複数のイーサネットをつなぐために、1) イーサネット間でのパケットの転送と、2) 正しく届けるのに必要なパケットの書き換え、の 2 つの仕事を行います。
 
 === パケットを書き換えて転送する
 
-<<forward,図 12-1>> のホスト A がホスト B にパケットを送る場合を考えます。ホスト A は、送信元 IP アドレスがホスト A、宛先 IP アドレスがホスト B の IP パケットを作ります。
+<<router_forward_rewrite,図 12-1>> のホスト A がホスト B にパケットを送る場合を考えます。ホスト A は、送信元 IP アドレスがホスト A、宛先 IP アドレスがホスト B の IP パケットを作ります。
 
 このパケットをホスト B に届けるためには、ルータに中継してもらわなくてはなりません。ルータにパケットを渡すために、ホスト A は、パケット中の宛先 MAC アドレスをルータの MAC アドレスに、また送信元をホスト A の MAC アドレスにして、出力します。このときのパケットの中身は、次のようになります。
 
-[[forward]]
-image::forward.png[caption="図12-1",title="ルータはパケットを転送するために、パケットのイーサネット部分だけを書き換える"]
+[[router_forward_rewrite]]
+.ルータはパケットを転送するために、パケットのイーサネット部分だけを書き換える
+image::router_forward_rewrite.png[caption="図 12-1: "]
 
 ルータは、受け取ったパケットをホスト B に届けるために、MAC アドレスの書き換えを行います。ルータは、パケットの宛先をホスト B の MAC アドレスに、送信元をルータの MAC アドレスに書き換えてから、書き換えたパケットをホスト B へと転送します。
 
@@ -50,26 +52,29 @@ image::forward.png[caption="図12-1",title="ルータはパケットを転送す
 
 ==== ルータの MAC アドレスを教える
 
-ルータがパケットを受け取るためには、ホストはルータの MAC アドレスを知る必要があります。このためにホスト A は、パケットを送る前にルータの MAC アドレスを ARP リクエストで調べ、これを宛先 MAC アドレスとしてパケットに指定します。ルータは ARP リクエストを受け取ると、自身の MAC アドレスを ARP リプライとして返します (<<arp_reply,図 12-2>>)。
+ルータがパケットを受け取るためには、ホストはルータの MAC アドレスを知る必要があります。IPアドレスから宛先のMACアドレスの情報を知るためにはARP(Address Resolution Protocol)というプロトコルを使います。ARPにはARPリクエストとARPリプライという2種類のパケットがあります。ホスト A は、パケットを送る前にルータの MAC アドレスを ARP リクエストで調べ、これを宛先 MAC アドレスとしてパケットに指定します。ルータは ARP リクエストを受け取ると、自身の MAC アドレスを ARP リプライとして返します (<<router_arp_reply,図 12-2>>)。
 
-[[arp_reply]]
-image::arp_reply.png[caption="図12-2",title="ルータは ARP リクエストに対し自分の MAC アドレスを応える"]
+[[router_arp_reply]]
+.ルータは ARP リクエストに対し自分の MAC アドレスを応える
+image::router_arp_reply.png[caption="図 12-2: "]
 
 ==== 宛先ホストの MAC アドレスを調べる
 
 ルータがパケットを宛先ホストに送るためには、宛先ホストの MAC アドレスを調べる必要があります。そこでルータは、宛先であるホスト B の MAC アドレスを調べるための ARP リクエストをホスト B へ送ります。このとき、ルータは、ホスト B の MAC アドレスを知らないので、ARP リクエストの宛先 MAC アドレスにブロードキャストアドレス (FF:FF:FF:FF:FF:FF) を指定します。
 
-[[arp_reequest]]
-image::arp_request.png[caption="図12-3",title="宛先ホストの MAC アドレスを問い合わせる"]
+[[router_arp_reequest]]
+.宛先ホストの MAC アドレスを問い合わせる
+image::router_arp_request.png[caption="図 12-3: "]
 
 ARP を使って調べた MAC アドレスは、再利用するためにルータ内の ARP テーブルにキャッシュしておきます。これによって、同じホストに対してパケットを繰り返し送る場合、何度も ARP リクエストを送らなくてもすみます。
 
 === いくつものルータを経由して転送する
 
-ルータが複数あるネットワークでの転送は、少し複雑になります (<<router_network,図 12-4>>)。たとえば、ホスト A がホスト B にパケットを送るとします。ルータ A は受け取ったパケットを転送する必要がありますが、宛先であるホスト B はルータ A とは直接はつなっがっていません。そのため、ルータ A はまずルータ B にパケットを転送し、ルータ B がそのパケットをホスト B へと転送します。
+ルータが複数あるネットワークでの転送は、少し複雑になります (<<router_network,図 12-4>>)。たとえば、ホスト A がホスト B にパケットを送るとします。ルータ A は受け取ったパケットを転送する必要がありますが、宛先であるホスト B はルータ A とは直接はつながっていません。そのため、ルータ A はまずルータ B にパケットを転送し、ルータ B がそのパケットをホスト B へと転送します。
 
 [[router_network]]
-image::router_network.png[caption="図12-4",title="ルータが複数あるネットワークでの転送"]
+.ルータが複数あるネットワークでの転送
+image::router_network.png[caption="図 12-4: "]
 
 ルータ A の次の転送先となるルータは、パケットの宛先ごとに異なります。たとえばホスト A からホスト C へパケットを送る場合には、ルータ A はそのパケットをルータ C へと転送します。
 
@@ -79,7 +84,13 @@ image::router_network.png[caption="図12-4",title="ルータが複数あるネ�
 
 == ソースコード解説
 
-シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。残りのソースコードについては、GitHub の trema/simple_router リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
+シンプルルータ (`SimpleRouter`) のソースコードは、いくつのファイルからなります。紙面の都合上、以下ではメインのソースコード (`lib/simple_router.rb`) を中心に説明します。ソースコードは GitHub の `trema/simple_router` リポジトリ (https://github.com/trema/simple_router) からダウンロードできます。
+
+----
+$ git clone https://github.com/trema/simple_router.git
+$ cd simple_router
+$ bundle install --binstubs
+----
 
 === Packet In ハンドラ
 
@@ -87,7 +98,7 @@ image::router_network.png[caption="図12-4",title="ルータが複数あるネ�
 
 // TODO: case...when じゃなくてテーブルで引くようにして短くする
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
@@ -97,23 +108,23 @@ include::{sourcedir}/lib/simple_router.rb[lines="22..35"]
 
 イーサネットにはルータ以外のホストがつながっている可能性があります。そこで Packet In メッセージが上がってきたときには、まずそのパケットが自分宛かどうかを判断します (`sent_to_router?` メソッド)。もし自分宛でない場合にはパケットを破棄します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#sent_to_router? (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="94..98"]
 ----
 
-この `sent_to_router?` メソッドはパケットの宛先 MAC アドレス (`message.destination_mac`) をチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`message.in_port`) に割り当てられている MAC アドレス (`interface.mac_address`) と同じである場合、自分宛と判断します。
+この `sent_to_router?` メソッドはパケットの宛先 MAC アドレス (`packet_in.destination_mac`) をチェックします。宛先 MAC アドレスがブロードキャストである場合、もしくは受信ポート (`packet_in.in_port`) に割り当てられている MAC アドレス (`interface.mac_address`) と同じである場合、自分宛と判断します。
 
 ==== パケットの種類によって処理を切り替え
 
-自分宛のパケットだと分かると、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 パケットの 3 種類です。`PacketIn#data` メソッドはパケットの種類に応じたオブジェクトを返すので、この返り値に応じてハンドラメソッドを呼び出します。
+自分宛のパケットだとわかると、次にパケットの種類を判別します。シンプルルータが処理するパケットは、ARP のリクエストとリプライ、および IPv4 パケットの 3 種類です。`PacketIn#data` メソッドはパケットの種類に応じたオブジェクトを返すので、この返り値に応じてハンドラメソッドを呼び出します。
 
 ==== ARP リクエストのハンドル
 
 ARP リクエストパケットを受信すると `packet_in_arp_request` メソッドを呼びます。ここでは、ARP リプライメッセージを作って Packet Out で ARP リクエストが届いたポートに出力します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_arp_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="39..53"]
@@ -125,7 +136,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="39..53"]
 
 ARP リプライパケットを受信すると、ARP テーブル (`@arp_table`) に MAC アドレスを記録します。ここでは `PacketIn#sender_protocol` メソッドを使って ARP パケット中の送信元 IP アドレスを取り出しています。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_arp_reply (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="56..63"]
@@ -143,7 +154,7 @@ IPv4 パケットを受信すると、`packet_in_ipv4` メソッドを呼びま�
 
 // TODO: 今の実装では破棄してないので、破棄するようにする
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_ipv4 (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="65..74"]
@@ -151,7 +162,7 @@ include::{sourcedir}/lib/simple_router.rb[lines="65..74"]
 
 パケットを転送するかどうかの判定は `forward?` メソッドです。転送が必要な場合とは、次のようにパケットの宛先 IPv4 アドレスがルータのインタフェースに割り当てた IPv4 アドレスと異なる場合です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward? (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
@@ -159,28 +170,28 @@ include::{sourcedir}/lib/simple_router.rb[lines="100..102"]
 
 パケットの宛先 IP アドレスがルータである場合、ルータ自身が応答します。シンプルルータでは、ICMP Echo リクエスト (ping) に応答する機能だけ実装しています。`packet_in_icmpv4_echo_request` メソッドは次のように ICMP Echo リクエストに応答します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 ----
 
-まず送信元 IP アドレス (`message.ip_source_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
+まず送信元 IP アドレス (`packet_in.source_ip_address`) に対応する MAC アドレスを ARP テーブルから調べます。MAC アドレスをキャッシュしている場合には、`create_icmp_reply` で応答メッセージを作り、Packet Out で出力します。MAC アドレスをキャッシュしていない場合には、`send_later` メソッドで ARP が解決したときに後で転送します。これについても詳細は後述します。
 
 === パケットを書き換えて転送する
 
 ルータの動作の核心、パケットを書き換えて転送する部分です。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#forward (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
+include::{sourcedir}/lib/simple_router.rb[lines="106..126"]
 ----
 
 この `forward` メソッドは、次の 5 つの処理を行います。
 
  1. ルーティングテーブルを参照し、次の転送先を決める (`resolve_next_hop`)
- 2. 次の転送先に送るための、出力インタフェースを決める (`@interfaces.find_by_prefix`)
+ 2. 次の転送先に送るための、出力インタフェースを決める (`Interface.find_by_prefix`)
  3. インタフェースが見つかった場合、ARP アドレスから宛先 MAC アドレスを探す (`@arp_table.lookup`)
  4. MAC アドレスが見つかった場合、転送用のフローエンントリを書き込み、受信パケットを Packet Out する
  5. MAC アドレスが見つからなかった場合、`send_later` メソッドで後で転送する
@@ -189,18 +200,18 @@ include::{sourcedir}/lib/simple_router.rb[lines="106..125"]
 
 ==== パケットの書き換えと転送 (Flow Mod と Packet Out)
 
-ARP テーブルから宛先の MAC アドレスがわかると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。<<forward,図 12-1>> で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。`forward` メソッド内の変数 `action` はこのためのアクションリストで、送信元と宛先 MAC アドレスの書き換え、そして該当するポートからの出力というアクションの配列です。このアクションは Flow Mod と Packet Out メッセージの送信に使います。
+ARP テーブルから宛先の MAC アドレスがわかると、パケットを書き換えて宛先へ出力するとともに、同様のパケットをスイッチ側で転送するためのフローエントリを書き込みます。<<forward,図 12-1>> で説明したように、ルータによるパケットの転送では MAC アドレスを書き換えます。`forward` メソッド内の変数 `actions` はこのためのアクションリストで、送信元と宛先 MAC アドレスの書き換え、そして該当するポートからの出力というアクションの配列です。このアクションは Flow Mod と Packet Out メッセージの送信に使います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="114..118"]
+include::{sourcedir}/lib/simple_router.rb[lines="114..119"]
 ----
 
 === ARP の解決後にパケットを転送する
 
-ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐ分からない場合、次のように `send_later` メソッドを呼び出していました。
+ARP が未解決のパケットは転送できないため、解決するまで待つ必要があります。この「ARP 解決後に送る」という処理を行うのが、`send_later` メソッドです。たとえば ICMP Echo リプライの宛先 MAC アドレスが ARP テーブルからすぐわからない場合、次のように `send_later` メソッドを呼び出していました。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#packet_in_icmpv4_echo_request (lib/simple_router.rb)
 ----
 include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
@@ -210,25 +221,25 @@ include::{sourcedir}/lib/simple_router.rb[lines="77..89"]
 
 `send_later` メソッドでは、ARP が未解決なパケットを宛先 IP アドレスごとにキュー (`queue`) に入れます。キューへの追加後に ARP リクエストを送ることで宛先の MAC アドレスを解決します。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#send_later (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="148..152"]
+include::{sourcedir}/lib/simple_router.rb[lines="148..153"]
 ----
 
 キューにためたパケットを転送するのは ARP リプライが Packet In したタイミングです。`packet_in_arp_reply` の最後に呼び出している `flush_unsent_packets` がこの処理を行います。
 
-[source,ruby,subs="verbatim,attributes"]
+[source,ruby,indent=0,subs="verbatim,attributes"]
 .SimpleRouter#flush_unsent_packets (lib/simple_router.rb)
 ----
-include::{sourcedir}/lib/simple_router.rb[lines="154..164"]
+include::{sourcedir}/lib/simple_router.rb[lines="154..165"]
 ----
 
 ここでは MAC アドレスが解決したパケットそれぞれに対して、送信元と宛先 MAC アドレスを書き換えるアクションを指定し Packet Out しています。
 
 == まとめ
 
-従来のネットワーク専用機器をソフトウェアで実装した、いわゆる NFV の最初の例としてシンプルなルータの仕組みを学びました。
+従来のネットワーク機器をソフトウェアで実装したシンプルなルータの仕組みを学びました。
 
  - ルータはイーサネットよりも一段上の IP レベルでパケットを転送する。異なるイーサネット間でパケットを中継するために、ルータはパケットの MAC アドレスを書き換える
  - 宛先ホストの MAC アドレスを調べるために、ルータは ARP エリクエストを送り結果を ARP テーブルにキャッシュする。また、ルータ経由でパケットを送るホストのために、ルータは ARP リクエストに応える必要がある
@@ -237,6 +248,6 @@ include::{sourcedir}/lib/simple_router.rb[lines="154..164"]
 
 // TODO: TTL 減算を実装する
 
-続く第 13 章では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
+続く<<router_part2,13 章>>では、ルータの動作にとって書かせないルーティングテーブルについて詳しく見たあと、いよいよこのルータを実行してみます。
 
 

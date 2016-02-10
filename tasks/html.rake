@@ -11,7 +11,10 @@ file 'index.html' => ADOC do |t|
   sh 'bundle exec asciidoctor '\
      "-a revnumber=#{revnumber} "\
      '-a icons=font '\
+     '-a stylesheet=default.css '\
+     '-a stylesdir=./public/css '\
      '-a toc=left '\
      '-a source-highlighter=coderay '\
+     '-a experimental '\
      "-d book index.adoc --out-file #{t.name}"
 end

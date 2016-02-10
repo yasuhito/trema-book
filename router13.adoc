@@ -1,0 +1,279 @@
+= ルータ (マルチプルテーブル編)
+:sourcedir: vendor/router
+:imagesdir: images/router
+
+[.lead]
+OpenFlow1.3 のマルチプルテーブルを使うことで、ルータの機能の大部分をフローテーブルとして実装してみましょう
+
+== マルチプルテーブル版ルータのテーブル構成
+
+マルチプルテーブル版ルータは<<router_multiple_tables_overview,図 14-1>>の 7 つのテーブルで動作します。Ingress テーブルに入ったパケットはその種類が ARP か IPv4 かによって 2 通りのパスを通り、Egress テーブルから出力します。
+
+[[router_multiple_tables_overview]]
+.マルチプルテーブル版ルータのテーブル構成
+image::router_multiple_tables_overview.png[caption="図 14-1: "]
+
+それぞれのテーブルの役割とフローエントリを見て行きましょう。
+
+=== Ingress テーブル、Protocol Classifier テーブル
+
+パケットは最初、テーブル ID が 0 番の Ingress テーブルに入ります (<<ingress_and_protocol_classifier_table,図 14-2>>)。
+
+[[ingress_and_protocol_classifier_table]]
+.パケットは最初にテーブル ID = 0 の Ingress テーブルに入り、そのまま Protocol Classifier テーブルへ渡される
+image::ingress_and_protocol_classifier_table.png[caption="図 14-2: "]
+
+見ての通り Ingress テーブルでは何も処理をせず、パケットをそのまま Protocol Classifier テーブルへと渡します。
+
+Protocol Classifier テーブルは、Ingress テーブルから入ったパケットをその種類によって仕分けします。パケットの仕分けにはマッチフィールドの `ether_type` を使います。これが ARP の場合には ARP Responder テーブルへ、IPv4 の場合には Routing Table テーブルへとそれぞれパケット処理を引き継ぎます。
+
+=== ARP Responder テーブル
+
+パケットが ARP だった場合、ARP Responder テーブルがパケットを処理します。ARP Responder テーブルは ARP パケットをタイプ別にそれぞれ次のように処理します。
+
+ホストからルータへの ARP Reply:: ホストの MAC アドレスを学習する
+ルータのポート宛の ARP Request:: ホストの MAC アドレスを学習し、ポートの MAC アドレスを ARP Reply で返す
+それ以外の ARP:: パケットを書き換えて適切なポートから転送する
+
+ARP Responder テーブルは、前記 3 種類の処理×ポート数分のフローエントリを持ちます。たとえばポートが 2 つの場合には、<<arp_responder_table,図 14-3>>のようにフローエントリ数は全部で 6 つです。それぞれのフローエントリの具体的な働きについては後述します。
+
+[[arp_responder_table]]
+.ARP Responder テーブルのフローエントリ例
+image::arp_responder_table.png[caption="図 14-3: "]
+
+=== Routing Table テーブル
+
+パケットが IPv4 だった場合、Routing Table, Interface Lookup そして ARP Table Lookup の 3 つのテーブルによってパケットを処理します。
+
+パケットが最初に入る Routing Table テーブルは、パケットのネクストホップをロンゲストマッチで決定します。そして、決定したネクストホップをレジスタ `reg0` に入れます。それぞれのフローエントリの具体的な働きについては後述します。
+
+[[routing_table_table]]
+.ARP Responder テーブルのフローエントリ例
+image::routing_table_table.png[caption="図 14-4: "]
+
+[NOTE]
+.コラム: レジスタ
+====
+レジスタはパケットごとに8個まで (reg0〜reg7) の任意の値を設定できる32ビットの変数です。使い道としては、たとえば Routing Table テーブルで見たように IP アドレス (整数表現) などの即値を入れたり、パケットのフィールド値を入れたりできます。そして、セットしたレジスタの値はマッチフィールドの条件として使えるほか、SendOutPortの出力先ポート番号としても使えます。
+
+このようにレジスタ機能は非常に柔軟で強力ですが、対応しているスイッチ実装が限られます。レジスタ機能はNicira社による独自拡張であるため、Nicira 拡張に対応した Open vSwitch などの高機能なスイッチでしか使えません。もしこうした拡張機能を使いたい場合には、スイッチのスペックをよく確認しておきましょう。
+====
+
+=== Interface Lookup テーブル
+
+Interface Lookup テーブルはパケットをどのポートから出力するかを決定します (<<interface_lookup_table,図 14-5>>)。Routing Table テーブルで設定した `reg0` のネクストホップを元に、出力先のポート番号を決定し `reg1` にセットします。そして、パケットの送信元 MAC アドレスをポートの MAC アドレスに書き換えます。この動作はポートごとに異なるため、フローエントリ数はルータのポート数と同じになります。
+
+[[interface_lookup_table]]
+.Interface Lookup テーブルのフローエントリ例
+image::interface_lookup_table.png[caption="図 14-5: "]
+
+=== ARP Table Lookup テーブル
+
+ARP Table Lookup テーブルはパケットの宛先 MAC アドレスを設定します (<<arp_table_lookup_table,図 14-6>>)。 ネクストホップ (`reg0`) から、対応するホストの MAC アドレスをパケットの宛先 MAC アドレスとして書き込みます。
+
+ルータを起動した直後にはフローエントリ数は 1 つですが、ARP Reply を受け取り新しい MAC アドレスを学習するたびにフローエントリ数が増えます。それぞれのフローエントリの具体的な働きについては後述します。
+
+[[arp_table_lookup_table]]
+.ARP Table Lookup テーブルのフローエントリ例
+image::arp_table_lookup_table.png[caption="図 14-6: "]
+
+=== Egress テーブル
+
+フローテーブルから出力するパケットはすべて Egress テーブルを通ります (<<egress_table,図 14-7>>)。Egress テーブルはレジスタ `reg1` が指すポートにパケットを出力します。
+
+[[egress_table]]
+.Egress テーブルはパケットをポート reg1 番へ出力する
+image::egress_table.png[caption="図 14-7: "]
+
+== マルチプルテーブル版ルータの動作例
+
+マルチプルテーブル版ルータの動作例をいくつか、<<sample_router_network_openflow13,図 14-8>>の構成で詳しく見て行きましょう。
+
+[[sample_router_network_openflow13]]
+.マルチプルテーブル版ルータを動かすためのネットワーク構成
+image::sample_router_network_openflow13.png[caption="図 14-8: "]
+
+以降の説明で参照するマルチプルテーブル版ルータのソースコードは、GitHub の trema/simple_router リポジトリに入っています。次のコマンドでソースコードを取得してください。
+
+----
+$ git clone https://github.com/trema/simple_router.git
+----
+
+依存する gem のインストールは、いつも通り bundle install コマンドです。
+
+----
+$ cd simple_router
+$ bundle install --binstubs
+----
+
+これで準備は完了です。
+
+=== ポート宛の ARP Request に応答する
+
+host1 がルータのポート 1 番宛に ARP Request を送信した場合、フローテーブルは<<handle_arp_request,図 14-9>>の 2 つの処理を行います:
+
+1. host1 の MAC アドレスの学習
+2. ARP Reply を host1 へ送信
+
+[[handle_arp_request]]
+.host1 がルータのポート 1 宛に ARP Request を送信した場合
+image::handle_arp_request.png[caption="図 14-9: "]
+
+==== host1 の MAC アドレスの学習
+
+ポート 1 番に届いた ARP Request は、Ingress テーブルから Protocol Classifier を経て ARP Responder のフローエントリにマッチします (<<handle_arp_request,図 14-9>> の1)。そして ARP Request を送った host1 の MAC アドレスを学習するため、`SendOutPort` アクションでコントローラへと Packet In します (<<handle_arp_request,図 14-9>> の 2)。
+
+コントローラでは、Packet In の送信元 IP アドレスと MAC アドレスを学習します。この学習は、ARP Table Lookup テーブルに `host1` のフローエントリを追加することで行います (<<handle_arp_request,図 14-9>> の 3)。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.SimpleRouter13#add_arp_entry (lib/simple_router13.rb)
+----
+def add_arp_entry(ip_address, mac_address, dpid)
+  send_flow_mod_add(
+    dpid,
+    table_id: ARP_TABLE_LOOKUP_TABLE,
+    priority: 2,
+    match: Match.new(ether_type: EthernetHeader::EtherType::IPV4,
+                     reg0: IPv4Address.new(ip_address).to_i),
+    instructions: [Apply.new(SetDestinationMacAddress.new(mac_address)),
+                   GotoTable.new(EGRESS_TABLE)]
+  )
+end
+----
+
+==== ARP Reply を host1 へ送信
+
+コントローラを使わずにフローテーブルだけで ARP Reply を返すために、届いた ARP Request を ARP Reply へ書き換えます。書き換えに必要なアクションは多いですが、やっていることは単純です。
+
+- イーサヘッダの `source_mac_address` の値を `destination_mac_address` にコピー
+- `source_mac_address` の値をインタフェースの MAC アドレスの MAC アドレスの値にセット
+- ARP operation の値を ARP Reply にセット
+- ARP の `sender_hardware_address` (送信元の MAC アドレス) の値を `target_hardware_address` (宛先の MAC アドレス) にコピー
+- ARP の `sender_protocol_address` (送信元の IP アドレス) の値を `target_protocol_address` (宛先の IP アドレス) にコピー
+- ARP の `sender_hardware_address` をインタフェースの MAC アドレスの値にセット
+- ARP の `sender_protocol_address` をインタフェースの IP アドレスの値にセット
+
+そして最後に、作った ARP Reply の出力先ポート番号 1 (= `host1` のつながるポート番号) を `reg1` にセットし、ARP Reply を Egress テーブルへ渡します (<<handle_arp_request,図 14-9>> の 4)。Egress テーブルはこのポート `reg1` へ ARP Reply を出力します。
+
+=== host1 から host2 へ ping する
+
+<<sample_router_network_openflow13,図 14-8>> においてもう少し複雑な、`host1` から `host2` へ ping を打った場合を考えてみましょう。まずはルータが host2 へ ICMP Echo Request を届ける動作をおさらいします。
+
+1. host1 が出力した ICMP Echo Request がスイッチのポート 1 番に届く
+2. ルータはルーティングテーブルから転送先ポートを 2 番と決定する
+3. host2 の MAC アドレスを調べるため、ルータはポート 2 番から ARP Request を出力する
+4. host2 は自分の MAC アドレスを乗せた ARP Reply を出力する
+5. ルータは ICMP Echo Request の送信元と宛先をそれぞれ書き換えて host2 へ転送する
+
+これに対応するフローテーブルの動作を<<send_arp_request,図 14-10>> で見て行きましょう。ポート 1 番に届いた ICMP Echo Request は、Ingress テーブルから Protocol Classifier を経て Routing Table のフローエントリにマッチします (<<send_arp_request,図 14-10>> の 1)。Routing Table と Interface Lookup テーブルではロンゲストマッチの処理を行います。
+
+[[send_arp_request]]
+.host1 が host2 へ ICMP Echo Request を送信したときに host2 の MAC アドレスを解決するまでの動作
+image::send_arp_request.png[caption="図 14-10: "]
+
+=== ロンゲストマッチの処理
+
+ロンゲストマッチでは、パケットの宛先 IP アドレスからネクストホップと出力ポート番号を決定します。これを Routing Table と Interface Lookup テーブルの 2 つで行います。Routing Table では、パケットの宛先 IP アドレスがポート 2 のネットワークのフローエントリにマッチしますfootnote:[ここでは、ルータに直接接続したネットワークへのルーティング (いわゆる connected ルーティング) の動作のみを説明しています。ルータに直接接続していないネットワークへのルーティング (いわゆるスタティックルーティング) の実装については、`lib/simple_router13.rb` の `SimpleRouter13#add_routing_table_flow_entries` メソッドを参照してください。]。そこで、ネクストホップ 192.168.2.2 を `reg0` へ入れます。そして、Interface Lookup テーブルではネクストホップに対応する出力ポート 2 を `reg1` にセットします。
+
+=== host2 へ ARP Request を送る
+
+次に ARP Table Lookup テーブルで host2 の MAC アドレスを解決します。host2 の MAC アドレスはまだ学習していないので、ARP Request を送るためコントローラへいったんパケットを Packet In します (<<send_arp_request,図 14-10>> の 2)。
+
+コントローラは Packet In を受け取ると、パケットを「ARP 解決待ちパケットキュー」に追加します。そして、host2 の MAC アドレスを解決するために ARP Request をフローテーブルへ Packet Out します (<<send_arp_request,図 14-10>> の 3)。その際、ARP Request には `reg1` (出力先ポート) に 2 をセットしておきます。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.SimpleRouter13#packet_in_ipv4 (lib/simple_router13.rb)
+----
+def packet_in_ipv4(dpid, packet_in)
+  dest_ip_address = IPv4Address.new(packet_in.match.reg0.to_i)
+  @unresolved_packet_queue[dest_ip_address] += [packet_in.raw_data]
+  send_packet_out(
+    dpid,
+    raw_data: Arp::Request.new(target_protocol_address: dest_ip_address,
+                               source_mac: '00:00:00:00:00:00',
+                               sender_protocol_address: '0.0.0.0').to_binary,
+    actions: [NiciraRegLoad.new(packet_in.match.reg1, :reg1),
+              SendOutPort.new(:table)]
+  )
+end
+----
+
+フローテーブルへ入った ARP Request は、ARP Responder テーブルのフローエントリにマッチします。そして、`reg1` の値から ARP Request の MAC アドレスと IP アドレスをポート 2 のものにセットしたのち、Egress テーブルから host2 へと転送します。
+
+=== host2 からの ARP Reply の処理
+
+host2 からの ARP Reply が届くと、コントローラに Packet In します (<<handle_arp_reply,図 14-11>> の 1, 2)。
+
+[[handle_arp_reply]]
+.host2 の MAC アドレスを学習し ICMP Echo Request を host2 に届けるまでの動作
+image::handle_arp_reply.png[caption="図 14-11: "]
+
+ARP Reply を受け取ったコントローラは次のように動作します。まず、ARP Reply で解決した host2 の MAC アドレス用フローエントリを ARP Table Lookup テーブルに追加します (<<handle_arp_reply,図 14-11>> の 3)。そして、MAC アドレス未解決で送信待ちになっていたパケットをすべて、Packet Out で再び Ingress テーブルに入れます (<<handle_arp_reply,図 14-11>> の 4)。
+
+[source,ruby,indent=0,subs="verbatim,attributes"]
+.SimpleRouter13#packet_in_arp (lib/simple_router13.rb)
+----
+def packet_in_arp(dpid, packet_in)
+  add_arp_entry(packet_in.sender_protocol_address,
+                packet_in.sender_hardware_address,
+                dpid)
+  @unresolved_packet_queue[packet_in.sender_protocol_address].each do |each|
+    send_packet_out(dpid, raw_data: each, actions: SendOutPort.new(:table))
+  end
+  @unresolved_packet_queue[packet_in.sender_protocol_address] = []
+end
+----
+
+以上で host1 から host2 への ICMP Echo Request が届きます。戻りの host2 からの ICMP Echo Reply についても、同様の動作で host1 へと届きます。
+
+== 実行してみよう
+
+マルチプルテーブル版ルータ (lib/simple_router13.rb) の使いかたは<<router_part1,12 章>>、<<router_part2,13 章>>で紹介したルータと変わりません。ただし OpenFlow1.3 を使うので、`trema run` の起動オプションに `--openflow13` を付けるのを忘れないでください。
+
+----
+$ ./bin/trema run ./lib/simple-router.rb -c ./trema.conf --openflow13
+SimpleRouter13 started.
+----
+
+コントローラが起動したら、ためしに `host1` から `host2` へ ping を送ってみましょう。
+
+----
+$ bundle exec trema netns host1 "ping -c1 192.168.2.2"
+PING 192.168.2.2 (192.168.2.2) 56(84) bytes of data.
+64 bytes from 192.168.2.2: icmp_seq=1 ttl=64 time=132 ms
+
+--- 192.168.2.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 132.738/132.738/132.738/0.000 ms
+----
+
+たしかに host2 へ届いています。`trema dump_flows` コマンドでマルチプルテーブルのフローエントリを眺めてみましょう。
+
+----
+$ bundle exec trema dump_flows 0x1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=153.160s, table=0, n_packets=21, n_bytes=1546, priority=0 actions=goto_table:1
+ cookie=0x0, duration=153.160s, table=1, n_packets=6, n_bytes=296, priority=0,arp actions=goto_table:2
+ cookie=0x0, duration=153.160s, table=1, n_packets=4, n_bytes=392, priority=0,ip actions=goto_table:3
+ cookie=0x0, duration=153.152s, table=2, n_packets=1, n_bytes=42, priority=0,arp,in_port=1,arp_tpa=192.168.1.1,arp_op=1 actions=move:NXM_OF_ETH_SRC[]->NXM_OF_ETH_DST[],set_field:01:01:01:01:01:01->eth_src,set_field:2->arp_op,move:NXM_NX_ARP_SHA[]->NXM_NX_ARP_THA[],move:NXM_OF_ARP_SPA[]->NXM_OF_ARP_TPA[],set_field:01:01:01:01:01:01->arp_sha,set_field:192.168.1.1->arp_spa,load:0xffff->OXM_OF_IN_PORT[],load:0x1->NXM_NX_REG1[],goto_table:6
+ cookie=0x0, duration=153.142s, table=2, n_packets=1, n_bytes=42, priority=0,arp,in_port=1,arp_tpa=192.168.1.1,arp_op=2 actions=CONTROLLER:65535
+ cookie=0x0, duration=153.103s, table=2, n_packets=1, n_bytes=42, priority=0,arp,in_port=2,arp_tpa=192.168.2.1,arp_op=1 actions=move:NXM_OF_ETH_SRC[]->NXM_OF_ETH_DST[],set_field:02:02:02:02:02:02->eth_src,set_field:2->arp_op,move:NXM_NX_ARP_SHA[]->NXM_NX_ARP_THA[],move:NXM_OF_ARP_SPA[]->NXM_OF_ARP_TPA[],set_field:02:02:02:02:02:02->arp_sha,set_field:192.168.2.1->arp_spa,load:0xffff->OXM_OF_IN_PORT[],load:0x2->NXM_NX_REG1[],goto_table:6
+ cookie=0x0, duration=153.093s, table=2, n_packets=1, n_bytes=42, priority=0,arp,in_port=2,arp_tpa=192.168.2.1,arp_op=2 actions=CONTROLLER:65535
+ cookie=0x0, duration=153.130s, table=2, n_packets=1, n_bytes=64, priority=0,arp,reg1=0x1 actions=set_field:01:01:01:01:01:01->eth_src,set_field:01:01:01:01:01:01->arp_sha,set_field:192.168.1.1->arp_spa,goto_table:6
+ cookie=0x0, duration=153.083s, table=2, n_packets=1, n_bytes=64, priority=0,arp,reg1=0x2 actions=set_field:02:02:02:02:02:02->eth_src,set_field:02:02:02:02:02:02->arp_sha,set_field:192.168.2.1->arp_spa,goto_table:6
+ cookie=0x0, duration=153.064s, table=3, n_packets=2, n_bytes=196, priority=40024,ip,nw_dst=192.168.1.0/24 actions=move:NXM_OF_IP_DST[]->NXM_NX_REG0[],goto_table:4
+ cookie=0x0, duration=153.055s, table=3, n_packets=2, n_bytes=196, priority=40024,ip,nw_dst=192.168.2.0/24 actions=move:NXM_OF_IP_DST[]->NXM_NX_REG0[],goto_table:4
+ cookie=0x0, duration=153.073s, table=3, n_packets=0, n_bytes=0, priority=0,ip actions=load:0xc0a80102->NXM_NX_REG0[],goto_table:4
+ cookie=0x0, duration=153.047s, table=4, n_packets=2, n_bytes=196, priority=0,reg0=0xc0a80100/0xffffff00 actions=load:0x1->NXM_NX_REG1[],set_field:01:01:01:01:01:01->eth_src,goto_table:5
+ cookie=0x0, duration=153.039s, table=4, n_packets=2, n_bytes=196, priority=0,reg0=0xc0a80200/0xffffff00 actions=load:0x2->NXM_NX_REG1[],set_field:02:02:02:02:02:02->eth_src,goto_table:5
+ cookie=0x0, duration=122.241s, table=5, n_packets=1, n_bytes=98, priority=2,ip,reg0=0xc0a80202 actions=set_field:1e:36:b3:90:02:e5->eth_dst,goto_table:6
+ cookie=0x0, duration=122.180s, table=5, n_packets=1, n_bytes=98, priority=2,ip,reg0=0xc0a80102 actions=set_field:e6:b6:de:b6:ed:1e->eth_dst,goto_table:6
+ cookie=0x0, duration=153.027s, table=5, n_packets=2, n_bytes=196, priority=1,ip actions=CONTROLLER:65535
+ cookie=0x0, duration=153.022s, table=6, n_packets=6, n_bytes=408, priority=0 actions=output:NXM_NX_REG1[]
+----
+
+それぞれのエントリの `table=数字` の項目がテーブル ID を指しています。この章のマルチプルテーブル構成と見比べて、実際にどれがどのフローエントリかを確認してみてください。ping などでパケットを送受信しながら、フローエントリごとのパケットカウンタ (`n_packets=数字`) の値を確認していくと、より理解が深まることでしょう。
+
+== まとめ
+
+OpenFlow1.3 のマルチプルテーブルを使うことで、ルータの機能の大部分をフローテーブルとして実装しました。パケットの種類や処理ごとにテーブルを分割することで、ルータのように複雑な機能もマルチプルテーブルとして実装できます。
