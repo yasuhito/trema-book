@@ -378,8 +378,8 @@ Mail のトラフィックを許可する場合には、TCP で Destination Port
 | src_ip = 192.168.0.1/32, dst_port = 110 | Apply-Actions (Output 2) | 10000 |
 | src_ip = 192.168.0.1/32, dst_port = 80 | Apply-Actions (Output 2) | 10000 | 
 | src_ip = 192.168.0.1/32, dst_port = 443 | Apply-Actions (Output 2) | 10000 |
-| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000 | 一般社員用
-| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000 |
+| src_ip = 192.168.0.1/32 | Apply-Actions (Drop) | 5000 |
+| src_ip = 192.168.0.0/24 | Apply-Actions (Output 2) | 1000 | 一般社員用
 | wildcard | Apply-Actions (Drop) | 0
 |====
 
