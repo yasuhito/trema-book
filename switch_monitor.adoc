@@ -189,12 +189,12 @@ class SwitchMonitor < Trema::Controller
     logger.info "#{dpid.to_hex} is down (All = #{all_switches_in_string})"
   end
 
-  def description_stats_reply(dpid, packet_in)
-    logger.info "Switch #{dpid.to_hex} manufacturer = #{packet_in.manufacturer}"
-    logger.info "Switch #{dpid.to_hex} hardware info = #{packet_in.hardware}"
-    logger.info "Switch #{dpid.to_hex} software info = #{packet_in.software}"
-    logger.info "Switch #{dpid.to_hex} serial number = #{packet_in.serial_number}"
-    logger.info "Switch #{dpid.to_hex} description = #{packet_in.datapath}"
+  def description_stats_reply(dpid, desc)
+    logger.info "Switch #{dpid.to_hex} manufacturer = #{desc.manufacturer}"
+    logger.info "Switch #{dpid.to_hex} hardware info = #{desc.hardware}"
+    logger.info "Switch #{dpid.to_hex} software info = #{desc.software}"
+    logger.info "Switch #{dpid.to_hex} serial number = #{desc.serial_number}"
+    logger.info "Switch #{dpid.to_hex} description = #{desc.datapath}"
   end
 
   private
@@ -382,12 +382,12 @@ def switch_ready(dpid)
   send_message dpid, DescriptionStats::Request.new
 end
 
-def description_stats_reply(dpid, packet_in)
-  logger.info "Switch #{dpid.to_hex} manufacturer = #{packet_in.manufacturer}"
-  logger.info "Switch #{dpid.to_hex} hardware info = #{packet_in.hardware}"
-  logger.info "Switch #{dpid.to_hex} software info = #{packet_in.software}"
-  logger.info "Switch #{dpid.to_hex} serial number = #{packet_in.serial_number}"
-  logger.info "Switch #{dpid.to_hex} description = #{packet_in.datapath}"
+def description_stats_reply(dpid, desc)
+  logger.info "Switch #{dpid.to_hex} manufacturer = #{desc.manufacturer}"
+  logger.info "Switch #{dpid.to_hex} hardware info = #{desc.hardware}"
+  logger.info "Switch #{dpid.to_hex} software info = #{desc.software}"
+  logger.info "Switch #{dpid.to_hex} serial number = #{desc.serial_number}"
+  logger.info "Switch #{dpid.to_hex} description = #{desc.datapath}"
 end
 ----
 

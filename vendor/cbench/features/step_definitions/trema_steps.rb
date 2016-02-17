@@ -26,11 +26,17 @@ When(/^I trema run "([^"]*)"$/) do |controller_file|
   step %(I run `trema run #{controller_path} -d`)
 end
 
-Given(/^I trema run "([^"]*)" with args "([^"]*)"$/) do |controller, args|
+# rubocop:disable LineLength
+Given(/^I trema run "([^"]*)"( interactively)? with args "([^"]*)"$/) do |controller, interactive, args|
   controller_path = File.join('..', '..', controller)
-  step %(I successfully run `trema run #{controller_path} #{args}`)
+  if interactive
+    step %(I run `trema run #{controller_path} #{args}` interactively)
+  else
+    step %(I successfully run `trema run #{controller_path} #{args}`)
+  end
   step %(sleep 10)
 end
+# rubocop:enable LineLength
 
 When(/^I trema run "([^"]*)" interactively$/) do |controller_file|
   controller_path = File.join('..', '..', controller_file)

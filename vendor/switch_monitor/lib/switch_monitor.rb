@@ -19,12 +19,12 @@ class SwitchMonitor < Trema::Controller
   end
 
   # rubocop:disable AbcSize
-  def description_stats_reply(dpid, message)
-    logger.info "Switch #{dpid.to_hex} manufacturer = #{message.manufacturer}"
-    logger.info "Switch #{dpid.to_hex} hardware info = #{message.hardware}"
-    logger.info "Switch #{dpid.to_hex} software info = #{message.software}"
-    logger.info "Switch #{dpid.to_hex} serial number = #{message.serial_number}"
-    logger.info "Switch #{dpid.to_hex} description = #{message.datapath}"
+  def description_stats_reply(dpid, desc)
+    logger.info "Switch #{dpid.to_hex} manufacturer = #{desc.manufacturer}"
+    logger.info "Switch #{dpid.to_hex} hardware info = #{desc.hardware}"
+    logger.info "Switch #{dpid.to_hex} software info = #{desc.software}"
+    logger.info "Switch #{dpid.to_hex} serial number = #{desc.serial_number}"
+    logger.info "Switch #{dpid.to_hex} description = #{desc.datapath}"
   end
   # rubocop:enable AbcSize
 

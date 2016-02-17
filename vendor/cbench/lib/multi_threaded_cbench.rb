@@ -6,8 +6,8 @@ class MultiThreadedCbench < Trema::Controller
     logger.info "#{name} started."
   end
 
-  def packet_in(datapath_id, message)
-    @work_queue.push [datapath_id, message]
+  def packet_in(datapath_id, packet_in)
+    @work_queue.push [datapath_id, packet_in]
   end
 
   private

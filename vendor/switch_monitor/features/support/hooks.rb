@@ -1,5 +1,5 @@
 Before('@sudo') do
-  fail 'sudo authentication failed' unless system 'sudo -v'
+  raise 'sudo authentication failed' unless system 'sudo -v'
   @aruba_timeout_seconds = 5
   ENV['TREMA_LOG_DIR'] = '.'
   ENV['TREMA_PID_DIR'] = '.'
