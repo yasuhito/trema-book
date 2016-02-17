@@ -15,7 +15,7 @@ Then(/^the number of packets sent from "(.*?)" should be:$/) do |host_name, tabl
       when /-> (\S+) = (\d+) packet/
         result[Regexp.last_match(1)] = Regexp.last_match(2).to_i
       else
-        fail "Failed to parse line '#{each}'"
+        raise "Failed to parse line '#{each}'"
       end
     end
   end
@@ -45,7 +45,7 @@ Then(/^the number of packets received by "(.*?)" should be:$/) do |host_name, ta
         next unless received
         result[Regexp.last_match(1)] = Regexp.last_match(3).to_i
       else
-        fail "Failed to parse line '#{each}'"
+        raise "Failed to parse line '#{each}'"
       end
     end
   end
@@ -60,10 +60,12 @@ Then(/^the total number of received packets should be:$/) do |table|
     command = "trema show_stats #{host_name}"
     step "I run `#{command}`"
 
+    output = aruba.command_monitor.find(Aruba.platform.detect_ruby(command)).output
+
     result = 0
     cd('.') do
       received = false
-      output_from(command).split("\n").each do |each|
+      output.split("\n").each do |each|
         case each
         when /Packets sent/
           next
@@ -74,7 +76,7 @@ Then(/^the total number of received packets should be:$/) do |table|
           next unless received
           result += Regexp.last_match(3).to_i
         else
-          fail "Failed to parse line '#{each}'"
+          raise "Failed to parse line '#{each}'"
         end
       end
     end
