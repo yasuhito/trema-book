@@ -3,6 +3,11 @@
 ## develop (unreleased)
 
 
+## 0.4.0 (9/16/2015)
+### New features
+* [#2](https://github.com/trema/switch_monitor/pull/2): Add `SwitchMonitor#description_stats_reply` handler.
+
+
 ## 0.3.0 (3/17/2015)
 ### Changes
 * Phut 0.3.0.
