@@ -3,6 +3,11 @@
 ## develop
 
 
+## 0.48.0 (2/19/2016)
+
+* README の内容を http://yasuhito.github.io/trema-book/ に移動
+
+
 ## 0.47.0 (2/17/2016)
 
 * hello_trema 〜 cbench のソースコードを更新
