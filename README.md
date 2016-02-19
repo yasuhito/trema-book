@@ -1,23 +1,9 @@
-# Trema本 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)][gitter]
+# Trema本
 
-[Trema][trema]を使ったOpenFlowプログラミングを解説するフリー書籍です. 対応スイッチの多いOpenFlowバージョン1.3.xを対象にしています. プログラミング言語はRubyバージョン2.0以降です.
+[Trema][trema]を使ったOpenFlowプログラミングを解説するフリー書籍です.
 
-* ブラウザで読む: https://github.com/yasuhito/trema-book
-* PDFで読む: (準備中)
-* Gitterチャットに参加する: https://gitter.im/yasuhito/trema-book
-* Twitterのハッシュタグ: [#Trema本](https://twitter.com/hashtag/Trema%E6%9C%AC)
-
-
-## 書籍版
-
-各種書店で入手可能です。
-
-![カバー](https://raw.github.com/yasuhito/trema-book/develop/images/cover.png "本のカバー")
-
-- [Amazonで購入](http://www.amazon.co.jp/o/ASIN/4774179833/)
-- [ヨドバシ.comで購入](http://www.yodobashi.com/-増補改訂版-クラウド時代のネットワーク技術-OpenFlow実践入門-Software-Design-plus-単行本/pd/100000009002526970/)
-- [7netショッピングで購入](http://7net.omni7.jp/detail_isbn/978-4-7741-7983-4)
-- [hontoで購入](http://honto.jp/netstore/pd-book_27703803.html)
+* ブラウザ版のページ: https://yasuhito.github.com/trema-book/
+* 書籍版 (技術評論社) のページ: http://gihyo.jp/book/2016/978-4-7741-7983-4
 
 
 ## もくじ
@@ -167,41 +153,11 @@
 ```
 
 
-## ソースから本をビルドする
-[![Build Status](http://img.shields.io/travis/yasuhito/trema-book/develop.svg?style=flat)][travis]
-[![Dependency Status](http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat)][gemnasium]
-
-```
-git clone git@github.com:yasuhito/trema-book.git
-cd trema-book
-bundle install
-bundle exec rake
-```
-
-
-## 執筆に参加する
-
-誰でもいろいろな形でTrema本の執筆に参加できます.
-
-もし誤字脱字を見つけたら, [チャット][gitter]で指摘してください. GitHubに慣れている場合はイシューを切ってもらうか, ソースコードを直接修正してPull Requestを出してもらえると助かります.
-
-もちろん, 内容についてのコメントや追加内容も歓迎します.
-
-原稿の書式は[Asciidoc](http://asciidoc.org/)です. 詳しい書き方についてはAsciidocのコンパイラである[Asciidoctorのユーザマニュアル](http://asciidoctor.org/docs/user-manual/)を参照してください.
-
-貢献していただいた方は書籍版の「謝辞」にもれなくお名前が載ります.
-
-![謝辞](https://raw.github.com/yasuhito/trema-book/develop/images/acknowledgements.jpg "謝辞")
-
-
 ## ライセンス
 
 This book is released under the GNU General Public License version 3.0:
 
- * http://www.gnu.org/licenses/gpl-3.0.html
+* http://www.gnu.org/licenses/gpl-3.0.html
 
 
 [trema]: https://github.com/trema/trema
-[travis]: http://travis-ci.org/yasuhito/trema-book
-[gitter]: https://gitter.im/yasuhito/trema-book
-[gemnasium]: https://gemnasium.com/yasuhito/trema-book

@@ -1,3 +1,63 @@
+:sectnums!:
+
+= はじめに
+
+https://github.com/trema/trema[Trema]を使ったOpenFlowプログラミングを解説するフリー書籍です。対応スイッチの多いOpenFlowバージョン1.3.xを対象にしています。プログラミング言語はRubyバージョン2.0以降です。
+
+* ブラウザで読む: https://yasuhito.github.com/trema-book/
+* PDFで読む: (準備中)
+* GitHubのプロジェクトページ: https://github.com/yasuhito/trema-book
+* Twitterのハッシュタグ: https://twitter.com/hashtag/Trema%E6%9C%AC[#Trema本]
+
+== 書籍版
+
+各種書店で入手可能です。もちろん、プロによる組版なので高品質です。
+
+image::https://raw.github.com/yasuhito/trema-book/develop/images/cover.png[本のカバー]
+
+- http://www.amazon.co.jp/o/ASIN/4774179833/[Amazonで購入]
+- http://www.yodobashi.com/-増補改訂版-クラウド時代のネットワーク技術-OpenFlow実践入門-Software-Design-plus-単行本/pd/100000009002526970/[ヨドバシ.comで購入]
+- http://7net.omni7.jp/detail_isbn/978-4-7741-7983-4[7netショッピングで購入]
+- http://honto.jp/netstore/pd-book_27703803.html[hontoで購入]
+
+== フリー版
+
+ifeval::["{backend}" == "html5"]
+image:https://travis-ci.org/yasuhito/trema-book.svg?branch=develop["Build Status", link="https://travis-ci.org/yasuhito/trema-book"]
+image:http://img.shields.io/gemnasium/yasuhito/trema-book.svg?style=flat["Dependency Status", link="https://gemnasium.com/yasuhito/trema-book"]
+endif::[]
+
+次のようにしてソースから本をビルドできます。
+
+```
+git clone git@github.com:yasuhito/trema-book.git
+cd trema-book
+bundle install
+bundle exec rake
+```
+
+== 執筆に参加する
+
+誰でもいろいろな形でTrema本の執筆に参加できます。
+
+本に関する雑談は https://gitter.im/yasuhito/trema-book[Gitterのチャット]でどうぞ。
+
+もし誤字脱字を見つけたら、GitHubでイシューを切ってもらうか、ソースコードを直接修正してPull Requestを出してもらえると助かります。もちろん、内容についてのコメントや追加内容も歓迎します。
+
+原稿の書式は http://asciidoc.org/[Asciidoc]です。詳しい書き方についてはAsciidocのコンパイラである http://asciidoctor.org/docs/user-manual/[Asciidoctorのユーザマニュアル]を参照してください。
+
+貢献していただいた方は書籍版の「謝辞」にもれなくお名前が載ります。
+
+image::https://raw.github.com/yasuhito/trema-book/develop/images/acknowledgements.jpg[謝辞]
+
+== ライセンス
+
+This book is released under the GNU General Public License version 3.0:
+
+ * http://www.gnu.org/licenses/gpl-3.0.html
+
+:sectnums:
+
 [[how_does_openflow_work]]
 include::how_does_openflow_work.adoc[]
 
