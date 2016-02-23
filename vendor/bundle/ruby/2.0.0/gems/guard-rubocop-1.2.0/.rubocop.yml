@@ -1,0 +1,11 @@
+# The default 79 character limit is sometimes unproductive.
+LineLength:
+  Max: 100
+
+# The default 10 lines limit is unrealistic.
+MethodLength:
+  Max: 15
+
+RegexpLiteral:
+  Exclude:
+    - '**/Guardfile'
