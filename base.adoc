@@ -15,6 +15,8 @@ https://github.com/trema/trema[Trema]を使ったOpenFlowプログラミング�
 
 image::https://raw.github.com/yasuhito/trema-book/develop/images/cover.png[本のカバー]
 
+正誤表など技術評論社のサポートページは https://gihyo.jp/book/2016/978-4-7741-7983-4[こちら]です
+
 - http://www.amazon.co.jp/o/ASIN/4774179833/[Amazonで購入]
 - http://www.yodobashi.com/-増補改訂版-クラウド時代のネットワーク技術-OpenFlow実践入門-Software-Design-plus-単行本/pd/100000009002526970/[ヨドバシ.comで購入]
 - http://7net.omni7.jp/detail_isbn/978-4-7741-7983-4[7netショッピングで購入]
