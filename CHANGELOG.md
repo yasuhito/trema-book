@@ -3,6 +3,11 @@
 ## develop
 
 
+## 0.49.0 (2/23/2016)
+
+* 技評のサポートページへのリンクを追加
+
+
 ## 0.48.0 (2/19/2016)
 
 * README の内容を http://yasuhito.github.io/trema-book/ に移動
