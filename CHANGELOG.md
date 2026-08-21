@@ -2,6 +2,7 @@
 
 ## develop
 
+* [#186](https://github.com/yasuhito/trema-book/issues/186): Match.new (何でもマッチ) を省略
 
 ## 0.49.0 (2/23/2016)
 
